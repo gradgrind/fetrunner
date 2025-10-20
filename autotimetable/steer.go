@@ -577,130 +577,45 @@ func abort_instance(instance *TtInstance) {
 
 func new_instance(
 	instance_0 *TtInstance,
-	descriptor string,
+	tag string,
 	constraint_type timetable.ConstraintType,
-	constraint_indexes []int,
+	constraint_indexes []ConstraintIndex,
 	timeout int,
 	soft bool,
 ) *TtInstance {
-	// Prepare instnace "name"
+	// Prepare instance "name"
 	InstanceCounter++
-	if i := strings.Index(descriptor, "~"); i >= 0 {
-		descriptor = descriptor[i+1:]
+	if i := strings.Index(tag, "~"); i >= 0 {
+		tag = tag[i+1:]
 	}
-	descriptor = fmt.Sprintf("z%05d~%s", InstanceCounter, descriptor)
-	// Copy original TtData (shallow copy only!)
-	ttdata := new_ttdata(instance_0.TtData, descriptor)
+	tag = fmt.Sprintf("z%05d~%s", InstanceCounter, tag)
 
-	// Make a deep copy of the constraint-enabled matrices
-	hcmat0 := instance_0.HardConstraintEnabledMatrix
-	hcmat := make([][]bool, len(hcmat0))
-	for i, c := range hcmat0 {
-		hcmat[i] = slices.Clone(c)
-	}
-	scmat0 := instance_0.SoftConstraintEnabledMatrix
-	scmat := make([][]bool, len(scmat0))
-	for i, c := range scmat0 {
-		scmat[i] = slices.Clone(c)
+	enabled := slices.Clone(instance_0.ConstraintEnabled)
+	// Add the new constraints
+	for _, c := range constraint_indexes {
+		enabled[c] = true
 	}
 
 	// Make a new `TtInstance`
 	instance := &TtInstance{
-		Timeout:                     timeout,
-		TtData:                      ttdata,
-		HardConstraintEnabledMatrix: hcmat,
-		SoftConstraintEnabledMatrix: scmat,
 
-		// Base data for this instance:
-		BaseInstance:   instance_0,
-		ConstraintType: constraint_type,
-		Constraints:    constraint_indexes,
+		Tag: tag,
+
+		//TODO--? InstanceDir string // working space for this instance
+
+		Timeout: timeout,
+
+		BaseInstance: instance_0,
+
+		ConstraintEnabled: enabled,
+		ConstraintType:    constraint_type,
+		Constraints:       constraint_indexes,
 
 		// Run time
+		//BackEndData     any
+		Ticks:   0,
 		Stopped: false,
-	}
-
-	// Enable the constraints in `ttdata` and `hcmat`
-	//fmt.Printf("§ENABLE %s: %v\n", constraint_type.String(), constraint_indexes)
-
-	// Mark the constraints in the matrix
-	cmap := instance.HardConstraintEnabledMatrix[constraint_type]
-	for _, i := range constraint_indexes {
-		cmap[i] = true
-	}
-
-	// Reconstruct the constraint list
-	if soft {
-		newlist := []any{}
-		for i, c := range TtData_0.SoftConstraints[constraint_type] {
-			if cmap[i] {
-				newlist = append(newlist, c)
-			}
-		}
-		instance.TtData.SoftConstraints[constraint_type] = newlist
-	} else {
-		newlist := []any{}
-		for i, c := range TtData_0.HardConstraints[constraint_type] {
-			if cmap[i] {
-				newlist = append(newlist, c)
-			}
-		}
-		instance.TtData.HardConstraints[constraint_type] = newlist
+		//ProcessingState int
 	}
 	return instance
 }
-
-func new_ttdata(
-	ttdata_0 *timetable.TtData,
-	descriptor string,
-) *timetable.TtData {
-	ttdata := &timetable.TtData{
-		Description:             descriptor,
-		SharedData:              ttdata_0.SharedData,
-		TeacherNotAvailable:     ttdata_0.TeacherNotAvailable,
-		ClassNotAvailable:       ttdata_0.ClassNotAvailable,
-		RoomNotAvailable:        ttdata_0.RoomNotAvailable,
-		WITHOUT_ROOM_PLACEMENTS: ttdata_0.WITHOUT_ROOM_PLACEMENTS,
-		State:                   0,
-	}
-
-	// Make a deeper copy of the constraints so that these can be
-	// switched on or off without affecting those in the original `TtData`.
-	hcmap := make(map[timetable.ConstraintType][]any,
-		len(ttdata_0.HardConstraints))
-	for k, v := range ttdata_0.HardConstraints {
-		hcmap[k] = slices.Clone(v)
-	}
-	ttdata.HardConstraints = hcmap
-	scmap := make(map[timetable.ConstraintType][]any,
-		len(ttdata_0.SoftConstraints))
-	for k, v := range ttdata_0.SoftConstraints {
-		scmap[k] = slices.Clone(v)
-	}
-	ttdata.SoftConstraints = scmap
-	return ttdata
-}
-
-/*
-// TODO:  Is this old bit fetching file names from db.ModuleData still
-// needed somehow?
-
-	fetfile := stempath
-	mapfile := stempath
-	thisdir := filepath.Dir(stempath)
-	moduleData := db.ModuleData
-	fetData, ok := moduleData["FetData"].(map[string]string)
-	if ok {
-		var f string
-		f, ok = fetData["FetFile"]
-		if ok {
-			fetfile = filepath.Join(thisdir, f)
-		}
-		f, ok = fetData["MapFile"]
-		if ok {
-			mapfile = filepath.Join(thisdir, f)
-		}
-	}
-	fetfile += ".fet"
-	mapfile += ".map"
-*/

@@ -51,7 +51,6 @@ package main
 import (
 	"fetrunner/autotimetable"
 	"fetrunner/base"
-	"fetrunner/fet"
 	"fetrunner/fetfilter"
 	"flag"
 	"log"
@@ -90,7 +89,7 @@ func main() {
 	}
 
 	// This allows for an option to select different generator back-ends
-	fet.Setup()
+	autotimetable.FetSetup()
 
 	stempath := strings.TrimSuffix(abspath, filepath.Ext(abspath))
 

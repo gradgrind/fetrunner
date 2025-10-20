@@ -16,8 +16,9 @@ import (
 	"strings"
 )
 
-func Setup() {
-	timetable.BACKEND = timetable.TtBackend{
+func FetSetup() {
+	Backend = &TtBackend{
+		//New: ?
 		Run:     runFet,
 		Abort:   ttRunAbort,
 		Tick:    ttTick,
