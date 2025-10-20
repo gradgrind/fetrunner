@@ -16,13 +16,14 @@ type ConstraintData struct {
 	ConstraintTypes   []ConstraintType // ordered list of constraint types
 	HardConstraintMap map[ConstraintType][]ConstraintIndex
 	SoftConstraintMap map[ConstraintType][]ConstraintIndex
-	ConstraintString  func(*ConstraintData, ConstraintIndex) string
+	// Return a string representation of the given constraint:
+	ConstraintString func(*ConstraintData, ConstraintIndex) string
+	PrepareRun       func(*ConstraintData, *TtInstance)
 }
 
 type TtInstance struct {
-	Tag         string
-	InstanceDir string // working space for this instance
-	Timeout     int    // ticks
+	Tag     string
+	Timeout int // ticks
 
 	// Base instance from which this instance is derived:
 	BaseInstance *TtInstance
@@ -33,12 +34,17 @@ type TtInstance struct {
 	ConstraintType ConstraintType
 	Constraints    []ConstraintIndex
 
-	// Run time
-	BackEndData     any
+	// Run time ...
 	Ticks           int  // run time of this instance
 	Stopped         bool // `abort_instance()` has been called on this instance
 	ProcessingState int  // -1: queued, 0: running, 1: success, 2: failure,
 	// there is also 3: cancelled
+	// The following are set by the back-end:
+	BackEndData any
+	InstanceDir string // working space for this instance
+	RunState    int    // set by back-end
+	Progress    int    // percent
+	Message     string // "" or error message
 }
 
 type ActivityIndex int

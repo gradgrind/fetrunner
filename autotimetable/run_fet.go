@@ -20,23 +20,23 @@ func FetSetup() {
 	Backend = &TtBackend{
 		//New: ?
 		Run:     runFet,
-		Abort:   ttRunAbort,
-		Tick:    ttTick,
-		Clear:   ttRunClear,
-		Tidy:    ttRunTidy,
-		Results: ttResults,
+		Abort:   fetRunAbort,
+		Tick:    fetTick,
+		Clear:   fetRunClear,
+		Tidy:    fetRunTidy,
+		Results: fetResults,
 	}
 }
 
-func ttRunAbort(tt_data *timetable.TtData) {
+func fetRunAbort(tt_data *timetable.TtData) {
 	tt_data.BackEndData.(*fetTtData).cancel()
 }
 
-func ttRunTidy(workingdir string) {
+func fetRunTidy(workingdir string) {
 	os.RemoveAll(filepath.Join(workingdir, "tmp"))
 }
 
-func ttRunClear(tt_data *timetable.TtData) {
+func fetRunClear(tt_data *timetable.TtData) {
 	fttd, ok := tt_data.BackEndData.(*fetTtData)
 	if ok {
 		//base.Message.Printf("### Remove %s\n", fttd.workingdir)
@@ -49,19 +49,22 @@ func ttRunClear(tt_data *timetable.TtData) {
 // TODO: We need the working directory for the FET back-end (was
 // `timetable.TtData.SharedData.WorkingDir`) and the instance
 // description (was `timetable.TtData.Description`)).
-func runFet(tt_data0 *timetable.TtData, testing bool) {
-	shared_data := tt_data.SharedData
-	fname := tt_data.Description
-	dir_n := filepath.Join(shared_data.WorkingDir, "tmp", fname)
-
+func runFet(instance *TtInstance, testing bool) {
+	fname := instance.Tag
+	dir_n := filepath.Join(WorkingDir, "tmp", fname)
 	err := os.MkdirAll(dir_n, 0755)
 	if err != nil {
 		panic(err)
 	}
+	instance.InstanceDir = dir_n
 	stemfile := filepath.Join(dir_n, fname)
 	fetfile := stemfile + ".fet"
 
 	// Construct the FET-file
+	constraint_data.PrepareRun(constraint_data, instance)
+
+	// This is a tricky one which depends on input and back-end in a
+	// rather entwined manner ...
 
 	xmlitem := MakeFetFile(tt_data)
 
@@ -193,9 +196,9 @@ type fetTtData struct {
 	finished   bool
 }
 
-// `ttTick` runs in the "tick" loop. Rather like a "tail" function it reads
+// `fetTick` runs in the "tick" loop. Rather like a "tail" function it reads
 // the FET progress from its log file, by simply polling for new lines.
-func ttTick(tt_data *timetable.TtData) {
+func fetTick(tt_data *timetable.TtData) {
 	data := *tt_data.BackEndData.(*fetTtData)
 	if data.reader == nil {
 		// Await the existence of the log file
@@ -253,7 +256,7 @@ exit:
 }
 
 // Gather the results of the given run.
-func ttResults(tt_data *timetable.TtData) []timetable.ActivityPlacement {
+func fetResults(tt_data *timetable.TtData) []timetable.ActivityPlacement {
 	data := *tt_data.BackEndData.(*fetTtData)
 
 	// Write FET file at top level of working directory.

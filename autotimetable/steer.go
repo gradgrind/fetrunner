@@ -149,42 +149,37 @@ func StartGeneration(cdata *ConstraintData, TIMEOUT int) {
 		enabled[i] = true
 	}
 	full_instance := &TtInstance{
+		Tag:               "COMPLETE",
 		Timeout:           0,
 		ConstraintEnabled: enabled,
 	}
-
 	// Add to run queue
 	runqueue.add(full_instance)
 
 	// Instance without soft constraints (if any, otherwise same as full
-	// instance)
-	//TODO: Enable only the hard constraints ... or disable the soft ones ...
-	tt_data := new_ttdata(tt_data_0, "HARD_ONLY")
-	hard_instance := &TtInstance{
-		Timeout: 0,
-		TtData:  tt_data,
-		SoftConstraintEnabledMatrix: setup_constraint_map(
-			tt_data_0.SoftConstraints),
+	// instance) – enable only the hard constraints.
+	enabled = make([]bool, cdata.Constraints)
+	for _, ilist := range cdata.HardConstraintMap {
+		for _, i := range ilist {
+			enabled[i] = true
+		}
 	}
-	disable_soft_constraints(tt_data)
+	hard_instance := &TtInstance{
+		Tag:               "HARD_ONLY",
+		Timeout:           0,
+		ConstraintEnabled: enabled,
+	}
 	// Add to run queue
 	runqueue.add(hard_instance)
 
 	// Unconstrained instance
 	CYCLE_TIMEOUT = STAGE_TIMEOUT_MIN
-	tt_data = new_ttdata(tt_data_0, "ONLY_BLOCKED_SLOTS")
+	enabled = make([]bool, cdata.Constraints)
 	null_instance := &TtInstance{
-		//Timeout: max(TIMEOUT/UNCONSTRAINED_TIMEOUT_FRACTION,
-		//	MIN_UNCONSTRAINED_TIMEOUT),
-		Timeout: CYCLE_TIMEOUT,
-
-		TtData: tt_data,
-		HardConstraintEnabledMatrix: setup_constraint_map(
-			tt_data_0.HardConstraints),
-		SoftConstraintEnabledMatrix: setup_constraint_map(
-			tt_data_0.SoftConstraints),
+		Tag:               "ONLY_BLOCKED_SLOTS",
+		Timeout:           CYCLE_TIMEOUT,
+		ConstraintEnabled: enabled,
 	}
-	disable_all_constraints(tt_data)
 	// Add to run queue
 	runqueue.add(null_instance)
 
@@ -214,8 +209,8 @@ func StartGeneration(cdata *ConstraintData, TIMEOUT int) {
 			// necessary.
 			count := 0
 			for instance := range runqueue.Active {
-				if instance.TtData.State == 0 {
-					timetable.BACKEND.Tick(instance.TtData)
+				if instance.RunState == 0 {
+					Backend.Tick(instance)
 					count++
 					abort_instance(instance)
 				}
@@ -227,7 +222,7 @@ func StartGeneration(cdata *ConstraintData, TIMEOUT int) {
 		}
 		if !DEBUG {
 			// Remove all remaining temporary files
-			timetable.BACKEND.Tidy(workingdir)
+			Backend.Tidy(WorkingDir)
 		}
 		if LastResult != nil {
 			// Save result of last successful instance.
@@ -236,7 +231,7 @@ func StartGeneration(cdata *ConstraintData, TIMEOUT int) {
 			if err != nil {
 				panic(err)
 			}
-			fpath := filepath.Join(workingdir, "Result.json")
+			fpath := filepath.Join(WorkingDir, "Result.json")
 			f, err := os.Create(fpath)
 			if err != nil {
 				panic("Couldn't open output file: " + fpath)
@@ -271,14 +266,14 @@ tickloop:
 			base.Message.Printf("(TODO) *** All constraints OK @ %d ***\n", Ticks)
 			break
 		} else {
-			p := full_instance.TtData.Progress
+			p := full_instance.Progress
 			if p > full_progress {
 				full_progress = p
 				full_progress_ticks = Ticks
 				base.Message.Printf(
 					"(TODO) [%d] ? %s (%d @ %d)\n",
 					Ticks,
-					full_instance.TtData.Description,
+					full_instance.Tag,
 					full_progress,
 					full_progress_ticks,
 				)
@@ -308,14 +303,14 @@ tickloop:
 				base.Message.Printf(
 					"(TODO) [%d] Soft constraints based on hard-only instance", Ticks)
 			} else {
-				p := hard_instance.TtData.Progress
+				p := hard_instance.Progress
 				if p > hard_progress {
 					hard_progress = p
 					hard_progress_ticks = Ticks
 					base.Message.Printf(
 						"(TODO) [%d] ? %s (%d @ %d)\n",
 						Ticks,
-						hard_instance.TtData.Description,
+						hard_instance.Tag,
 						hard_progress,
 						hard_progress_ticks,
 					)
@@ -346,7 +341,7 @@ tickloop:
 			// `null_instance` are running.
 			switch null_instance.ProcessingState {
 			case 0:
-				if null_instance.TtData.Ticks == null_instance.Timeout {
+				if null_instance.Ticks == null_instance.Timeout {
 					abort_instance(null_instance)
 				}
 				continue
@@ -364,7 +359,7 @@ tickloop:
 				base.Message.Printf(
 					"(TODO) [%d] Unconstrained instance failed", Ticks)
 
-				base.Error.Println(" ... " + tt_data.Message)
+				base.Error.Println(" ... " + null_instance.Message)
 
 				//TODO: Seek problems in the unconstrained data.
 				panic("TODO")
@@ -409,7 +404,7 @@ tickloop:
 				current_instance = instance
 				new_current_instance(current_instance)
 				next_timeout = max(
-					instance.TtData.Ticks*NEW_BASE_TIMEOUT_FACTOR/10,
+					instance.Ticks*NEW_BASE_TIMEOUT_FACTOR/10,
 					CYCLE_TIMEOUT)
 				// Remove it from constraint list.
 				constraint_list = slices.Delete(
@@ -423,8 +418,7 @@ tickloop:
 			// ... all current constraint trials finished.
 			// Start trials of remaining constraints, hard then soft.
 			CYCLE_TIMEOUT = max(CYCLE_TIMEOUT,
-				current_instance.TtData.Ticks) *
-				NEW_STAGE_TIMEOUT_FACTOR / 10
+				current_instance.Ticks) * NEW_STAGE_TIMEOUT_FACTOR / 10
 			var n int
 			constraint_list, n = get_basic_constraints(
 				current_instance, soft)
@@ -481,7 +475,7 @@ tickloop:
 					split_instances = append(split_instances,
 						new_instance(
 							current_instance,
-							instance.TtData.Description,
+							instance.Tag,
 							instance.ConstraintType,
 							instance.Constraints[:nhalf],
 							timeout,
@@ -489,7 +483,7 @@ tickloop:
 					split_instances = append(split_instances,
 						new_instance(
 							current_instance,
-							instance.TtData.Description,
+							instance.Tag,
 							instance.ConstraintType,
 							instance.Constraints[nhalf:],
 							timeout,
@@ -508,7 +502,7 @@ tickloop:
 					// Build new instance
 					instance = new_instance(
 						current_instance,
-						instance.TtData.Description,
+						instance.Tag,
 						instance.ConstraintType,
 						instance.Constraints,
 						next_timeout,
@@ -527,36 +521,33 @@ tickloop:
 	} // tickloop: end
 
 	result := current_instance
-	ttdata := result.TtData
 
 	hnn := 0
 	hnall := 0
-	for i, clist := range result.HardConstraintEnabledMatrix {
+	for c, clist := range cdata.HardConstraintMap {
 		n := 0
-		for _, b := range clist {
-			if b {
+		for _, cix := range clist {
+			if result.ConstraintEnabled[cix] {
 				n++
 			}
 		}
 		if len(clist) != 0 {
-			fmt.Printf("$ HARD CONSTRAINT %d: %d / %d (%s)\n",
-				i, n, len(clist), timetable.ConstraintType(i).String())
+			fmt.Printf("$ (HARD) %s: %d / %d\n", c, n, len(clist))
 			hnn += n
 			hnall += len(clist)
 		}
 	}
 	snn := 0
 	snall := 0
-	for i, clist := range result.SoftConstraintEnabledMatrix {
+	for c, clist := range cdata.SoftConstraintMap {
 		n := 0
-		for _, b := range clist {
-			if b {
+		for _, cix := range clist {
+			if result.ConstraintEnabled[cix] {
 				n++
 			}
 		}
 		if len(clist) != 0 {
-			fmt.Printf("$ SOFT CONSTRAINT %d: %d / %d (%s)\n",
-				i, n, len(clist), timetable.ConstraintType(i).String())
+			fmt.Printf("$ (SOFT) %s: %d / %d\n", c, n, len(clist))
 			snn += n
 			snall += len(clist)
 		}
@@ -565,12 +556,12 @@ tickloop:
 		hnn, hnall, snn, snall)
 
 	//TODO
-	base.Message.Printf("(TODO) RESULT: %s\n", ttdata.Description)
+	base.Message.Printf("(TODO) RESULT: %s\n", result.Tag)
 }
 
 func abort_instance(instance *TtInstance) {
 	if !instance.Stopped {
-		timetable.BACKEND.Abort(instance.TtData)
+		timetable.BACKEND.Abort(instance)
 		instance.Stopped = true
 	}
 }
