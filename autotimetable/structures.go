@@ -4,7 +4,7 @@ package autotimetable
 // timetable generation.
 
 type ActivityIndex int
-type RoomIndex int
+type RoomIndex = int
 
 var Ticks int // global time ticker
 // The instance tick counter is in `TtInstance` because it may be needed
@@ -20,12 +20,30 @@ type ConstraintData struct {
 	ConstraintTypes   []ConstraintType // ordered list of constraint types
 	HardConstraintMap map[ConstraintType][]ConstraintIndex
 	SoftConstraintMap map[ConstraintType][]ConstraintIndex
+	Resources         []Resource
 
 	// Read input data:
 	Read func(*ConstraintData, string) error
 	// Return a string representation of the given constraint:
 	ConstraintString func(*ConstraintData, ConstraintIndex) string
 	PrepareRun       func(*ConstraintData, []bool, any)
+}
+
+type ResourceType int
+
+const (
+	TeacherResource ResourceType = iota
+	GroupResource
+	RoomResource
+)
+
+type Resource struct {
+	Type  ResourceType
+	Index int    // within the type
+	Tag   string // short identifier (unique)
+	//Name // TODO: possibly longer identifier (probably, but not
+	// necessarily unique?)
+	//Item any // TODO: back-end dependent data
 }
 
 type TtInstance struct {

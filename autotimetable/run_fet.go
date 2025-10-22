@@ -258,15 +258,29 @@ func fetResults(instance *TtInstance) []ActivityPlacement {
 		return nil
 	}
 
+	room2index := map[string]RoomIndex{}
+	for _, r := range constraint_data.Resources {
+		if r.Type == RoomResource {
+			room2index[r.Tag] = r.Index
+		}
+	}
 	activities := make([]ActivityPlacement, len(v.Activities))
 	for i, a := range v.Activities {
-		rooms := []RoomIndex{}
+		rooms := []int{}
 		if len(a.Real_Room) != 0 {
 			for _, r := range a.Real_Room {
-				rooms = append(rooms, data.room2index[r])
+				ix, ok := room2index[r]
+				if !ok {
+					panic("Unknown room: " + r)
+				}
+				rooms = append(rooms, ix)
 			}
 		} else if len(a.Room) != 0 {
-			rooms = append(rooms, data.room2index[a.Room])
+			ix, ok := room2index[a.Room]
+			if !ok {
+				panic("Unknown room: " + a.Room)
+			}
+			rooms = append(rooms, ix)
 		}
 		activities[i] = ActivityPlacement{
 			Id:    a.Id,

@@ -127,6 +127,26 @@ func read_fet(cdata *ConstraintData, fetpath string) error {
 	return nil
 }
 
+func get_resources(root *etree.Element) []autotimetable.Resource {
+	resources := []autotimetable.Resource{}
+	el := root.SelectElement("Rooms_List")
+	i := 0
+	for _, e := range el.ChildElements() {
+		if e.SelectElement("Virtual").Text() == "false" {
+			tag := e.SelectElement("Name").Text()
+			resources = append(resources, autotimetable.Resource{
+				Index: i,
+				Type:  autotimetable.RoomResource,
+				Tag:   tag,
+			})
+		}
+	}
+
+	//TODO: teachers and groups
+
+	return resources
+}
+
 // Get a string representation of the given constraint.
 func constraint_string(cdata *ConstraintData, cix ConstraintIndex) string {
 	fetdoc, ok := cdata.InputData.(*FetDoc)
