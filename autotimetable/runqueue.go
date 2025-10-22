@@ -2,7 +2,6 @@ package autotimetable
 
 import (
 	"fetrunner/base"
-	"fetrunner/timetable"
 	"fmt"
 )
 
@@ -31,65 +30,61 @@ func (rq *RunQueue) add(instance *TtInstance) {
 func (rq *RunQueue) update_instances() {
 	// First increment the ticks of active instances.
 	for instance := range rq.Active {
-		ttdata := instance.TtData
-		//base.Message.Printf("(TODO) [%d] ? ACTIVE (%d / %d): %s\n",
-		//	Ticks, ttdata.State, instance.ProcessingState, ttdata.Description)
-		if ttdata.State != 0 && instance.ProcessingState < 2 {
+		if instance.RunState != 0 && instance.ProcessingState < 2 {
 			// This should only be possible after the call to
 			// `timetable.BACKEND.Tick` below.
-			panic(fmt.Sprintf("Bug, State = %d", ttdata.State))
+			panic(fmt.Sprintf("Bug, State = %d", instance.RunState))
 		}
-		if ttdata.State == 0 {
-			ttdata.Ticks++
+		if instance.RunState == 0 {
+			instance.Ticks++
 			// Among other things, update the state:
-			timetable.BACKEND.Tick(ttdata)
+			Backend.Tick(instance)
 		} else if instance.ProcessingState < 2 {
 			// This should only be possible after the call to
 			// `timetable.BACKEND.Tick`.
-			panic(fmt.Sprintf("Bug, State = %d", ttdata.State))
+			panic(fmt.Sprintf("Bug, State = %d", instance.RunState))
 		}
-
 		if instance.ProcessingState == 3 {
 			// Await completion of the goroutine
 			continue
 		}
-
-		switch ttdata.State {
+		switch instance.RunState {
 		case 0: // running, not finished
-			if ttdata.Progress == 100 {
+			if instance.Progress == 100 {
 				continue // the state will be changed next time round
 			}
 			// Check for timeout or getting "stuck"
 			t := instance.Timeout
 			if t == 0 {
 				// Check for lack of progress when there is no timeout
-				if ttdata.LastTime < LAST_TIME_0 && ttdata.Ticks >= LAST_TIME_1 {
+				if instance.LastTime < LAST_TIME_0 &&
+					instance.Ticks >= LAST_TIME_1 {
 					// Stop instance
 					abort_instance(instance)
 				}
 				continue
 			}
 
-			limit := (ttdata.Ticks * 100) / t
-			if ttdata.Progress < limit {
+			limit := (instance.Ticks * 100) / t
+			if instance.Progress < limit {
 				// Progress is too slow ...
-				if ttdata.Progress*2 > limit {
+				if instance.Progress*2 > limit {
 					continue
 				}
 				base.Message.Printf("(TODO) [%d] Trap %s @ %d (%d): %d\n",
-					Ticks, ttdata.Description, ttdata.Ticks, ttdata.Progress,
+					Ticks, instance.Tag, instance.Ticks, instance.Progress,
 					len(instance.Constraints))
 				abort_instance(instance)
 			}
 
 		case 1: // completed successfully
 			base.Message.Printf("(TODO) [%d] <<+ %s @ %d\n",
-				Ticks, ttdata.Description, ttdata.Ticks)
+				Ticks, instance.Tag, instance.Ticks)
 			instance.ProcessingState = 1
 
 		default: // completed unsuccessfully
 			base.Message.Printf("(TODO) [%d] <<- %s @ %d\n",
-				Ticks, ttdata.Description, ttdata.Ticks)
+				Ticks, instance.Tag, instance.Ticks)
 			instance.ProcessingState = 2
 		}
 	}
@@ -99,10 +94,10 @@ func (rq *RunQueue) update_queue() int {
 	// Try to start queued instances
 	running := 0
 	for instance := range rq.Active {
-		if instance.TtData.State != 0 {
+		if instance.RunState != 0 {
 			delete(rq.Active, instance)
 			if !DEBUG {
-				timetable.BACKEND.Clear(instance.TtData)
+				Backend.Clear(instance)
 			}
 			continue
 		}
@@ -128,8 +123,8 @@ func (rq *RunQueue) update_queue() int {
 		}
 
 		base.Message.Printf("(TODO) [%d] >> %s {%d}\n",
-			Ticks, instance.TtData.Description, instance.Timeout)
-		timetable.BACKEND.Run(instance.TtData, TESTING)
+			Ticks, instance.Tag, instance.Timeout)
+		Backend.Run(instance, TESTING)
 	}
 	return len(rq.Active)
 }

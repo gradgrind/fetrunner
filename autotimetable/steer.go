@@ -3,7 +3,6 @@ package autotimetable
 import (
 	"encoding/json"
 	"fetrunner/base"
-	"fetrunner/timetable"
 	"fmt"
 	"os"
 	"os/signal"
@@ -11,7 +10,6 @@ import (
 	"runtime"
 	"runtime/debug"
 	"slices"
-	"strings"
 	"syscall"
 	"time"
 )
@@ -475,7 +473,6 @@ tickloop:
 					split_instances = append(split_instances,
 						new_instance(
 							current_instance,
-							instance.Tag,
 							instance.ConstraintType,
 							instance.Constraints[:nhalf],
 							timeout,
@@ -483,7 +480,6 @@ tickloop:
 					split_instances = append(split_instances,
 						new_instance(
 							current_instance,
-							instance.Tag,
 							instance.ConstraintType,
 							instance.Constraints[nhalf:],
 							timeout,
@@ -502,7 +498,6 @@ tickloop:
 					// Build new instance
 					instance = new_instance(
 						current_instance,
-						instance.Tag,
 						instance.ConstraintType,
 						instance.Constraints,
 						next_timeout,
@@ -561,26 +556,18 @@ tickloop:
 
 func abort_instance(instance *TtInstance) {
 	if !instance.Stopped {
-		timetable.BACKEND.Abort(instance)
+		Backend.Abort(instance)
 		instance.Stopped = true
 	}
 }
 
 func new_instance(
 	instance_0 *TtInstance,
-	tag string,
-	constraint_type timetable.ConstraintType,
+	constraint_type ConstraintType,
 	constraint_indexes []ConstraintIndex,
 	timeout int,
 	soft bool,
 ) *TtInstance {
-	// Prepare instance "name"
-	InstanceCounter++
-	if i := strings.Index(tag, "~"); i >= 0 {
-		tag = tag[i+1:]
-	}
-	tag = fmt.Sprintf("z%05d~%s", InstanceCounter, tag)
-
 	enabled := slices.Clone(instance_0.ConstraintEnabled)
 	// Add the new constraints
 	for _, c := range constraint_indexes {
@@ -589,8 +576,7 @@ func new_instance(
 
 	// Make a new `TtInstance`
 	instance := &TtInstance{
-
-		Tag: tag,
+		Tag: fmt.Sprintf("z%05d~%s", InstanceCounter, constraint_type),
 
 		//TODO--? InstanceDir string // working space for this instance
 

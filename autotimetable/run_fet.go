@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/xml"
 	"fetrunner/base"
-	"fetrunner/timetable"
 	"fmt"
 	"io"
 	"os"
@@ -28,27 +27,24 @@ func FetSetup() {
 	}
 }
 
-func fetRunAbort(tt_data *timetable.TtData) {
-	tt_data.BackEndData.(*fetTtData).cancel()
+func fetRunAbort(instance *TtInstance) {
+	instance.BackEndData.(*fetTtData).cancel()
 }
 
 func fetRunTidy(workingdir string) {
 	os.RemoveAll(filepath.Join(workingdir, "tmp"))
 }
 
-func fetRunClear(tt_data *timetable.TtData) {
-	fttd, ok := tt_data.BackEndData.(*fetTtData)
+func fetRunClear(instance *TtInstance) {
+	fttd, ok := instance.BackEndData.(*fetTtData)
 	if ok {
 		//base.Message.Printf("### Remove %s\n", fttd.workingdir)
 		os.RemoveAll(fttd.workingdir)
 		//} else {
-		//	base.Message.Printf("### No TtData: %s\n", tt_data.Description)
+		//	base.Message.Printf("### No TtData: %s\n", instance.Tag)
 	}
 }
 
-// TODO: We need the working directory for the FET back-end (was
-// `timetable.TtData.SharedData.WorkingDir`) and the instance
-// description (was `timetable.TtData.Description`)).
 func runFet(instance *TtInstance, testing bool) {
 	fname := instance.Tag
 	dir_n := filepath.Join(WorkingDir, "tmp", fname)
@@ -173,8 +169,8 @@ type fetTtData struct {
 
 // `fetTick` runs in the "tick" loop. Rather like a "tail" function it reads
 // the FET progress from its log file, by simply polling for new lines.
-func fetTick(tt_data *timetable.TtData) {
-	data := *tt_data.BackEndData.(*fetTtData)
+func fetTick(instance *TtInstance) {
+	data := *instance.BackEndData.(*fetTtData)
 	if data.reader == nil {
 		// Await the existence of the log file
 		file, err := os.Open(data.logfile)
@@ -197,13 +193,13 @@ func fetTick(tt_data *timetable.TtData) {
 					count, err := strconv.Atoi(string(l[2]))
 					if err == nil {
 						percent := count * 100 /
-							(len(tt_data.SharedData.Activities) - 1)
-						if percent > tt_data.Progress {
-							tt_data.Progress = percent
-							tt_data.LastTime = tt_data.Ticks
+							int(constraint_data.NActivities)
+						if percent > instance.Progress {
+							instance.Progress = percent
+							instance.LastTime = instance.Ticks
 
 							base.Report(fmt.Sprintf("%s: %d @ %d\n",
-								tt_data.Description, percent, tt_data.Ticks))
+								instance.Tag, percent, instance.Ticks))
 						}
 					}
 				}
@@ -217,34 +213,33 @@ exit:
 		if data.rdfile != nil {
 			data.rdfile.Close()
 		}
-		if tt_data.Progress == 100 {
-			tt_data.State = 1
+		if instance.Progress == 100 {
+			instance.RunState = 1
 		} else {
-			tt_data.State = 2
+			instance.RunState = 2
 		}
 
 		efile, err := os.ReadFile(filepath.Join(data.odir, "logs", "errors.txt"))
 		if err == nil {
-			tt_data.Message = string(efile)
+			instance.Message = string(efile)
 		}
 	}
 }
 
 // Gather the results of the given run.
-func fetResults(tt_data *timetable.TtData) []timetable.ActivityPlacement {
-	data := *tt_data.BackEndData.(*fetTtData)
+func fetResults(instance *TtInstance) []ActivityPlacement {
+	data := *instance.BackEndData.(*fetTtData)
 
 	// Write FET file at top level of working directory.
-	wdir := tt_data.SharedData.WorkingDir
-	fetfile := filepath.Join(wdir, "Result.fet")
+	fetfile := filepath.Join(WorkingDir, "Result.fet")
 	err := os.WriteFile(fetfile, data.fetxml, 0644)
 	if err != nil {
 		panic("Couldn't write fet file to: " + fetfile)
 	}
 
 	// Get placements
-	xmlpath := filepath.Join(data.odir, "timetables", tt_data.Description,
-		tt_data.Description+"_activities.xml")
+	xmlpath := filepath.Join(data.odir, "timetables", instance.Tag,
+		instance.Tag+"_activities.xml")
 	// Open the XML file
 	xmlFile, err := os.Open(xmlpath)
 	if err != nil {
@@ -263,9 +258,9 @@ func fetResults(tt_data *timetable.TtData) []timetable.ActivityPlacement {
 		return nil
 	}
 
-	activities := make([]timetable.ActivityPlacement, len(v.Activities))
+	activities := make([]ActivityPlacement, len(v.Activities))
 	for i, a := range v.Activities {
-		rooms := []timetable.RoomIndex{}
+		rooms := []RoomIndex{}
 		if len(a.Real_Room) != 0 {
 			for _, r := range a.Real_Room {
 				rooms = append(rooms, data.room2index[r])
@@ -273,7 +268,7 @@ func fetResults(tt_data *timetable.TtData) []timetable.ActivityPlacement {
 		} else if len(a.Room) != 0 {
 			rooms = append(rooms, data.room2index[a.Room])
 		}
-		activities[i] = timetable.ActivityPlacement{
+		activities[i] = ActivityPlacement{
 			Id:    a.Id,
 			Day:   a.Day,
 			Hour:  a.Hour,
@@ -290,7 +285,7 @@ type fetResultRoot struct { // The root node.
 
 type fetResultActivity struct {
 	XMLName   xml.Name `xml:"Activity"`
-	Id        timetable.ActivityIndex
+	Id        ActivityIndex
 	Day       int
 	Hour      int
 	Room      string

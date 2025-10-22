@@ -1,117 +1,66 @@
 package autotimetable
 
 import (
-	"fetrunner/base"
-	"fetrunner/timetable"
 	"encoding/json"
+	"fetrunner/base"
 	"os"
 	"path/filepath"
 )
 
-type RefTag struct {
-	Tag string
-	Ref timetable.NodeRef
-}
-
 type Result struct {
-	Time                       int
-	Teachers                   []RefTag
-	Classes                    []RefTag
-	Rooms                      []RefTag
-	Activities                 []timetable.NodeRef
-	Placements                 []timetable.ActivityPlacement
-	DiscardedHardConstraints   []any
-	UnfulfilledHardConstraints map[string][]int
+	Time       int
+	Placements []ActivityPlacement
+	//DiscardedHardConstraints   []any
+	UnfulfilledHardConstraints map[ConstraintType][]ConstraintIndex
 	TotalHardConstraints       int
-	DiscardedSoftConstraints   []any
-	UnfulfilledSoftConstraints map[string][]int
+	//DiscardedSoftConstraints   []any
+	UnfulfilledSoftConstraints map[ConstraintType][]ConstraintIndex
 	TotalSoftConstraints       int
 }
 
 // Get the result of the current instance as a `Result` structure.
 // Save as JSON if debugging.
 func new_current_instance(instance *TtInstance) {
-	ttdata := instance.TtData
 	base.Message.Printf("+++ %s @ %d\n",
-		ttdata.Description, ttdata.Ticks)
+		instance.Tag, instance.Ticks)
 
 	// Read placements
-	alist := timetable.BACKEND.Results(ttdata)
-	//if !DEBUG {
-	//	timetable.BACKEND.Clear(ttdata)
-	//}
+	alist := Backend.Results(instance)
 
-	// Collect teachers, classes and rooms
-	db := ttdata.SharedData.Db
-	t2ref := make([]RefTag, len(db.Teachers))
-	for i, tnode := range db.Teachers {
-		t2ref[i] = RefTag{tnode.GetTag(), tnode.GetRef()}
-	}
-	c2ref := make([]RefTag, len(db.Classes))
-	for i, cnode := range db.Classes {
-		c2ref[i] = RefTag{cnode.GetTag(), cnode.GetRef()}
-	}
-	r2ref := make([]RefTag, len(db.Rooms))
-	for i, rnode := range db.Rooms {
-		r2ref[i] = RefTag{rnode.GetTag(), rnode.GetRef()}
-	}
-
-	// The activity "references"
-	a2ref := make([]timetable.NodeRef, len(ttdata.SharedData.Activities))
-	for i, anode := range ttdata.SharedData.Activities {
-		if i != 0 {
-			a2ref[i] = anode.Activity.Id
-		}
-	}
-
-	// The discarded hard constraints
-	hconstraints := []any{}
-	hnall := 0 // count all constraints
-	hunfulfilled := map[string][]int{}
-	for ctype, clist := range instance.HardConstraintEnabledMatrix {
-		x := TtData_0.HardConstraints[timetable.ConstraintType(ctype)]
-		ulist := []int{}
-		for i, b := range clist {
-			if !b {
-				hconstraints = append(hconstraints, x[i])
+	// The discarded hard constraints ...
+	hnall := 0 // count all hard constraints
+	// Gather constraint indexes:
+	hunfulfilled := map[ConstraintType][]ConstraintIndex{}
+	for ctype, clist := range constraint_data.HardConstraintMap {
+		ulist := []ConstraintIndex{}
+		for _, i := range clist {
+			if !instance.ConstraintEnabled[i] {
 				ulist = append(ulist, i)
 			}
 		}
-		if len(ulist) != 0 {
-			hunfulfilled[timetable.ConstraintType(ctype).String()] = ulist
-		}
+		hunfulfilled[ctype] = ulist
 		hnall += len(clist)
 	}
-	// The discarded soft constraints
-	sconstraints := []any{}
-	snall := 0 // count all constraints
-	sunfulfilled := map[string][]int{}
-	for ctype, clist := range instance.SoftConstraintEnabledMatrix {
-		x := TtData_0.SoftConstraints[timetable.ConstraintType(ctype)]
-		ulist := []int{}
-		for i, b := range clist {
-			if !b {
-				sconstraints = append(sconstraints, x[i])
+	// The discarded soft constraints ...
+	snall := 0 // count all soft constraints
+	// Gather constraint indexes:
+	sunfulfilled := map[ConstraintType][]ConstraintIndex{}
+	for ctype, clist := range constraint_data.SoftConstraintMap {
+		ulist := []ConstraintIndex{}
+		for _, i := range clist {
+			if !instance.ConstraintEnabled[i] {
 				ulist = append(ulist, i)
 			}
 		}
-		if len(ulist) != 0 {
-			sunfulfilled[timetable.ConstraintType(ctype).String()] = ulist
-		}
+		sunfulfilled[ctype] = ulist
 		snall += len(clist)
 	}
 
 	LastResult = &Result{
-		Time:                       ttdata.Ticks,
-		Teachers:                   t2ref,
-		Classes:                    c2ref,
-		Rooms:                      r2ref,
-		Activities:                 a2ref,
+		Time:                       instance.Ticks,
 		Placements:                 alist,
-		DiscardedHardConstraints:   hconstraints,
 		UnfulfilledHardConstraints: hunfulfilled,
 		TotalHardConstraints:       hnall,
-		DiscardedSoftConstraints:   sconstraints,
 		UnfulfilledSoftConstraints: sunfulfilled,
 		TotalSoftConstraints:       snall,
 	}
@@ -122,8 +71,7 @@ func new_current_instance(instance *TtInstance) {
 		if err != nil {
 			panic(err)
 		}
-		fpath := filepath.Join(ttdata.SharedData.WorkingDir,
-			ttdata.Description+".json")
+		fpath := filepath.Join(WorkingDir, instance.Tag+".json")
 		f, err := os.Create(fpath)
 		if err != nil {
 			panic("Couldn't open output file: " + fpath)

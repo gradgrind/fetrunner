@@ -51,6 +51,7 @@ type TtInstance struct {
 	InstanceDir string // working space for this instance
 	RunState    int    // set by back-end
 	Progress    int    // percent
+	LastTime    int    // last (instance) time at which `Progress` changed
 	Message     string // "" or error message
 }
 
