@@ -1,5 +1,6 @@
 package autotimetable
 
+/*
 import (
 	"fetrunner/base"
 	"fetrunner/timetable"
@@ -177,3 +178,4 @@ func test_fixed(ttdata *timetable.TtData) []*TtClash {
 	}
 	return allclashes
 }
+*/

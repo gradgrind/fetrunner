@@ -61,68 +61,44 @@ func runFet(instance *TtInstance, testing bool) {
 	fetfile := stemfile + ".fet"
 
 	// Construct the FET-file
-	constraint_data.PrepareRun(constraint_data, instance)
-
-	// This is a tricky one which depends on input and back-end in a
-	// rather entwined manner ...
-
-	xmlitem := MakeFetFile(tt_data)
-
+	var fet_xml []byte
+	constraint_data.PrepareRun(
+		constraint_data, instance.ConstraintEnabled, &fet_xml)
 	// Write FET file
-	err = os.WriteFile(fetfile, xmlitem, 0644)
+	err = os.WriteFile(fetfile, fet_xml, 0644)
 	if err != nil {
-		panic("Couldn't write fet output to: " + fetfile)
+		panic("Couldn't write fet file to: " + fetfile)
 	}
-
-	if tt_data.Description == "COMPLETE" {
+	if instance.Tag == "COMPLETE" {
 		// Save fet file at top level of working directory.
-		cfile := filepath.Join(shared_data.WorkingDir,
+		cfile := filepath.Join(WorkingDir,
 			filepath.Base(strings.TrimSuffix(
-				shared_data.WorkingDir, "_fet")+".fet"))
-		err = os.WriteFile(cfile, xmlitem, 0644)
+				WorkingDir, "_fet")+".fet"))
+		err = os.WriteFile(cfile, fet_xml, 0644)
 		if err != nil {
 			panic("Couldn't write fet file to: " + cfile)
 		}
 	}
-
-	//fmt.Printf("FET file written to: %s\n", fetfile)
-
-	/* TODO-- Convert lessonIdMap to string, write Id-map file.
-	idmlines := []string{}
-	for _, idm := range lessonIdMap {
-		idmlines = append(idmlines,
-			strconv.Itoa(int(idm.activityId))+":"+string(idm.baseId))
-	}
-	lidmap := strings.Join(idmlines, "\n")
-	*/
-
-	//TODO--
-	//return
-
-	cwd := filepath.Dir(fetfile)
-	odir := filepath.Join(cwd, "out")
+	//cwd := filepath.Dir(fetfile)
+	//odir := filepath.Join(cwd, "out")
+	odir := filepath.Join(dir_n, "out")
 	os.RemoveAll(odir)
 	logfile := filepath.Join(odir, "logs", "max_placed_activities.txt")
-
-	room_indexes := map[string]timetable.RoomIndex{}
-	for i, rnode := range tt_data.SharedData.Db.Rooms {
-		room_indexes[rnode.GetTag()] = timetable.RoomIndex(i)
-	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	// Note that it should be safe to call `cancel` multiple times.
 	fet_data := &fetTtData{
 		finished:   false,
-		room2index: room_indexes,
-		activities: len(shared_data.Activities),
+		activities: int(constraint_data.NActivities),
 		ifile:      fetfile,
-		fetxml:     xmlitem,
-		workingdir: cwd,
+		fetxml:     fet_xml,
+		//workingdir: cwd,
+		workingdir: dir_n,
 		odir:       odir,
 		logfile:    logfile,
 		cancel:     cancel,
 	}
-	tt_data.BackEndData = fet_data
+	instance.BackEndData = fet_data
 
 	params := []string{
 		"--inputfile=" + fetfile,
@@ -184,7 +160,6 @@ var re *regexp.Regexp = regexp.MustCompile(pattern)
 
 type fetTtData struct {
 	activities int // total number of activities to place
-	room2index map[string]timetable.RoomIndex
 	ifile      string
 	fetxml     []byte
 	workingdir string

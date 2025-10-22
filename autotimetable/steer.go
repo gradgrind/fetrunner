@@ -144,8 +144,8 @@ func StartGeneration(cdata *ConstraintData, TIMEOUT int) {
 	// should run until it times out, at which point any other active
 	// instances should be stopped and the "best" solution at this point
 	// chosen.
-	enabled := make([]bool, cdata.Constraints)
-	for i := range cdata.Constraints {
+	enabled := make([]bool, cdata.NConstraints)
+	for i := range cdata.NConstraints {
 		enabled[i] = true
 	}
 	full_instance := &TtInstance{
@@ -158,7 +158,7 @@ func StartGeneration(cdata *ConstraintData, TIMEOUT int) {
 
 	// Instance without soft constraints (if any, otherwise same as full
 	// instance) – enable only the hard constraints.
-	enabled = make([]bool, cdata.Constraints)
+	enabled = make([]bool, cdata.NConstraints)
 	for _, ilist := range cdata.HardConstraintMap {
 		for _, i := range ilist {
 			enabled[i] = true
@@ -174,7 +174,7 @@ func StartGeneration(cdata *ConstraintData, TIMEOUT int) {
 
 	// Unconstrained instance
 	CYCLE_TIMEOUT = STAGE_TIMEOUT_MIN
-	enabled = make([]bool, cdata.Constraints)
+	enabled = make([]bool, cdata.NConstraints)
 	null_instance := &TtInstance{
 		Tag:               "ONLY_BLOCKED_SLOTS",
 		Timeout:           CYCLE_TIMEOUT,

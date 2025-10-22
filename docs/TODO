@@ -1,0 +1,11 @@
+# TODO
+
+## Sort the constraint types
+
+This would make it possible to determine the initial order in which the constraints are tested. One possibility would be to allow a priority to be set for a named constraint type. Constraint types with higher priority would come earlier in the list. Positive and negative numbers could be accepted, with zero as default.
+
+## Origin comments for constraints
+
+If it were possible to assign a comment to each constraint, this could be used to identify the constraint in relation to the context in which it arose. For a straightforward FET filter this would not be necessary (or it might already be in the "Comments" field).
+
+It would be possible to maintain these comments separately from the back-end data, and this would allow duplication to be avoided. However, there can also be advantages to placing these comments in the back-end data: for example, the directness might well simplify the code. In the case of FET, the "Comments" fields are the obvious place.

@@ -3,6 +3,9 @@ package autotimetable
 // Structures and global variables used in connection with automation of the
 // timetable generation.
 
+type ActivityIndex int
+type RoomIndex int
+
 var Ticks int // global time ticker
 // The instance tick counter is in `TtInstance` because it may be needed
 // by the back-end.
@@ -11,14 +14,18 @@ var constraint_data *ConstraintData // the original data
 type ConstraintType string
 type ConstraintIndex int
 type ConstraintData struct {
-	InputData         any
-	Constraints       ConstraintIndex
+	InputData         any // Managed by back-end
+	NActivities       ActivityIndex
+	NConstraints      ConstraintIndex
 	ConstraintTypes   []ConstraintType // ordered list of constraint types
 	HardConstraintMap map[ConstraintType][]ConstraintIndex
 	SoftConstraintMap map[ConstraintType][]ConstraintIndex
+
+	// Read input data:
+	Read func(*ConstraintData, string) error
 	// Return a string representation of the given constraint:
 	ConstraintString func(*ConstraintData, ConstraintIndex) string
-	PrepareRun       func(*ConstraintData, *TtInstance)
+	PrepareRun       func(*ConstraintData, []bool, any)
 }
 
 type TtInstance struct {
@@ -46,9 +53,6 @@ type TtInstance struct {
 	Progress    int    // percent
 	Message     string // "" or error message
 }
-
-type ActivityIndex int
-type RoomIndex int
 
 type TtBackend struct {
 	New     func(*TtInstance)

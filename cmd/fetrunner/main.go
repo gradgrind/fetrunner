@@ -51,7 +51,7 @@ package main
 import (
 	"fetrunner/autotimetable"
 	"fetrunner/base"
-	"fetrunner/fetfilter"
+	"fetrunner/fet"
 	"flag"
 	"log"
 	"os"
@@ -88,7 +88,7 @@ func main() {
 		log.Fatalf("*ERROR* Couldn't resolve file path: %s\n", args[0])
 	}
 
-	// This allows for an option to select different generator back-ends
+	cdata := fet.SetInputFet()
 	autotimetable.FetSetup()
 
 	stempath := strings.TrimSuffix(abspath, filepath.Ext(abspath))
@@ -104,13 +104,13 @@ func main() {
 	logpath := filepath.Join(workingdir, "run.log")
 	base.OpenLog(logpath)
 
-	cdata, err := fetfilter.ReadFet(abspath)
+	err = cdata.Read(cdata, abspath)
 	if err != nil {
 		panic(err)
 	}
 	//_ = x
 	//TODO-- This is just for testing FET backend
-	fetfilter.WriteFET(stempath+"_mod.fet", cdata)
+	fet.WriteFET(stempath+"_mod.fet", cdata)
 
 	_ = timeout
 	autotimetable.StartGeneration(cdata, *timeout)
