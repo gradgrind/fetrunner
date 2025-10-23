@@ -92,7 +92,6 @@ func main() {
 	}
 
 	cdata := fet.SetInputFet()
-	bdata.FetSetup()
 
 	stempath := strings.TrimSuffix(abspath, filepath.Ext(abspath))
 
@@ -107,15 +106,17 @@ func main() {
 	logpath := filepath.Join(workingdir, "run.log")
 	base.OpenLog(logpath)
 
-	err = cdata.Read(cdata, abspath)
+	var source autotimetable.TtSource
+	source, err = fet.FetRead(cdata, abspath)
 	if err != nil {
 		panic(err)
 	}
 	//_ = x
 	//TODO-- This is just for testing FET backend
-	fet.WriteFET(stempath+"_mod.fet", cdata)
+	source.(*fet.FetDoc).WriteFET(stempath + "_mod.fet")
 
-	_ = timeout
+	autotimetable.RunBackend = fet.RunFet
+
 	bdata.StartGeneration(cdata, *timeout)
 
 	//db.SaveDb(stempath + "_DB2.json")

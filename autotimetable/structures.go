@@ -8,6 +8,9 @@ type RoomIndex = int
 
 type ConstraintType string
 type ConstraintIndex int
+
+// The `BasicData` structure is set up once for the handling of a set of
+// timetable data (based on a source file, for example).
 type BasicData struct {
 	Parameters struct {
 		// The behaviour of the TESTING flag depends on the back-end. It
@@ -30,7 +33,8 @@ type BasicData struct {
 		LAST_TIME_1 int
 	}
 
-	Source            any // managed by the particular "source" back-end
+	Source TtSource
+
 	NActivities       ActivityIndex
 	NConstraints      ConstraintIndex
 	ConstraintTypes   []ConstraintType // ordered list of constraint types
@@ -38,15 +42,6 @@ type BasicData struct {
 	SoftConstraintMap map[ConstraintType][]ConstraintIndex
 	Resources         []Resource
 
-	// Read "source":
-	Read func(*BasicData, string) error
-	// Return a string representation of the given constraint:
-	ConstraintString func(*BasicData, ConstraintIndex) string
-	// Prepare the "source" for a run with a set of enabled constraints:
-	PrepareRun func(*BasicData, []bool, any)
-
-	// Run-time data
-	RunTimeBackend *TtBackend // handlers for run-time back-end
 	// `WorkingDir` provides the path to a working directory which can be used
 	// freely during processing. It may or may not already exist: existing
 	// contents need not be preserved during processing.
@@ -57,6 +52,15 @@ type BasicData struct {
 	InstanceCounter int
 	LastResult      *Result
 	CYCLE_TIMEOUT   int
+}
+
+// e.g. func ReadSource() *BasicData {}
+
+type TtSource interface {
+	// Return a string representation of the given constraint:
+	ConstraintString(ConstraintIndex) string
+	// Prepare the "source" for a run with a set of enabled constraints:
+	PrepareRun([]bool, any)
 }
 
 type ResourceType int
@@ -90,27 +94,32 @@ type TtInstance struct {
 	Constraints    []ConstraintIndex
 
 	// Run time ...
+	Backend         TtBackend
 	Ticks           int  // run time of this instance
 	Stopped         bool // `abort_instance()` has been called on this instance
 	ProcessingState int  // -1: queued, 0: running, 1: success, 2: failure,
 	// there is also 3: cancelled
 	// The following are set by the back-end:
-	BackEndData any
+
+	//TODO: -> the back-end?
 	InstanceDir string // working space for this instance
-	RunState    int    // set by back-end
-	Progress    int    // percent
-	LastTime    int    // last (instance) time at which `Progress` changed
-	Message     string // "" or error message
+
+	RunState int    // set by back-end
+	Progress int    // percent
+	LastTime int    // last (instance) time at which `Progress` changed
+	Message  string // "" or error message
 }
 
-type TtBackend struct {
-	New     func(*TtInstance)
-	Run     func(*BasicData, *TtInstance)
-	Abort   func(*TtInstance)
-	Tick    func(*TtInstance)
-	Clear   func(*TtInstance)
-	Tidy    func(string)
-	Results func(*BasicData, *TtInstance) []ActivityPlacement
+var RunBackend func(basic_data *BasicData, instance *TtInstance) TtBackend
+
+type TtBackend interface {
+	//New(*TtInstance)
+	//Run(*BasicData, *TtInstance)
+	Abort()
+	Tick()
+	Clear()
+	Tidy(string)
+	Results() []ActivityPlacement
 }
 
 // This structure is used to return the placement results from the

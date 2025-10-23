@@ -39,7 +39,7 @@ func (rq *RunQueue) update_instances() {
 		if instance.RunState == 0 {
 			instance.Ticks++
 			// Among other things, update the state:
-			rq.BasicData.RunTimeBackend.Tick(instance)
+			instance.Backend.Tick(instance)
 		} else if instance.ProcessingState < 2 {
 			// This should only be possible after the call to
 			// the back-end tick method.
@@ -101,7 +101,7 @@ func (rq *RunQueue) update_queue() int {
 		if instance.RunState != 0 {
 			delete(rq.Active, instance)
 			if !rq.BasicData.Parameters.DEBUG {
-				rq.BasicData.RunTimeBackend.Clear(instance)
+				instance.Backend.Clear(instance)
 			}
 			continue
 		}

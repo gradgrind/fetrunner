@@ -12,20 +12,13 @@ type BasicData = autotimetable.BasicData
 type ConstraintType = autotimetable.ConstraintType
 type ActivityIndex = autotimetable.ActivityIndex
 
-func SetInputFet() *BasicData {
-	return &BasicData{
-		Read:             read_fet,
-		ConstraintString: constraint_string,
-		PrepareRun:       compose_fet,
-	}
-}
-
 // In FET there are "time" constraints and "space" constraints. The
 // `ConstraintData` structure lumps them all together, so there is just
 // one constraint list in `FetDoc`. However, the "time" constraints are
 // placed first in the list, so by recording the start index of the "space"
 // constraints (`NTimeConstraints`) they can be differentiated.
 type FetDoc struct {
+	BasicData        *BasicData
 	Doc              *etree.Document
 	Constraints      []*etree.Element // list of actual constraint elements
 	NTimeConstraints ConstraintIndex
@@ -36,7 +29,7 @@ type FetDoc struct {
 	Necessary []ConstraintIndex
 }
 
-func read_fet(cdata *BasicData, fetpath string) error {
+func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(fetpath); err != nil {
 		panic(err)
@@ -117,14 +110,13 @@ func read_fet(cdata *BasicData, fetpath string) error {
 		NTimeConstraints: ConstraintIndex(n_time_constraints),
 	}
 
-	cdata.Source = fetdoc
 	cdata.NConstraints = ConstraintIndex(len(constraints))
 	cdata.ConstraintTypes = sort_constraint_types(constraint_types)
 	cdata.HardConstraintMap = hard_constraint_map
 	cdata.SoftConstraintMap = soft_constraint_map
 
 	//doc.Indent(2)
-	return nil
+	return fetdoc, nil
 }
 
 func get_resources(root *etree.Element) []autotimetable.Resource {
@@ -148,11 +140,7 @@ func get_resources(root *etree.Element) []autotimetable.Resource {
 }
 
 // Get a string representation of the given constraint.
-func constraint_string(cdata *BasicData, cix ConstraintIndex) string {
-	fetdoc, ok := cdata.Source.(*FetDoc)
-	if !ok {
-		panic("Bug, BackEndData not FetDoc")
-	}
+func (fetdoc *FetDoc) ConstraintString(cix ConstraintIndex) string {
 	e := fetdoc.Constraints[cix]
 	d := etree.NewDocument()
 	d.SetRoot(e)
@@ -165,11 +153,7 @@ func constraint_string(cdata *BasicData, cix ConstraintIndex) string {
 	return s
 }
 
-func WriteFET(fetfile string, cdata *BasicData) {
-	fetdoc, ok := cdata.Source.(*FetDoc)
-	if !ok {
-		panic("Bug, BackEndData not FetDoc")
-	}
+func (fetdoc *FetDoc) WriteFET(fetfile string) {
 	err := fetdoc.Doc.WriteToFile(fetfile)
 	if err != nil {
 		panic(err)
@@ -182,11 +166,7 @@ func WriteFET(fetfile string, cdata *BasicData) {
 // is not thread-safe!
 // The `xmlp` argument is a pointer to a byte slice, to receive the
 // XML FET-file.
-func compose_fet(cdata *BasicData, enabled []bool, xmlp any) {
-	fetdoc, ok := cdata.Source.(*FetDoc)
-	if !ok {
-		panic("Bug, BackEndData not FetDoc")
-	}
+func (fetdoc *FetDoc) PrepareRun(enabled []bool, xmlp any) {
 	doc := fetdoc.Doc
 	root := doc.Root()
 	et := root.SelectElement("Time_Constraints_List")

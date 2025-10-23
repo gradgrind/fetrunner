@@ -90,7 +90,7 @@ problem areas without long processing delays. For later phases longer times
 may be necessary (depending on the difficulty of the data).
 */
 
-func (basic_data *BasicData) StartGeneration(cdata *BasicData, TIMEOUT int) {
+func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 	basic_data.LastResult = nil
 
 	// Catch termination signal
@@ -113,8 +113,8 @@ func (basic_data *BasicData) StartGeneration(cdata *BasicData, TIMEOUT int) {
 	// should run until it times out, at which point any other active
 	// instances should be stopped and the "best" solution at this point
 	// chosen.
-	enabled := make([]bool, cdata.NConstraints)
-	for i := range cdata.NConstraints {
+	enabled := make([]bool, basic_data.NConstraints)
+	for i := range basic_data.NConstraints {
 		enabled[i] = true
 	}
 	full_instance := &TtInstance{
@@ -127,8 +127,8 @@ func (basic_data *BasicData) StartGeneration(cdata *BasicData, TIMEOUT int) {
 
 	// Instance without soft constraints (if any, otherwise same as full
 	// instance) – enable only the hard constraints.
-	enabled = make([]bool, cdata.NConstraints)
-	for _, ilist := range cdata.HardConstraintMap {
+	enabled = make([]bool, basic_data.NConstraints)
+	for _, ilist := range basic_data.HardConstraintMap {
 		for _, i := range ilist {
 			enabled[i] = true
 		}
@@ -143,7 +143,7 @@ func (basic_data *BasicData) StartGeneration(cdata *BasicData, TIMEOUT int) {
 
 	// Unconstrained instance
 	basic_data.CYCLE_TIMEOUT = basic_data.Parameters.STAGE_TIMEOUT_MIN
-	enabled = make([]bool, cdata.NConstraints)
+	enabled = make([]bool, basic_data.NConstraints)
 	null_instance := &TtInstance{
 		Tag:               "ONLY_BLOCKED_SLOTS",
 		Timeout:           basic_data.CYCLE_TIMEOUT,
@@ -179,7 +179,7 @@ func (basic_data *BasicData) StartGeneration(cdata *BasicData, TIMEOUT int) {
 			count := 0
 			for instance := range runqueue.Active {
 				if instance.RunState == 0 {
-					basic_data.RunTimeBackend.Tick(instance)
+					instance.Backend.Tick(instance)
 					count++
 					basic_data.abort_instance(instance)
 				}
@@ -191,7 +191,8 @@ func (basic_data *BasicData) StartGeneration(cdata *BasicData, TIMEOUT int) {
 		}
 		if !basic_data.Parameters.DEBUG {
 			// Remove all remaining temporary files
-			basic_data.RunTimeBackend.Tidy(basic_data.WorkingDir)
+			//TODO: This call is a bit ugh!
+			current_instance.Backend.Tidy(basic_data.WorkingDir)
 		}
 		if basic_data.LastResult != nil {
 			// Save result of last successful instance.
@@ -497,7 +498,7 @@ tickloop:
 
 	hnn := 0
 	hnall := 0
-	for c, clist := range cdata.HardConstraintMap {
+	for c, clist := range basic_data.HardConstraintMap {
 		n := 0
 		for _, cix := range clist {
 			if result.ConstraintEnabled[cix] {
@@ -512,7 +513,7 @@ tickloop:
 	}
 	snn := 0
 	snall := 0
-	for c, clist := range cdata.SoftConstraintMap {
+	for c, clist := range basic_data.SoftConstraintMap {
 		n := 0
 		for _, cix := range clist {
 			if result.ConstraintEnabled[cix] {
@@ -534,7 +535,7 @@ tickloop:
 
 func (basic_data *BasicData) abort_instance(instance *TtInstance) {
 	if !instance.Stopped {
-		basic_data.RunTimeBackend.Abort(instance)
+		instance.Backend.Abort()
 		instance.Stopped = true
 	}
 }

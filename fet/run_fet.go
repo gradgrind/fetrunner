@@ -1,9 +1,10 @@
-package autotimetable
+package fet
 
 import (
 	"bufio"
 	"context"
 	"encoding/xml"
+	"fetrunner/autotimetable"
 	"fetrunner/base"
 	"fmt"
 	"io"
@@ -15,37 +16,49 @@ import (
 	"strings"
 )
 
-func (basic_data *BasicData) FetSetup() {
-	basic_data.RunTimeBackend = &TtBackend{
-		//New: ?
-		Run:     runFet,
-		Abort:   fetRunAbort,
-		Tick:    fetTick,
-		Clear:   fetRunClear,
-		Tidy:    fetRunTidy,
-		Results: fetResults,
+type FetTtData struct {
+	basic_data *autotimetable.BasicData
+	instance   *autotimetable.TtInstance
+	ifile      string
+	fetxml     []byte
+	workingdir string
+	odir       string
+	logfile    string
+	rdfile     *os.File // this must be closed when the subprocess finishes
+	reader     *bufio.Reader
+	cancel     func()
+	finished   bool
+}
+
+func NewFetBackend(
+	basic_data *autotimetable.BasicData,
+	instance *autotimetable.TtInstance,
+) *FetTtData {
+	return &FetTtData{
+		basic_data: basic_data,
+		instance:   instance,
 	}
 }
 
-func fetRunAbort(instance *TtInstance) {
-	instance.BackEndData.(*FetTtData).cancel()
+func (data *FetTtData) Abort() {
+	data.cancel()
 }
 
-func fetRunTidy(workingdir string) {
+func (data *FetTtData) Tidy(workingdir string) {
 	os.RemoveAll(filepath.Join(workingdir, "tmp"))
 }
 
-func fetRunClear(instance *TtInstance) {
-	fttd, ok := instance.BackEndData.(*FetTtData)
-	if ok {
-		//base.Message.Printf("### Remove %s\n", fttd.workingdir)
-		os.RemoveAll(fttd.workingdir)
-		//} else {
-		//	base.Message.Printf("### No TtData: %s\n", instance.Tag)
-	}
+func (data *FetTtData) Clear() {
+	//base.Message.Printf("### Remove %s\n", fttd.workingdir)
+	os.RemoveAll(data.workingdir)
+	//} else {
+	//	base.Message.Printf("### No TtData: %s\n", instance.Tag)
 }
 
-func runFet(basic_data *BasicData, instance *TtInstance) {
+func RunFet(
+	basic_data *autotimetable.BasicData,
+	instance *autotimetable.TtInstance,
+) autotimetable.TtBackend {
 	fname := instance.Tag
 	dir_n := filepath.Join(basic_data.WorkingDir, "tmp", fname)
 	err := os.MkdirAll(dir_n, 0755)
@@ -58,8 +71,7 @@ func runFet(basic_data *BasicData, instance *TtInstance) {
 
 	// Construct the FET-file
 	var fet_xml []byte
-	basic_data.PrepareRun(
-		basic_data, instance.ConstraintEnabled, &fet_xml)
+	basic_data.Source.PrepareRun(instance.ConstraintEnabled, &fet_xml)
 	// Write FET file
 	err = os.WriteFile(fetfile, fet_xml, 0644)
 	if err != nil {
@@ -84,17 +96,15 @@ func runFet(basic_data *BasicData, instance *TtInstance) {
 	ctx, cancel := context.WithCancel(context.Background())
 	// Note that it should be safe to call `cancel` multiple times.
 	fet_data := &FetTtData{
-		finished:   false,
-		activities: int(basic_data.NActivities),
-		ifile:      fetfile,
-		fetxml:     fet_xml,
+		finished: false,
+		ifile:    fetfile,
+		fetxml:   fet_xml,
 		//workingdir: cwd,
 		workingdir: dir_n,
 		odir:       odir,
 		logfile:    logfile,
 		cancel:     cancel,
 	}
-	instance.BackEndData = fet_data
 
 	params := []string{
 		"--inputfile=" + fetfile,
@@ -130,6 +140,7 @@ func runFet(basic_data *BasicData, instance *TtInstance) {
 	)
 
 	go run(fet_data, runCmd)
+	return fet_data
 }
 
 // The executable, `fet-cl`, places any messages in the `log` directory, as
@@ -154,23 +165,10 @@ func run(fet_data *FetTtData, cmd *exec.Cmd) {
 var pattern = "time (.*), FET reached ([0-9]+)"
 var re *regexp.Regexp = regexp.MustCompile(pattern)
 
-type FetTtData struct {
-	activities int // total number of activities to place
-	ifile      string
-	fetxml     []byte
-	workingdir string
-	odir       string
-	logfile    string
-	rdfile     *os.File // this must be closed when the subprocess finishes
-	reader     *bufio.Reader
-	cancel     func()
-	finished   bool
-}
-
-// `fetTick` runs in the "tick" loop. Rather like a "tail" function it reads
+// `Tick` runs in the "tick" loop. Rather like a "tail" function it reads
 // the FET progress from its log file, by simply polling for new lines.
-func fetTick(instance *TtInstance) {
-	data := *instance.BackEndData.(*FetTtData)
+func (data *FetTtData) Tick() {
+	instance := data.instance
 	if data.reader == nil {
 		// Await the existence of the log file
 		file, err := os.Open(data.logfile)
@@ -192,7 +190,8 @@ func fetTick(instance *TtInstance) {
 				if l != nil {
 					count, err := strconv.Atoi(string(l[2]))
 					if err == nil {
-						percent := count * 100 / data.activities
+						percent := count * 100 /
+							int(data.basic_data.NActivities)
 						if percent > instance.Progress {
 							instance.Progress = percent
 							instance.LastTime = instance.Ticks
@@ -226,12 +225,9 @@ exit:
 }
 
 // Gather the results of the given run.
-func fetResults(
-	basic_data *BasicData,
-	instance *TtInstance,
-) []ActivityPlacement {
-	data := *instance.BackEndData.(*FetTtData)
-
+func (data *FetTtData) Results() []autotimetable.ActivityPlacement {
+	basic_data := data.basic_data
+	instance := data.instance
 	// Write FET file at top level of working directory.
 	fetfile := filepath.Join(basic_data.WorkingDir, "Result.fet")
 	err := os.WriteFile(fetfile, data.fetxml, 0644)
@@ -260,13 +256,13 @@ func fetResults(
 		return nil
 	}
 
-	room2index := map[string]RoomIndex{}
+	room2index := map[string]autotimetable.RoomIndex{}
 	for _, r := range basic_data.Resources {
-		if r.Type == RoomResource {
+		if r.Type == autotimetable.RoomResource {
 			room2index[r.Tag] = r.Index
 		}
 	}
-	activities := make([]ActivityPlacement, len(v.Activities))
+	activities := make([]autotimetable.ActivityPlacement, len(v.Activities))
 	for i, a := range v.Activities {
 		rooms := []int{}
 		if len(a.Real_Room) != 0 {
@@ -284,7 +280,7 @@ func fetResults(
 			}
 			rooms = append(rooms, ix)
 		}
-		activities[i] = ActivityPlacement{
+		activities[i] = autotimetable.ActivityPlacement{
 			Id:    a.Id,
 			Day:   a.Day,
 			Hour:  a.Hour,
