@@ -6,6 +6,7 @@ import (
 )
 
 type RunQueue struct {
+	BasicData  *BasicData
 	Queue      []*TtInstance
 	Active     map[*TtInstance]struct{}
 	MaxRunning int
@@ -32,16 +33,16 @@ func (rq *RunQueue) update_instances() {
 	for instance := range rq.Active {
 		if instance.RunState != 0 && instance.ProcessingState < 2 {
 			// This should only be possible after the call to
-			// `timetable.BACKEND.Tick` below.
+			// the back-end tick method below.
 			panic(fmt.Sprintf("Bug, State = %d", instance.RunState))
 		}
 		if instance.RunState == 0 {
 			instance.Ticks++
 			// Among other things, update the state:
-			Backend.Tick(instance)
+			rq.BasicData.RunTimeBackend.Tick(instance)
 		} else if instance.ProcessingState < 2 {
 			// This should only be possible after the call to
-			// `timetable.BACKEND.Tick`.
+			// the back-end tick method.
 			panic(fmt.Sprintf("Bug, State = %d", instance.RunState))
 		}
 		if instance.ProcessingState == 3 {
@@ -57,10 +58,10 @@ func (rq *RunQueue) update_instances() {
 			t := instance.Timeout
 			if t == 0 {
 				// Check for lack of progress when there is no timeout
-				if instance.LastTime < LAST_TIME_0 &&
-					instance.Ticks >= LAST_TIME_1 {
+				if instance.LastTime < rq.BasicData.Parameters.LAST_TIME_0 &&
+					instance.Ticks >= rq.BasicData.Parameters.LAST_TIME_1 {
 					// Stop instance
-					abort_instance(instance)
+					rq.BasicData.abort_instance(instance)
 				}
 				continue
 			}
@@ -72,19 +73,22 @@ func (rq *RunQueue) update_instances() {
 					continue
 				}
 				base.Message.Printf("(TODO) [%d] Trap %s @ %d (%d): %d\n",
-					Ticks, instance.Tag, instance.Ticks, instance.Progress,
+					rq.BasicData.Ticks,
+					instance.Tag,
+					instance.Ticks,
+					instance.Progress,
 					len(instance.Constraints))
-				abort_instance(instance)
+				rq.BasicData.abort_instance(instance)
 			}
 
 		case 1: // completed successfully
 			base.Message.Printf("(TODO) [%d] <<+ %s @ %d\n",
-				Ticks, instance.Tag, instance.Ticks)
+				rq.BasicData.Ticks, instance.Tag, instance.Ticks)
 			instance.ProcessingState = 1
 
 		default: // completed unsuccessfully
 			base.Message.Printf("(TODO) [%d] <<- %s @ %d\n",
-				Ticks, instance.Tag, instance.Ticks)
+				rq.BasicData.Ticks, instance.Tag, instance.Ticks)
 			instance.ProcessingState = 2
 		}
 	}
@@ -96,8 +100,8 @@ func (rq *RunQueue) update_queue() int {
 	for instance := range rq.Active {
 		if instance.RunState != 0 {
 			delete(rq.Active, instance)
-			if !DEBUG {
-				Backend.Clear(instance)
+			if !rq.BasicData.Parameters.DEBUG {
+				rq.BasicData.RunTimeBackend.Clear(instance)
 			}
 			continue
 		}
@@ -123,8 +127,8 @@ func (rq *RunQueue) update_queue() int {
 		}
 
 		base.Message.Printf("(TODO) [%d] >> %s {%d}\n",
-			Ticks, instance.Tag, instance.Timeout)
-		Backend.Run(instance, TESTING)
+			rq.BasicData.Ticks, instance.Tag, instance.Timeout)
+		rq.BasicData.RunTimeBackend.Run(rq.BasicData, instance)
 	}
 	return len(rq.Active)
 }

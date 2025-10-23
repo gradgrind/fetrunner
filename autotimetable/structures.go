@@ -6,15 +6,31 @@ package autotimetable
 type ActivityIndex int
 type RoomIndex = int
 
-var Ticks int // global time ticker
-// The instance tick counter is in `TtInstance` because it may be needed
-// by the back-end.
-var constraint_data *ConstraintData // the original data
-
 type ConstraintType string
 type ConstraintIndex int
-type ConstraintData struct {
-	InputData         any // Managed by back-end
+type BasicData struct {
+	Parameters struct {
+		// The behaviour of the TESTING flag depends on the back-end. It
+		// might, for example, use fixed seeds for random number generators
+		// so as to produce reproduceable runs.
+		TESTING bool
+		// This approach relies on parallel processing. If there are too few
+		// real processors it will be inefficient:
+		MAXPROCESSES int
+
+		NEW_BASE_TIMEOUT_FACTOR  int // factor * 10
+		STAGE_TIMEOUT_MIN        int
+		NEW_STAGE_TIMEOUT_FACTOR int // factor * 10
+
+		DEBUG bool
+
+		// Tick count limits for testing whether an instance with no timeout
+		// has got stuck. See `(*RunQueue).update_instances()` method.
+		LAST_TIME_0 int
+		LAST_TIME_1 int
+	}
+
+	Source            any // managed by the particular "source" back-end
 	NActivities       ActivityIndex
 	NConstraints      ConstraintIndex
 	ConstraintTypes   []ConstraintType // ordered list of constraint types
@@ -22,11 +38,25 @@ type ConstraintData struct {
 	SoftConstraintMap map[ConstraintType][]ConstraintIndex
 	Resources         []Resource
 
-	// Read input data:
-	Read func(*ConstraintData, string) error
+	// Read "source":
+	Read func(*BasicData, string) error
 	// Return a string representation of the given constraint:
-	ConstraintString func(*ConstraintData, ConstraintIndex) string
-	PrepareRun       func(*ConstraintData, []bool, any)
+	ConstraintString func(*BasicData, ConstraintIndex) string
+	// Prepare the "source" for a run with a set of enabled constraints:
+	PrepareRun func(*BasicData, []bool, any)
+
+	// Run-time data
+	RunTimeBackend *TtBackend // handlers for run-time back-end
+	// `WorkingDir` provides the path to a working directory which can be used
+	// freely during processing. It may or may not already exist: existing
+	// contents need not be preserved during processing.
+	WorkingDir string
+	Ticks      int // "global" time ticker
+	// The instance tick counter is in `TtInstance` because it may be needed
+	// by the run-time back-end.
+	InstanceCounter int
+	LastResult      *Result
+	CYCLE_TIMEOUT   int
 }
 
 type ResourceType int
@@ -75,12 +105,12 @@ type TtInstance struct {
 
 type TtBackend struct {
 	New     func(*TtInstance)
-	Run     func(*TtInstance, bool)
+	Run     func(*BasicData, *TtInstance)
 	Abort   func(*TtInstance)
 	Tick    func(*TtInstance)
 	Clear   func(*TtInstance)
 	Tidy    func(string)
-	Results func(*TtInstance) []ActivityPlacement
+	Results func(*BasicData, *TtInstance) []ActivityPlacement
 }
 
 // This structure is used to return the placement results from the
@@ -91,10 +121,3 @@ type ActivityPlacement struct {
 	Hour  int
 	Rooms []RoomIndex
 }
-
-var Backend *TtBackend
-
-// `WorkingDir` provides the path to a working directory which can be used
-// freely during processing. It may or may not already exist: existing
-// contents need not be preserved during processing.
-var WorkingDir string

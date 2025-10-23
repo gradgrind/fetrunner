@@ -20,18 +20,18 @@ type Result struct {
 
 // Get the result of the current instance as a `Result` structure.
 // Save as JSON if debugging.
-func new_current_instance(instance *TtInstance) {
+func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
 	base.Message.Printf("+++ %s @ %d\n",
 		instance.Tag, instance.Ticks)
 
 	// Read placements
-	alist := Backend.Results(instance)
+	alist := basic_data.RunTimeBackend.Results(basic_data, instance)
 
 	// The discarded hard constraints ...
 	hnall := 0 // count all hard constraints
 	// Gather constraint indexes:
 	hunfulfilled := map[ConstraintType][]ConstraintIndex{}
-	for ctype, clist := range constraint_data.HardConstraintMap {
+	for ctype, clist := range basic_data.HardConstraintMap {
 		ulist := []ConstraintIndex{}
 		for _, i := range clist {
 			if !instance.ConstraintEnabled[i] {
@@ -45,7 +45,7 @@ func new_current_instance(instance *TtInstance) {
 	snall := 0 // count all soft constraints
 	// Gather constraint indexes:
 	sunfulfilled := map[ConstraintType][]ConstraintIndex{}
-	for ctype, clist := range constraint_data.SoftConstraintMap {
+	for ctype, clist := range basic_data.SoftConstraintMap {
 		ulist := []ConstraintIndex{}
 		for _, i := range clist {
 			if !instance.ConstraintEnabled[i] {
@@ -56,7 +56,7 @@ func new_current_instance(instance *TtInstance) {
 		snall += len(clist)
 	}
 
-	LastResult = &Result{
+	basic_data.LastResult = &Result{
 		Time:                       instance.Ticks,
 		Placements:                 alist,
 		UnfulfilledHardConstraints: hunfulfilled,
@@ -65,13 +65,13 @@ func new_current_instance(instance *TtInstance) {
 		TotalSoftConstraints:       snall,
 	}
 
-	if DEBUG {
+	if basic_data.Parameters.DEBUG {
 		//b, err := json.Marshal(LastResult)
-		b, err := json.MarshalIndent(LastResult, "", "  ")
+		b, err := json.MarshalIndent(basic_data.LastResult, "", "  ")
 		if err != nil {
 			panic(err)
 		}
-		fpath := filepath.Join(WorkingDir, instance.Tag+".json")
+		fpath := filepath.Join(basic_data.WorkingDir, instance.Tag+".json")
 		f, err := os.Create(fpath)
 		if err != nil {
 			panic("Couldn't open output file: " + fpath)

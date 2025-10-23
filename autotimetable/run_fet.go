@@ -15,8 +15,8 @@ import (
 	"strings"
 )
 
-func FetSetup() {
-	Backend = &TtBackend{
+func (basic_data *BasicData) FetSetup() {
+	basic_data.RunTimeBackend = &TtBackend{
 		//New: ?
 		Run:     runFet,
 		Abort:   fetRunAbort,
@@ -28,7 +28,7 @@ func FetSetup() {
 }
 
 func fetRunAbort(instance *TtInstance) {
-	instance.BackEndData.(*fetTtData).cancel()
+	instance.BackEndData.(*FetTtData).cancel()
 }
 
 func fetRunTidy(workingdir string) {
@@ -36,7 +36,7 @@ func fetRunTidy(workingdir string) {
 }
 
 func fetRunClear(instance *TtInstance) {
-	fttd, ok := instance.BackEndData.(*fetTtData)
+	fttd, ok := instance.BackEndData.(*FetTtData)
 	if ok {
 		//base.Message.Printf("### Remove %s\n", fttd.workingdir)
 		os.RemoveAll(fttd.workingdir)
@@ -45,9 +45,9 @@ func fetRunClear(instance *TtInstance) {
 	}
 }
 
-func runFet(instance *TtInstance, testing bool) {
+func runFet(basic_data *BasicData, instance *TtInstance) {
 	fname := instance.Tag
-	dir_n := filepath.Join(WorkingDir, "tmp", fname)
+	dir_n := filepath.Join(basic_data.WorkingDir, "tmp", fname)
 	err := os.MkdirAll(dir_n, 0755)
 	if err != nil {
 		panic(err)
@@ -58,8 +58,8 @@ func runFet(instance *TtInstance, testing bool) {
 
 	// Construct the FET-file
 	var fet_xml []byte
-	constraint_data.PrepareRun(
-		constraint_data, instance.ConstraintEnabled, &fet_xml)
+	basic_data.PrepareRun(
+		basic_data, instance.ConstraintEnabled, &fet_xml)
 	// Write FET file
 	err = os.WriteFile(fetfile, fet_xml, 0644)
 	if err != nil {
@@ -67,9 +67,9 @@ func runFet(instance *TtInstance, testing bool) {
 	}
 	if instance.Tag == "COMPLETE" {
 		// Save fet file at top level of working directory.
-		cfile := filepath.Join(WorkingDir,
+		cfile := filepath.Join(basic_data.WorkingDir,
 			filepath.Base(strings.TrimSuffix(
-				WorkingDir, "_fet")+".fet"))
+				basic_data.WorkingDir, "_fet")+".fet"))
 		err = os.WriteFile(cfile, fet_xml, 0644)
 		if err != nil {
 			panic("Couldn't write fet file to: " + cfile)
@@ -83,9 +83,9 @@ func runFet(instance *TtInstance, testing bool) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	// Note that it should be safe to call `cancel` multiple times.
-	fet_data := &fetTtData{
+	fet_data := &FetTtData{
 		finished:   false,
-		activities: int(constraint_data.NActivities),
+		activities: int(basic_data.NActivities),
 		ifile:      fetfile,
 		fetxml:     fet_xml,
 		//workingdir: cwd,
@@ -114,7 +114,7 @@ func runFet(instance *TtInstance, testing bool) {
 		"--outputdir=" + odir,
 	}
 
-	if testing {
+	if basic_data.Parameters.TESTING {
 		params = append(params,
 			"--randomseeds10=10",
 			"--randomseeds11=11",
@@ -146,7 +146,7 @@ func runFet(instance *TtInstance, testing bool) {
 
 // `run` is a goroutine. The last item to be changed must be `fet_data.state`,
 // to avoid potential race conditions.
-func run(fet_data *fetTtData, cmd *exec.Cmd) {
+func run(fet_data *FetTtData, cmd *exec.Cmd) {
 	cmd.CombinedOutput()
 	fet_data.finished = true
 }
@@ -154,7 +154,7 @@ func run(fet_data *fetTtData, cmd *exec.Cmd) {
 var pattern = "time (.*), FET reached ([0-9]+)"
 var re *regexp.Regexp = regexp.MustCompile(pattern)
 
-type fetTtData struct {
+type FetTtData struct {
 	activities int // total number of activities to place
 	ifile      string
 	fetxml     []byte
@@ -170,7 +170,7 @@ type fetTtData struct {
 // `fetTick` runs in the "tick" loop. Rather like a "tail" function it reads
 // the FET progress from its log file, by simply polling for new lines.
 func fetTick(instance *TtInstance) {
-	data := *instance.BackEndData.(*fetTtData)
+	data := *instance.BackEndData.(*FetTtData)
 	if data.reader == nil {
 		// Await the existence of the log file
 		file, err := os.Open(data.logfile)
@@ -192,8 +192,7 @@ func fetTick(instance *TtInstance) {
 				if l != nil {
 					count, err := strconv.Atoi(string(l[2]))
 					if err == nil {
-						percent := count * 100 /
-							int(constraint_data.NActivities)
+						percent := count * 100 / data.activities
 						if percent > instance.Progress {
 							instance.Progress = percent
 							instance.LastTime = instance.Ticks
@@ -227,11 +226,14 @@ exit:
 }
 
 // Gather the results of the given run.
-func fetResults(instance *TtInstance) []ActivityPlacement {
-	data := *instance.BackEndData.(*fetTtData)
+func fetResults(
+	basic_data *BasicData,
+	instance *TtInstance,
+) []ActivityPlacement {
+	data := *instance.BackEndData.(*FetTtData)
 
 	// Write FET file at top level of working directory.
-	fetfile := filepath.Join(WorkingDir, "Result.fet")
+	fetfile := filepath.Join(basic_data.WorkingDir, "Result.fet")
 	err := os.WriteFile(fetfile, data.fetxml, 0644)
 	if err != nil {
 		panic("Couldn't write fet file to: " + fetfile)
@@ -259,7 +261,7 @@ func fetResults(instance *TtInstance) []ActivityPlacement {
 	}
 
 	room2index := map[string]RoomIndex{}
-	for _, r := range constraint_data.Resources {
+	for _, r := range basic_data.Resources {
 		if r.Type == RoomResource {
 			room2index[r.Tag] = r.Index
 		}

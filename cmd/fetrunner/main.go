@@ -61,8 +61,11 @@ import (
 
 func main() {
 
+	bdata := &autotimetable.BasicData{}
+	bdata.SetParameterDefault()
+
 	flag.BoolVar(&base.CONSOLE, "c", false, "enable progress output")
-	flag.BoolVar(&autotimetable.TESTING, "T", false, "run in testing mode")
+	flag.BoolVar(&bdata.Parameters.TESTING, "T", false, "run in testing mode")
 	timeout := flag.Int("t", 300, "set timeout")
 	nprocesses := flag.Int("p", 0, "max. parallel processes")
 	debug := flag.Bool("d", false, "debug")
@@ -70,10 +73,10 @@ func main() {
 	flag.Parse()
 
 	if *nprocesses > 0 {
-		autotimetable.MAXPROCESSES = *nprocesses
+		bdata.Parameters.MAXPROCESSES = *nprocesses
 	}
 	if *debug {
-		autotimetable.DEBUG = true
+		bdata.Parameters.DEBUG = true
 	}
 
 	args := flag.Args()
@@ -89,7 +92,7 @@ func main() {
 	}
 
 	cdata := fet.SetInputFet()
-	autotimetable.FetSetup()
+	bdata.FetSetup()
 
 	stempath := strings.TrimSuffix(abspath, filepath.Ext(abspath))
 
@@ -113,15 +116,7 @@ func main() {
 	fet.WriteFET(stempath+"_mod.fet", cdata)
 
 	_ = timeout
-	autotimetable.StartGeneration(cdata, *timeout)
+	bdata.StartGeneration(cdata, *timeout)
 
 	//db.SaveDb(stempath + "_DB2.json")
 }
-
-/*
-func PrintResult(x *fetfilter.Node) {
-	for k, v := range x.Root {
-		fmt.Printf("\n++ %s: %v\n", k, v)
-	}
-}
-*/

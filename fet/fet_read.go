@@ -8,12 +8,12 @@ import (
 )
 
 type ConstraintIndex = autotimetable.ConstraintIndex
-type ConstraintData = autotimetable.ConstraintData
+type BasicData = autotimetable.BasicData
 type ConstraintType = autotimetable.ConstraintType
 type ActivityIndex = autotimetable.ActivityIndex
 
-func SetInputFet() *ConstraintData {
-	return &ConstraintData{
+func SetInputFet() *BasicData {
+	return &BasicData{
 		Read:             read_fet,
 		ConstraintString: constraint_string,
 		PrepareRun:       compose_fet,
@@ -36,7 +36,7 @@ type FetDoc struct {
 	Necessary []ConstraintIndex
 }
 
-func read_fet(cdata *ConstraintData, fetpath string) error {
+func read_fet(cdata *BasicData, fetpath string) error {
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(fetpath); err != nil {
 		panic(err)
@@ -68,7 +68,7 @@ func read_fet(cdata *ConstraintData, fetpath string) error {
 		constraints = append(constraints, e)
 		ctype := ConstraintType(e.Tag)
 		w := e.SelectElement("Weight_Percentage").Text()
-		fmt.Printf(" ++ %02d: %s (%s)\n", i, ctype, w)
+		//fmt.Printf(" ++ %02d: %s (%s)\n", i, ctype, w)
 		if ctype == "ConstraintBasicCompulsoryTime" {
 			// Basic, non-negotiable constraint
 			continue
@@ -93,7 +93,7 @@ func read_fet(cdata *ConstraintData, fetpath string) error {
 		constraints = append(constraints, e)
 		ctype := ConstraintType(e.Tag)
 		w := e.SelectElement("Weight_Percentage").Text()
-		fmt.Printf(" ++ %02d: %s (%s)\n", i, ctype, w)
+		//fmt.Printf(" ++ %02d: %s (%s)\n", i, ctype, w)
 		if ctype == "ConstraintBasicCompulsorySpace" {
 			// Basic, non-negotiable constraint
 			continue
@@ -117,7 +117,7 @@ func read_fet(cdata *ConstraintData, fetpath string) error {
 		NTimeConstraints: ConstraintIndex(n_time_constraints),
 	}
 
-	cdata.InputData = fetdoc
+	cdata.Source = fetdoc
 	cdata.NConstraints = ConstraintIndex(len(constraints))
 	cdata.ConstraintTypes = sort_constraint_types(constraint_types)
 	cdata.HardConstraintMap = hard_constraint_map
@@ -148,8 +148,8 @@ func get_resources(root *etree.Element) []autotimetable.Resource {
 }
 
 // Get a string representation of the given constraint.
-func constraint_string(cdata *ConstraintData, cix ConstraintIndex) string {
-	fetdoc, ok := cdata.InputData.(*FetDoc)
+func constraint_string(cdata *BasicData, cix ConstraintIndex) string {
+	fetdoc, ok := cdata.Source.(*FetDoc)
 	if !ok {
 		panic("Bug, BackEndData not FetDoc")
 	}
@@ -165,8 +165,8 @@ func constraint_string(cdata *ConstraintData, cix ConstraintIndex) string {
 	return s
 }
 
-func WriteFET(fetfile string, cdata *ConstraintData) {
-	fetdoc, ok := cdata.InputData.(*FetDoc)
+func WriteFET(fetfile string, cdata *BasicData) {
+	fetdoc, ok := cdata.Source.(*FetDoc)
 	if !ok {
 		panic("Bug, BackEndData not FetDoc")
 	}
@@ -182,8 +182,8 @@ func WriteFET(fetfile string, cdata *ConstraintData) {
 // is not thread-safe!
 // The `xmlp` argument is a pointer to a byte slice, to receive the
 // XML FET-file.
-func compose_fet(cdata *ConstraintData, enabled []bool, xmlp any) {
-	fetdoc, ok := cdata.InputData.(*FetDoc)
+func compose_fet(cdata *BasicData, enabled []bool, xmlp any) {
+	fetdoc, ok := cdata.Source.(*FetDoc)
 	if !ok {
 		panic("Bug, BackEndData not FetDoc")
 	}
