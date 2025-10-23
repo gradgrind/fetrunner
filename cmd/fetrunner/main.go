@@ -91,8 +91,6 @@ func main() {
 		log.Fatalf("*ERROR* Couldn't resolve file path: %s\n", args[0])
 	}
 
-	cdata := fet.SetInputFet()
-
 	stempath := strings.TrimSuffix(abspath, filepath.Ext(abspath))
 
 	// May want to change this with a different back-end ...
@@ -107,7 +105,7 @@ func main() {
 	base.OpenLog(logpath)
 
 	var source autotimetable.TtSource
-	source, err = fet.FetRead(cdata, abspath)
+	source, err = fet.FetRead(bdata, abspath)
 	if err != nil {
 		panic(err)
 	}
@@ -117,7 +115,7 @@ func main() {
 
 	autotimetable.RunBackend = fet.RunFet
 
-	bdata.StartGeneration(cdata, *timeout)
+	bdata.StartGeneration(*timeout)
 
 	//db.SaveDb(stempath + "_DB2.json")
 }
