@@ -25,7 +25,7 @@ func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
 		instance.Tag, instance.Ticks)
 
 	// Read placements
-	alist := instance.Backend.Results()
+	alist := instance.Backend.Results(basic_data, instance)
 
 	// The discarded hard constraints ...
 	hnall := 0 // count all hard constraints

@@ -39,7 +39,7 @@ func (rq *RunQueue) update_instances() {
 		if instance.RunState == 0 {
 			instance.Ticks++
 			// Among other things, update the state:
-			instance.Backend.Tick()
+			instance.Backend.Tick(rq.BasicData, instance)
 		} else if instance.ProcessingState < 2 {
 			// This should only be possible after the call to
 			// the back-end tick method.
@@ -117,7 +117,7 @@ func (rq *RunQueue) update_queue() int {
 		if instance.ProcessingState < 0 {
 			base.Message.Printf("(TODO) [%d] >> %s {%d}\n",
 				rq.BasicData.Ticks, instance.Tag, instance.Timeout)
-			instance.Backend = RunBackend(rq.BasicData, instance)
+			instance.Backend = rq.BasicData.RunBackend(rq.BasicData, instance)
 			instance.ProcessingState = 0 // indicate started/running
 			rq.Active[instance] = struct{}{}
 			running++

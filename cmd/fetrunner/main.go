@@ -113,7 +113,7 @@ func main() {
 	//TODO-- This is just for testing FET backend
 	source.(*fet.FetDoc).WriteFET(stempath + "_mod.fet")
 
-	autotimetable.RunBackend = fet.RunFet
+	bdata.RunBackend = fet.RunFet
 
 	bdata.StartGeneration(*timeout)
 

@@ -33,7 +33,8 @@ type BasicData struct {
 		LAST_TIME_1 int
 	}
 
-	Source TtSource
+	Source     TtSource
+	RunBackend func(*BasicData, *TtInstance) TtBackend
 
 	NActivities       ActivityIndex
 	NConstraints      ConstraintIndex
@@ -53,8 +54,6 @@ type BasicData struct {
 	LastResult      *Result
 	CYCLE_TIMEOUT   int
 }
-
-// e.g. func ReadSource() *BasicData {}
 
 type TtSource interface {
 	// Return a string representation of the given constraint:
@@ -102,7 +101,7 @@ type TtInstance struct {
 	// The following are set by the back-end:
 
 	//TODO: -> the back-end?
-	InstanceDir string // working space for this instance
+	//InstanceDir string // working space for this instance
 
 	RunState int    // set by back-end
 	Progress int    // percent
@@ -110,16 +109,12 @@ type TtInstance struct {
 	Message  string // "" or error message
 }
 
-var RunBackend func(basic_data *BasicData, instance *TtInstance) TtBackend
-
 type TtBackend interface {
-	//New(*TtInstance)
-	//Run(*BasicData, *TtInstance)
 	Abort()
-	Tick()
+	Tick(*BasicData, *TtInstance)
 	Clear()
 	Tidy(string)
-	Results() []ActivityPlacement
+	Results(*BasicData, *TtInstance) []ActivityPlacement
 }
 
 // This structure is used to return the placement results from the

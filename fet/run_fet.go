@@ -17,8 +17,6 @@ import (
 )
 
 type FetTtData struct {
-	basic_data *autotimetable.BasicData
-	instance   *autotimetable.TtInstance
 	ifile      string
 	fetxml     []byte
 	workingdir string
@@ -28,16 +26,6 @@ type FetTtData struct {
 	reader     *bufio.Reader
 	cancel     func()
 	finished   bool
-}
-
-func NewFetBackend(
-	basic_data *autotimetable.BasicData,
-	instance *autotimetable.TtInstance,
-) *FetTtData {
-	return &FetTtData{
-		basic_data: basic_data,
-		instance:   instance,
-	}
 }
 
 func (data *FetTtData) Abort() {
@@ -65,7 +53,6 @@ func RunFet(
 	if err != nil {
 		panic(err)
 	}
-	instance.InstanceDir = dir_n
 	stemfile := filepath.Join(dir_n, fname)
 	fetfile := stemfile + ".fet"
 
@@ -167,8 +154,10 @@ var re *regexp.Regexp = regexp.MustCompile(pattern)
 
 // `Tick` runs in the "tick" loop. Rather like a "tail" function it reads
 // the FET progress from its log file, by simply polling for new lines.
-func (data *FetTtData) Tick() {
-	instance := data.instance
+func (data *FetTtData) Tick(
+	basic_data *autotimetable.BasicData,
+	instance *autotimetable.TtInstance,
+) {
 	if data.reader == nil {
 		// Await the existence of the log file
 		file, err := os.Open(data.logfile)
@@ -191,7 +180,7 @@ func (data *FetTtData) Tick() {
 					count, err := strconv.Atoi(string(l[2]))
 					if err == nil {
 						percent := count * 100 /
-							int(data.basic_data.NActivities)
+							int(basic_data.NActivities)
 						if percent > instance.Progress {
 							instance.Progress = percent
 							instance.LastTime = instance.Ticks
@@ -225,9 +214,10 @@ exit:
 }
 
 // Gather the results of the given run.
-func (data *FetTtData) Results() []autotimetable.ActivityPlacement {
-	basic_data := data.basic_data
-	instance := data.instance
+func (data *FetTtData) Results(
+	basic_data *autotimetable.BasicData,
+	instance *autotimetable.TtInstance,
+) []autotimetable.ActivityPlacement {
 	// Write FET file at top level of working directory.
 	fetfile := filepath.Join(basic_data.WorkingDir, "Result.fet")
 	err := os.WriteFile(fetfile, data.fetxml, 0644)

@@ -179,7 +179,7 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 			count := 0
 			for instance := range runqueue.Active {
 				if instance.RunState == 0 {
-					instance.Backend.Tick()
+					instance.Backend.Tick(basic_data, instance)
 					count++
 					basic_data.abort_instance(instance)
 				}
