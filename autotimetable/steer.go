@@ -555,6 +555,7 @@ func (basic_data *BasicData) new_instance(
 	}
 
 	// Make a new `TtInstance`
+	basic_data.InstanceCounter++
 	instance := &TtInstance{
 		Tag: fmt.Sprintf("z%05d~%s",
 			basic_data.InstanceCounter, constraint_type),

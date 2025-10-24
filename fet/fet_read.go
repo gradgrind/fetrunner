@@ -53,6 +53,7 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 	hard_constraint_map := map[ConstraintType][]ConstraintIndex{}
 	soft_constraint_map := map[ConstraintType][]ConstraintIndex{}
 	constraint_types := []ConstraintType{}
+	necessary := []ConstraintIndex{}
 	// Collect time constraints
 	et := root.SelectElement("Time_Constraints_List")
 	for _, e := range et.ChildElements() {
@@ -63,6 +64,7 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 		//fmt.Printf(" ++ %02d: %s (%s)\n", i, ctype, w)
 		if ctype == "ConstraintBasicCompulsoryTime" {
 			// Basic, non-negotiable constraint
+			necessary = append(necessary, ConstraintIndex(i))
 			continue
 		}
 		constraint_types = append(constraint_types, ctype)
@@ -88,6 +90,7 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 		//fmt.Printf(" ++ %02d: %s (%s)\n", i, ctype, w)
 		if ctype == "ConstraintBasicCompulsorySpace" {
 			// Basic, non-negotiable constraint
+			necessary = append(necessary, ConstraintIndex(i))
 			continue
 		}
 		constraint_types = append(constraint_types, ctype)
@@ -107,6 +110,7 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 		Doc:              doc,
 		Constraints:      constraints,
 		NTimeConstraints: ConstraintIndex(n_time_constraints),
+		Necessary:        necessary,
 	}
 
 	cdata.NConstraints = ConstraintIndex(len(constraints))
@@ -167,6 +171,9 @@ func (fetdoc *FetDoc) WriteFET(fetfile string) {
 // The `xmlp` argument is a pointer to a byte slice, to receive the
 // XML FET-file.
 func (fetdoc *FetDoc) PrepareRun(enabled []bool, xmlp any) {
+	for _, i := range fetdoc.Necessary {
+		enabled[i] = true
+	}
 	doc := fetdoc.Doc
 	root := doc.Root()
 	et := root.SelectElement("Time_Constraints_List")
