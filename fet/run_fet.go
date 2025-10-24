@@ -213,18 +213,22 @@ exit:
 	}
 }
 
-// Gather the results of the given run.
-func (data *FetTtData) Results(
-	basic_data *autotimetable.BasicData,
-	instance *autotimetable.TtInstance,
-) []autotimetable.ActivityPlacement {
+// If there is a result from the main process, there may be a
+// correspomding result from the source.
+func (data *FetTtData) FinalResult(basic_data *autotimetable.BasicData) {
 	// Write FET file at top level of working directory.
 	fetfile := filepath.Join(basic_data.WorkingDir, "Result.fet")
 	err := os.WriteFile(fetfile, data.fetxml, 0644)
 	if err != nil {
 		panic("Couldn't write fet file to: " + fetfile)
 	}
+}
 
+// Gather the results of the given run.
+func (data *FetTtData) Results(
+	basic_data *autotimetable.BasicData,
+	instance *autotimetable.TtInstance,
+) []autotimetable.ActivityPlacement {
 	// Get placements
 	xmlpath := filepath.Join(data.odir, "timetables", instance.Tag,
 		instance.Tag+"_activities.xml")

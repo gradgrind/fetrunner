@@ -29,8 +29,7 @@ func (basic_data *BasicData) get_basic_constraints(
 			instance0,
 			ctype,
 			cixlist,
-			basic_data.CYCLE_TIMEOUT,
-			soft)
+			basic_data.CYCLE_TIMEOUT)
 		instances = append(instances, instance)
 	}
 	return instances, nconstraints

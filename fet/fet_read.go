@@ -2,7 +2,6 @@ package fet
 
 import (
 	"fetrunner/autotimetable"
-	"fmt"
 
 	"github.com/beevik/etree"
 )
@@ -35,12 +34,13 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 	}
 
 	root := doc.Root()
-	fmt.Printf("ROOT element: %s (%+v)\n", root.Tag, root.Attr)
-	for i, e := range root.ChildElements() {
-		fmt.Printf(" -- %02d: %s\n", i, e.Tag)
-	}
-
-	fmt.Println("\n  --------------------------")
+	/*
+		fmt.Printf("ROOT element: %s (%+v)\n", root.Tag, root.Attr)
+		for i, e := range root.ChildElements() {
+			fmt.Printf(" -- %02d: %s\n", i, e.Tag)
+		}
+		fmt.Println("\n  --------------------------")
+	*/
 
 	ael := root.SelectElement("Activities_List")
 	cdata.NActivities = ActivityIndex(len(ael.ChildElements()))

@@ -91,10 +91,9 @@ func main() {
 		log.Fatalf("*ERROR* Couldn't resolve file path: %s\n", args[0])
 	}
 
-	workingdir := strings.TrimSuffix(abspath, filepath.Ext(abspath))
-	if workingdir == abspath {
-		log.Fatalf("*ERROR* Source file has no type suffix: %s\n", abspath)
-	}
+	f1 := filepath.Base(strings.TrimSuffix(abspath, filepath.Ext(abspath)))
+	d1 := filepath.Dir(abspath)
+	workingdir := filepath.Join(d1, "_"+f1)
 	os.RemoveAll(workingdir)
 	err = os.MkdirAll(workingdir, 0755)
 	if err != nil {
@@ -111,7 +110,7 @@ func main() {
 	}
 	//_ = x
 	//TODO-- This is just for testing FET backend
-	bdata.Source.(*fet.FetDoc).WriteFET(workingdir + "_mod.fet")
+	//bdata.Source.(*fet.FetDoc).WriteFET(workingdir + "_mod.fet")
 
 	bdata.RunBackend = fet.RunFet
 

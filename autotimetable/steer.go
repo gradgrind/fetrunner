@@ -212,6 +212,7 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 			if err != nil {
 				panic("Couldn't write result to: " + fpath)
 			}
+			current_instance.Backend.FinalResult(basic_data)
 		}
 	}()
 
@@ -455,15 +456,13 @@ tickloop:
 							current_instance,
 							instance.ConstraintType,
 							instance.Constraints[:nhalf],
-							timeout,
-							soft))
+							timeout))
 					split_instances = append(split_instances,
 						basic_data.new_instance(
 							current_instance,
 							instance.ConstraintType,
 							instance.Constraints[nhalf:],
-							timeout,
-							soft))
+							timeout))
 				} else if len(instance.Constraints) == 0 {
 					panic("Bug, expected constraint(s)")
 				}
@@ -480,8 +479,7 @@ tickloop:
 						current_instance,
 						instance.ConstraintType,
 						instance.Constraints,
-						next_timeout,
-						soft)
+						next_timeout)
 					runqueue.add(instance)
 				}
 				new_constraint_list = append(
@@ -546,7 +544,6 @@ func (basic_data *BasicData) new_instance(
 	constraint_type ConstraintType,
 	constraint_indexes []ConstraintIndex,
 	timeout int,
-	soft bool, //TODO--?
 ) *TtInstance {
 	enabled := slices.Clone(instance_0.ConstraintEnabled)
 	// Add the new constraints
