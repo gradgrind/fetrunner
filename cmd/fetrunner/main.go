@@ -91,27 +91,27 @@ func main() {
 		log.Fatalf("*ERROR* Couldn't resolve file path: %s\n", args[0])
 	}
 
-	stempath := strings.TrimSuffix(abspath, filepath.Ext(abspath))
-
-	// May want to change this with a different back-end ...
-	workingdir := stempath + "_fet"
+	workingdir := strings.TrimSuffix(abspath, filepath.Ext(abspath))
+	if workingdir == abspath {
+		log.Fatalf("*ERROR* Source file has no type suffix: %s\n", abspath)
+	}
 	os.RemoveAll(workingdir)
 	err = os.MkdirAll(workingdir, 0755)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
+	bdata.WorkingDir = workingdir
 
 	logpath := filepath.Join(workingdir, "run.log")
 	base.OpenLog(logpath)
 
-	var source autotimetable.TtSource
-	source, err = fet.FetRead(bdata, abspath)
+	bdata.Source, err = fet.FetRead(bdata, abspath)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	//_ = x
 	//TODO-- This is just for testing FET backend
-	source.(*fet.FetDoc).WriteFET(stempath + "_mod.fet")
+	bdata.Source.(*fet.FetDoc).WriteFET(workingdir + "_mod.fet")
 
 	bdata.RunBackend = fet.RunFet
 

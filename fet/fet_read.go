@@ -18,7 +18,6 @@ type ActivityIndex = autotimetable.ActivityIndex
 // placed first in the list, so by recording the start index of the "space"
 // constraints (`NTimeConstraints`) they can be differentiated.
 type FetDoc struct {
-	BasicData        *BasicData
 	Doc              *etree.Document
 	Constraints      []*etree.Element // list of actual constraint elements
 	NTimeConstraints ConstraintIndex
@@ -114,6 +113,7 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 	cdata.ConstraintTypes = sort_constraint_types(constraint_types)
 	cdata.HardConstraintMap = hard_constraint_map
 	cdata.SoftConstraintMap = soft_constraint_map
+	cdata.Resources = get_resources(root)
 
 	//doc.Indent(2)
 	return fetdoc, nil

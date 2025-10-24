@@ -44,8 +44,7 @@ type BasicData struct {
 	Resources         []Resource
 
 	// `WorkingDir` provides the path to a working directory which can be used
-	// freely during processing. It may or may not already exist: existing
-	// contents need not be preserved during processing.
+	// freely during processing. It is set up before entering `StartGeneration`.
 	WorkingDir string
 	Ticks      int // "global" time ticker
 	// The instance tick counter is in `TtInstance` because it may be needed

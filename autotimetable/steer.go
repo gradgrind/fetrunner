@@ -98,6 +98,7 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
 	runqueue := &RunQueue{
+		BasicData:  basic_data,
 		Queue:      nil,
 		Active:     map[*TtInstance]struct{}{},
 		MaxRunning: basic_data.Parameters.MAXPROCESSES,
@@ -545,7 +546,7 @@ func (basic_data *BasicData) new_instance(
 	constraint_type ConstraintType,
 	constraint_indexes []ConstraintIndex,
 	timeout int,
-	soft bool,
+	soft bool, //TODO--?
 ) *TtInstance {
 	enabled := slices.Clone(instance_0.ConstraintEnabled)
 	// Add the new constraints
