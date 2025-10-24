@@ -2,6 +2,7 @@ package fet
 
 import (
 	"fetrunner/autotimetable"
+	"fetrunner/base"
 
 	"github.com/beevik/etree"
 )
@@ -28,6 +29,7 @@ type FetDoc struct {
 }
 
 func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
+	base.Message.Printf("*+ Reading: %s\n", fetpath)
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(fetpath); err != nil {
 		panic(err)
@@ -125,9 +127,8 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 
 func get_resources(root *etree.Element) []autotimetable.Resource {
 	resources := []autotimetable.Resource{}
-	el := root.SelectElement("Rooms_List")
 	i := 0
-	for _, e := range el.ChildElements() {
+	for _, e := range root.SelectElement("Rooms_List").ChildElements() {
 		if e.SelectElement("Virtual").Text() == "false" {
 			tag := e.SelectElement("Name").Text()
 			resources = append(resources, autotimetable.Resource{
@@ -138,8 +139,40 @@ func get_resources(root *etree.Element) []autotimetable.Resource {
 			i++
 		}
 	}
+	for _, e := range root.SelectElement("Teachers_List").ChildElements() {
+		tag := e.SelectElement("Name").Text()
+		resources = append(resources, autotimetable.Resource{
+			Index: i,
+			Type:  autotimetable.TeacherResource,
+			Tag:   tag,
+		})
+		i++
+	}
+	for _, e := range root.SelectElement("Students_List").ChildElements() {
+		tag := e.SelectElement("Name").Text()
+		resources = append(resources, autotimetable.Resource{
+			Index: i,
+			Type:  autotimetable.GroupResource,
+			Tag:   tag,
+		})
+		i++
+		for _, eg := range e.SelectElements("Group") {
+			gtag := eg.SelectElement("Name").Text()
+			_ = gtag
 
-	//TODO: teachers and groups
+			//TODO
+
+			for _, esg := range eg.SelectElements("Subgroup") {
+				sgtag := esg.SelectElement("Name").Text()
+				_ = sgtag
+
+				//TODO
+
+			}
+		}
+	}
+
+	//TODO: groups
 
 	return resources
 }
