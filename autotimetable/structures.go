@@ -61,23 +61,6 @@ type TtSource interface {
 	PrepareRun([]bool, any)
 }
 
-type ResourceType int
-
-const (
-	TeacherResource ResourceType = iota
-	GroupResource
-	RoomResource
-)
-
-type Resource struct {
-	Type  ResourceType
-	Index int    // within the type
-	Tag   string // short identifier (unique)
-	//Name // TODO: possibly longer identifier (probably, but not
-	// necessarily unique?)
-	//Item any // TODO: back-end dependent data
-}
-
 type TtInstance struct {
 	Tag     string
 	Timeout int // ticks
@@ -125,3 +108,70 @@ type ActivityPlacement struct {
 	Hour  int
 	Rooms []RoomIndex
 }
+
+//************** Resources **************
+
+type ResourceType int
+
+const (
+	TeacherResource ResourceType = iota
+	GroupResource
+	RoomResource
+)
+
+// TODO ...
+
+type Resource interface {
+	GetType() ResourceType
+	GetIndex() int  //TODO: within the type?
+	GetTag() string // short identifier (unique)
+	//Name // TODO: possibly longer identifier (probably, but not
+	// necessarily unique?)
+	//Item any // TODO: back-end dependent data
+}
+
+type StudentResource interface {
+	Resource
+	GetClass() StudentResource // ? `nil` if the item _is_ a class?
+	IsAtomicGroup() bool
+}
+
+// +++ Teacher resource
+type TtTeacher struct {
+	Index int
+	Tag   string
+}
+
+func (r *TtTeacher) GetType() ResourceType {
+	return TeacherResource
+}
+
+func (r *TtTeacher) GetIndex() int {
+	return r.Index
+}
+
+func (r *TtTeacher) GetTag() string {
+	return r.Tag
+}
+
+// --- Teacher resource
+
+// +++ Room resource
+type TtRoom struct {
+	Index int
+	Tag   string
+}
+
+func (r *TtRoom) GetType() ResourceType {
+	return RoomResource
+}
+
+func (r *TtRoom) GetIndex() int {
+	return r.Index
+}
+
+func (r *TtRoom) GetTag() string {
+	return r.Tag
+}
+
+// --- Room resource
