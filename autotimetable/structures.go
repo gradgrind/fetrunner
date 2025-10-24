@@ -114,7 +114,7 @@ type TtBackend interface {
 	Clear()
 	Tidy(string)
 	Results(*BasicData, *TtInstance) []ActivityPlacement
-	FinalResult(*BasicData)
+	FinalizeResult(*BasicData)
 }
 
 // This structure is used to return the placement results from the

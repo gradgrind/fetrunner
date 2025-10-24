@@ -215,7 +215,7 @@ exit:
 
 // If there is a result from the main process, there may be a
 // correspomding result from the source.
-func (data *FetTtData) FinalResult(basic_data *autotimetable.BasicData) {
+func (data *FetTtData) FinalizeResult(basic_data *autotimetable.BasicData) {
 	// Write FET file at top level of working directory.
 	fetfile := filepath.Join(basic_data.WorkingDir, "Result.fet")
 	err := os.WriteFile(fetfile, data.fetxml, 0644)

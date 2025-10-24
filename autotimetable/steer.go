@@ -212,7 +212,7 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 			if err != nil {
 				panic("Couldn't write result to: " + fpath)
 			}
-			current_instance.Backend.FinalResult(basic_data)
+			current_instance.Backend.FinalizeResult(basic_data)
 		}
 	}()
 

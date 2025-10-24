@@ -135,6 +135,7 @@ func get_resources(root *etree.Element) []autotimetable.Resource {
 				Type:  autotimetable.RoomResource,
 				Tag:   tag,
 			})
+			i++
 		}
 	}
 
