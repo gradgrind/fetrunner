@@ -27,19 +27,30 @@ func (bdata *BasicData) SetParameterDefault() {
 }
 
 /*
-Various strategies are used to try to achieve a – possibly imperfect –
-timetable within a specified time. It is impossible to guarantee that all
-constraints will be satisfied within a given time, so in order to place
-all the activities within this time it may be necessary to drop some of
-them.
+One aim is to achieve a – possibly imperfect – timetable within a specified
+time. As it is impossible to guarantee that all constraints will be satisfied
+within a given time, it may be necessary to drop some of them in order to
+place all the activities within this time. However, if it is possible
+to satisfy all the constraints within this time, that should be done.
+
+If constraints need to be dropped, these should give an indication as to which
+ones are difficult. Perhaps more time would help, or a modification of some of
+the constraints. Among the difficult ones there may also be constraints which
+block the completion of the task and thus must be changed or dropped.
 
 A certain degree of parallel processing is assumed – too few (less than four?)
 processor cores is likely to result in a very significant slowdown.
 
 The main function (`StartGeneration`) starts a run with the fully constrained
-data and a second run with all the "non-basic" constraints removed. Fixed
-activity placements and blocked time-slots (for teachers, classes, and rooms)
-are regarded as basic, non-negotiable.
+data and a second run with all the "soft" (non-compulsory) constraints removed.
+A further instance is run in which basically all constraints are removed. If
+this latter fails, then there is a serious problem with the activities, which
+don't fit into the school week. As this unconstrained instance should complete
+quickly in most real-life situations, it is given a short timeout. In theory
+it is possible that the generation of a timetable could take a longer time
+even with the unconstraind data, but such a case would need to be handled in a
+different way (and would never be easy ...). This program assumes that the
+unconstrained data will allow the rapid placement of all the activities.
 
 A `TtInstance` structure is constructed to manage the data for each
 timetable generation run, each run having its own goroutine. Each instance
@@ -51,7 +62,7 @@ triggered every second) is entered. This monitors the progress of each active
 instance and handles the actions resulting from their completion, whether
 successful or not.
 
-Should a fully constrained instance complete successfully within the
+Should the fully constrained instance complete successfully within the
 allotted time, all other instances are terminated and its result will be
 saved.
 
@@ -63,6 +74,11 @@ lists an attempt is made to find individual "difficult" constraints, which can
 then be disabled in order to get full activity placement within a reasonable
 time. Parallel processing can be of some assistance here.
 
+As the constraint types are added one after the other, and often each step
+will take longer than the previous one (as the number of constraints grows),
+it should be clear why it is desirable that at least the early stages are
+completed quickly.
+
 TODO: Should the unconstrained instance fail to complete successfully within
 its allotted time, further steps may be taken to trace difficulties within the
 activity collection, perhaps identifying "difficult" classes or teachers.
@@ -72,15 +88,28 @@ a new base (`current_instance`) for the addition of further constraints. All
 the remaining constraint-type instances are stopped and restarted with this
 new base. If a constraint-type instance is timed out, it is stopped and split
 into two halves, which then run in its place. If there are no halves (only
-one constraint being added) there is no successor, the constraint is dropped.
+one constraint being added) there is no successor, the constraint is dropped
+(from this accumulation round).
 
 When an instance completes successfully within the allotted time, its result
 is saved as a JSON file, so that the best result so far gradually encompasses
 more of the constraints. When all the constraints have been tested with a
-certain timeout, the rejected ones are tried again, but with longer timeouts.
+certain timeout, a new round is entered and the rejected ones are tried again,
+but this time with longer timeouts.
 
-The results include diagnostic information (at least an indication of which
-constraints were dropped).
+TODO: Clarify when/how this phase ends.
+
+When all the hard constraints have been included, the soft constraints are
+added in basically the same way. If the initial instance with all hard
+constraints and no soft constraints completes, this instance will be used as
+the new base for adding the soft constraints and the accumulation loop will
+be cancelled. If the accumulation loop should finish first (somewhat unlikely,
+but possible), the initial instance with all hard constraints may be
+terminated.
+
+When everything has been added that can be in the given time, a "result" is
+generated, which includes diagnostic information (at least an indication of which
+constraints were dropped), and details of the last successful run.
 
 TODO: There is probably no general "optimum" value for the various timeout
 parameters, that is likely to depend on the data. But perhaps values can be
