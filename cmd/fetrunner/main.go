@@ -1,51 +1,27 @@
 /*
-	TODO
+	fetrunner runs multiple instances of FET with various sets of constraints enabled.
 
-fetrunner runs multiple instances of FET with various sets of constraints
-enabled.
+The files produced are saved in a (new) subdirectory of the directory of the
+input file. This name of this subdirectory is based on the name of the input
+file.
 
-The files produced are saved in the same directory as the input file:
+  - Log file (run.log): Contains error messages and warnings as well as
+    information about the steps performed.
 
-  - Log file: Contains error messages and warnings as well as information
-    about the steps performed. The file name (given "myfile_w365.json" as
-    input) is "myfile_w365.log" – just the ending is changed.
+  - Initial FET file: The file to be fed to FET with all constraints active.
+    Its name is based on that of the input file, the contents should be
+    effectovely the same, though there may be some formatting differences.
 
-  - FET file: The file to be fed to FET. The standard name (given
-    "myfile_w365.json" as input) is "myfile.fet". However, by supplying a
-    "FetFile" property (without the ".fet" ending) in the "FetData" object,
-    this can be changed.
+  - Successful FET file (Result.fet): The last FET file to run successfully
+    before the process ended.
 
-  - Map file: Correlates the FET Activity numbers to the Waldorf 365 Lesson
-    references ("Id"). The standard name (given "myfile_w365.json" as input)
-    is "myfile.map". However, by supplying a "MapFile" property
-    (without the ".map" ending) in the "FetData" object, this can be changed.
+  - Result file (Result.json): A processed view of the results of the last
+    successful FET run (with Result.fet).
 
-Note that, at present, the Activity and Room objects in the FET file have the
-corresponding Waldorf 365 references ("Id") in their "Comments" fields.
-
-Firstly, the input file is read and processed so that the data can be stored
-in a form independent of Waldorf 365. This form is managed in the [base]
-package, the primary data structure being [base.DbTopLevel].
-
-There are some useful pieces of information which are not stored directly
-in the basic data loaded from an input file, but which can be derived from it.
-The method [base.PrepareDb] performs the first of this processing and also
-checks for certain errors in the data.
-
-For processing of timetable information there are further useful data
-structures which can be derived from the input data. This information is
-handled primarily in the [ttbase] package, its primary data structure being
-[ttbase.TtInfo].
-
-A further stage of processing the timetable data is handled by the method
-[ttbase.PrepareCoreData]. This builds further data structures representing
-the allocation of resources, so that a number of errors in the data can be
-detected.
-
-Finally, the data structures are used by the function [fet.MakeFetFile] to
-produce the XML-structure of the FET file and the reference mapping
-information to be stored in the map file.
+  - Other files will be generated temporarily, but removed before the process
+    completes.
 */
+
 package main
 
 import (
@@ -108,13 +84,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//_ = x
+
 	//TODO-- This is just for testing FET backend
 	//bdata.Source.(*fet.FetDoc).WriteFET(workingdir + "_mod.fet")
 
 	bdata.RunBackend = fet.RunFet
 
 	bdata.StartGeneration(*timeout)
-
-	//db.SaveDb(stempath + "_DB2.json")
 }

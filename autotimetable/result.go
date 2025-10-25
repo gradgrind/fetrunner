@@ -56,7 +56,7 @@ func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
 		snall += len(clist)
 	}
 
-	basic_data.LastResult = &Result{
+	basic_data.lastResult = &Result{
 		Time:                       instance.Ticks,
 		Placements:                 alist,
 		UnfulfilledHardConstraints: hunfulfilled,
@@ -67,7 +67,7 @@ func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
 
 	if basic_data.Parameters.DEBUG {
 		//b, err := json.Marshal(LastResult)
-		b, err := json.MarshalIndent(basic_data.LastResult, "", "  ")
+		b, err := json.MarshalIndent(basic_data.lastResult, "", "  ")
 		if err != nil {
 			panic(err)
 		}

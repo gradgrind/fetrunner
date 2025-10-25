@@ -22,8 +22,8 @@ type BasicData struct {
 		MAXPROCESSES int
 
 		NEW_BASE_TIMEOUT_FACTOR  int // factor * 10
-		STAGE_TIMEOUT_MIN        int
-		NEW_STAGE_TIMEOUT_FACTOR int // factor * 10
+		CYCLE_TIMEOUT_MIN        int
+		NEW_CYCLE_TIMEOUT_FACTOR int // factor * 10
 
 		DEBUG bool
 
@@ -49,9 +49,21 @@ type BasicData struct {
 	Ticks      int // "global" time ticker
 	// The instance tick counter is in `TtInstance` because it may be needed
 	// by the run-time back-end.
-	InstanceCounter int
-	LastResult      *Result
-	CYCLE_TIMEOUT   int
+
+	// Local variables
+	instanceCounter int
+	lastResult      *Result
+	cycle_timeout   int
+	full_instance   *TtInstance
+	null_instance   *TtInstance
+	hard_instance   *TtInstance
+	phase           int // 0: initial phase, 1: adding hard constraints,
+	// 2: adding soft constraints, 3: finished
+	cycle int // processing cycle number (in `mainphase`)
+	// The (successful) instance on which current trials are based:
+	current_instance *TtInstance
+	// List of instances adding a constraint type:
+	constraint_list []*TtInstance
 }
 
 type TtSource interface {
