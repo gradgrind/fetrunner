@@ -111,18 +111,9 @@ type ActivityPlacement struct {
 
 //************** Resources **************
 
-type ResourceType int
-
-const (
-	TeacherResource ResourceType = iota
-	GroupResource
-	RoomResource
-)
-
 // TODO ...
 
 type Resource interface {
-	GetType() ResourceType
 	GetIndex() int  //TODO: within the type?
 	GetTag() string // short identifier (unique)
 	//Name // TODO: possibly longer identifier (probably, but not
@@ -130,48 +121,80 @@ type Resource interface {
 	//Item any // TODO: back-end dependent data
 }
 
+// +++ Student group resources
 type StudentResource interface {
 	Resource
-	GetClass() StudentResource // ? `nil` if the item _is_ a class?
+	GetClass() *TtClass
 	IsAtomicGroup() bool
 }
 
-// +++ Teacher resource
-type TtTeacher struct {
+type TtResource struct {
 	Index int
 	Tag   string
+	Data  any
 }
 
-func (r *TtTeacher) GetType() ResourceType {
-	return TeacherResource
-}
-
-func (r *TtTeacher) GetIndex() int {
+func (r *TtResource) GetIndex() int {
 	return r.Index
 }
 
-func (r *TtTeacher) GetTag() string {
+func (r *TtResource) GetTag() string {
 	return r.Tag
+}
+
+type TtClass struct {
+	TtResource
+	Groups []*TtGroup
+}
+
+type TtGroup struct {
+	TtResource
+	Class     *TtClass
+	Subgroups []*TtSubgroup
+}
+
+type TtSubgroup struct {
+	TtResource
+	Class *TtClass
+	//Groups []*TtGroup
+}
+
+func (r *TtClass) GetClass() *TtClass {
+	return r
+}
+
+func (r *TtGroup) GetClass() *TtClass {
+	return r.Class
+}
+
+func (r *TtSubgroup) GetClass() *TtClass {
+	return r.Class
+}
+
+func (r *TtClass) IsAtomic() bool {
+	return len(r.Groups) == 0
+}
+
+func (r *TtGroup) IsAtomic() bool {
+	return len(r.Subgroups) == 0
+}
+
+func (r *TtSubgroup) IsAtomic() bool {
+	return true
+}
+
+// --- Student group resources
+
+// +++ Teacher resource
+type TtTeacher struct {
+	TtResource
 }
 
 // --- Teacher resource
 
 // +++ Room resource
 type TtRoom struct {
-	Index int
-	Tag   string
-}
-
-func (r *TtRoom) GetType() ResourceType {
-	return RoomResource
-}
-
-func (r *TtRoom) GetIndex() int {
-	return r.Index
-}
-
-func (r *TtRoom) GetTag() string {
-	return r.Tag
+	TtResource
 }
 
 // --- Room resource

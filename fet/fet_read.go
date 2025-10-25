@@ -131,49 +131,74 @@ func get_resources(root *etree.Element) []autotimetable.Resource {
 	for _, e := range root.SelectElement("Rooms_List").ChildElements() {
 		if e.SelectElement("Virtual").Text() == "false" {
 			tag := e.SelectElement("Name").Text()
-			resources = append(resources, autotimetable.Resource{
-				Index: i,
-				Type:  autotimetable.RoomResource,
-				Tag:   tag,
+			data := e.SelectElement("Comments").Text()
+			resources = append(resources, &autotimetable.TtRoom{
+				TtResource: autotimetable.TtResource{
+					Index: i,
+					Tag:   tag,
+					Data:  data,
+				},
 			})
 			i++
 		}
 	}
+	i = 0
 	for _, e := range root.SelectElement("Teachers_List").ChildElements() {
 		tag := e.SelectElement("Name").Text()
-		resources = append(resources, autotimetable.Resource{
-			Index: i,
-			Type:  autotimetable.TeacherResource,
-			Tag:   tag,
+		data := e.SelectElement("Comments").Text()
+		resources = append(resources, &autotimetable.TtTeacher{
+			TtResource: autotimetable.TtResource{
+				Index: i,
+				Tag:   tag,
+				Data:  data,
+			},
 		})
 		i++
 	}
+	i = 0
 	for _, e := range root.SelectElement("Students_List").ChildElements() {
 		tag := e.SelectElement("Name").Text()
-		resources = append(resources, autotimetable.Resource{
-			Index: i,
-			Type:  autotimetable.GroupResource,
-			Tag:   tag,
-		})
+		data := e.SelectElement("Comments").Text()
+		groups := []*autotimetable.TtGroup{}
+		cresource := &autotimetable.TtClass{
+			TtResource: autotimetable.TtResource{
+				Index: i,
+				Tag:   tag,
+				Data:  data,
+			},
+		}
+		resources = append(resources, cresource)
 		i++
+
 		for _, eg := range e.SelectElements("Group") {
 			gtag := eg.SelectElement("Name").Text()
-			_ = gtag
-
-			//TODO
+			subgroups := []*autotimetable.TtSubgroup{}
+			gresource := &autotimetable.TtGroup{
+				TtResource: autotimetable.TtResource{
+					Index: i,
+					Tag:   gtag,
+				},
+			}
+			groups = append(groups, gresource)
+			resources = append(resources, gresource)
+			i++
 
 			for _, esg := range eg.SelectElements("Subgroup") {
 				sgtag := esg.SelectElement("Name").Text()
-				_ = sgtag
-
-				//TODO
-
+				sgresource := &autotimetable.TtSubgroup{
+					TtResource: autotimetable.TtResource{
+						Index: i,
+						Tag:   sgtag,
+					},
+				}
+				subgroups = append(subgroups, sgresource)
+				resources = append(resources, sgresource)
+				i++
 			}
+			gresource.Subgroups = subgroups
 		}
+		cresource.Groups = groups
 	}
-
-	//TODO: groups
-
 	return resources
 }
 

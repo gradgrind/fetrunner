@@ -249,11 +249,10 @@ func (data *FetTtData) Results(
 		base.Bug.Printf("XML error in %s:\n %v\n", xmlpath, err)
 		return nil
 	}
-
 	room2index := map[string]autotimetable.RoomIndex{}
 	for _, r := range basic_data.Resources {
-		if r.Type == autotimetable.RoomResource {
-			room2index[r.Tag] = r.Index
+		if rr, ok := r.(*autotimetable.TtRoom); ok {
+			room2index[rr.GetTag()] = rr.GetIndex()
 		}
 	}
 	activities := make([]autotimetable.ActivityPlacement, len(v.Activities))
