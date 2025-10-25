@@ -49,8 +49,9 @@ don't fit into the school week. As this unconstrained instance should complete
 quickly in most real-life situations, it is given a short timeout. In theory
 it is possible that the generation of a timetable could take a longer time
 even with the unconstraind data, but such a case would need to be handled in a
-different way (and would never be easy ...). This program assumes that the
-unconstrained data will allow the rapid placement of all the activities.
+different way (and is, in general, a difficult problem ...). This program
+assumes that the unconstrained data will allow the rapid placement of all the
+activities.
 
 A `TtInstance` structure is constructed to manage the data for each
 timetable generation run, each run having its own goroutine. Each instance
@@ -108,8 +109,8 @@ but possible), the initial instance with all hard constraints may be
 terminated.
 
 When everything has been added that can be in the given time, a "result" is
-generated, which includes diagnostic information (at least an indication of which
-constraints were dropped), and details of the last successful run.
+generated, which includes diagnostic information (at least an indication of
+which constraints were dropped), and details of the last successful run.
 
 TODO: There is probably no general "optimum" value for the various timeout
 parameters, that is likely to depend on the data. But perhaps values can be
@@ -175,7 +176,7 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 	basic_data.CYCLE_TIMEOUT = basic_data.Parameters.STAGE_TIMEOUT_MIN
 	enabled = make([]bool, basic_data.NConstraints)
 	null_instance := &TtInstance{
-		Tag:               "ONLY_BLOCKED_SLOTS",
+		Tag:               "UNCONSTRAINED",
 		Timeout:           basic_data.CYCLE_TIMEOUT,
 		ConstraintEnabled: enabled,
 	}
@@ -355,9 +356,6 @@ tickloop:
 				current_instance = null_instance
 				basic_data.new_current_instance(current_instance)
 				// Start trials of single constraint types.
-				base.Message.Printf(
-					"(TODO) [%d] INITIAL CONSTRAINT-TYPES: %d\n",
-					basic_data.Ticks, len(constraint_list))
 				// not continue!
 			default:
 				// The null instance failed.
