@@ -89,9 +89,9 @@ func (basic_data *BasicData) mainphase(runqueue *RunQueue) bool {
 	if len(basic_data.constraint_list) == 0 {
 		// ... all current constraint trials finished.
 		// Start trials of remaining constraints, hard then soft.
-		basic_data.cycle_timeout = max(basic_data.cycle_timeout,
-			(basic_data.current_instance.Ticks)*
-				basic_data.Parameters.NEW_CYCLE_TIMEOUT_FACTOR) / 10
+		basic_data.cycle_timeout = (max(basic_data.cycle_timeout,
+			basic_data.current_instance.Ticks) *
+			basic_data.Parameters.NEW_CYCLE_TIMEOUT_FACTOR) / 10
 		var n int
 	rpt:
 		basic_data.constraint_list, n = basic_data.get_basic_constraints(

@@ -174,7 +174,10 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 	runqueue.add(basic_data.hard_instance)
 
 	// Unconstrained instance
-	basic_data.cycle_timeout = basic_data.Parameters.CYCLE_TIMEOUT_MIN
+
+	basic_data.cycle_timeout = 0 //TODO--? basic_data.Parameters.CYCLE_TIMEOUT_MIN
+	//TODO: Do I at all need CYCLE_TIMEOUT_MIN?
+
 	enabled = make([]bool, basic_data.NConstraints)
 	basic_data.null_instance = &TtInstance{
 		Tag:               "UNCONSTRAINED",
