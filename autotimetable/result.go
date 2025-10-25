@@ -18,6 +18,8 @@ type Result struct {
 	TotalSoftConstraints       int
 }
 
+//TODO ...
+
 // Get the result of the current instance as a `Result` structure.
 // Save as JSON if debugging.
 func (basic_data *BasicData) new_current_instance(instance *TtInstance) {

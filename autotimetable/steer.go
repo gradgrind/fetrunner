@@ -25,8 +25,7 @@ func (bdata *BasicData) SetParameterDefault() {
 	*/
 	bdata.Parameters.MAXPROCESSES = min(max(runtime.NumCPU(), 4), 6)
 
-	bdata.Parameters.NEW_BASE_TIMEOUT_FACTOR = 15 // => 1.5
-	bdata.Parameters.CYCLE_TIMEOUT_MIN = 5
+	bdata.Parameters.NEW_BASE_TIMEOUT_FACTOR = 15  // => 1.5
 	bdata.Parameters.NEW_CYCLE_TIMEOUT_FACTOR = 15 // => 1.5
 	bdata.Parameters.LAST_TIME_0 = 5
 	bdata.Parameters.LAST_TIME_1 = 50
@@ -174,10 +173,7 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 	runqueue.add(basic_data.hard_instance)
 
 	// Unconstrained instance
-
-	basic_data.cycle_timeout = 0 //TODO--? basic_data.Parameters.CYCLE_TIMEOUT_MIN
-	//TODO: Do I at all need CYCLE_TIMEOUT_MIN?
-
+	basic_data.cycle_timeout = 0
 	enabled = make([]bool, basic_data.NConstraints)
 	basic_data.null_instance = &TtInstance{
 		Tag:               "UNCONSTRAINED",
