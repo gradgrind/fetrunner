@@ -249,12 +249,25 @@ func (data *FetTtData) Results(
 		base.Bug.Printf("XML error in %s:\n %v\n", xmlpath, err)
 		return nil
 	}
+	// Need to convert rooms and days/hours ...
+	// ... room conversion
 	room2index := map[string]autotimetable.RoomIndex{}
-	for _, r := range basic_data.Resources {
+	for _, r := range basic_data.Source.GetResources() {
 		if rr, ok := r.(*autotimetable.TtRoom); ok {
 			room2index[rr.GetTag()] = rr.GetIndex()
 		}
 	}
+	// ... days
+	day2index := map[string]int{}
+	for i, d := range basic_data.Source.GetDays() {
+		day2index[d] = i
+	}
+	// ... hours
+	hour2index := map[string]int{}
+	for i, h := range basic_data.Source.GetHours() {
+		hour2index[h] = i
+	}
+
 	activities := make([]autotimetable.ActivityPlacement, len(v.Activities))
 	for i, a := range v.Activities {
 		rooms := []int{}
@@ -275,8 +288,8 @@ func (data *FetTtData) Results(
 		}
 		activities[i] = autotimetable.ActivityPlacement{
 			Id:    a.Id,
-			Day:   a.Day,
-			Hour:  a.Hour,
+			Day:   day2index[a.Day],
+			Hour:  hour2index[a.Hour],
 			Rooms: rooms,
 		}
 	}
@@ -291,8 +304,8 @@ type fetResultRoot struct { // The root node.
 type fetResultActivity struct {
 	XMLName   xml.Name `xml:"Activity"`
 	Id        ActivityIndex
-	Day       int
-	Hour      int
+	Day       string
+	Hour      string
 	Room      string
 	Real_Room []string
 }

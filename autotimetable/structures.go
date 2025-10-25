@@ -41,7 +41,6 @@ type BasicData struct {
 	ConstraintTypes   []ConstraintType // ordered list of constraint types
 	HardConstraintMap map[ConstraintType][]ConstraintIndex
 	SoftConstraintMap map[ConstraintType][]ConstraintIndex
-	Resources         []Resource
 
 	// `WorkingDir` provides the path to a working directory which can be used
 	// freely during processing. It is set up before entering `StartGeneration`.
@@ -67,10 +66,18 @@ type BasicData struct {
 }
 
 type TtSource interface {
+	GetResources() []Resource
+	GetDays() []string
+	GetHours() []string
 	// Return a string representation of the given constraint:
 	ConstraintString(ConstraintIndex) string
 	// Prepare the "source" for a run with a set of enabled constraints:
 	PrepareRun([]bool, any)
+}
+
+type TtDay struct {
+	Index int
+	Name  string
 }
 
 type TtInstance struct {

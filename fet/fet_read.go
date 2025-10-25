@@ -119,13 +119,31 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 	cdata.ConstraintTypes = sort_constraint_types(constraint_types)
 	cdata.HardConstraintMap = hard_constraint_map
 	cdata.SoftConstraintMap = soft_constraint_map
-	cdata.Resources = get_resources(root)
 
 	//doc.Indent(2)
 	return fetdoc, nil
 }
 
-func get_resources(root *etree.Element) []autotimetable.Resource {
+func (fetdoc *FetDoc) GetDays() []string {
+	root := fetdoc.Doc.Root()
+	days := []string{}
+	for _, e := range root.SelectElement("Days_List").SelectElements("Day") {
+		days = append(days, e.SelectElement("Name").Text())
+	}
+	return days
+}
+
+func (fetdoc *FetDoc) GetHours() []string {
+	root := fetdoc.Doc.Root()
+	hours := []string{}
+	for _, e := range root.SelectElement("Hours_List").SelectElements("Hour") {
+		hours = append(hours, e.SelectElement("Name").Text())
+	}
+	return hours
+}
+
+func (fetdoc *FetDoc) GetResources() []autotimetable.Resource {
+	root := fetdoc.Doc.Root()
 	resources := []autotimetable.Resource{}
 	i := 0
 	for _, e := range root.SelectElement("Rooms_List").ChildElements() {
