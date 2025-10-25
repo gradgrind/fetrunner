@@ -93,26 +93,26 @@ func (basic_data *BasicData) mainphase(runqueue *RunQueue) bool {
 			(basic_data.current_instance.Ticks)*
 				basic_data.Parameters.NEW_CYCLE_TIMEOUT_FACTOR) / 10
 		var n int
+	rpt:
 		basic_data.constraint_list, n = basic_data.get_basic_constraints(
 			basic_data.current_instance, basic_data.phase == 2)
 		if n == 0 {
 			if basic_data.phase == 2 {
+				// The fully constrained instance is no longer needed.
+				if basic_data.full_instance.ProcessingState == 0 {
+					basic_data.abort_instance(basic_data.full_instance)
+				}
 				return true // solution found
 			} else {
 				base.Message.Printf(
-					"(TODO) [%d] Soft constraints based on accumulated instance",
+					"(TODO) [%d] Phase 2 based on accumulated instance",
 					basic_data.Ticks)
 				basic_data.phase = 2
-				basic_data.constraint_list, n = basic_data.get_basic_constraints(
-					basic_data.current_instance, basic_data.phase == 2)
-				if n == 0 {
-					return true // solution found
-				} else {
-					// The hard-only instance is no longer needed.
-					if basic_data.hard_instance.ProcessingState == 0 {
-						basic_data.abort_instance(basic_data.hard_instance)
-					}
+				// The hard-only instance is no longer needed.
+				if basic_data.hard_instance.ProcessingState == 0 {
+					basic_data.abort_instance(basic_data.hard_instance)
 				}
+				goto rpt
 			}
 		}
 		basic_data.cycle++

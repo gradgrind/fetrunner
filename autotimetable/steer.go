@@ -18,9 +18,9 @@ func (bdata *BasicData) SetParameterDefault() {
 	/* There is probably no general "optimum" value for the various
 	parameters, that is likely to depend on the data. But perhaps values
 	can be found which are frequently useful. It might be helpful to use
-	shorter overall timeouts during the initial phases of testing the data,
+	shorter overall timeouts during the initial cycles of testing the data,
 	to identify potential problem areas without long processing delays. For
-	later phases longer times may be necessary (depending on the difficulty
+	later cycles longer times may be necessary (depending on the difficulty
 	of the data).
 	*/
 	bdata.Parameters.MAXPROCESSES = min(max(runtime.NumCPU(), 4), 6)
@@ -185,16 +185,17 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 	runqueue.add(basic_data.null_instance)
 
 	// Start phase 0
+	base.Message.Printf(
+		"(TODO) [%d] Phase 0 ...",
+		basic_data.Ticks)
 	basic_data.phase = 0
 	basic_data.cycle = 0
-	soft := false
 	full_progress := 0       // current percentage
 	full_progress_ticks := 0 // time of last increment
 	hard_progress := 0       // current percentage
 	hard_progress_ticks := 0 // time of last increment
 
 	// *** Ticker loop ***
-	var constraint_list []*TtInstance
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 	defer func() {
@@ -284,7 +285,7 @@ tickloop:
 			}
 		}
 
-		if !soft {
+		if basic_data.phase != 2 {
 			if basic_data.hard_instance.ProcessingState == 1 {
 				// Set as current and start processing soft constraints.
 				basic_data.current_instance = basic_data.hard_instance
@@ -296,17 +297,17 @@ tickloop:
 				if basic_data.null_instance.ProcessingState == 0 {
 					basic_data.abort_instance(basic_data.null_instance)
 				}
-				for _, instance := range constraint_list {
+				for _, instance := range basic_data.constraint_list {
 					if instance.ProcessingState == 0 {
 						basic_data.abort_instance(instance)
 					}
 					// Indicate that a queued instance is not to be started
 					instance.ProcessingState = 3
 				}
-				constraint_list = nil
-				soft = true
+				basic_data.constraint_list = nil
+				basic_data.phase = 2
 				base.Message.Printf(
-					"(TODO) [%d] Soft constraints based on hard-only instance",
+					"(TODO) [%d] Phase 2 based on hard-only instance",
 					basic_data.Ticks)
 			} else {
 				p := basic_data.hard_instance.Progress
@@ -336,23 +337,30 @@ tickloop:
 			break
 		}
 
-		if basic_data.cycle < 0 {
+		if basic_data.phase == 3 {
 			continue
 		}
 
-		if basic_data.cycle == 0 {
+		if basic_data.phase == 0 {
 			// During phase 0 only `full_instance`, `hard_instance` and
 			// `null_instance` are running.
 			res := basic_data.phase0()
 			if res == 0 {
 				continue
 			}
+			basic_data.phase = 1
+			base.Message.Printf(
+				"(TODO) [%d] Phase 1 ...",
+				basic_data.Ticks)
 		}
 
 		// There should be no problem if there are no constraints to add.
 
 		if basic_data.mainphase(runqueue) {
 			basic_data.phase = 3
+			base.Message.Printf(
+				"(TODO) [%d] Phase 3: finalizing ...",
+				basic_data.Ticks)
 		}
 	} // tickloop: end
 
