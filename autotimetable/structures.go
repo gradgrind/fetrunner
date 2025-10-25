@@ -36,11 +36,12 @@ type BasicData struct {
 	Source     TtSource
 	RunBackend func(*BasicData, *TtInstance) TtBackend
 
-	NActivities       ActivityIndex
-	NConstraints      ConstraintIndex
-	ConstraintTypes   []ConstraintType // ordered list of constraint types
-	HardConstraintMap map[ConstraintType][]ConstraintIndex
-	SoftConstraintMap map[ConstraintType][]ConstraintIndex
+	NActivities        ActivityIndex
+	DisabledActivities []ActivityIndex
+	NConstraints       ConstraintIndex
+	ConstraintTypes    []ConstraintType // ordered list of constraint types
+	HardConstraintMap  map[ConstraintType][]ConstraintIndex
+	SoftConstraintMap  map[ConstraintType][]ConstraintIndex
 
 	// `WorkingDir` provides the path to a working directory which can be used
 	// freely during processing. It is set up before entering `StartGeneration`.

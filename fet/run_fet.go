@@ -180,7 +180,8 @@ func (data *FetTtData) Tick(
 					count, err := strconv.Atoi(string(l[2]))
 					if err == nil {
 						percent := count * 100 /
-							int(basic_data.NActivities)
+							(int(basic_data.NActivities) -
+								len(basic_data.DisabledActivities))
 						if percent > instance.Progress {
 							instance.Progress = percent
 							instance.LastTime = instance.Ticks

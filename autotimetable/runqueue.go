@@ -45,6 +45,7 @@ func (rq *RunQueue) update_instances() {
 			// the back-end tick method.
 			panic(fmt.Sprintf("Bug, State = %d", instance.RunState))
 		}
+
 		if instance.ProcessingState == 3 {
 			// Await completion of the goroutine
 			continue

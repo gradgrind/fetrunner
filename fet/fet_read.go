@@ -46,6 +46,13 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 
 	ael := root.SelectElement("Activities_List")
 	cdata.NActivities = ActivityIndex(len(ael.ChildElements()))
+	adis := []ActivityIndex{}
+	for i, a := range ael.ChildElements() {
+		if a.SelectElement("Active").Text() == "false" {
+			adis = append(adis, ActivityIndex(i))
+		}
+	}
+	cdata.DisabledActivities = adis
 
 	// Collect the constraints, dividing into soft and hard groups.
 	// Note that non-negotiable "basic" constraints are not included
