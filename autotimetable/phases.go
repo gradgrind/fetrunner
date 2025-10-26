@@ -26,12 +26,8 @@ func (basic_data *BasicData) phase0() int {
 		base.Message.Printf(
 			"(TODO) [%d] Unconstrained instance failed",
 			basic_data.Ticks)
-
 		base.Error.Println(" ... " + basic_data.null_instance.Message)
-
-		//TODO: Seek problems in the unconstrained data.
-		panic("TODO")
-		return -10
+		return -1
 	}
 }
 

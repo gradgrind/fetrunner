@@ -222,7 +222,11 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 		if !basic_data.Parameters.DEBUG {
 			// Remove all remaining temporary files
 			//TODO: This call is a bit ugh!
-			basic_data.current_instance.Backend.Tidy(basic_data.WorkingDir)
+			if basic_data.current_instance != nil {
+				basic_data.current_instance.Backend.Tidy(basic_data.WorkingDir)
+			} else {
+				basic_data.null_instance.Backend.Tidy(basic_data.WorkingDir)
+			}
 		}
 		if basic_data.lastResult != nil {
 			// Save result of last successful instance.
@@ -342,14 +346,20 @@ tickloop:
 		if basic_data.phase == 0 {
 			// During phase 0 only `full_instance`, `hard_instance` and
 			// `null_instance` are running.
-			res := basic_data.phase0()
-			if res == 0 {
+			switch basic_data.phase0() {
+			case 0:
 				continue
+			case 1:
+				basic_data.phase = 1
+				base.Message.Printf(
+					"(TODO) [%d] Phase 1 ...",
+					basic_data.Ticks)
+			case -1:
+				base.Error.Printf(
+					"(TODO) [%d] Couldn't process input data!",
+					basic_data.Ticks)
+				return
 			}
-			basic_data.phase = 1
-			base.Message.Printf(
-				"(TODO) [%d] Phase 1 ...",
-				basic_data.Ticks)
 		}
 
 		// There should be no problem if there are no constraints to add.
