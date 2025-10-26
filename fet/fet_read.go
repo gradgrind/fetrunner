@@ -19,7 +19,8 @@ type ActivityIndex = autotimetable.ActivityIndex
 // constraints (`NTimeConstraints`) they can be differentiated.
 type FetDoc struct {
 	Doc              *etree.Document
-	Constraints      []*etree.Element // list of actual constraint elements
+	Activities       []*etree.Element // list of active activity elements
+	Constraints      []*etree.Element // list of active constraint elements
 	NTimeConstraints ConstraintIndex
 	// The "non-negotiable" constraints are not dealt with in the
 	// "autotimetable" package, but they are included in the `Constraints`
@@ -44,79 +45,113 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 		fmt.Println("\n  --------------------------")
 	*/
 
-	ael := root.SelectElement("Activities_List")
-	cdata.NActivities = ActivityIndex(len(ael.ChildElements()))
-	adis := []ActivityIndex{}
-	for i, a := range ael.ChildElements() {
-		if a.SelectElement("Active").Text() == "false" {
-			adis = append(adis, ActivityIndex(i))
+	// Get active activities, count inactive ones
+	activities := []*etree.Element{}
+	{
+		ael := root.SelectElement("Activities_List")
+		inactive := 0
+		for _, a := range ael.ChildElements() {
+			if a.SelectElement("Active").Text() == "true" {
+				activities = append(activities, a)
+			} else {
+				inactive++
+			}
+		}
+		cdata.NActivities = ActivityIndex(len(activities))
+		if inactive != 0 {
+			base.Message.Printf("-A- %d inactive activities", inactive)
 		}
 	}
-	cdata.DisabledActivities = adis
 
 	// Collect the constraints, dividing into soft and hard groups.
 	// Note that non-negotiable "basic" constraints are not included
 	// in the maps, but they are included in the `constraints` list.
+	// Inactive constraints will be removed
 
 	constraints := []*etree.Element{}
 	hard_constraint_map := map[ConstraintType][]ConstraintIndex{}
 	soft_constraint_map := map[ConstraintType][]ConstraintIndex{}
 	constraint_types := []ConstraintType{}
 	necessary := []ConstraintIndex{}
-	// Collect time constraints
-	et := root.SelectElement("Time_Constraints_List")
-	for _, e := range et.ChildElements() {
-		i := len(constraints)
-		constraints = append(constraints, e)
-		ctype := ConstraintType(e.Tag)
-		w := e.SelectElement("Weight_Percentage").Text()
-		//fmt.Printf(" ++ %02d: %s (%s)\n", i, ctype, w)
-		if ctype == "ConstraintBasicCompulsoryTime" {
-			// Basic, non-negotiable constraint
-			necessary = append(necessary, ConstraintIndex(i))
-			continue
+	// Collect active time constraints
+	var n_time_constraints int
+	{
+		et := root.SelectElement("Time_Constraints_List")
+		inactive := 0
+		for _, e := range et.ChildElements() {
+			// Count and skip if inactive
+			if e.SelectElement("Active").Text() == "false" {
+				inactive++ // count inactive constraints
+				continue
+			}
+			i := len(constraints)
+			constraints = append(constraints, e)
+			ctype := ConstraintType(e.Tag)
+			w := e.SelectElement("Weight_Percentage").Text()
+			//fmt.Printf(" ++ %02d: %s (%s)\n", i, ctype, w)
+			if ctype == "ConstraintBasicCompulsoryTime" {
+				// Basic, non-negotiable constraint
+				necessary = append(necessary, ConstraintIndex(i))
+				continue
+			}
+			constraint_types = append(constraint_types, ctype)
+			// ... duplicates wil be removed in `sort_constraint_types`
+			if w == "100" {
+				// Hard constraint
+				hard_constraint_map[ctype] = append(hard_constraint_map[ctype],
+					ConstraintIndex(i))
+			} else {
+				// Soft constraint
+				soft_constraint_map[ctype] = append(soft_constraint_map[ctype],
+					ConstraintIndex(i))
+			}
 		}
-		constraint_types = append(constraint_types, ctype)
-		// ... duplicates wil be removed in `sort_constraint_types`
-		if w == "100" {
-			// Hard constraint
-			hard_constraint_map[ctype] = append(hard_constraint_map[ctype],
-				ConstraintIndex(i))
-		} else {
-			// Soft constraint
-			soft_constraint_map[ctype] = append(soft_constraint_map[ctype],
-				ConstraintIndex(i))
+		if inactive != 0 {
+			base.Message.Printf("-T- %d inactive time constraints", inactive)
 		}
+		n_time_constraints = len(constraints)
 	}
-	n_time_constraints := len(constraints)
-	// Collect space constraints
-	et = root.SelectElement("Space_Constraints_List")
-	for _, e := range et.ChildElements() {
-		i := len(constraints)
-		constraints = append(constraints, e)
-		ctype := ConstraintType(e.Tag)
-		w := e.SelectElement("Weight_Percentage").Text()
-		//fmt.Printf(" ++ %02d: %s (%s)\n", i, ctype, w)
-		if ctype == "ConstraintBasicCompulsorySpace" {
-			// Basic, non-negotiable constraint
-			necessary = append(necessary, ConstraintIndex(i))
-			continue
+	// Collect active space constraints
+	{
+		et := root.SelectElement("Space_Constraints_List")
+		inactive := 0
+		for _, e := range et.ChildElements() {
+			// Count and skip if inactive
+			if e.SelectElement("Active").Text() == "false" {
+				et.RemoveChild(e)
+				inactive++ // count removed constraints
+				continue
+			}
+			i := len(constraints)
+			constraints = append(constraints, e)
+			ctype := ConstraintType(e.Tag)
+			w := e.SelectElement("Weight_Percentage").Text()
+			//fmt.Printf(" ++ %02d: %s (%s)\n", i, ctype, w)
+			if ctype == "ConstraintBasicCompulsorySpace" {
+				// Basic, non-negotiable constraint
+				necessary = append(necessary, ConstraintIndex(i))
+				continue
+			}
+			constraint_types = append(constraint_types, ctype)
+			// ... duplicates wil be removed in `sort_constraint_types`
+			if w == "100" {
+				// Hard constraint
+				hard_constraint_map[ctype] = append(hard_constraint_map[ctype],
+					ConstraintIndex(i))
+			} else {
+				// Soft constraint
+				soft_constraint_map[ctype] = append(soft_constraint_map[ctype],
+					ConstraintIndex(i))
+			}
 		}
-		constraint_types = append(constraint_types, ctype)
-		// ... duplicates wil be removed in `sort_constraint_types`
-		if w == "100" {
-			// Hard constraint
-			hard_constraint_map[ctype] = append(hard_constraint_map[ctype],
-				ConstraintIndex(i))
-		} else {
-			// Soft constraint
-			soft_constraint_map[ctype] = append(soft_constraint_map[ctype],
-				ConstraintIndex(i))
+		if inactive != 0 {
+			base.Message.Printf("-S- %d inactive space constraints", inactive)
 		}
 	}
 
 	fetdoc := &FetDoc{
 		Doc:              doc,
+		Activities:       activities,
 		Constraints:      constraints,
 		NTimeConstraints: ConstraintIndex(n_time_constraints),
 		Necessary:        necessary,
@@ -258,29 +293,13 @@ func (fetdoc *FetDoc) PrepareRun(enabled []bool, xmlp any) {
 	for _, i := range fetdoc.Necessary {
 		enabled[i] = true
 	}
-	doc := fetdoc.Doc
-	root := doc.Root()
-	et := root.SelectElement("Time_Constraints_List")
-	var i ConstraintIndex = 0
-	var e *etree.Element
-	for _, e = range et.ChildElements() {
-		active := e.SelectElement("Active")
+	for i, c := range fetdoc.Constraints {
+		active := c.SelectElement("Active")
 		if enabled[i] {
 			active.SetText("true")
 		} else {
 			active.SetText("false")
 		}
-		i++
-	}
-	et = root.SelectElement("Space_Constraints_List")
-	for _, e = range et.ChildElements() {
-		active := e.SelectElement("Active")
-		if enabled[i] {
-			active.SetText("true")
-		} else {
-			active.SetText("false")
-		}
-		i++
 	}
 	var err error
 	*(xmlp.(*[]byte)), err = fetdoc.Doc.WriteToBytes()

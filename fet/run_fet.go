@@ -74,10 +74,9 @@ func RunFet(
 			panic("Couldn't write fet file to: " + cfile)
 		}
 	}
-	//cwd := filepath.Dir(fetfile)
-	//odir := filepath.Join(cwd, "out")
-	odir := filepath.Join(dir_n, "out")
-	os.RemoveAll(odir)
+	//odir := filepath.Join(dir_n, "out")
+	//os.RemoveAll(odir)
+	odir := dir_n
 	logfile := filepath.Join(odir, "logs", "max_placed_activities.txt")
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -179,9 +178,7 @@ func (data *FetTtData) Tick(
 				if l != nil {
 					count, err := strconv.Atoi(string(l[2]))
 					if err == nil {
-						percent := count * 100 /
-							(int(basic_data.NActivities) -
-								len(basic_data.DisabledActivities))
+						percent := (count * 100) / int(basic_data.NActivities)
 						if percent > instance.Progress {
 							instance.Progress = percent
 							instance.LastTime = instance.Ticks

@@ -100,12 +100,10 @@ one constraint being added) there is no successor, the constraint is dropped
 (from this accumulation round).
 
 When an instance completes successfully within the allotted time, its result
-is saved as a JSON file, so that the best result so far gradually encompasses
-more of the constraints. When all the constraints have been tested with a
-certain timeout, a new round is entered and the rejected ones are tried again,
-but this time with longer timeouts.
-
-TODO: Clarify when/how this phase ends.
+is saved as a `Result` structure, the best result so far gradually
+encompassing more of the constraints. When all the constraints have been
+tested with a certain timeout, a new round is entered and the rejected ones
+are tried again, but this time with longer timeouts.
 
 When all the hard constraints have been included, the soft constraints are
 added in basically the same way. If the initial instance with all hard
@@ -115,9 +113,10 @@ be cancelled. If the accumulation loop should finish first (somewhat unlikely,
 but possible), the initial instance with all hard constraints may be
 terminated.
 
-When everything has been added that can be in the given time, a "result" is
-generated, which includes diagnostic information (at least an indication of
-which constraints were dropped), and details of the last successful run.
+When everything has been added that can be in the given time, the latest
+`Result` is saved as a JSON file, "Result.json". This includes diagnostic
+information (at least an indication of which constraints were dropped), and
+details of the last successful run.
 */
 
 func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
