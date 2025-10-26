@@ -1,6 +1,7 @@
 package fet
 
 import (
+	"encoding/json"
 	"fetrunner/autotimetable"
 	"fetrunner/base"
 
@@ -37,6 +38,10 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 	}
 
 	root := doc.Root()
+
+	//base.Message.Printf(" -->\n%s\n", WriteElement(root))
+	//panic("TODO")
+
 	/*
 		fmt.Printf("ROOT element: %s (%+v)\n", root.Tag, root.Attr)
 		for i, e := range root.ChildElements() {
@@ -306,4 +311,52 @@ func (fetdoc *FetDoc) PrepareRun(enabled []bool, xmlp any) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+// Generate a JSON version of the given element. Only a simple subset of
+// XML is covered, but it should be enough for a FET file.
+func WriteElement(e *etree.Element) string {
+	k, v := jsonElement(e)
+	if v == nil {
+		return ""
+	}
+	m := map[string]any{}
+	m[k] = v
+	jsonBytes, err := json.MarshalIndent(m, "", "   ")
+	if err != nil {
+		panic(err)
+	}
+
+	return string(jsonBytes)
+}
+
+func jsonElement(e *etree.Element) (string, any) {
+	children := e.ChildElements()
+	if len(children) == 0 {
+		v := e.Text()
+		if len(v) == 0 {
+			return "", nil
+		}
+		return e.FullTag(), v
+	}
+	m0 := map[string][]any{}
+	for _, c := range children {
+		k, v := jsonElement(c)
+		if v == nil {
+			continue
+		}
+		m0[k] = append(m0[k], v)
+	}
+	if len(m0) == 0 {
+		return "", nil
+	}
+	m := map[string]any{}
+	for k, v := range m0 {
+		if len(v) == 1 {
+			m[k] = v[0]
+		} else {
+			m[k] = v
+		}
+	}
+	return e.FullTag(), m
 }

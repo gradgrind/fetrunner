@@ -8,14 +8,22 @@ import (
 )
 
 type Result struct {
-	Time       int
-	Placements []ActivityPlacement
-	//DiscardedHardConstraints   []any
+	Time                       int
+	Days                       []string
+	Hours                      []string
+	Activities                 []TtItem
+	Constraints                []TtItem
+	Rooms                      []TtItem
+	Placements                 []ActivityPlacement
 	UnfulfilledHardConstraints map[ConstraintType][]ConstraintIndex
 	TotalHardConstraints       int
-	//DiscardedSoftConstraints   []any
 	UnfulfilledSoftConstraints map[ConstraintType][]ConstraintIndex
 	TotalSoftConstraints       int
+}
+
+type TtItem struct {
+	Key  string
+	Text string
 }
 
 //TODO ...
