@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fetrunner/autotimetable"
 	"fetrunner/base"
+	"fmt"
+	"strconv"
 
 	"github.com/beevik/etree"
 )
@@ -11,7 +13,6 @@ import (
 type ConstraintIndex = autotimetable.ConstraintIndex
 type BasicData = autotimetable.BasicData
 type ConstraintType = autotimetable.ConstraintType
-type ActivityIndex = autotimetable.ActivityIndex
 
 // In FET there are "time" constraints and "space" constraints. The
 // `ConstraintData` structure lumps them all together, so there is just
@@ -62,7 +63,7 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 				inactive++
 			}
 		}
-		cdata.NActivities = ActivityIndex(len(activities))
+		cdata.NActivities = len(activities)
 		if inactive != 0 {
 			base.Message.Printf("-A- %d inactive activities", inactive)
 		}
@@ -171,7 +172,23 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 	return fetdoc, nil
 }
 
-func (fetdoc *FetDoc) GetDays() []string {
+// The ActivityIds are the (FET) Activity Id (int) and the content of the
+// "Comments" field (string).
+func (fetdoc *FetDoc) GetActivityIds() []autotimetable.ActivityId {
+	alist := []autotimetable.ActivityId{}
+	for _, a := range fetdoc.Activities {
+		id := a.SelectElement("Id").Text()
+		i, err := strconv.Atoi(id)
+		if err != nil {
+			panic("Activity Id is not an integer: " + id)
+		}
+		alist = append(alist, autotimetable.ActivityId{
+			Id: i, Ref: a.SelectElement("Comments").Text()})
+	}
+	return alist
+}
+
+func (fetdoc *FetDoc) GetDayTags() []string {
 	root := fetdoc.Doc.Root()
 	days := []string{}
 	for _, e := range root.SelectElement("Days_List").SelectElements("Day") {
@@ -180,7 +197,7 @@ func (fetdoc *FetDoc) GetDays() []string {
 	return days
 }
 
-func (fetdoc *FetDoc) GetHours() []string {
+func (fetdoc *FetDoc) GetHourTags() []string {
 	root := fetdoc.Doc.Root()
 	hours := []string{}
 	for _, e := range root.SelectElement("Hours_List").SelectElements("Hour") {
@@ -189,96 +206,41 @@ func (fetdoc *FetDoc) GetHours() []string {
 	return hours
 }
 
-func (fetdoc *FetDoc) GetResources() []autotimetable.Resource {
+func (fetdoc *FetDoc) GetRooms() []autotimetable.TtItem {
 	root := fetdoc.Doc.Root()
-	resources := []autotimetable.Resource{}
+	rooms := []autotimetable.TtItem{}
 	i := 0
 	for _, e := range root.SelectElement("Rooms_List").ChildElements() {
 		if e.SelectElement("Virtual").Text() == "false" {
 			tag := e.SelectElement("Name").Text()
 			data := e.SelectElement("Comments").Text()
-			resources = append(resources, &autotimetable.TtRoom{
-				TtResource: autotimetable.TtResource{
-					Index: i,
-					Tag:   tag,
-					Data:  data,
-				},
+			rooms = append(rooms, autotimetable.TtItem{
+				Key:  data,
+				Text: tag,
 			})
 			i++
 		}
 	}
-	i = 0
-	for _, e := range root.SelectElement("Teachers_List").ChildElements() {
-		tag := e.SelectElement("Name").Text()
-		data := e.SelectElement("Comments").Text()
-		resources = append(resources, &autotimetable.TtTeacher{
-			TtResource: autotimetable.TtResource{
-				Index: i,
-				Tag:   tag,
-				Data:  data,
-			},
-		})
-		i++
-	}
-	i = 0
-	for _, e := range root.SelectElement("Students_List").ChildElements() {
-		tag := e.SelectElement("Name").Text()
-		data := e.SelectElement("Comments").Text()
-		groups := []*autotimetable.TtGroup{}
-		cresource := &autotimetable.TtClass{
-			TtResource: autotimetable.TtResource{
-				Index: i,
-				Tag:   tag,
-				Data:  data,
-			},
-		}
-		resources = append(resources, cresource)
-		i++
-
-		for _, eg := range e.SelectElements("Group") {
-			gtag := eg.SelectElement("Name").Text()
-			subgroups := []*autotimetable.TtSubgroup{}
-			gresource := &autotimetable.TtGroup{
-				TtResource: autotimetable.TtResource{
-					Index: i,
-					Tag:   gtag,
-				},
-			}
-			groups = append(groups, gresource)
-			resources = append(resources, gresource)
-			i++
-
-			for _, esg := range eg.SelectElements("Subgroup") {
-				sgtag := esg.SelectElement("Name").Text()
-				sgresource := &autotimetable.TtSubgroup{
-					TtResource: autotimetable.TtResource{
-						Index: i,
-						Tag:   sgtag,
-					},
-				}
-				subgroups = append(subgroups, sgresource)
-				resources = append(resources, sgresource)
-				i++
-			}
-			gresource.Subgroups = subgroups
-		}
-		cresource.Groups = groups
-	}
-	return resources
+	return rooms
 }
 
-// Get a string representation of the given constraint.
-func (fetdoc *FetDoc) ConstraintString(cix ConstraintIndex) string {
-	e := fetdoc.Constraints[cix]
-	d := etree.NewDocument()
-	d.SetRoot(e)
-	//d.Indent(2) // with newlines and indentation
-	d.Unindent() // no newlines or indentation
-	s, err := d.WriteToString()
-	if err != nil {
-		panic(err)
+// Get a key and string representation of the constraints.
+func (fetdoc *FetDoc) GetConstraintItems() []autotimetable.TtItem {
+	clist := []autotimetable.TtItem{}
+	for _, c := range fetdoc.Constraints {
+		// Make a JSON version of the constraint's XML
+		s := WriteElement(c)
+		key := ""
+		ce := c.SelectElement("Comments")
+		if ce != nil {
+			key = ce.Text()
+		}
+		clist = append(clist, autotimetable.TtItem{
+			Key:  key,
+			Text: s,
+		})
 	}
-	return s
+	return clist
 }
 
 func (fetdoc *FetDoc) WriteFET(fetfile string) {
@@ -286,6 +248,15 @@ func (fetdoc *FetDoc) WriteFET(fetfile string) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (fetdoc *FetDoc) XXX(s string) {
+
+	root := fetdoc.Doc.Root()
+	et := root.SelectElement("Time_Constraints_List")
+	n := len(et.ChildElements())
+	fmt.Printf("*** %s *** %d\n", s, n)
+
 }
 
 // Rebuild the FET file given an array detailing which constraints are
@@ -306,6 +277,17 @@ func (fetdoc *FetDoc) PrepareRun(enabled []bool, xmlp any) {
 			active.SetText("false")
 		}
 	}
+	root := fetdoc.Doc.Root()
+	et := root.SelectElement("Time_Constraints_List")
+	active := 0
+	n := 0
+	for _, e := range et.ChildElements() {
+		// Count and skip if inactive
+		if e.SelectElement("Active").Text() == "true" {
+			active++ // count active constraints
+		}
+		n++
+	}
 	var err error
 	*(xmlp.(*[]byte)), err = fetdoc.Doc.WriteToBytes()
 	if err != nil {
@@ -322,11 +304,11 @@ func WriteElement(e *etree.Element) string {
 	}
 	m := map[string]any{}
 	m[k] = v
-	jsonBytes, err := json.MarshalIndent(m, "", "   ")
+	//jsonBytes, err := json.MarshalIndent(m, "", "   ")
+	jsonBytes, err := json.Marshal(m)
 	if err != nil {
 		panic(err)
 	}
-
 	return string(jsonBytes)
 }
 

@@ -247,25 +247,31 @@ func (data *FetTtData) Results(
 		base.Bug.Printf("XML error in %s:\n %v\n", xmlpath, err)
 		return nil
 	}
-	// Need to convert rooms and days/hours ...
+	// Need to prepare the `ActivityPlacment` fields: activities, days,
+	// hours and rooms ...
 	// ... room conversion
-	room2index := map[string]autotimetable.RoomIndex{}
-	for _, r := range basic_data.Source.GetResources() {
-		if rr, ok := r.(*autotimetable.TtRoom); ok {
-			room2index[rr.GetTag()] = rr.GetIndex()
-		}
+	room2index := map[string]int{}
+	for i, r := range basic_data.Source.GetRooms() {
+		room2index[r.Text] = i
+
 	}
-	// ... days
+	// ... day conversion
 	day2index := map[string]int{}
-	for i, d := range basic_data.Source.GetDays() {
+	for i, d := range basic_data.Source.GetDayTags() {
 		day2index[d] = i
 	}
-	// ... hours
+	// ... hour conversion
 	hour2index := map[string]int{}
-	for i, h := range basic_data.Source.GetHours() {
+	for i, h := range basic_data.Source.GetHourTags() {
 		hour2index[h] = i
 	}
+	// ... activity conversion
+	activity2index := map[int]int{}
+	for i, a := range basic_data.Source.GetActivityIds() {
+		activity2index[a.Id] = i
+	}
 
+	// Gather the activities
 	activities := make([]autotimetable.ActivityPlacement, len(v.Activities))
 	for i, a := range v.Activities {
 		rooms := []int{}
@@ -285,10 +291,10 @@ func (data *FetTtData) Results(
 			rooms = append(rooms, ix)
 		}
 		activities[i] = autotimetable.ActivityPlacement{
-			Id:    a.Id,
-			Day:   day2index[a.Day],
-			Hour:  hour2index[a.Hour],
-			Rooms: rooms,
+			Activity: a.Id,
+			Day:      day2index[a.Day],
+			Hour:     hour2index[a.Hour],
+			Rooms:    rooms,
 		}
 	}
 	return activities
@@ -301,7 +307,7 @@ type fetResultRoot struct { // The root node.
 
 type fetResultActivity struct {
 	XMLName   xml.Name `xml:"Activity"`
-	Id        ActivityIndex
+	Id        string
 	Day       string
 	Hour      string
 	Room      string

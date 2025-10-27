@@ -342,7 +342,6 @@ tickloop:
 		if basic_data.phase == 3 {
 			continue
 		}
-
 		if basic_data.phase == 0 {
 			// During phase 0 only `full_instance`, `hard_instance` and
 			// `null_instance` are running.

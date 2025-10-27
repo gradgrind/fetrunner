@@ -11,7 +11,6 @@ type Result struct {
 	Time                       int
 	Days                       []string
 	Hours                      []string
-	Activities                 []TtItem
 	Constraints                []TtItem
 	Rooms                      []TtItem
 	Placements                 []ActivityPlacement
@@ -65,16 +64,20 @@ func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
 		sunfulfilled[ctype] = ulist
 		snall += len(clist)
 	}
-
+	clist := basic_data.Source.GetConstraintItems()
+	rlist := basic_data.Source.GetRooms()
 	basic_data.lastResult = &Result{
 		Time:                       instance.Ticks,
+		Days:                       basic_data.Source.GetDayTags(),
+		Hours:                      basic_data.Source.GetHourTags(),
+		Constraints:                clist,
+		Rooms:                      rlist,
 		Placements:                 alist,
 		UnfulfilledHardConstraints: hunfulfilled,
 		TotalHardConstraints:       hnall,
 		UnfulfilledSoftConstraints: sunfulfilled,
 		TotalSoftConstraints:       snall,
 	}
-
 	if basic_data.Parameters.DEBUG {
 		//b, err := json.Marshal(LastResult)
 		b, err := json.MarshalIndent(basic_data.lastResult, "", "  ")

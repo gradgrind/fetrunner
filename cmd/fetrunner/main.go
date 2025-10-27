@@ -85,6 +85,18 @@ func main() {
 		log.Fatal(err)
 	}
 
+	//TODO--
+	//fmt.Printf("$DAYS: %v\n", bdata.Source.GetDayTags())
+	//fmt.Printf("$HOURS: %v\n", bdata.Source.GetHourTags())
+	//for i, r := range bdata.Source.GetRooms() {
+	//	fmt.Printf("$ROOM: %d %s & %s\n", i, r.Key, r.Text)
+	//}
+	// Actually, the rooms are arranged in the resource list in the
+	// correct order, so room2index (in Results in run_fet.go) may not
+	// need the GetIndex function? Perhaps it is good anyway?
+	// Perhaps there should be a GetRooms function in read_fet.go?
+	//return
+
 	//TODO-- This is just for testing FET backend
 	//bdata.Source.(*fet.FetDoc).WriteFET(workingdir + "_mod.fet")
 

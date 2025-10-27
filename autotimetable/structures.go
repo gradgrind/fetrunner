@@ -3,9 +3,6 @@ package autotimetable
 // Structures and global variables used in connection with automation of the
 // timetable generation.
 
-type ActivityIndex int
-type RoomIndex = int
-
 type ConstraintType string
 type ConstraintIndex int
 
@@ -36,7 +33,7 @@ type BasicData struct {
 	Source     TtSource
 	RunBackend func(*BasicData, *TtInstance) TtBackend
 
-	NActivities       ActivityIndex
+	NActivities       int
 	NConstraints      ConstraintIndex
 	ConstraintTypes   []ConstraintType // ordered list of constraint types
 	HardConstraintMap map[ConstraintType][]ConstraintIndex
@@ -66,18 +63,20 @@ type BasicData struct {
 }
 
 type TtSource interface {
-	GetResources() []Resource
-	GetDays() []string
-	GetHours() []string
+	GetActivityIds() []ActivityId
+	GetRooms() []TtItem
+	GetDayTags() []string
+	GetHourTags() []string
 	// Return a string representation of the given constraint:
-	ConstraintString(ConstraintIndex) string
+	GetConstraintItems() []TtItem
 	// Prepare the "source" for a run with a set of enabled constraints:
 	PrepareRun([]bool, any)
 }
 
-type TtDay struct {
-	Index int
-	Name  string
+type ActivityId struct {
+	Id  int    // (generator) back-end activity index
+	Ref string // (input) source reference/identifier for activity, if
+	// distinct from `Id`
 }
 
 type TtInstance struct {
@@ -101,9 +100,6 @@ type TtInstance struct {
 	// there is also 3: cancelled
 	// The following are set by the back-end:
 
-	//TODO: -> the back-end?
-	//InstanceDir string // working space for this instance
-
 	RunState int    // set by back-end
 	Progress int    // percent
 	LastTime int    // last (instance) time at which `Progress` changed
@@ -122,16 +118,18 @@ type TtBackend interface {
 // This structure is used to return the placement results from the
 // timetable back-end.
 type ActivityPlacement struct {
-	Id    ActivityIndex
-	Day   int
-	Hour  int
-	Rooms []RoomIndex
+	// All indexes are zero-based.
+	Activity string // activity reference
+	Day      int    // day index
+	Hour     int    // hour index
+	Rooms    []int  // room indexes
 }
 
 //************** Resources **************
 
 // TODO ...
 
+/*
 type Resource interface {
 	GetIndex() int  //TODO: within the type?
 	GetTag() string // short identifier (unique)
@@ -217,3 +215,4 @@ type TtRoom struct {
 }
 
 // --- Room resource
+*/
