@@ -11,6 +11,7 @@ type Result struct {
 	Time                       int
 	Days                       []string
 	Hours                      []string
+	Activities                 []ActivityId
 	Constraints                []TtItem
 	Rooms                      []TtItem
 	Placements                 []ActivityPlacement
@@ -24,8 +25,6 @@ type TtItem struct {
 	Key  string
 	Text string
 }
-
-//TODO ...
 
 // Get the result of the current instance as a `Result` structure.
 // Save as JSON if debugging.
@@ -70,6 +69,7 @@ func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
 		Time:                       instance.Ticks,
 		Days:                       basic_data.Source.GetDayTags(),
 		Hours:                      basic_data.Source.GetHourTags(),
+		Activities:                 basic_data.Source.GetActivityIds(),
 		Constraints:                clist,
 		Rooms:                      rlist,
 		Placements:                 alist,

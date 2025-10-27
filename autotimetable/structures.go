@@ -119,10 +119,10 @@ type TtBackend interface {
 // timetable back-end.
 type ActivityPlacement struct {
 	// All indexes are zero-based.
-	Activity string // activity reference
-	Day      int    // day index
-	Hour     int    // hour index
-	Rooms    []int  // room indexes
+	Activity int   // activity index
+	Day      int   // day index
+	Hour     int   // hour index
+	Rooms    []int // room indexes
 }
 
 //************** Resources **************

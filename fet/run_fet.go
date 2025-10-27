@@ -212,7 +212,7 @@ exit:
 }
 
 // If there is a result from the main process, there may be a
-// correspomding result from the source.
+// corresponding result from the source.
 func (data *FetTtData) FinalizeResult(basic_data *autotimetable.BasicData) {
 	// Write FET file at top level of working directory.
 	fetfile := filepath.Join(basic_data.WorkingDir, "Result.fet")
@@ -291,7 +291,7 @@ func (data *FetTtData) Results(
 			rooms = append(rooms, ix)
 		}
 		activities[i] = autotimetable.ActivityPlacement{
-			Activity: a.Id,
+			Activity: activity2index[a.Id],
 			Day:      day2index[a.Day],
 			Hour:     hour2index[a.Hour],
 			Rooms:    rooms,
@@ -307,7 +307,7 @@ type fetResultRoot struct { // The root node.
 
 type fetResultActivity struct {
 	XMLName   xml.Name `xml:"Activity"`
-	Id        string
+	Id        int
 	Day       string
 	Hour      string
 	Room      string
