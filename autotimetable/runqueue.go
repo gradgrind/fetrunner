@@ -71,15 +71,10 @@ func (rq *RunQueue) update_instances() {
 			if instance.Progress < limit {
 				// Progress is too slow ...
 				if instance.Progress*2 > limit {
+					// ... but stretch the rule a bit
 					continue
 				}
-				base.Message.Printf("(TODO) [%d] Trap %s @ %d (%d): %d\n",
-					rq.BasicData.Ticks,
-					instance.Tag,
-					instance.Ticks,
-					instance.Progress,
-					len(instance.Constraints))
-				rq.BasicData.abort_instance(instance)
+				instance.TimedOut = true
 			}
 
 		case 1: // completed successfully
@@ -106,7 +101,20 @@ func (rq *RunQueue) update_queue() int {
 			}
 			continue
 		}
-		if instance.ProcessingState == 0 || instance.ProcessingState == 3 {
+		switch instance.ProcessingState {
+		case 0:
+			if instance.TimedOut {
+				base.Message.Printf("(TODO) [%d] Trap %s @ %d (%d): %d\n",
+					rq.BasicData.Ticks,
+					instance.Tag,
+					instance.Ticks,
+					instance.Progress,
+					len(instance.Constraints))
+				rq.BasicData.abort_instance(instance)
+			}
+
+			running++
+		case 3:
 			running++
 		}
 	}
