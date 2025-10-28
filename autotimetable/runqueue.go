@@ -8,6 +8,7 @@ import (
 type RunQueue struct {
 	BasicData  *BasicData
 	Queue      []*TtInstance
+	Pending    []*TtInstance
 	Active     map[*TtInstance]struct{}
 	MaxRunning int
 	Next       int

@@ -63,6 +63,166 @@ indicating that there are no more constraints to add.
 */
 func (basic_data *BasicData) mainphase(runqueue *RunQueue) bool {
 
+	to_split_instances := []*TtInstance{}
+
+	// See if an instance has completed successfully, to be used as the new
+	// base.
+	// Also look for failed instances: those with only one constraint are
+	// placed in the `held_instances` list. The others are added to the
+	// `to_split_instances` – these will later be split into two halves and
+	// added to the end of the run queue.
+	var new_base *TtInstance = nil
+	for i, instance := range basic_data.constraint_list {
+		switch instance.ProcessingState {
+
+		case 1:
+			if new_base == nil {
+				new_base = instance
+				// Remove it from constraint list.
+				basic_data.constraint_list = slices.Delete(
+					basic_data.constraint_list, i, i+1)
+			}
+
+		case 2:
+			// Timed out / failed, remove it from constraint list.
+			basic_data.constraint_list = slices.Delete(
+				basic_data.constraint_list, i, i+1)
+
+			if len(instance.Constraints) > 1 {
+				to_split_instances = append(to_split_instances, instance)
+			} else if len(instance.Constraints) == 1 {
+				runqueue.Pending = append(runqueue.Pending, instance)
+			} else {
+				panic("Bug, expected constraint(s)")
+			}
+		}
+	}
+
+	// If there is a new base instance, all instances in `constraint_list`
+	// which are still running need to be stopped. They are duplicated and
+	// added to the new constraint list.
+	next_timeout := 0
+	if new_base != nil {
+		basic_data.current_instance = new_base
+		basic_data.new_current_instance(new_base)
+		next_timeout = (new_base.Ticks *
+			basic_data.Parameters.NEW_BASE_TIMEOUT_FACTOR) / 10
+		new_constraint_list := []*TtInstance{}
+		for _, instance := range basic_data.constraint_list {
+			if instance.ProcessingState == 0 {
+				basic_data.abort_instance(instance)
+				// Build new instance
+				new := basic_data.new_instance(
+					basic_data.current_instance,
+					instance.ConstraintType,
+					instance.Constraints,
+					next_timeout)
+				new_constraint_list = append(new_constraint_list, new)
+				runqueue.add(new)
+			}
+		}
+		basic_data.constraint_list = new_constraint_list
+	}
+
+	for _, instance := range to_split_instances {
+		// Split into two. The new timeout is the same as the old one
+		// if `next_timeout` is 0 (not starting with a new base).
+		timeout := next_timeout
+		if timeout == 0 {
+			timeout = instance.Timeout
+		}
+		nhalf := len(instance.Constraints) / 2
+		new := basic_data.new_instance(
+			basic_data.current_instance,
+			instance.ConstraintType,
+			instance.Constraints[:nhalf],
+			timeout)
+		basic_data.constraint_list = append(basic_data.constraint_list, new)
+		runqueue.add(new)
+		new = basic_data.new_instance(
+			basic_data.current_instance,
+			instance.ConstraintType,
+			instance.Constraints[nhalf:],
+			timeout)
+		basic_data.constraint_list = append(basic_data.constraint_list, new)
+		runqueue.add(new)
+	}
+
+	if next_timeout != 0 {
+		for _, instance := range runqueue.Pending {
+			new := basic_data.new_instance(
+				basic_data.current_instance,
+				instance.ConstraintType,
+				instance.Constraints,
+				next_timeout)
+			basic_data.constraint_list = append(basic_data.constraint_list, new)
+			runqueue.add(new)
+		}
+		runqueue.Pending = nil
+	}
+
+	//TODO ... possibly earlier in the function ...
+
+	if len(basic_data.constraint_list) == 0 {
+		// ... all current constraint trials finished.
+		// Start trials of remaining constraints, hard then soft,
+		// forcing a longer timeout.
+		basic_data.cycle_timeout = (max(basic_data.cycle_timeout,
+			basic_data.current_instance.Ticks) *
+			basic_data.Parameters.NEW_CYCLE_TIMEOUT_FACTOR) / 10
+		var n int
+	rpt:
+		basic_data.constraint_list, n = basic_data.get_basic_constraints(
+			basic_data.current_instance, basic_data.phase == 2)
+		if n == 0 {
+			if basic_data.phase == 2 {
+				// The fully constrained instance is no longer needed.
+				if basic_data.full_instance.ProcessingState == 0 {
+					basic_data.abort_instance(basic_data.full_instance)
+				}
+				return true // solution found
+			} else {
+				base.Message.Printf(
+					"(TODO) [%d] Phase 2 based on accumulated instance",
+					basic_data.Ticks)
+				basic_data.phase = 2
+				// The hard-only instance is no longer needed.
+				if basic_data.hard_instance.ProcessingState == 0 {
+					basic_data.abort_instance(basic_data.hard_instance)
+				}
+				goto rpt
+			}
+		}
+		basic_data.cycle++
+		// Queue instances for running
+		for _, bc := range basic_data.constraint_list {
+			runqueue.add(bc)
+		}
+		hs := "hard"
+		if basic_data.phase == 2 {
+			hs = "soft"
+		}
+		base.Message.Printf(
+			"(TODO) [%d] Cycle %d (%s): %d (timeout %d)\n",
+			basic_data.Ticks, basic_data.cycle, hs, n, basic_data.cycle_timeout)
+		return false // still processing
+	}
+
+	//TODO?
+
+	/*
+		basic_data.constraint_list = append(new_constraint_list,
+			split_instances...)
+		for _, instance := range split_instances {
+			runqueue.add(instance)
+		}
+	*/
+
+	return false // still processing
+}
+
+func (basic_data *BasicData) mainphase_0(runqueue *RunQueue) bool {
+
 	next_timeout := 0 // non-zero => "restart with new base"
 
 	// See if an instance has completed successfully.
@@ -71,9 +231,17 @@ func (basic_data *BasicData) mainphase(runqueue *RunQueue) bool {
 			// Completed successfully, make this instance the new base.
 			basic_data.current_instance = instance
 			basic_data.new_current_instance(instance)
-			next_timeout = max(
-				instance.Ticks*basic_data.Parameters.NEW_BASE_TIMEOUT_FACTOR/10,
-				basic_data.cycle_timeout)
+
+			next_timeout = (instance.Ticks *
+				basic_data.Parameters.NEW_BASE_TIMEOUT_FACTOR) / 10
+
+			if next_timeout < basic_data.cycle_timeout {
+				next_timeout = basic_data.cycle_timeout
+			}
+
+			//--next_timeout = max(
+			//--	instance.Ticks*basic_data.Parameters.NEW_BASE_TIMEOUT_FACTOR/10,
+			//--	basic_data.cycle_timeout)
 			// Remove it from constraint list.
 			basic_data.constraint_list = slices.Delete(
 				basic_data.constraint_list, i, i+1)
@@ -82,9 +250,11 @@ func (basic_data *BasicData) mainphase(runqueue *RunQueue) bool {
 			break
 		}
 	}
+
 	if len(basic_data.constraint_list) == 0 {
 		// ... all current constraint trials finished.
-		// Start trials of remaining constraints, hard then soft.
+		// Start trials of remaining constraints, hard then soft,
+		// forcing a longer timeout.
 		basic_data.cycle_timeout = (max(basic_data.cycle_timeout,
 			basic_data.current_instance.Ticks) *
 			basic_data.Parameters.NEW_CYCLE_TIMEOUT_FACTOR) / 10
