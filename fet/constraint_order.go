@@ -15,6 +15,11 @@ var ConstraintPriority = map[ConstraintType]int{
 	"ConstraintStudentsSetNotAvailableTimes": 99,
 	"ConstraintTeacherNotAvailableTimes":     98,
 
+	"ConstraintStudentsMinHoursDaily":         5,
+	"ConstraintStudentsSetMinHoursDaily":      4,
+	"ConstraintStudentsMinHoursPerMorning":    -4,
+	"ConstraintStudentsSetMinHoursPerMorning": -5,
+
 	"ConstraintTeachersMaxGapsPerDay":     -93,
 	"ConstraintTeachersMaxGapsPerWeek":    -94,
 	"ConstraintTeacherMaxGapsPerDay":      -95,
