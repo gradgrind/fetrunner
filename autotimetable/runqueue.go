@@ -116,8 +116,11 @@ func (rq *RunQueue) update_queue() int {
 		rq.Next++
 
 		if instance.ProcessingState < 0 {
-			base.Message.Printf("(TODO) [%d] >> %s {%d}\n",
-				rq.BasicData.Ticks, instance.Tag, instance.Timeout)
+			base.Message.Printf("(TODO) [%d] >> %s (%d) {%d}\n",
+				rq.BasicData.Ticks,
+				instance.Tag,
+				len(instance.Constraints),
+				instance.Timeout)
 			instance.Backend = rq.BasicData.RunBackend(rq.BasicData, instance)
 			instance.ProcessingState = 0 // indicate started/running
 			rq.Active[instance] = struct{}{}

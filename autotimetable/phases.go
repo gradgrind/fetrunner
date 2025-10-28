@@ -58,7 +58,7 @@ increased somewhat.
 
 Should it come to pass that all the constraints have been added successfully
 (unlikely, because the overall timeout will have been reached or the
-hard-only or full instance will have completed already), phase 3 is entered,
+hard-only or full instance will have completed already), return `true`,
 indicating that there are no more constraints to add.
 */
 func (basic_data *BasicData) mainphase(runqueue *RunQueue) bool {

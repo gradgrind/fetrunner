@@ -87,10 +87,6 @@ will take longer than the previous one (as the number of constraints grows),
 it should be clear why it is desirable that at least the early stages are
 completed quickly.
 
-TODO: Should the unconstrained instance fail to complete successfully within
-its allotted time, further steps may be taken to trace difficulties within the
-activity collection, perhaps identifying "difficult" classes or teachers.
-
 When a single-constraint-type instance completes successfully, it is used as
 a new base (`current_instance`) for the addition of further constraints. All
 the remaining constraint-type instances are stopped and restarted with this
@@ -251,9 +247,12 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 
 tickloop:
 	// Start queued instances if there are free processors.
-	// Quit the loop if there are no instances left and no constraints
-	// pending (phase 3).
-	for runqueue.update_queue() != 0 || basic_data.phase != 3 {
+	for {
+		if runqueue.update_queue() == 0 {
+			base.Message.Printf(
+				"(TODO) [%d] Run-queue empty",
+				basic_data.Ticks)
+		}
 		select {
 		case <-ticker.C:
 		case <-sigChan:
@@ -339,9 +338,6 @@ tickloop:
 			break
 		}
 
-		if basic_data.phase == 3 {
-			continue
-		}
 		if basic_data.phase == 0 {
 			// During phase 0 only `full_instance`, `hard_instance` and
 			// `null_instance` are running.
@@ -364,12 +360,12 @@ tickloop:
 		// There should be no problem if there are no constraints to add.
 
 		if basic_data.mainphase(runqueue) {
-			basic_data.phase = 3
-			base.Message.Printf(
-				"(TODO) [%d] Phase 3: finalizing ...",
-				basic_data.Ticks)
+			break
 		}
 	} // tickloop: end
+	base.Message.Printf(
+		"(TODO) [%d] Phase 3: finalizing ...",
+		basic_data.Ticks)
 
 	result := basic_data.current_instance
 
