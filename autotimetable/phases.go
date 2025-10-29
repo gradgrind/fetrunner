@@ -67,15 +67,6 @@ reached or the hard-only or full instance will have completed already), return
 func (runqueue *RunQueue) mainphase() {
 	basic_data := runqueue.BasicData
 
-	//TODO--
-	nc := 0
-	for _, c := range basic_data.constraint_list {
-		nc += len(c.Constraints)
-	}
-	base.Message.Printf(
-		"??? [%d] Cycle %d: %d\n",
-		basic_data.Ticks, basic_data.cycle, nc)
-
 	// See if an instance has completed successfully, to be used as the new
 	// base.
 	// Also look for failed instances: those with only one constraint are
@@ -109,6 +100,7 @@ func (runqueue *RunQueue) mainphase() {
 			}
 		}
 	}
+
 	new_constraint_list := []*TtInstance{}
 	for _, c := range basic_data.constraint_list {
 		if c != nil {
@@ -118,27 +110,30 @@ func (runqueue *RunQueue) mainphase() {
 	basic_data.constraint_list = new_constraint_list
 
 	// If there is a new base instance, all instances in `constraint_list`
-	// which are still running need to be stopped. They are duplicated and
-	// added to a new constraint list and run queue.
+	// are duplicated and added to a new constraint list and the run queue.
+	// Those which are still running need to be stopped.
 	next_timeout := 0
 	if new_base != nil {
+		//next_timeout = max(new_base.Ticks, basic_data.current_instance.Timeout)
+
 		basic_data.current_instance = new_base
 		basic_data.new_current_instance(new_base)
 		next_timeout = (new_base.Ticks *
 			basic_data.Parameters.NEW_BASE_TIMEOUT_FACTOR) / 10
+
 		new_constraint_list = []*TtInstance{}
 		for _, instance := range basic_data.constraint_list {
 			if instance.ProcessingState == 0 {
 				basic_data.abort_instance(instance)
-				// Build new instance
-				new := basic_data.new_instance(
-					basic_data.current_instance,
-					instance.ConstraintType,
-					instance.Constraints,
-					next_timeout)
-				new_constraint_list = append(new_constraint_list, new)
-				runqueue.add(new)
 			}
+			// Build new instance
+			new := basic_data.new_instance(
+				basic_data.current_instance,
+				instance.ConstraintType,
+				instance.Constraints,
+				next_timeout)
+			new_constraint_list = append(new_constraint_list, new)
+			runqueue.add(new)
 		}
 		basic_data.constraint_list = new_constraint_list
 	}
