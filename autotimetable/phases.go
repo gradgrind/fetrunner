@@ -7,7 +7,8 @@ import (
 
 // During phase 0 only `full_instance`, `hard_instance` and
 // `null_instance` are running.
-func (basic_data *BasicData) phase0() int {
+func (runqueue *RunQueue) phase0() int {
+	basic_data := runqueue.BasicData
 	switch basic_data.null_instance.ProcessingState {
 	case 0:
 		if basic_data.null_instance.Ticks ==
@@ -15,12 +16,14 @@ func (basic_data *BasicData) phase0() int {
 			basic_data.abort_instance(basic_data.null_instance)
 		}
 		return 0
+
 	case 1:
 		// The null instance completed successfully.
 		basic_data.current_instance = basic_data.null_instance
 		basic_data.new_current_instance(basic_data.current_instance)
 		// Start trials of single constraint types.
 		return 1
+
 	default:
 		// The null instance failed.
 		base.Message.Printf(
@@ -34,80 +37,96 @@ func (basic_data *BasicData) phase0() int {
 /*
 	Main processing phase(s), accumulating constraints.
 
-In this phase instances are run which try to add the (as yet not included)
-constraints of a single type, with a given timeout. A certain number of
+In this phase generator instances are run which try to add the (as yet not
+included) constraints of a single type, with a timeout. A certain number of
 these can be run in parallel. If one completes successfully, it is removed
-from the constraint list. All the other instances are stopped and the
+from the constraint list, all the other instances are stopped and the
 successful instance is used as the base for a new cycle. Depending on the
 time this instance took to complete, the timeout may be increased.
 
 There is some flexibility around the timeouts. If an instance seems to be
 progressing too slowly, it can be halted immediately. On the other hand,
 if the instance looks like it might complete if given a little more time,
-the timeout is delayed.
+the timeout termination is delayed.
 
 When an instance times out, it is removed from the constraint list. It is
 split into two, each with half of the constraints, the new instances being
 added to the constraint list and to the end of the run-queue. If the
 instance has only one constraint to add, no new instance is started – until
-the next cycle.
+the next cycle with a new base.
 
 When the constraint list is empty, the cycle ends. For the next cycle, the
 as yet unincluded constraints are collected again and the timeout is
-increased somewhat.
+adjusted if necessary.
 
 Should it come to pass that all the constraints have been added successfully
-(unlikely, because the overall timeout will have been reached or the
-hard-only or full instance will have completed already), return `true`,
-indicating that there are no more constraints to add.
+(unlikely, because it is more likely that the overall timeout will have been
+reached or the hard-only or full instance will have completed already), return
+`true`, indicating that there are no more constraints to add.
 */
-func (basic_data *BasicData) mainphase(runqueue *RunQueue) bool {
+func (runqueue *RunQueue) mainphase() {
+	basic_data := runqueue.BasicData
 
-	to_split_instances := []*TtInstance{}
+	//TODO--
+	nc := 0
+	for _, c := range basic_data.constraint_list {
+		nc += len(c.Constraints)
+	}
+	base.Message.Printf(
+		"??? [%d] Cycle %d: %d\n",
+		basic_data.Ticks, basic_data.cycle, nc)
 
 	// See if an instance has completed successfully, to be used as the new
 	// base.
 	// Also look for failed instances: those with only one constraint are
-	// placed in the `held_instances` list. The others are added to the
-	// `to_split_instances` – these will later be split into two halves and
-	// added to the end of the run queue.
+	// placed in the `Runqueue.Pending` list of instances. The others are
+	// added to the `to_split_instances` list – these will later be split
+	// into two halves and added to the end of the run queue.
 	var new_base *TtInstance = nil
+	to_split_instances := []*TtInstance{}
 	for i, instance := range basic_data.constraint_list {
 		switch instance.ProcessingState {
 
 		case 1:
 			if new_base == nil {
 				new_base = instance
-				// Remove it from constraint list.
-				basic_data.constraint_list = slices.Delete(
-					basic_data.constraint_list, i, i+1)
+				// Mark for removal from constraint list.
+				basic_data.constraint_list[i] = nil
 			}
 
 		case 2:
-			// Timed out / failed, remove it from constraint list.
-			basic_data.constraint_list = slices.Delete(
-				basic_data.constraint_list, i, i+1)
+			// Timed out / failed, mark for removal from constraint list.
+			basic_data.constraint_list[i] = nil
 
 			if len(instance.Constraints) > 1 {
 				to_split_instances = append(to_split_instances, instance)
 			} else if len(instance.Constraints) == 1 {
 				runqueue.Pending = append(runqueue.Pending, instance)
+				c := instance.Constraints[0]
+				basic_data.ConstraintErrors[c] = instance.Message
 			} else {
 				panic("Bug, expected constraint(s)")
 			}
 		}
 	}
+	new_constraint_list := []*TtInstance{}
+	for _, c := range basic_data.constraint_list {
+		if c != nil {
+			new_constraint_list = append(new_constraint_list, c)
+		}
+	}
+	basic_data.constraint_list = new_constraint_list
 
 	// If there is a new base instance, all instances in `constraint_list`
 	// which are still running need to be stopped. They are duplicated and
-	// added to the new constraint list.
+	// added to a new constraint list and run queue.
 	next_timeout := 0
 	if new_base != nil {
 		basic_data.current_instance = new_base
 		basic_data.new_current_instance(new_base)
 		next_timeout = (new_base.Ticks *
 			basic_data.Parameters.NEW_BASE_TIMEOUT_FACTOR) / 10
-		new_constraint_list := []*TtInstance{}
+		new_constraint_list = []*TtInstance{}
 		for _, instance := range basic_data.constraint_list {
 			if instance.ProcessingState == 0 {
 				basic_data.abort_instance(instance)
@@ -124,6 +143,8 @@ func (basic_data *BasicData) mainphase(runqueue *RunQueue) bool {
 		basic_data.constraint_list = new_constraint_list
 	}
 
+	// Split the instances in `split_instances`, add the new instances to
+	// the constraint list and run queue.
 	for _, instance := range to_split_instances {
 		// Split into two. The new timeout is the same as the old one
 		// if `next_timeout` is 0 (not starting with a new base).
@@ -148,6 +169,8 @@ func (basic_data *BasicData) mainphase(runqueue *RunQueue) bool {
 		runqueue.add(new)
 	}
 
+	// If a new cycle is being started, also reactivate the single-constraint
+	// instances in `runqueue.Pending`.
 	if next_timeout != 0 {
 		for _, instance := range runqueue.Pending {
 			new := basic_data.new_instance(
@@ -155,70 +178,30 @@ func (basic_data *BasicData) mainphase(runqueue *RunQueue) bool {
 				instance.ConstraintType,
 				instance.Constraints,
 				next_timeout)
-			basic_data.constraint_list = append(basic_data.constraint_list, new)
+			basic_data.constraint_list = append(
+				basic_data.constraint_list, new)
 			runqueue.add(new)
 		}
 		runqueue.Pending = nil
-	}
 
-	//TODO ... possibly earlier in the function ...
-
-	if len(basic_data.constraint_list) == 0 {
-		// ... all current constraint trials finished.
-		// Start trials of remaining constraints, hard then soft,
-		// forcing a longer timeout.
-		basic_data.cycle_timeout = (max(basic_data.cycle_timeout,
-			basic_data.current_instance.Ticks) *
-			basic_data.Parameters.NEW_CYCLE_TIMEOUT_FACTOR) / 10
-		var n int
-	rpt:
-		basic_data.constraint_list, n = basic_data.get_basic_constraints(
-			basic_data.current_instance, basic_data.phase == 2)
-		if n == 0 {
-			if basic_data.phase == 2 {
-				// The fully constrained instance is no longer needed.
-				if basic_data.full_instance.ProcessingState == 0 {
-					basic_data.abort_instance(basic_data.full_instance)
-				}
-				return true // solution found
-			} else {
-				base.Message.Printf(
-					"(TODO) [%d] Phase 2 based on accumulated instance",
-					basic_data.Ticks)
-				basic_data.phase = 2
-				// The hard-only instance is no longer needed.
-				if basic_data.hard_instance.ProcessingState == 0 {
-					basic_data.abort_instance(basic_data.hard_instance)
-				}
-				goto rpt
-			}
-		}
 		basic_data.cycle++
-		// Queue instances for running
-		for _, bc := range basic_data.constraint_list {
-			runqueue.add(bc)
-		}
 		hs := "hard"
 		if basic_data.phase == 2 {
 			hs = "soft"
 		}
+		nc := 0
+		for _, c := range basic_data.constraint_list {
+			nc += len(c.Constraints)
+		}
 		base.Message.Printf(
 			"(TODO) [%d] Cycle %d (%s): %d (timeout %d)\n",
-			basic_data.Ticks, basic_data.cycle, hs, n, basic_data.cycle_timeout)
-		return false // still processing
+			basic_data.Ticks, basic_data.cycle, hs, nc, next_timeout)
 	}
 
-	//TODO?
-
-	/*
-		basic_data.constraint_list = append(new_constraint_list,
-			split_instances...)
-		for _, instance := range split_instances {
-			runqueue.add(instance)
-		}
-	*/
-
-	return false // still processing
+	//TODO: Handle the case where all instances time out without any successes.
+	// It may be that the extension of timeouts when there are no other
+	// processes is often enough, but if there are non-active pending
+	// instances there may be better solutions?
 }
 
 func (basic_data *BasicData) mainphase_0(runqueue *RunQueue) bool {

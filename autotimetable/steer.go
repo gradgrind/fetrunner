@@ -116,6 +116,7 @@ details of the last successful run.
 
 func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 	basic_data.lastResult = nil
+	basic_data.ConstraintErrors = map[ConstraintIndex]string{}
 
 	// Catch termination signal
 	sigChan := make(chan os.Signal, 1)
@@ -340,28 +341,72 @@ tickloop:
 		if basic_data.phase == 0 {
 			// During phase 0 only `full_instance`, `hard_instance` and
 			// `null_instance` are running.
-			switch basic_data.phase0() {
+			switch runqueue.phase0() {
 			case 0:
 				continue
+
 			case 1:
-				basic_data.phase = 1
+				//basic_data.phase = 1
 				base.Message.Printf(
 					"(TODO) [%d] Phase 1 ...",
 					basic_data.Ticks)
+
 			case -1:
 				base.Error.Printf(
 					"(TODO) [%d] Couldn't process input data!",
 					basic_data.Ticks)
 				return
+
+			default:
+				panic("basic_data.phase0() -> invalid return value")
 			}
 		}
 
 		// There should be no problem if there are no constraints to add.
+		var nc int
+		for len(basic_data.constraint_list) == 0 {
+			switch basic_data.phase {
 
-		if basic_data.mainphase(runqueue) {
-			break
+			case 0:
+				// End of phase 0, start processing hard constraints.
+				basic_data.phase = 1
+				basic_data.constraint_list, nc =
+					basic_data.get_basic_constraints(
+						basic_data.current_instance, false)
+				// Queue instances for running
+				for _, bc := range basic_data.constraint_list {
+					runqueue.add(bc)
+				}
+
+			case 1:
+				// End of hard-constraint processing, start processing soft
+				// constraints.
+				// The hard-only instance is no longer needed.
+				if basic_data.hard_instance.ProcessingState == 0 {
+					basic_data.abort_instance(basic_data.hard_instance)
+				}
+				basic_data.phase = 2
+				basic_data.constraint_list, nc =
+					basic_data.get_basic_constraints(
+						basic_data.current_instance, true)
+				// Queue instances for running
+				for _, bc := range basic_data.constraint_list {
+					runqueue.add(bc)
+				}
+
+			default:
+				break tickloop
+			}
+			base.Message.Printf(
+				"(TODO) [%d] Phase %d: %d constraints\n",
+				basic_data.Ticks, basic_data.phase, nc)
+
 		}
+
+		runqueue.mainphase()
+
 	} // tickloop: end
+
 	base.Message.Printf(
 		"(TODO) [%d] Phase 3: finalizing ...",
 		basic_data.Ticks)
