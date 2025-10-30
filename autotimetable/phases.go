@@ -7,7 +7,8 @@ import (
 
 // During phase 0 only `full_instance`, `hard_instance` and
 // `null_instance` are running.
-func (basic_data *BasicData) phase0() int {
+func (runqueue *RunQueue) phase0() int {
+	basic_data := runqueue.BasicData
 	switch basic_data.null_instance.ProcessingState {
 	case 0:
 		if basic_data.null_instance.Ticks ==
@@ -15,12 +16,14 @@ func (basic_data *BasicData) phase0() int {
 			basic_data.abort_instance(basic_data.null_instance)
 		}
 		return 0
+
 	case 1:
 		// The null instance completed successfully.
 		basic_data.current_instance = basic_data.null_instance
 		basic_data.new_current_instance(basic_data.current_instance)
 		// Start trials of single constraint types.
 		return 1
+
 	default:
 		// The null instance failed.
 		base.Message.Printf(
@@ -34,35 +37,35 @@ func (basic_data *BasicData) phase0() int {
 /*
 	Main processing phase(s), accumulating constraints.
 
-In this phase instances are run which try to add the (as yet not included)
-constraints of a single type, with a given timeout. A certain number of
+In this phase generator instances are run which try to add the (as yet not
+included) constraints of a single type, with a timeout. A certain number of
 these can be run in parallel. If one completes successfully, it is removed
-from the constraint list. All the other instances are stopped and the
+from the constraint list, all the other instances are stopped and the
 successful instance is used as the base for a new cycle. Depending on the
 time this instance took to complete, the timeout may be increased.
 
 There is some flexibility around the timeouts. If an instance seems to be
 progressing too slowly, it can be halted immediately. On the other hand,
 if the instance looks like it might complete if given a little more time,
-the timeout is delayed.
+the timeout termination is delayed.
 
 When an instance times out, it is removed from the constraint list. It is
 split into two, each with half of the constraints, the new instances being
 added to the constraint list and to the end of the run-queue. If the
 instance has only one constraint to add, no new instance is started – until
-the next cycle.
+the next cycle with a new base.
 
 When the constraint list is empty, the cycle ends. For the next cycle, the
 as yet unincluded constraints are collected again and the timeout is
-increased somewhat.
+adjusted if necessary.
 
 Should it come to pass that all the constraints have been added successfully
-(unlikely, because the overall timeout will have been reached or the
-hard-only or full instance will have completed already), return `true`,
-indicating that there are no more constraints to add.
+(unlikely, because it is more likely that the overall timeout will have been
+reached or the hard-only or full instance will have completed already), return
+`true`, indicating that there are no more constraints to add.
 */
-func (basic_data *BasicData) mainphase(runqueue *RunQueue) bool {
-
+func (runqueue *RunQueue) mainphase() bool {
+	basic_data := runqueue.BasicData
 	next_timeout := 0 // non-zero => "restart with new base"
 
 	// See if an instance has completed successfully.
@@ -72,7 +75,7 @@ func (basic_data *BasicData) mainphase(runqueue *RunQueue) bool {
 			basic_data.current_instance = instance
 			basic_data.new_current_instance(instance)
 			next_timeout = max(
-				instance.Ticks*basic_data.Parameters.NEW_BASE_TIMEOUT_FACTOR/10,
+				(instance.Ticks*basic_data.Parameters.NEW_BASE_TIMEOUT_FACTOR)/10,
 				basic_data.cycle_timeout)
 			// Remove it from constraint list.
 			basic_data.constraint_list = slices.Delete(
@@ -82,9 +85,11 @@ func (basic_data *BasicData) mainphase(runqueue *RunQueue) bool {
 			break
 		}
 	}
+
 	if len(basic_data.constraint_list) == 0 {
 		// ... all current constraint trials finished.
-		// Start trials of remaining constraints, hard then soft.
+		// Start trials of remaining constraints, hard then soft,
+		// forcing a longer timeout.
 		basic_data.cycle_timeout = (max(basic_data.cycle_timeout,
 			basic_data.current_instance.Ticks) *
 			basic_data.Parameters.NEW_CYCLE_TIMEOUT_FACTOR) / 10

@@ -8,6 +8,7 @@ import (
 type RunQueue struct {
 	BasicData  *BasicData
 	Queue      []*TtInstance
+	Pending    []*TtInstance
 	Active     map[*TtInstance]struct{}
 	MaxRunning int
 	Next       int
@@ -71,15 +72,10 @@ func (rq *RunQueue) update_instances() {
 			if instance.Progress < limit {
 				// Progress is too slow ...
 				if instance.Progress*2 > limit {
+					// ... but stretch the rule a bit
 					continue
 				}
-				base.Message.Printf("(TODO) [%d] Trap %s @ %d (%d): %d\n",
-					rq.BasicData.Ticks,
-					instance.Tag,
-					instance.Ticks,
-					instance.Progress,
-					len(instance.Constraints))
-				rq.BasicData.abort_instance(instance)
+				instance.TimedOut = true
 			}
 
 		case 1: // completed successfully
@@ -98,6 +94,7 @@ func (rq *RunQueue) update_instances() {
 func (rq *RunQueue) update_queue() int {
 	// Try to start queued instances
 	running := 0
+	timed_out := []*TtInstance{}
 	for instance := range rq.Active {
 		if instance.RunState != 0 {
 			delete(rq.Active, instance)
@@ -106,10 +103,25 @@ func (rq *RunQueue) update_queue() int {
 			}
 			continue
 		}
-		if instance.ProcessingState == 0 || instance.ProcessingState == 3 {
-			running++
+		if instance.ProcessingState == 0 {
+			if instance.TimedOut {
+				if len(instance.Constraints) == 1 {
+					timed_out = append(timed_out, instance)
+				} else {
+					base.Message.Printf("(TODO) [%d] Trap %s @ %d (%d): %d\n",
+						rq.BasicData.Ticks,
+						instance.Tag,
+						instance.Ticks,
+						instance.Progress,
+						len(instance.Constraints))
+					rq.BasicData.abort_instance(instance)
+				}
+			} else {
+				running++
+			}
 		}
 	}
+
 	for rq.Next < len(rq.Queue) && running < rq.MaxRunning {
 		instance := rq.Queue[rq.Next]
 		rq.Queue[rq.Next] = nil
@@ -132,5 +144,21 @@ func (rq *RunQueue) update_queue() int {
 			// Cancelled before starting, skip it
 		}
 	}
+
+	// If not all processors are being used, allow one or more timed-out
+	// instances to continue running.
+	for _, instance := range timed_out {
+		if running < rq.MaxRunning {
+			running++
+		} else {
+			base.Message.Printf("(TODO) [%d] Timeout %s @ %d (%d)\n",
+				rq.BasicData.Ticks,
+				instance.Tag,
+				instance.Ticks,
+				instance.Progress)
+			rq.BasicData.abort_instance(instance)
+		}
+	}
+
 	return len(rq.Active)
 }

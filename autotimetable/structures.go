@@ -38,6 +38,7 @@ type BasicData struct {
 	ConstraintTypes   []ConstraintType // ordered list of constraint types
 	HardConstraintMap map[ConstraintType][]ConstraintIndex
 	SoftConstraintMap map[ConstraintType][]ConstraintIndex
+	ConstraintErrors  map[ConstraintIndex]string // collect error messages
 
 	// `WorkingDir` provides the path to a working directory which can be used
 	// freely during processing. It is set up before entering `StartGeneration`.
@@ -93,14 +94,15 @@ type TtInstance struct {
 	Constraints    []ConstraintIndex
 
 	// Run time ...
-	Backend         TtBackend
-	Ticks           int  // run time of this instance
-	Stopped         bool // `abort_instance()` has been called on this instance
-	ProcessingState int  // -1: queued, 0: running, 1: success, 2: failure,
+	Backend         TtBackend // interface to generator back-end
+	Ticks           int       // run time of this instance
+	Stopped         bool      // `abort_instance()` has been called on this instance
+	ProcessingState int       // -1: queued, 0: running, 1: success, 2: failure,
 	// there is also 3: cancelled
-	// The following are set by the back-end:
+	TimedOut bool // marked as timed out, will (probably) lead to termination
 
-	RunState int    // set by back-end
+	// The following are set by the back-end:
+	RunState int
 	Progress int    // percent
 	LastTime int    // last (instance) time at which `Progress` changed
 	Message  string // "" or error message

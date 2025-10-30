@@ -25,7 +25,7 @@ func (bdata *BasicData) SetParameterDefault() {
 	*/
 	bdata.Parameters.MAXPROCESSES = min(max(runtime.NumCPU(), 4), 6)
 
-	bdata.Parameters.NEW_BASE_TIMEOUT_FACTOR = 15  // => 1.5
+	bdata.Parameters.NEW_BASE_TIMEOUT_FACTOR = 12  // => 1.2
 	bdata.Parameters.NEW_CYCLE_TIMEOUT_FACTOR = 15 // => 1.5
 	bdata.Parameters.LAST_TIME_0 = 5
 	bdata.Parameters.LAST_TIME_1 = 50
@@ -117,6 +117,7 @@ details of the last successful run.
 
 func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 	basic_data.lastResult = nil
+	basic_data.ConstraintErrors = map[ConstraintIndex]string{}
 
 	// Catch termination signal
 	sigChan := make(chan os.Signal, 1)
@@ -341,25 +342,31 @@ tickloop:
 		if basic_data.phase == 0 {
 			// During phase 0 only `full_instance`, `hard_instance` and
 			// `null_instance` are running.
-			switch basic_data.phase0() {
+			switch runqueue.phase0() {
 			case 0:
 				continue
+
 			case 1:
+				//basic_data.phase = 1
 				basic_data.phase = 1
 				base.Message.Printf(
 					"(TODO) [%d] Phase 1 ...",
 					basic_data.Ticks)
+
 			case -1:
 				base.Error.Printf(
 					"(TODO) [%d] Couldn't process input data!",
 					basic_data.Ticks)
 				return
+
+			default:
+				panic("basic_data.phase0() -> invalid return value")
 			}
 		}
 
 		// There should be no problem if there are no constraints to add.
 
-		if basic_data.mainphase(runqueue) {
+		if runqueue.mainphase() {
 			break
 		}
 	} // tickloop: end
