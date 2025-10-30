@@ -2,7 +2,7 @@
 
 This is primarily a tool for testing FET-files. It runs multiple instances of FET (the command-line version) on a supplied FET-file with various subsets of the constraints enabled. It is hoped that it can assist in finding difficult (or impossible) constraints. In order to function as intended it needs to be able to run several processes in parallel – it should work with four processor cores, but better results are likely with at least six.
 
-Basically, it starts by running three instances:
+The basic idea is to behave similarly to a person looking for possible problems in a FET-file. Initially, three instances are run:
 
  - fully constrained
  - all the hard constraints, but no soft constraints
@@ -37,7 +37,9 @@ An executable should be produced in the same directory.
 
 ## Running the tool
 
-It can be run with just the source file as argument:
+Important: The FET command-line executable must be runnable by calling "fet-cl", i.e. it must be in the user's PATH.
+
+`fetrunner` can be run with just the source file as argument:
 
 ```
 ./fetrunner path/to/fetfile.fet
