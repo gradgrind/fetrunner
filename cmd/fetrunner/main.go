@@ -42,6 +42,8 @@ func main() {
 
 	flag.BoolVar(&base.CONSOLE, "c", false, "enable progress output")
 	flag.BoolVar(&bdata.Parameters.TESTING, "T", false, "run in testing mode")
+	flag.BoolVar(&bdata.Parameters.SKIP_HARD, "h", false,
+		"skip hard constraint testing phase")
 	timeout := flag.Int("t", 300, "set timeout")
 	nprocesses := flag.Int("p", 0, "max. parallel processes")
 	debug := flag.Bool("d", false, "debug")
@@ -100,7 +102,7 @@ func main() {
 	//TODO-- This is just for testing FET backend
 	//bdata.Source.(*fet.FetDoc).WriteFET(workingdir + "_mod.fet")
 
-	bdata.RunBackend = fet.RunFet
+	bdata.BackendInterface = fet.SetFetBackend(bdata)
 
 	bdata.StartGeneration(*timeout)
 }

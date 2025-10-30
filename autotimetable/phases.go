@@ -68,11 +68,19 @@ func (runqueue *RunQueue) mainphase() bool {
 	basic_data := runqueue.BasicData
 	next_timeout := 0 // non-zero => "restart with new base"
 
+	base_instance := basic_data.current_instance
+	if base_instance == nil {
+		// Possible with SKIP_HARD option.
+		// Note that this instance may not have finished!
+		base_instance = basic_data.hard_instance
+	}
+
 	// See if an instance has completed successfully.
 	for i, instance := range basic_data.constraint_list {
 		if instance.ProcessingState == 1 {
 			// Completed successfully, make this instance the new base.
 			basic_data.current_instance = instance
+			base_instance = instance
 			basic_data.new_current_instance(instance)
 			next_timeout = max(
 				(instance.Ticks*basic_data.Parameters.NEW_BASE_TIMEOUT_FACTOR)/10,
@@ -90,13 +98,16 @@ func (runqueue *RunQueue) mainphase() bool {
 		// ... all current constraint trials finished.
 		// Start trials of remaining constraints, hard then soft,
 		// forcing a longer timeout.
+		old_ticks := base_instance.Ticks
+		if base_instance.ProcessingState != 1 {
+			old_ticks = 0
+		}
 		basic_data.cycle_timeout = (max(basic_data.cycle_timeout,
-			basic_data.current_instance.Ticks) *
-			basic_data.Parameters.NEW_CYCLE_TIMEOUT_FACTOR) / 10
+			old_ticks) * basic_data.Parameters.NEW_CYCLE_TIMEOUT_FACTOR) / 10
 		var n int
 	rpt:
 		basic_data.constraint_list, n = basic_data.get_basic_constraints(
-			basic_data.current_instance, basic_data.phase == 2)
+			base_instance, basic_data.phase == 2)
 		if n == 0 {
 			if basic_data.phase == 2 {
 				// The fully constrained instance is no longer needed.
@@ -149,13 +160,13 @@ func (runqueue *RunQueue) mainphase() bool {
 				nhalf := len(instance.Constraints) / 2
 				split_instances = append(split_instances,
 					basic_data.new_instance(
-						basic_data.current_instance,
+						base_instance,
 						instance.ConstraintType,
 						instance.Constraints[:nhalf],
 						timeout))
 				split_instances = append(split_instances,
 					basic_data.new_instance(
-						basic_data.current_instance,
+						base_instance,
 						instance.ConstraintType,
 						instance.Constraints[nhalf:],
 						timeout))
@@ -172,7 +183,7 @@ func (runqueue *RunQueue) mainphase() bool {
 				instance.ProcessingState = 3
 				// Build new instance
 				instance = basic_data.new_instance(
-					basic_data.current_instance,
+					base_instance,
 					instance.ConstraintType,
 					instance.Constraints,
 					next_timeout)

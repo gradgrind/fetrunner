@@ -133,7 +133,8 @@ func (rq *RunQueue) update_queue() int {
 				instance.Tag,
 				len(instance.Constraints),
 				instance.Timeout)
-			instance.Backend = rq.BasicData.RunBackend(rq.BasicData, instance)
+			instance.Backend =
+				rq.BasicData.BackendInterface.RunBackend(instance)
 			instance.ProcessingState = 0 // indicate started/running
 			rq.Active[instance] = struct{}{}
 			running++

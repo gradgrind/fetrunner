@@ -16,44 +16,31 @@ import (
 	"strings"
 )
 
-type FetTtData struct {
-	ifile      string
-	fetxml     []byte
-	workingdir string
-	odir       string
-	logfile    string
-	rdfile     *os.File // this must be closed when the subprocess finishes
-	reader     *bufio.Reader
-	cancel     func()
-	finished   bool
+type FetBackend struct {
+	basic_data *autotimetable.BasicData
 }
 
-func (data *FetTtData) Abort() {
-	data.cancel()
-}
-
-func (data *FetTtData) Tidy(workingdir string) {
-	os.RemoveAll(filepath.Join(workingdir, "tmp"))
-}
-
-func (data *FetTtData) Clear() {
-	//base.Message.Printf("### Remove %s\n", fttd.workingdir)
-	os.RemoveAll(data.workingdir)
-	//} else {
-	//	base.Message.Printf("### No TtData: %s\n", instance.Tag)
-}
-
-func RunFet(
+func SetFetBackend(
 	basic_data *autotimetable.BasicData,
+) autotimetable.BackendInterface {
+	return &FetBackend{basic_data}
+}
+
+func (fbe *FetBackend) Tidy() {
+	os.RemoveAll(filepath.Join(fbe.basic_data.WorkingDir, "tmp"))
+}
+
+func (fbe *FetBackend) RunBackend(
 	instance *autotimetable.TtInstance,
 ) autotimetable.TtBackend {
+	basic_data := fbe.basic_data
 	fname := instance.Tag
-	dir_n := filepath.Join(basic_data.WorkingDir, "tmp", fname)
-	err := os.MkdirAll(dir_n, 0755)
+	odir := filepath.Join(basic_data.WorkingDir, "tmp", fname)
+	err := os.MkdirAll(odir, 0755)
 	if err != nil {
 		panic(err)
 	}
-	stemfile := filepath.Join(dir_n, fname)
+	stemfile := filepath.Join(odir, fname)
 	fetfile := stemfile + ".fet"
 
 	// Construct the FET-file
@@ -74,9 +61,6 @@ func RunFet(
 			panic("Couldn't write fet file to: " + cfile)
 		}
 	}
-	//odir := filepath.Join(dir_n, "out")
-	//os.RemoveAll(odir)
-	odir := dir_n
 	logfile := filepath.Join(odir, "logs", "max_placed_activities.txt")
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -85,11 +69,9 @@ func RunFet(
 		finished: false,
 		ifile:    fetfile,
 		fetxml:   fet_xml,
-		//workingdir: cwd,
-		workingdir: dir_n,
-		odir:       odir,
-		logfile:    logfile,
-		cancel:     cancel,
+		odir:     odir,
+		logfile:  logfile,
+		cancel:   cancel,
 	}
 
 	params := []string{
@@ -127,6 +109,28 @@ func RunFet(
 
 	go run(fet_data, runCmd)
 	return fet_data
+}
+
+type FetTtData struct {
+	ifile    string
+	fetxml   []byte
+	odir     string // the working directory for this instance
+	logfile  string
+	rdfile   *os.File // this must be closed when the subprocess finishes
+	reader   *bufio.Reader
+	cancel   func()
+	finished bool
+}
+
+func (data *FetTtData) Abort() {
+	data.cancel()
+}
+
+func (data *FetTtData) Clear() {
+	//base.Message.Printf("### Remove %s\n", fttd.workingdir)
+	os.RemoveAll(data.odir)
+	//} else {
+	//	base.Message.Printf("### No TtData: %s\n", instance.Tag)
 }
 
 // The executable, `fet-cl`, places any messages in the `log` directory, as

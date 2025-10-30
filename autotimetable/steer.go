@@ -170,20 +170,25 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 
 	// Unconstrained instance
 	basic_data.cycle_timeout = 0
-	enabled = make([]bool, basic_data.NConstraints)
-	basic_data.null_instance = &TtInstance{
-		Tag:               "UNCONSTRAINED",
-		Timeout:           basic_data.cycle_timeout,
-		ConstraintEnabled: enabled,
-	}
-	// Add to run queue
-	runqueue.add(basic_data.null_instance)
+	if basic_data.Parameters.SKIP_HARD {
+		basic_data.phase = 2
+	} else {
+		enabled = make([]bool, basic_data.NConstraints)
+		basic_data.null_instance = &TtInstance{
+			Tag:               "UNCONSTRAINED",
+			Timeout:           basic_data.cycle_timeout,
+			ConstraintEnabled: enabled,
+		}
+		// Add to run queue
+		runqueue.add(basic_data.null_instance)
 
-	// Start phase 0
-	base.Message.Printf(
-		"(TODO) [%d] Phase 0 ...",
-		basic_data.Ticks)
-	basic_data.phase = 0
+		// Start phase 0
+		base.Message.Printf(
+			"(TODO) [%d] Phase 0 ...",
+			basic_data.Ticks)
+		basic_data.phase = 0
+	}
+
 	basic_data.cycle = 0
 	full_progress := 0       // current percentage
 	full_progress_ticks := 0 // time of last increment
@@ -218,12 +223,7 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 		}
 		if !basic_data.Parameters.DEBUG {
 			// Remove all remaining temporary files
-			//TODO: This call is a bit ugh!
-			if basic_data.current_instance != nil {
-				basic_data.current_instance.Backend.Tidy(basic_data.WorkingDir)
-			} else {
-				basic_data.null_instance.Backend.Tidy(basic_data.WorkingDir)
-			}
+			basic_data.BackendInterface.Tidy()
 		}
 		if basic_data.lastResult != nil {
 			// Save result of last successful instance.
@@ -325,6 +325,21 @@ tickloop:
 					)
 				}
 			}
+		} else if basic_data.Parameters.SKIP_HARD {
+			if basic_data.current_instance == nil {
+				if basic_data.hard_instance.ProcessingState == 1 {
+					// First successful instance.
+					basic_data.current_instance = basic_data.hard_instance
+				}
+			} else if basic_data.hard_instance.ProcessingState == 0 {
+				basic_data.abort_instance(basic_data.hard_instance)
+			}
+
+			if basic_data.hard_instance.ProcessingState == 1 &&
+				basic_data.current_instance == nil {
+				// First successful instance.
+				basic_data.current_instance = basic_data.hard_instance
+			}
 		}
 
 		if basic_data.Ticks == TIMEOUT {
@@ -374,14 +389,15 @@ tickloop:
 		"(TODO) [%d] Phase 3: finalizing ...",
 		basic_data.Ticks)
 
-	result := basic_data.current_instance
-
 	hnn := 0
 	hnall := 0
+	snn := 0
+	snall := 0
+	result := basic_data.current_instance
 	for c, clist := range basic_data.HardConstraintMap {
 		n := 0
 		for _, cix := range clist {
-			if result.ConstraintEnabled[cix] {
+			if result != nil && result.ConstraintEnabled[cix] {
 				n++
 			}
 		}
@@ -391,12 +407,10 @@ tickloop:
 			hnall += len(clist)
 		}
 	}
-	snn := 0
-	snall := 0
 	for c, clist := range basic_data.SoftConstraintMap {
 		n := 0
 		for _, cix := range clist {
-			if result.ConstraintEnabled[cix] {
+			if result != nil && result.ConstraintEnabled[cix] {
 				n++
 			}
 		}
@@ -410,7 +424,9 @@ tickloop:
 		hnn, hnall, snn, snall)
 
 	//TODO
-	base.Message.Printf("(TODO) RESULT: %s\n", result.Tag)
+	if result != nil {
+		base.Message.Printf("(TODO) RESULT: %s\n", result.Tag)
+	}
 }
 
 func (basic_data *BasicData) abort_instance(instance *TtInstance) {

@@ -14,6 +14,10 @@ type BasicData struct {
 		// might, for example, use fixed seeds for random number generators
 		// so as to produce reproduceable runs.
 		TESTING bool
+		// If the SKIP_HARD flag is true, assume the hard constraints are
+		// satisfiable – skip the unconstrained instance, basing tests on
+		// the hard-only instance.
+		SKIP_HARD bool
 		// This approach relies on parallel processing. If there are too few
 		// real processors it will be inefficient:
 		MAXPROCESSES int
@@ -30,9 +34,8 @@ type BasicData struct {
 		LAST_TIME_1 int
 	}
 
-	Source     TtSource
-	RunBackend func(*BasicData, *TtInstance) TtBackend
-
+	Source            TtSource
+	BackendInterface  BackendInterface
 	NActivities       int
 	NConstraints      ConstraintIndex
 	ConstraintTypes   []ConstraintType // ordered list of constraint types
@@ -74,6 +77,11 @@ type TtSource interface {
 	PrepareRun([]bool, any)
 }
 
+type BackendInterface interface {
+	RunBackend(instance *TtInstance) TtBackend
+	Tidy()
+}
+
 type ActivityId struct {
 	Id  int    // (generator) back-end activity index
 	Ref string // (input) source reference/identifier for activity, if
@@ -112,7 +120,7 @@ type TtBackend interface {
 	Abort()
 	Tick(*BasicData, *TtInstance)
 	Clear()
-	Tidy(string)
+	//Tidy(string)
 	Results(*BasicData, *TtInstance) []ActivityPlacement
 	FinalizeResult(*BasicData)
 }
@@ -126,95 +134,3 @@ type ActivityPlacement struct {
 	Hour     int   // hour index
 	Rooms    []int // room indexes
 }
-
-//************** Resources **************
-
-// TODO ...
-
-/*
-type Resource interface {
-	GetIndex() int  //TODO: within the type?
-	GetTag() string // short identifier (unique)
-	//Name // TODO: possibly longer identifier (probably, but not
-	// necessarily unique?)
-	//Item any // TODO: back-end dependent data
-}
-
-// +++ Student group resources
-type StudentResource interface {
-	Resource
-	GetClass() *TtClass
-	IsAtomicGroup() bool
-}
-
-type TtResource struct {
-	Index int
-	Tag   string
-	Data  any
-}
-
-func (r *TtResource) GetIndex() int {
-	return r.Index
-}
-
-func (r *TtResource) GetTag() string {
-	return r.Tag
-}
-
-type TtClass struct {
-	TtResource
-	Groups []*TtGroup
-}
-
-type TtGroup struct {
-	TtResource
-	Class     *TtClass
-	Subgroups []*TtSubgroup
-}
-
-type TtSubgroup struct {
-	TtResource
-	Class *TtClass
-	//Groups []*TtGroup
-}
-
-func (r *TtClass) GetClass() *TtClass {
-	return r
-}
-
-func (r *TtGroup) GetClass() *TtClass {
-	return r.Class
-}
-
-func (r *TtSubgroup) GetClass() *TtClass {
-	return r.Class
-}
-
-func (r *TtClass) IsAtomic() bool {
-	return len(r.Groups) == 0
-}
-
-func (r *TtGroup) IsAtomic() bool {
-	return len(r.Subgroups) == 0
-}
-
-func (r *TtSubgroup) IsAtomic() bool {
-	return true
-}
-
-// --- Student group resources
-
-// +++ Teacher resource
-type TtTeacher struct {
-	TtResource
-}
-
-// --- Teacher resource
-
-// +++ Room resource
-type TtRoom struct {
-	TtResource
-}
-
-// --- Room resource
-*/
