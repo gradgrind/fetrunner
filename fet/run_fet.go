@@ -120,6 +120,7 @@ type FetTtData struct {
 	reader   *bufio.Reader
 	cancel   func()
 	finished bool
+	count    int
 }
 
 func (data *FetTtData) Abort() {
@@ -182,16 +183,33 @@ func (data *FetTtData) Tick(
 				if l != nil {
 					count, err := strconv.Atoi(string(l[2]))
 					if err == nil {
-						percent := (count * 100) / int(basic_data.NActivities)
-						if percent > instance.Progress {
-							instance.Progress = percent
+						if count > data.count {
 							instance.LastTime = instance.Ticks
-
-							base.Report(fmt.Sprintf("%s: %d @ %d\n",
-								instance.Tag, percent, instance.Ticks))
+							percent := (count * 100) / int(basic_data.NActivities)
+							if percent > instance.Progress {
+								instance.Progress = percent
+								base.Report(fmt.Sprintf("%s: %d @ %d\n",
+									instance.Tag, percent, instance.Ticks))
+							}
 						}
 					}
 				}
+
+				//TODO: Experiment!
+				if instance.LastTime < 2 &&
+					instance.Ticks-instance.LastTime > 10 {
+					data.finished = true
+					data.Abort()
+
+					if len(instance.Constraints) == 1 {
+
+						//TODO--
+						base.Message.Printf("??? %d\n", instance.Constraints[0])
+
+						basic_data.BlockConstraint[instance.Constraints[0]] = true
+					}
+				}
+
 				break
 			}
 			panic(err)
