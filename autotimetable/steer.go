@@ -385,6 +385,7 @@ tickloop:
 				base.Error.Printf(
 					"[%d] Couldn't process input data!\n",
 					basic_data.Ticks)
+				base.Report("!!! Couldn't process input data!\n")
 				return
 
 			default:

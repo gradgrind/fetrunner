@@ -13,6 +13,7 @@ type Result struct {
 	Hours                      []string
 	Activities                 []ActivityId
 	Constraints                []TtItem
+	ConstraintErrors           map[ConstraintIndex]string
 	Rooms                      []TtItem
 	Placements                 []ActivityPlacement
 	UnfulfilledHardConstraints map[ConstraintType][]ConstraintIndex
@@ -33,6 +34,12 @@ func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
 		basic_data.Ticks, instance.Tag,
 		instance.Ticks, len(instance.Constraints))
 
+	cerrors := map[ConstraintIndex]string{}
+	for k, v := range basic_data.ConstraintErrors {
+		if len(v) != 0 {
+			cerrors[k] = v
+		}
+	}
 	// Read placements
 	alist := instance.Backend.Results(basic_data, instance)
 
@@ -72,6 +79,7 @@ func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
 		Hours:                      basic_data.Source.GetHourTags(),
 		Activities:                 basic_data.Source.GetActivityIds(),
 		Constraints:                clist,
+		ConstraintErrors:           cerrors,
 		Rooms:                      rlist,
 		Placements:                 alist,
 		UnfulfilledHardConstraints: hunfulfilled,

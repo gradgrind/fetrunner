@@ -147,9 +147,7 @@ func (runqueue *RunQueue) mainphase() bool {
 	split_instances := []*TtInstance{}
 	new_constraint_list := []*TtInstance{}
 	for _, instance := range basic_data.constraint_list {
-		if instance.ProcessingState == 2 {
-			// timed out / failed
-
+		if instance.ProcessingState == 2 { // timed out / failed
 			// Split if more than one instance in list
 			if len(instance.Constraints) > 1 {
 				timeout := next_timeout
@@ -169,7 +167,12 @@ func (runqueue *RunQueue) mainphase() bool {
 						instance.ConstraintType,
 						instance.Constraints[nhalf:],
 						timeout))
-			} else if len(instance.Constraints) == 0 {
+			} else if len(instance.Constraints) == 1 {
+				if len(instance.Message) != 0 {
+					basic_data.ConstraintErrors[instance.Constraints[0]] =
+						instance.Message
+				}
+			} else {
 				panic("Bug, expected constraint(s)")
 			}
 		} else {
