@@ -184,7 +184,7 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 
 		// Start phase 0
 		base.Message.Printf(
-			"(TODO) [%d] Phase 0 ...",
+			"[%d] Phase 0 ...\n",
 			basic_data.Ticks)
 		basic_data.phase = 0
 	}
@@ -202,8 +202,9 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 		// Tidy up
 		r := recover()
 		if r != nil {
-			base.Message.Println("(TODO) *** RECOVER ***", r)
-			debug.PrintStack()
+			base.Bug.Printf("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---\n",
+				basic_data.Ticks, r, debug.Stack())
+			base.Report("!!! ERROR: see log\n")
 		}
 		for {
 			// Wait for active instances to finish, stopping them if
@@ -251,25 +252,36 @@ tickloop:
 	for {
 		if runqueue.update_queue() == 0 {
 			base.Message.Printf(
-				"(TODO) [%d] Run-queue empty",
+				"[%d] Run-queue empty\n",
 				basic_data.Ticks)
 		}
+
+		//TODO
+		base.Message.Printf(
+			"[%d] -TICK\n",
+			basic_data.Ticks)
+
 		select {
 		case <-ticker.C:
 		case <-sigChan:
-			base.Message.Printf("(TODO) *** INTERRUPTED @ %d ***\n",
+			base.Message.Printf("[%d] !!! INTERRUPTED !!!\n",
 				basic_data.Ticks)
 			break tickloop
 		}
 
 		basic_data.Ticks++
+		//TODO
+		base.Message.Printf(
+			"[%d] +TICK\n",
+			basic_data.Ticks)
+
 		runqueue.update_instances()
 
 		if basic_data.full_instance.ProcessingState == 1 {
 			// Cancel all other runs and return this instance as result.
 			basic_data.current_instance = basic_data.full_instance
 			basic_data.new_current_instance(basic_data.current_instance)
-			base.Message.Printf("(TODO) *** All constraints OK @ %d ***\n",
+			base.Message.Printf("[%d] +A+ All constraints OK +++\n",
 				basic_data.Ticks)
 			break
 		} else {
@@ -278,7 +290,7 @@ tickloop:
 				full_progress = p
 				full_progress_ticks = basic_data.Ticks
 				base.Message.Printf(
-					"(TODO) [%d] ? %s (%d @ %d)\n",
+					"[%d] ? %s (%d @ %d)\n",
 					basic_data.Ticks,
 					basic_data.full_instance.Tag,
 					full_progress,
@@ -293,7 +305,7 @@ tickloop:
 				basic_data.current_instance = basic_data.hard_instance
 				basic_data.new_current_instance(basic_data.current_instance)
 				base.Message.Printf(
-					"(TODO) *** All hard constraints OK @ %d ***\n",
+					"[%d] +H+ All hard constraints OK +++\n",
 					basic_data.Ticks)
 				// Cancel everything except full instance.
 				if basic_data.null_instance.ProcessingState == 0 {
@@ -309,15 +321,15 @@ tickloop:
 				basic_data.constraint_list = nil
 				basic_data.phase = 2
 				base.Message.Printf(
-					"(TODO) [%d] Phase 2 based on hard-only instance",
-					basic_data.Ticks)
+					"[%d] Phase 2 <- %s\n",
+					basic_data.Ticks, basic_data.hard_instance.Tag)
 			} else {
 				p := basic_data.hard_instance.Progress
 				if p > hard_progress {
 					hard_progress = p
 					hard_progress_ticks = basic_data.Ticks
 					base.Message.Printf(
-						"(TODO) [%d] ? %s (%d @ %d)\n",
+						"[%d] ? %s (%d @ %d)\n",
 						basic_data.Ticks,
 						basic_data.hard_instance.Tag,
 						hard_progress,
@@ -344,10 +356,12 @@ tickloop:
 
 		if basic_data.Ticks == TIMEOUT {
 			base.Message.Printf(
-				"(TODO) [%d] TIMEOUT (%d @ %d) (%d @ %d) \n",
+				"[%d] !!! TIMEOUT !!!\n + %s: %d @ %d\n + %s: %d @ %d\n",
 				basic_data.Ticks,
+				basic_data.full_instance.Tag,
 				full_progress,
 				full_progress_ticks,
+				basic_data.hard_instance.Tag,
 				hard_progress,
 				hard_progress_ticks,
 			)
@@ -362,15 +376,14 @@ tickloop:
 				continue
 
 			case 1:
-				//basic_data.phase = 1
 				basic_data.phase = 1
 				base.Message.Printf(
-					"(TODO) [%d] Phase 1 ...",
+					"[%d] Phase 1 ...\n",
 					basic_data.Ticks)
 
 			case -1:
 				base.Error.Printf(
-					"(TODO) [%d] Couldn't process input data!",
+					"[%d] Couldn't process input data!\n",
 					basic_data.Ticks)
 				return
 
@@ -386,7 +399,7 @@ tickloop:
 		}
 	} // tickloop: end
 	base.Message.Printf(
-		"(TODO) [%d] Phase 3: finalizing ...",
+		"[%d] Phase 3 ... finalizing ...\n",
 		basic_data.Ticks)
 
 	hnn := 0
@@ -402,7 +415,7 @@ tickloop:
 			}
 		}
 		if len(clist) != 0 {
-			fmt.Printf("$ (HARD) %s: %d / %d\n", c, n, len(clist))
+			base.Message.Printf("$ (HARD) %s: %d / %d\n", c, n, len(clist))
 			hnn += n
 			hnall += len(clist)
 		}
@@ -415,17 +428,19 @@ tickloop:
 			}
 		}
 		if len(clist) != 0 {
-			fmt.Printf("$ (SOFT) %s: %d / %d\n", c, n, len(clist))
+			base.Message.Printf("$ (SOFT) %s: %d / %d\n", c, n, len(clist))
 			snn += n
 			snall += len(clist)
 		}
 	}
-	fmt.Printf("$ ALL CONSTRAINTS: (hard) %d / %d  (soft) %d / %d\n",
+	report := fmt.Sprintf(
+		"::: ALL CONSTRAINTS: (hard) %d / %d  (soft) %d / %d\n",
 		hnn, hnall, snn, snall)
+	base.Message.Print(report)
+	base.Report(report)
 
-	//TODO
 	if result != nil {
-		base.Message.Printf("(TODO) RESULT: %s\n", result.Tag)
+		base.Message.Printf("Result: %s\n", result.Tag)
 	}
 }
 

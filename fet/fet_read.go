@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fetrunner/autotimetable"
 	"fetrunner/base"
-	"fmt"
 	"strconv"
 
 	"github.com/beevik/etree"
@@ -32,16 +31,12 @@ type FetDoc struct {
 }
 
 func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
-	base.Message.Printf("*+ Reading: %s\n", fetpath)
+	base.Message.Printf("SOURCE: %s\n", fetpath)
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(fetpath); err != nil {
 		panic(err)
 	}
-
 	root := doc.Root()
-
-	//base.Message.Printf(" -->\n%s\n", WriteElement(root))
-	//panic("TODO")
 
 	/*
 		fmt.Printf("ROOT element: %s (%+v)\n", root.Tag, root.Attr)
@@ -248,15 +243,6 @@ func (fetdoc *FetDoc) WriteFET(fetfile string) {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func (fetdoc *FetDoc) XXX(s string) {
-
-	root := fetdoc.Doc.Root()
-	et := root.SelectElement("Time_Constraints_List")
-	n := len(et.ChildElements())
-	fmt.Printf("*** %s *** %d\n", s, n)
-
 }
 
 // Rebuild the FET file given an array detailing which constraints are

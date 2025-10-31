@@ -79,13 +79,15 @@ func (rq *RunQueue) update_instances() {
 			}
 
 		case 1: // completed successfully
-			base.Message.Printf("(TODO) [%d] <<+ %s @ %d\n",
-				rq.BasicData.Ticks, instance.Tag, instance.Ticks)
+			base.Message.Printf("[%d] <<+ %s @ %d (%d)\n",
+				rq.BasicData.Ticks, instance.Tag, instance.Ticks,
+				len(instance.Constraints))
 			instance.ProcessingState = 1
 
 		default: // completed unsuccessfully
-			base.Message.Printf("(TODO) [%d] <<- %s @ %d\n",
-				rq.BasicData.Ticks, instance.Tag, instance.Ticks)
+			base.Message.Printf("[%d] <<- %s @ %d (%d)\n",
+				rq.BasicData.Ticks, instance.Tag, instance.Ticks,
+				len(instance.Constraints))
 			instance.ProcessingState = 2
 		}
 	}
@@ -108,7 +110,7 @@ func (rq *RunQueue) update_queue() int {
 				if len(instance.Constraints) == 1 {
 					timed_out = append(timed_out, instance)
 				} else {
-					base.Message.Printf("(TODO) [%d] Trap %s @ %d (%d): %d\n",
+					base.Message.Printf("[%d] Timeout %s @ %d, p: %d n: %d\n",
 						rq.BasicData.Ticks,
 						instance.Tag,
 						instance.Ticks,
@@ -128,7 +130,7 @@ func (rq *RunQueue) update_queue() int {
 		rq.Next++
 
 		if instance.ProcessingState < 0 {
-			base.Message.Printf("(TODO) [%d] >> %s (%d) {%d}\n",
+			base.Message.Printf("[%d] >> %s n: %d t: %d\n",
 				rq.BasicData.Ticks,
 				instance.Tag,
 				len(instance.Constraints),
@@ -147,12 +149,12 @@ func (rq *RunQueue) update_queue() int {
 	}
 
 	// If not all processors are being used, allow one or more timed-out
-	// instances to continue running.
+	// single-constraint instances to continue running.
 	for _, instance := range timed_out {
 		if running < rq.MaxRunning {
 			running++
 		} else {
-			base.Message.Printf("(TODO) [%d] Timeout %s @ %d (%d)\n",
+			base.Message.Printf("[%d] Timeout %s @ %d, p:%d n: 1\n",
 				rq.BasicData.Ticks,
 				instance.Tag,
 				instance.Ticks,

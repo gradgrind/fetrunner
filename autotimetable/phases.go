@@ -26,10 +26,9 @@ func (runqueue *RunQueue) phase0() int {
 
 	default:
 		// The null instance failed.
-		base.Message.Printf(
-			"(TODO) [%d] Unconstrained instance failed",
-			basic_data.Ticks)
-		base.Error.Println(" ... " + basic_data.null_instance.Message)
+		base.Error.Printf(
+			"[%d] --- Unconstrained instance failed:\n+++\n%s\n---\n",
+			basic_data.Ticks, basic_data.null_instance.Message)
 		return -1
 	}
 }
@@ -117,7 +116,7 @@ func (runqueue *RunQueue) mainphase() bool {
 				return true // solution found
 			} else {
 				base.Message.Printf(
-					"(TODO) [%d] Phase 2 based on accumulated instance",
+					"[%d] Phase 2 <- (accumulated instance)",
 					basic_data.Ticks)
 				basic_data.phase = 2
 				// The hard-only instance is no longer needed.
@@ -137,7 +136,7 @@ func (runqueue *RunQueue) mainphase() bool {
 			hs = "soft"
 		}
 		base.Message.Printf(
-			"(TODO) [%d] Cycle %d (%s): %d (timeout %d)\n",
+			"[%d] Cycle %d (%s), n: %d t: %d\n",
 			basic_data.Ticks, basic_data.cycle, hs, n, basic_data.cycle_timeout)
 		return false // still processing
 	}

@@ -29,8 +29,9 @@ type TtItem struct {
 // Get the result of the current instance as a `Result` structure.
 // Save as JSON if debugging.
 func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
-	base.Message.Printf("+++ %s @ %d\n",
-		instance.Tag, instance.Ticks)
+	base.Message.Printf("[%d] <<< %s @ %d, n: %d\n",
+		basic_data.Ticks, instance.Tag,
+		instance.Ticks, len(instance.Constraints))
 
 	// Read placements
 	alist := instance.Backend.Results(basic_data, instance)

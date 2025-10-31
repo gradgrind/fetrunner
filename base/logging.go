@@ -39,11 +39,3 @@ func OpenLog(logpath string) {
 	Bug = log.New(file, "*BUG* ", log.Lshortfile)
 
 }
-
-/* TODO: New error reporter?
-func ERROR(msg string, args ...any) {
-	fmt.Println("+++ Error +++++++++++++++")
-	fmt.Printf(ErrorMessages[msg], args...)
-	fmt.Println("\n-------------------------")
-}
-*/
