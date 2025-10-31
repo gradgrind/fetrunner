@@ -118,6 +118,7 @@ details of the last successful run.
 func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 	basic_data.lastResult = nil
 	basic_data.ConstraintErrors = map[ConstraintIndex]string{}
+	basic_data.BlockConstraint = map[ConstraintIndex]bool{}
 
 	// Catch termination signal
 	sigChan := make(chan os.Signal, 1)
@@ -172,6 +173,9 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 	basic_data.cycle_timeout = 0
 	if basic_data.Parameters.SKIP_HARD {
 		basic_data.phase = 2
+		if len(basic_data.SoftConstraintMap) == 0 {
+			base.Warning.Println("-h- Option -h: no soft constraints")
+		}
 	} else {
 		enabled = make([]bool, basic_data.NConstraints)
 		basic_data.null_instance = &TtInstance{

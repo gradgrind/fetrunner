@@ -62,7 +62,17 @@ func (rq *RunQueue) update_instances() {
 				if instance.LastTime < rq.BasicData.Parameters.LAST_TIME_0 &&
 					instance.Ticks >= rq.BasicData.Parameters.LAST_TIME_1 {
 					// Stop instance
+					base.Message.Printf(
+						"[%d] Stop (too slow) %s @ %d, p: %d n: %d\n",
+						rq.BasicData.Ticks,
+						instance.Tag,
+						instance.Ticks,
+						instance.Progress,
+						len(instance.Constraints))
 					rq.BasicData.abort_instance(instance)
+					if len(instance.Constraints) == 1 {
+						rq.BasicData.BlockConstraint[instance.Constraints[0]] = true
+					}
 				}
 				continue
 			}
@@ -74,19 +84,32 @@ func (rq *RunQueue) update_instances() {
 					// ... but stretch the rule a bit
 					continue
 				}
-				instance.TimedOut = true
+
+				//TODO-- instance.TimedOut = true
+				if len(instance.Constraints) == 1 {
+					instance.Timeout = 0
+				} else {
+					base.Message.Printf("[%d] Timeout %s @ %d, p: %d n: %d\n",
+						rq.BasicData.Ticks,
+						instance.Tag,
+						instance.Ticks,
+						instance.Progress,
+						len(instance.Constraints))
+					rq.BasicData.abort_instance(instance)
+				}
+				continue
 			}
 
 		case 1: // completed successfully
-			base.Message.Printf("[%d] <<+ %s @ %d (%d)\n",
+			base.Message.Printf("[%d] <<+ %s @ %d (%d)\n + %v\n",
 				rq.BasicData.Ticks, instance.Tag, instance.Ticks,
-				len(instance.Constraints))
+				len(instance.Constraints), instance.Constraints)
 			instance.ProcessingState = 1
 
 		default: // completed unsuccessfully
-			base.Message.Printf("[%d] <<- %s @ %d (%d)\n",
+			base.Message.Printf("[%d] <<- %s @ %d (%d)\n + %v\n",
 				rq.BasicData.Ticks, instance.Tag, instance.Ticks,
-				len(instance.Constraints))
+				len(instance.Constraints), instance.Constraints)
 			instance.ProcessingState = 2
 		}
 	}
@@ -105,6 +128,8 @@ func (rq *RunQueue) update_queue() int {
 			continue
 		}
 		if instance.ProcessingState == 0 {
+
+			/* TODO--
 			if instance.TimedOut {
 				if len(instance.Constraints) == 1 {
 					timed_out = append(timed_out, instance)
@@ -120,6 +145,9 @@ func (rq *RunQueue) update_queue() int {
 			} else {
 				running++
 			}
+			*/
+
+			running++
 		}
 	}
 
@@ -129,11 +157,12 @@ func (rq *RunQueue) update_queue() int {
 		rq.Next++
 
 		if instance.ProcessingState < 0 {
-			base.Message.Printf("[%d] >> %s n: %d t: %d\n",
+			base.Message.Printf("[%d] >> %s n: %d t: %d\n + %v\n",
 				rq.BasicData.Ticks,
 				instance.Tag,
 				len(instance.Constraints),
-				instance.Timeout)
+				instance.Timeout,
+				instance.Constraints)
 			instance.Backend =
 				rq.BasicData.BackendInterface.RunBackend(instance)
 			instance.ProcessingState = 0 // indicate started/running
@@ -151,6 +180,7 @@ func (rq *RunQueue) update_queue() int {
 	// single-constraint instances to continue running.
 	for _, instance := range timed_out {
 		if running < rq.MaxRunning {
+			//if false {
 			running++
 		} else {
 			base.Message.Printf("[%d] Timeout %s @ %d, p:%d n: 1\n",
@@ -169,13 +199,11 @@ func (rq *RunQueue) update_queue() int {
 		if np <= 0 {
 			break
 		}
-		if instance.ProcessingState == 0 && !instance.Split {
+		if instance.ProcessingState == 0 {
 			n := len(instance.Constraints)
 			if n <= 1 {
 				continue
 			}
-			instance.Split = true
-
 			rq.BasicData.abort_instance(instance)
 			// Remove it from constraint list.
 			rq.BasicData.constraint_list = slices.DeleteFunc(

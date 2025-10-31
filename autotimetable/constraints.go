@@ -17,7 +17,8 @@ func (basic_data *BasicData) get_basic_constraints(
 		blist := emap[ctype]
 		cixlist := []ConstraintIndex{}
 		for _, i := range blist {
-			if !instance0.ConstraintEnabled[i] {
+			if !instance0.ConstraintEnabled[i] &&
+				!basic_data.BlockConstraint[i] {
 				cixlist = append(cixlist, i)
 			}
 		}

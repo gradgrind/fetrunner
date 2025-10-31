@@ -42,6 +42,7 @@ type BasicData struct {
 	HardConstraintMap map[ConstraintType][]ConstraintIndex
 	SoftConstraintMap map[ConstraintType][]ConstraintIndex
 	ConstraintErrors  map[ConstraintIndex]string // collect error messages
+	BlockConstraint   map[ConstraintIndex]bool   // if true, don't enable the constraint
 
 	// `WorkingDir` provides the path to a working directory which can be used
 	// freely during processing. It is set up before entering `StartGeneration`.
@@ -107,8 +108,7 @@ type TtInstance struct {
 	Stopped         bool      // `abort_instance()` has been called on this instance
 	ProcessingState int       // -1: queued, 0: running, 1: success, 2: failure,
 	// there is also 3: cancelled
-	TimedOut bool // marked as timed out, will (probably) lead to termination
-	Split    bool // has been split to fill run-queue
+	//TODO-- TimedOut bool // marked as timed out, will (probably) lead to termination
 
 	// The following are set by the back-end:
 	RunState int
