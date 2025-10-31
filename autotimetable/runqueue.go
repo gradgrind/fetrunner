@@ -3,6 +3,7 @@ package autotimetable
 import (
 	"fetrunner/base"
 	"fmt"
+	"slices"
 )
 
 type RunQueue struct {
@@ -25,8 +26,6 @@ func (rq *RunQueue) add(instance *TtInstance) {
 	}
 	instance.ProcessingState = -1 // not started yet
 	rq.Queue = append(rq.Queue, instance)
-	//base.Message.Printf("(TODO) [%d] Queue %s\n",
-	//	Ticks, instance.TtData.Description)
 }
 
 func (rq *RunQueue) update_instances() {
@@ -160,6 +159,62 @@ func (rq *RunQueue) update_queue() int {
 				instance.Ticks,
 				instance.Progress)
 			rq.BasicData.abort_instance(instance)
+		}
+	}
+
+	// If still not all processors are being used, split one or more
+	// instances.
+	for instance := range rq.Active {
+		np := rq.MaxRunning - running
+		if np <= 0 {
+			break
+		}
+		if instance.ProcessingState == 0 && !instance.Split {
+			n := len(instance.Constraints)
+			if n <= 1 {
+				continue
+			}
+			instance.Split = true
+
+			rq.BasicData.abort_instance(instance)
+			// Remove it from constraint list.
+			rq.BasicData.constraint_list = slices.DeleteFunc(
+				rq.BasicData.constraint_list, func(i *TtInstance) bool {
+					return i == instance
+				})
+
+			if np == 1 {
+				np = 2
+			}
+			if n < np {
+				np = n
+			}
+			rem := n % np
+			ni := n / np
+			tags := []string{}
+			for range np {
+				nx := n
+				n -= ni
+				if rem != 0 {
+					n--
+					rem--
+				}
+				inew := rq.BasicData.new_instance(
+					instance.BaseInstance,
+					instance.ConstraintType,
+					instance.Constraints[n:nx],
+					instance.Timeout)
+				rq.BasicData.constraint_list = append(
+					rq.BasicData.constraint_list, inew)
+				rq.add(inew)
+				tags = append(tags, inew.Tag)
+				running++
+			}
+			if n != 0 {
+				panic("Bug: wrong constraint division ...")
+			}
+			base.Message.Printf("??? NSPLIT %s -> %v\n",
+				instance.Tag, tags)
 		}
 	}
 

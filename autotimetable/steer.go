@@ -256,7 +256,6 @@ tickloop:
 				basic_data.Ticks)
 		}
 
-		//TODO
 		base.Message.Printf(
 			"[%d] -TICK\n",
 			basic_data.Ticks)
@@ -270,7 +269,6 @@ tickloop:
 		}
 
 		basic_data.Ticks++
-		//TODO
 		base.Message.Printf(
 			"[%d] +TICK\n",
 			basic_data.Ticks)
@@ -392,8 +390,6 @@ tickloop:
 				panic("basic_data.phase0() -> invalid return value")
 			}
 		}
-
-		// There should be no problem if there are no constraints to add.
 
 		if runqueue.mainphase() {
 			break

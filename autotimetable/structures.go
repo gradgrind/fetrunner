@@ -108,6 +108,7 @@ type TtInstance struct {
 	ProcessingState int       // -1: queued, 0: running, 1: success, 2: failure,
 	// there is also 3: cancelled
 	TimedOut bool // marked as timed out, will (probably) lead to termination
+	Split    bool // has been split to fill run-queue
 
 	// The following are set by the back-end:
 	RunState int

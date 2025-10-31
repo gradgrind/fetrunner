@@ -154,19 +154,20 @@ func (runqueue *RunQueue) mainphase() bool {
 				if timeout == 0 {
 					timeout = instance.Timeout
 				}
-				nhalf := len(instance.Constraints) / 2
-				split_instances = append(split_instances,
-					basic_data.new_instance(
-						base_instance,
-						instance.ConstraintType,
-						instance.Constraints[:nhalf],
-						timeout))
-				split_instances = append(split_instances,
-					basic_data.new_instance(
-						base_instance,
-						instance.ConstraintType,
-						instance.Constraints[nhalf:],
-						timeout))
+
+				sit := []string{}
+				for _, si := range runqueue.split_instance(
+					instance, base_instance, timeout) {
+					split_instances = append(split_instances, si)
+					sit = append(sit, si.Tag)
+				}
+				base.Message.Printf("??? (SPLIT) %s -> %v\n",
+					instance.Tag, sit)
+
+				//split_instances = append(split_instances,
+				//	runqueue.split_instance(
+				//		instance, base_instance, timeout)...)
+
 			} else if len(instance.Constraints) == 1 {
 				if len(instance.Message) != 0 {
 					basic_data.ConstraintErrors[instance.Constraints[0]] =
@@ -201,4 +202,23 @@ func (runqueue *RunQueue) mainphase() bool {
 		runqueue.add(instance)
 	}
 	return false // still processing
+}
+
+func (runqueue *RunQueue) split_instance(
+	instance *TtInstance, base_instance *TtInstance, timeout int,
+) []*TtInstance {
+	basic_data := runqueue.BasicData
+	nhalf := len(instance.Constraints) / 2
+	return []*TtInstance{
+		basic_data.new_instance(
+			base_instance,
+			instance.ConstraintType,
+			instance.Constraints[:nhalf],
+			timeout),
+		basic_data.new_instance(
+			base_instance,
+			instance.ConstraintType,
+			instance.Constraints[nhalf:],
+			timeout),
+	}
 }
