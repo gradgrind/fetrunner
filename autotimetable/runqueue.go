@@ -183,9 +183,11 @@ func (rq *RunQueue) update_queue() int {
 					return i == instance
 				})
 
-			if np == 1 {
-				np = 2
-			}
+			// Always assume one more processor, so that one instance
+			// will be available in the queue, if possible.
+			np++
+			// Limit the number of divisions to at most the number of
+			// constraints.
 			if n < np {
 				np = n
 			}
