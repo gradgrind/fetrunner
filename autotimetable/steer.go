@@ -231,6 +231,9 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 			basic_data.BackendInterface.Tidy()
 		}
 		if basic_data.lastResult != nil {
+
+			basic_data.lastResult.ConstraintErrors = basic_data.ConstraintErrors
+
 			// Save result of last successful instance.
 			//b, err := json.Marshal(LastResult)
 			b, err := json.MarshalIndent(basic_data.lastResult, "", "  ")

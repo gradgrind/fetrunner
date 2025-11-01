@@ -101,15 +101,21 @@ func (rq *RunQueue) update_instances() {
 			}
 
 		case 1: // completed successfully
-			base.Message.Printf("[%d] <<+ %s @ %d (%d)\n + %v\n",
+			//base.Message.Printf("[%d] <<+ %s @ %d (%d)\n + %v\n",
+			//	rq.BasicData.Ticks, instance.Tag, instance.Ticks,
+			//	len(instance.Constraints), instance.Constraints)
+			base.Message.Printf("[%d] <<+ %s @ %d (%d)\n",
 				rq.BasicData.Ticks, instance.Tag, instance.Ticks,
-				len(instance.Constraints), instance.Constraints)
+				len(instance.Constraints))
 			instance.ProcessingState = 1
 
 		default: // completed unsuccessfully
-			base.Message.Printf("[%d] <<- %s @ %d (%d)\n + %v\n",
+			//base.Message.Printf("[%d] <<- %s @ %d (%d)\n + %v\n",
+			//	rq.BasicData.Ticks, instance.Tag, instance.Ticks,
+			//	len(instance.Constraints), instance.Constraints)
+			base.Message.Printf("[%d] <<- %s @ %d (%d)\n",
 				rq.BasicData.Ticks, instance.Tag, instance.Ticks,
-				len(instance.Constraints), instance.Constraints)
+				len(instance.Constraints))
 			instance.ProcessingState = 2
 		}
 	}
@@ -157,12 +163,17 @@ func (rq *RunQueue) update_queue() int {
 		rq.Next++
 
 		if instance.ProcessingState < 0 {
-			base.Message.Printf("[%d] >> %s n: %d t: %d\n + %v\n",
+			//base.Message.Printf("[%d] >> %s n: %d t: %d\n + %v\n",
+			//	rq.BasicData.Ticks,
+			//	instance.Tag,
+			//	len(instance.Constraints),
+			//	instance.Timeout,
+			//	instance.Constraints)
+			base.Message.Printf("[%d] >> %s n: %d t: %d\n",
 				rq.BasicData.Ticks,
 				instance.Tag,
 				len(instance.Constraints),
-				instance.Timeout,
-				instance.Constraints)
+				instance.Timeout)
 			instance.Backend =
 				rq.BasicData.BackendInterface.RunBackend(instance)
 			instance.ProcessingState = 0 // indicate started/running
@@ -243,8 +254,8 @@ func (rq *RunQueue) update_queue() int {
 			if n != 0 {
 				panic("Bug: wrong constraint division ...")
 			}
-			base.Message.Printf("??? NSPLIT %s -> %v\n",
-				instance.Tag, tags)
+			base.Message.Printf("[%d] (NSPLIT) %s -> %v\n",
+				rq.BasicData.Ticks, instance.Tag, tags)
 		}
 	}
 

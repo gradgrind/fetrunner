@@ -112,15 +112,16 @@ func (fbe *FetBackend) RunBackend(
 }
 
 type FetTtData struct {
-	ifile    string
-	fetxml   []byte
-	odir     string // the working directory for this instance
-	logfile  string
-	rdfile   *os.File // this must be closed when the subprocess finishes
-	reader   *bufio.Reader
-	cancel   func()
-	finished bool
-	count    int
+	ifile       string
+	fetxml      []byte
+	odir        string // the working directory for this instance
+	logfile     string
+	rdfile      *os.File // this must be closed when the subprocess finishes
+	reader      *bufio.Reader
+	cancel      func()
+	fet_timeout bool //
+	finished    bool
+	count       int
 }
 
 func (data *FetTtData) Abort() {
@@ -196,18 +197,10 @@ func (data *FetTtData) Tick(
 				}
 
 				//TODO: Experiment!
-				if instance.LastTime < 2 &&
+				if !data.fet_timeout && instance.LastTime < 2 &&
 					instance.Ticks-instance.LastTime > 10 {
-					data.finished = true
+					data.fet_timeout = true
 					data.Abort()
-
-					if len(instance.Constraints) == 1 {
-
-						//TODO--
-						base.Message.Printf("??? %d\n", instance.Constraints[0])
-
-						basic_data.BlockConstraint[instance.Constraints[0]] = true
-					}
 				}
 
 				break
@@ -229,7 +222,16 @@ exit:
 		efile, err := os.ReadFile(filepath.Join(data.odir, "logs", "errors.txt"))
 		if err == nil {
 			instance.Message = string(efile)
+		} else if data.fet_timeout {
+			instance.Message = fmt.Sprintf("FET stuck at beginning (%d%%)",
+				instance.Progress)
+		} else {
+			return
 		}
+		if len(instance.Constraints) == 1 {
+			basic_data.BlockConstraint[instance.Constraints[0]] = true
+		}
+
 	}
 }
 

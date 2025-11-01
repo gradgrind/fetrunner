@@ -66,7 +66,6 @@ reached or the hard-only or full instance will have completed already), return
 func (runqueue *RunQueue) mainphase() bool {
 	basic_data := runqueue.BasicData
 	next_timeout := 0 // non-zero => "restart with new base"
-
 	base_instance := basic_data.current_instance
 	if base_instance == nil {
 		// Possible with SKIP_HARD option.
@@ -161,8 +160,8 @@ func (runqueue *RunQueue) mainphase() bool {
 					split_instances = append(split_instances, si)
 					sit = append(sit, si.Tag)
 				}
-				base.Message.Printf("??? (SPLIT) %s -> %v\n",
-					instance.Tag, sit)
+				base.Message.Printf("[%d] (SPLIT) %s -> %v\n",
+					basic_data.Ticks, instance.Tag, sit)
 
 				//split_instances = append(split_instances,
 				//	runqueue.split_instance(
