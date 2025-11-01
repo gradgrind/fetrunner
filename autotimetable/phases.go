@@ -2,6 +2,7 @@ package autotimetable
 
 import (
 	"fetrunner/base"
+	"fmt"
 	"slices"
 )
 
@@ -104,40 +105,52 @@ func (runqueue *RunQueue) mainphase() bool {
 			old_ticks) * basic_data.Parameters.NEW_CYCLE_TIMEOUT_FACTOR) / 10
 		var n int
 	rpt:
-		basic_data.constraint_list, n = basic_data.get_basic_constraints(
-			base_instance, basic_data.phase == 2)
-		if n == 0 {
-			if basic_data.phase == 2 {
-				// The fully constrained instance is no longer needed.
-				if basic_data.full_instance.ProcessingState == 0 {
-					basic_data.abort_instance(basic_data.full_instance)
-				}
-				return true // solution found
+		switch basic_data.phase {
+
+		case 0:
+			base.Message.Printf(
+				"[%d] Phase 1 ...\n",
+				basic_data.Ticks)
+			basic_data.phase = 1
+			basic_data.constraint_list, n = basic_data.get_basic_constraints(
+				base_instance, false)
+			if n == 0 {
+				base.Warning.Println("--HARD: No hard constraints")
+				goto rpt
+			}
+
+		case 1:
+			if basic_data.hard_instance.ProcessingState == 1 {
+				base.Message.Printf(
+					"[%d] Phase 2 ... <- %s\n",
+					basic_data.Ticks, basic_data.hard_instance.Tag)
 			} else {
 				base.Message.Printf(
-					"[%d] Phase 2 <- (accumulated instance)",
+					"[%d] Phase 2 ... <- (accumulated instance)\n",
 					basic_data.Ticks)
-				basic_data.phase = 2
 				// The hard-only instance is no longer needed.
 				if basic_data.hard_instance.ProcessingState == 0 {
 					basic_data.abort_instance(basic_data.hard_instance)
 				}
+			}
+			basic_data.phase = 2
+			basic_data.constraint_list, n = basic_data.get_basic_constraints(
+				base_instance, true)
+			if n == 0 {
+				base.Message.Println("--SOFT: No soft constraints")
 				goto rpt
 			}
+
+		case 2:
+			return true // end of process
+
+		default:
+			panic(fmt.Sprintf("Bug, invalid phase: %d", basic_data.phase))
 		}
-		basic_data.cycle++
 		// Queue instances for running
 		for _, bc := range basic_data.constraint_list {
 			runqueue.add(bc)
 		}
-		hs := "hard"
-		if basic_data.phase == 2 {
-			hs = "soft"
-		}
-		base.Message.Printf(
-			"[%d] Cycle %d (%s), n: %d t: %d\n",
-			basic_data.Ticks, basic_data.cycle, hs, n, basic_data.cycle_timeout)
-		return false // still processing
 	}
 
 	// Seek failed instances, which should be split.

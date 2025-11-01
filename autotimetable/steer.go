@@ -195,7 +195,7 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 		basic_data.phase = 0
 	}
 
-	basic_data.cycle = 0
+	//TODO-- basic_data.cycle = 0
 	full_progress := 0       // current percentage
 	full_progress_ticks := 0 // time of last increment
 	hard_progress := 0       // current percentage
@@ -322,10 +322,7 @@ tickloop:
 					instance.ProcessingState = 3
 				}
 				basic_data.constraint_list = nil
-				basic_data.phase = 2
-				base.Message.Printf(
-					"[%d] Phase 2 <- %s\n",
-					basic_data.Ticks, basic_data.hard_instance.Tag)
+				basic_data.phase = 1
 			} else {
 				p := basic_data.hard_instance.Progress
 				if p > hard_progress {
@@ -379,10 +376,10 @@ tickloop:
 				continue
 
 			case 1:
-				basic_data.phase = 1
-				base.Message.Printf(
-					"[%d] Phase 1 ...\n",
-					basic_data.Ticks)
+				//TODO-- basic_data.phase = 1
+				//TODO-- base.Message.Printf(
+				//TODO-- 	"[%d] Phase 1 ...\n",
+				//TODO-- 	basic_data.Ticks)
 
 			case -1:
 				base.Error.Printf(

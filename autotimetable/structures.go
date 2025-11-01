@@ -60,7 +60,7 @@ type BasicData struct {
 	hard_instance   *TtInstance
 	phase           int // 0: initial phase, 1: adding hard constraints,
 	// 2: adding soft constraints, 3: finished
-	cycle int // processing cycle number (in `mainphase`)
+	//TODO-- cycle int // processing cycle number (in `mainphase`)
 	// The (successful) instance on which current trials are based:
 	current_instance *TtInstance
 	// List of instances adding a constraint type:
