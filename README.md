@@ -70,6 +70,7 @@ fetrunner -help
         max. parallel processes
   -t int
         set timeout (default 300)
+  -v	print version and exit
 ```
 
 In normal usage, the most useful of these is probably "-t", which sets the overall timeout in seconds.
