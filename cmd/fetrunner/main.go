@@ -29,17 +29,21 @@ import (
 	"fetrunner/base"
 	"fetrunner/fet"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
+const VERSION = "0.0.2"
+
 func main() {
 
 	bdata := &autotimetable.BasicData{}
 	bdata.SetParameterDefault()
 
+	v := flag.Bool("v", false, "print version and exit")
 	flag.BoolVar(&base.CONSOLE, "c", false, "enable progress output")
 	flag.BoolVar(&bdata.Parameters.TESTING, "T", false, "run in testing mode")
 	flag.BoolVar(&bdata.Parameters.SKIP_HARD, "h", false,
@@ -49,6 +53,11 @@ func main() {
 	debug := flag.Bool("d", false, "debug")
 
 	flag.Parse()
+
+	if *v {
+		fmt.Printf("fetrunner version %s\n", VERSION)
+		return
+	}
 
 	if *nprocesses > 0 {
 		bdata.Parameters.MAXPROCESSES = *nprocesses
