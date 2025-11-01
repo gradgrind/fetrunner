@@ -108,12 +108,11 @@ type TtInstance struct {
 	Stopped         bool      // `abort_instance()` has been called on this instance
 	ProcessingState int       // -1: queued, 0: running, 1: success, 2: failure,
 	// there is also 3: cancelled
-	//TODO-- TimedOut bool // marked as timed out, will (probably) lead to termination
 
 	// The following are set by the back-end:
 	RunState int
 	Progress int    // percent
-	LastTime int    // last (instance) time at which `Progress` changed
+	LastTime int    // last (instance) time at which the back-end made progress
 	Message  string // "" or error message
 }
 

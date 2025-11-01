@@ -99,7 +99,8 @@ When an instance completes successfully within the allotted time, its result
 is saved as a `Result` structure, the best result so far gradually
 encompassing more of the constraints. When all the constraints have been
 tested with a certain timeout, a new round is entered and the rejected ones
-are tried again, but this time with longer timeouts.
+are tried again, but this time with longer timeouts. Note that instances
+which are trying to add just one constraint are started without a timeout
 
 When all the hard constraints have been included, the soft constraints are
 added in basically the same way. If the initial instance with all hard
@@ -110,9 +111,10 @@ but possible), the initial instance with all hard constraints may be
 terminated.
 
 When everything has been added that can be in the given time, the latest
-`Result` is saved as a JSON file, "Result.json". This includes diagnostic
-information (at least an indication of which constraints were dropped), and
-details of the last successful run.
+`Result` is saved as a JSON file, "Result.json". This includes details of the
+last successful run and diagnostic information – at least an indication of
+which constraints were dropped and any error messages for them which may have
+been produced by the generator back-end).
 */
 
 func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
@@ -262,10 +264,6 @@ tickloop:
 				"[%d] Run-queue empty\n",
 				basic_data.Ticks)
 		}
-
-		base.Message.Printf(
-			"[%d] -TICK\n",
-			basic_data.Ticks)
 
 		select {
 		case <-ticker.C:
@@ -465,6 +463,10 @@ func (basic_data *BasicData) new_instance(
 	// Add the new constraints
 	for _, c := range constraint_indexes {
 		enabled[c] = true
+	}
+	// Single-constraint instances always have no timeout
+	if len(constraint_indexes) == 1 {
+		timeout = 0
 	}
 
 	// Make a new `TtInstance`

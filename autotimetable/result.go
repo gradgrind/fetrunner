@@ -34,15 +34,6 @@ func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
 		basic_data.Ticks, instance.Tag,
 		instance.Ticks, len(instance.Constraints))
 
-	/* TODO--
-	cerrors := map[ConstraintIndex]string{}
-	for k, v := range basic_data.ConstraintErrors {
-		if len(v) != 0 {
-			cerrors[k] = v
-		}
-	}
-	*/
-
 	// Read placements
 	alist := instance.Backend.Results(basic_data, instance)
 
@@ -77,12 +68,12 @@ func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
 	clist := basic_data.Source.GetConstraintItems()
 	rlist := basic_data.Source.GetRooms()
 	basic_data.lastResult = &Result{
-		Time:        instance.Ticks,
-		Days:        basic_data.Source.GetDayTags(),
-		Hours:       basic_data.Source.GetHourTags(),
-		Activities:  basic_data.Source.GetActivityIds(),
-		Constraints: clist,
-		//TODO-- ConstraintErrors:           cerrors,
+		Time:                       instance.Ticks,
+		Days:                       basic_data.Source.GetDayTags(),
+		Hours:                      basic_data.Source.GetHourTags(),
+		Activities:                 basic_data.Source.GetActivityIds(),
+		Constraints:                clist,
+		ConstraintErrors:           basic_data.ConstraintErrors, // updated later
 		Rooms:                      rlist,
 		Placements:                 alist,
 		UnfulfilledHardConstraints: hunfulfilled,

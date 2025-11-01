@@ -196,7 +196,8 @@ func (data *FetTtData) Tick(
 					}
 				}
 
-				//TODO: Experiment!
+				//TODO: Experiment to catch FET getting stuck soon after start.
+				// It may need tweaking.
 				if !data.fet_timeout && instance.LastTime < 2 &&
 					instance.Ticks-instance.LastTime > 10 {
 					data.fet_timeout = true
@@ -231,7 +232,6 @@ exit:
 		if len(instance.Constraints) == 1 {
 			basic_data.BlockConstraint[instance.Constraints[0]] = true
 		}
-
 	}
 }
 

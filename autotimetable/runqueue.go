@@ -84,19 +84,13 @@ func (rq *RunQueue) update_instances() {
 					// ... but stretch the rule a bit
 					continue
 				}
-
-				//TODO-- instance.TimedOut = true
-				if len(instance.Constraints) == 1 {
-					instance.Timeout = 0
-				} else {
-					base.Message.Printf("[%d] Timeout %s @ %d, p: %d n: %d\n",
-						rq.BasicData.Ticks,
-						instance.Tag,
-						instance.Ticks,
-						instance.Progress,
-						len(instance.Constraints))
-					rq.BasicData.abort_instance(instance)
-				}
+				base.Message.Printf("[%d] Timeout %s @ %d, p: %d n: %d\n",
+					rq.BasicData.Ticks,
+					instance.Tag,
+					instance.Ticks,
+					instance.Progress,
+					len(instance.Constraints))
+				rq.BasicData.abort_instance(instance)
 				continue
 			}
 
@@ -124,7 +118,6 @@ func (rq *RunQueue) update_instances() {
 func (rq *RunQueue) update_queue() int {
 	// Try to start queued instances
 	running := 0
-	timed_out := []*TtInstance{}
 	for instance := range rq.Active {
 		if instance.RunState != 0 {
 			delete(rq.Active, instance)
@@ -134,25 +127,6 @@ func (rq *RunQueue) update_queue() int {
 			continue
 		}
 		if instance.ProcessingState == 0 {
-
-			/* TODO--
-			if instance.TimedOut {
-				if len(instance.Constraints) == 1 {
-					timed_out = append(timed_out, instance)
-				} else {
-					base.Message.Printf("[%d] Timeout %s @ %d, p: %d n: %d\n",
-						rq.BasicData.Ticks,
-						instance.Tag,
-						instance.Ticks,
-						instance.Progress,
-						len(instance.Constraints))
-					rq.BasicData.abort_instance(instance)
-				}
-			} else {
-				running++
-			}
-			*/
-
 			running++
 		}
 	}
@@ -187,24 +161,7 @@ func (rq *RunQueue) update_queue() int {
 		}
 	}
 
-	// If not all processors are being used, allow one or more timed-out
-	// single-constraint instances to continue running.
-	for _, instance := range timed_out {
-		if running < rq.MaxRunning {
-			//if false {
-			running++
-		} else {
-			base.Message.Printf("[%d] Timeout %s @ %d, p:%d n: 1\n",
-				rq.BasicData.Ticks,
-				instance.Tag,
-				instance.Ticks,
-				instance.Progress)
-			rq.BasicData.abort_instance(instance)
-		}
-	}
-
-	// If still not all processors are being used, split one or more
-	// instances.
+	// If not all processors are being used, split one or more instances.
 	for instance := range rq.Active {
 		np := rq.MaxRunning - running
 		if np <= 0 {
