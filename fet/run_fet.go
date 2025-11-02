@@ -16,6 +16,8 @@ import (
 	"strings"
 )
 
+var TEMPORARY_FOLDER string
+
 type FetBackend struct {
 	basic_data *autotimetable.BasicData
 }
@@ -23,11 +25,20 @@ type FetBackend struct {
 func SetFetBackend(
 	basic_data *autotimetable.BasicData,
 ) autotimetable.BackendInterface {
+	if len(TEMPORARY_FOLDER) != 0 {
+		os.RemoveAll(filepath.Join(TEMPORARY_FOLDER,
+			filepath.Base(basic_data.WorkingDir)))
+	}
 	return &FetBackend{basic_data}
 }
 
 func (fbe *FetBackend) Tidy() {
-	os.RemoveAll(filepath.Join(fbe.basic_data.WorkingDir, "tmp"))
+	if len(TEMPORARY_FOLDER) == 0 {
+		os.RemoveAll(filepath.Join(fbe.basic_data.WorkingDir, "tmp"))
+	} else {
+		os.RemoveAll(filepath.Join(TEMPORARY_FOLDER,
+			filepath.Base(fbe.basic_data.WorkingDir)))
+	}
 }
 
 func (fbe *FetBackend) RunBackend(
@@ -35,7 +46,14 @@ func (fbe *FetBackend) RunBackend(
 ) autotimetable.TtBackend {
 	basic_data := fbe.basic_data
 	fname := instance.Tag
-	odir := filepath.Join(basic_data.WorkingDir, "tmp", fname)
+	var odir string
+	if len(TEMPORARY_FOLDER) == 0 {
+		odir = filepath.Join(basic_data.WorkingDir, "tmp", fname)
+	} else {
+		odir = filepath.Join(TEMPORARY_FOLDER,
+			filepath.Base(fbe.basic_data.WorkingDir),
+			fname)
+	}
 	err := os.MkdirAll(odir, 0755)
 	if err != nil {
 		panic(err)
