@@ -247,14 +247,8 @@ type GeneralRoom interface {
 // which it belongs.
 type Activity struct {
 	ElementBase
-	Course   NodeRef   // [Course] or [SuperCourse] elements
-	Duration int       // number of "hours" covered
-	Day      int       // 0-based index, -1 for "unplaced"
-	Hour     int       // 0-based index
-	Fixed    bool      // whether the Activity is unmovable
-	Rooms    []NodeRef // actually allocated Room elements
-	//Background string // colour, as "#RRGGBB"
-	//Footnote   string
+	Course   NodeRef // [Course] or [SuperCourse] element
+	Duration int     // number of "hours" covered
 }
 
 // ActivityCourse is a type of course which can have activities, i.e. a
