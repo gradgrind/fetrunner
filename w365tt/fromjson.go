@@ -86,7 +86,7 @@ func (dbi *DbTopLevel) readHours(newdb *db.DbTopLevel) {
 }
 
 func (dbi *DbTopLevel) readTeachers(newdb *db.DbTopLevel) {
-	dbi.TeacherMap = map[Ref]bool{}
+	dbi.TeacherMap = map[NodeRef]bool{}
 	for _, e := range dbi.Teachers {
 		// MaxAfternoons = 0 has a special meaning (all blocked)
 		amax := e.MaxAfternoons

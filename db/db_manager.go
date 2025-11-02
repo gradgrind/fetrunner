@@ -10,20 +10,20 @@ import (
 
 func NewDb() *DbTopLevel {
 	db := &DbTopLevel{}
-	db.Elements = map[Ref]Element{}
+	db.Elements = map[NodeRef]Element{}
 	return db
 }
 
-func (db *DbTopLevel) newId() Ref {
+func (db *DbTopLevel) newId() NodeRef {
 	// Create a Version 4 UUID.
 	u2, err := uuid.NewV4()
 	if err != nil {
 		base.Error.Fatalf("Failed to generate UUID: %v", err)
 	}
-	return Ref(u2.String())
+	return NodeRef(u2.String())
 }
 
-func (db *DbTopLevel) addElement(ref Ref, element Element) Ref {
+func (db *DbTopLevel) addElement(ref NodeRef, element Element) NodeRef {
 	if ref == "" {
 		ref = db.newId()
 	}
@@ -35,91 +35,91 @@ func (db *DbTopLevel) addElement(ref Ref, element Element) Ref {
 	return ref
 }
 
-func (db *DbTopLevel) NewDay(ref Ref) *Day {
+func (db *DbTopLevel) NewDay(ref NodeRef) *Day {
 	e := &Day{}
 	e.Id = db.addElement(ref, e)
 	db.Days = append(db.Days, e)
 	return e
 }
 
-func (db *DbTopLevel) NewHour(ref Ref) *Hour {
+func (db *DbTopLevel) NewHour(ref NodeRef) *Hour {
 	e := &Hour{}
 	e.Id = db.addElement(ref, e)
 	db.Hours = append(db.Hours, e)
 	return e
 }
 
-func (db *DbTopLevel) NewTeacher(ref Ref) *Teacher {
+func (db *DbTopLevel) NewTeacher(ref NodeRef) *Teacher {
 	e := &Teacher{}
 	e.Id = db.addElement(ref, e)
 	db.Teachers = append(db.Teachers, e)
 	return e
 }
 
-func (db *DbTopLevel) NewSubject(ref Ref) *Subject {
+func (db *DbTopLevel) NewSubject(ref NodeRef) *Subject {
 	e := &Subject{}
 	e.Id = db.addElement(ref, e)
 	db.Subjects = append(db.Subjects, e)
 	return e
 }
 
-func (db *DbTopLevel) NewRoom(ref Ref) *Room {
+func (db *DbTopLevel) NewRoom(ref NodeRef) *Room {
 	e := &Room{}
 	e.Id = db.addElement(ref, e)
 	db.Rooms = append(db.Rooms, e)
 	return e
 }
 
-func (db *DbTopLevel) NewRoomGroup(ref Ref) *RoomGroup {
+func (db *DbTopLevel) NewRoomGroup(ref NodeRef) *RoomGroup {
 	e := &RoomGroup{}
 	e.Id = db.addElement(ref, e)
 	db.RoomGroups = append(db.RoomGroups, e)
 	return e
 }
 
-func (db *DbTopLevel) NewRoomChoiceGroup(ref Ref) *RoomChoiceGroup {
+func (db *DbTopLevel) NewRoomChoiceGroup(ref NodeRef) *RoomChoiceGroup {
 	e := &RoomChoiceGroup{}
 	e.Id = db.addElement(ref, e)
 	db.RoomChoiceGroups = append(db.RoomChoiceGroups, e)
 	return e
 }
 
-func (db *DbTopLevel) NewClass(ref Ref) *Class {
+func (db *DbTopLevel) NewClass(ref NodeRef) *Class {
 	e := &Class{}
 	e.Id = db.addElement(ref, e)
 	db.Classes = append(db.Classes, e)
 	return e
 }
 
-func (db *DbTopLevel) NewGroup(ref Ref) *Group {
+func (db *DbTopLevel) NewGroup(ref NodeRef) *Group {
 	e := &Group{}
 	e.Id = db.addElement(ref, e)
 	db.Groups = append(db.Groups, e)
 	return e
 }
 
-func (db *DbTopLevel) NewCourse(ref Ref) *Course {
+func (db *DbTopLevel) NewCourse(ref NodeRef) *Course {
 	e := &Course{}
 	e.Id = db.addElement(ref, e)
 	db.Courses = append(db.Courses, e)
 	return e
 }
 
-func (db *DbTopLevel) NewSuperCourse(ref Ref) *SuperCourse {
+func (db *DbTopLevel) NewSuperCourse(ref NodeRef) *SuperCourse {
 	e := &SuperCourse{}
 	e.Id = db.addElement(ref, e)
 	db.SuperCourses = append(db.SuperCourses, e)
 	return e
 }
 
-func (db *DbTopLevel) NewSubCourse(ref Ref) *SubCourse {
+func (db *DbTopLevel) NewSubCourse(ref NodeRef) *SubCourse {
 	e := &SubCourse{}
 	e.Id = db.addElement(ref, e)
 	db.SubCourses = append(db.SubCourses, e)
 	return e
 }
 
-func (db *DbTopLevel) NewActivity(ref Ref) *Activity {
+func (db *DbTopLevel) NewActivity(ref NodeRef) *Activity {
 	e := &Activity{}
 	e.Id = db.addElement(ref, e)
 	db.Activities = append(db.Activities, e)
@@ -194,7 +194,7 @@ func (db *DbTopLevel) PrepareDb() {
 
 	// Check that the Rooms in RoomGroups and RoomChoiceGroups are valid.
 	for _, rg := range db.RoomGroups {
-		rlist := []Ref{}
+		rlist := []NodeRef{}
 		for _, r := range rg.Rooms {
 			if _, ok := db.Elements[r].(*Room); ok {
 				rlist = append(rlist, r)
@@ -205,7 +205,7 @@ func (db *DbTopLevel) PrepareDb() {
 		rg.Rooms = rlist
 	}
 	for _, rg := range db.RoomChoiceGroups {
-		rlist := []Ref{}
+		rlist := []NodeRef{}
 		for _, r := range rg.Rooms {
 			if _, ok := db.Elements[r].(*Room); ok {
 				rlist = append(rlist, r)
@@ -271,20 +271,20 @@ func (db *DbTopLevel) CheckDbBasics() {
 
 // Interface for Course and SubCourse elements
 type CourseInterface interface {
-	GetId() Ref
-	GetGroups() []Ref
-	GetTeachers() []Ref
-	GetSubject() Ref
-	GetRoom() Ref
+	GetId() NodeRef
+	GetGroups() []NodeRef
+	GetTeachers() []NodeRef
+	GetSubject() NodeRef
+	GetRoom() NodeRef
 }
 
-func (c *Course) GetId() Ref            { return c.Id }
-func (c *SubCourse) GetId() Ref         { return c.Id }
-func (c *Course) GetGroups() []Ref      { return c.Groups }
-func (c *SubCourse) GetGroups() []Ref   { return c.Groups }
-func (c *Course) GetTeachers() []Ref    { return c.Teachers }
-func (c *SubCourse) GetTeachers() []Ref { return c.Teachers }
-func (c *Course) GetSubject() Ref       { return c.Subject }
-func (c *SubCourse) GetSubject() Ref    { return c.Subject }
-func (c *Course) GetRoom() Ref          { return c.Room }
-func (c *SubCourse) GetRoom() Ref       { return c.Room }
+func (c *Course) GetId() NodeRef            { return c.Id }
+func (c *SubCourse) GetId() NodeRef         { return c.Id }
+func (c *Course) GetGroups() []NodeRef      { return c.Groups }
+func (c *SubCourse) GetGroups() []NodeRef   { return c.Groups }
+func (c *Course) GetTeachers() []NodeRef    { return c.Teachers }
+func (c *SubCourse) GetTeachers() []NodeRef { return c.Teachers }
+func (c *Course) GetSubject() NodeRef       { return c.Subject }
+func (c *SubCourse) GetSubject() NodeRef    { return c.Subject }
+func (c *Course) GetRoom() NodeRef          { return c.Room }
+func (c *SubCourse) GetRoom() NodeRef       { return c.Room }

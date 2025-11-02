@@ -6,7 +6,7 @@ import (
 	"fetrunner/db"
 )
 
-type NodeRef = db.Ref // node reference (UUID)
+type NodeRef = db.NodeRef // node reference (UUID)
 
 type ActivityIndex int
 type TeacherIndex int

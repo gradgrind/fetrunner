@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-type Ref = db.Ref
+type Ref = db.NodeRef
 
 const CLASS_GROUP_SEP = "."
 const ATOMIC_GROUP_SEP1 = "#"

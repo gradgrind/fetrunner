@@ -7,8 +7,8 @@ import (
 )
 
 func (dbi *DbTopLevel) readSubjects(newdb *db.DbTopLevel) {
-	dbi.SubjectMap = map[Ref]*db.Subject{}
-	dbi.SubjectTags = map[string]Ref{}
+	dbi.SubjectMap = map[NodeRef]*db.Subject{}
+	dbi.SubjectTags = map[string]NodeRef{}
 	for _, e := range dbi.Subjects {
 		// Perform some checks and add to the SubjectTags map.
 		_, nok := dbi.SubjectTags[e.Tag]
@@ -29,7 +29,7 @@ func (dbi *DbTopLevel) makeNewSubject(
 	newdb *db.DbTopLevel,
 	tag string,
 	name string,
-) Ref {
+) NodeRef {
 	s := newdb.NewSubject("")
 	s.Tag = tag
 	s.Name = name
@@ -38,7 +38,7 @@ func (dbi *DbTopLevel) makeNewSubject(
 }
 
 func (dbi *DbTopLevel) readCourses(newdb *db.DbTopLevel) {
-	dbi.CourseMap = map[Ref]bool{}
+	dbi.CourseMap = map[NodeRef]bool{}
 	for _, e := range dbi.Courses {
 		subject := dbi.getCourseSubject(newdb, e.Subjects, e.Id)
 		room := dbi.getCourseRoom(newdb, e.PreferredRooms, e.Id)
@@ -57,7 +57,7 @@ func (dbi *DbTopLevel) readSuperCourses(newdb *db.DbTopLevel) {
 	// In the input from W365 the subjects for the SuperCourses must be
 	// taken from the linked EpochPlan.
 	// The EpochPlans are otherwise not needed.
-	epochPlanSubjects := map[Ref]Ref{}
+	epochPlanSubjects := map[NodeRef]NodeRef{}
 	if dbi.EpochPlans != nil {
 		for _, n := range dbi.EpochPlans {
 			sref, ok := dbi.SubjectTags[n.Tag]
@@ -68,7 +68,7 @@ func (dbi *DbTopLevel) readSuperCourses(newdb *db.DbTopLevel) {
 		}
 	}
 
-	sbcMap := map[Ref]*db.SubCourse{}
+	sbcMap := map[NodeRef]*db.SubCourse{}
 	for _, spc := range dbi.SuperCourses {
 		// Read the SubCourses.
 		for _, e := range spc.SubCourses {
@@ -84,7 +84,7 @@ func (dbi *DbTopLevel) readSuperCourses(newdb *db.DbTopLevel) {
 				// Use a new Id for the SubCourse because it can also be
 				// the Id of a Course.
 				n := newdb.NewSubCourse("$$" + e.Id)
-				n.SuperCourses = []Ref{spc.Id}
+				n.SuperCourses = []NodeRef{spc.Id}
 				n.Subject = subject
 				n.Groups = groups
 				n.Teachers = teachers
@@ -107,9 +107,9 @@ func (dbi *DbTopLevel) readSuperCourses(newdb *db.DbTopLevel) {
 
 func (dbi *DbTopLevel) getCourseSubject(
 	newdb *db.DbTopLevel,
-	srefs []Ref,
-	courseId Ref,
-) Ref {
+	srefs []NodeRef,
+	courseId NodeRef,
+) NodeRef {
 	//
 	// Deal with the Subjects field of a Course or SubCourse – W365
 	// allows multiple subjects.
@@ -119,7 +119,7 @@ func (dbi *DbTopLevel) getCourseSubject(
 	// Repeated use of the same subject list will reuse the created subject.
 	//
 	msg := "Course %s:\n  Not a Subject: %s\n"
-	var subject Ref
+	var subject NodeRef
 	if len(srefs) == 1 {
 		wsid := srefs[0]
 		_, ok := dbi.SubjectMap[wsid]
@@ -162,9 +162,9 @@ func (dbi *DbTopLevel) getCourseSubject(
 
 func (dbi *DbTopLevel) getCourseRoom(
 	newdb *db.DbTopLevel,
-	rrefs []Ref,
-	courseId Ref,
-) Ref {
+	rrefs []NodeRef,
+	courseId NodeRef,
+) NodeRef {
 	//
 	// Deal with rooms. W365 can have a single RoomGroup or a list of Rooms.
 	// If there is a list of Rooms, this is converted to a RoomChoiceGroup.
@@ -172,7 +172,7 @@ func (dbi *DbTopLevel) getCourseRoom(
 	// in the "Room" field.
 	// If a list of rooms recurs, the same RoomChoiceGroup is used.
 	//
-	room := Ref("")
+	room := NodeRef("")
 	if len(rrefs) > 1 {
 		// Make a RoomChoiceGroup
 		var estr string
@@ -200,14 +200,14 @@ func (dbi *DbTopLevel) getCourseRoom(
 }
 
 func (dbi *DbTopLevel) getCourseGroups(
-	grefs []Ref,
-	courseId Ref,
-) []Ref {
+	grefs []NodeRef,
+	courseId NodeRef,
+) []NodeRef {
 	//
 	// Check the group references and replace Class references by the
 	// corresponding whole-class base.Group references.
 	//
-	glist := []Ref{}
+	glist := []NodeRef{}
 	for _, gref := range grefs {
 		ngref, ok := dbi.GroupRefMap[gref]
 		if !ok {
@@ -220,13 +220,13 @@ func (dbi *DbTopLevel) getCourseGroups(
 }
 
 func (dbi *DbTopLevel) getCourseTeachers(
-	trefs []Ref,
-	courseId Ref,
-) []Ref {
+	trefs []NodeRef,
+	courseId NodeRef,
+) []NodeRef {
 	//
 	// Check the teacher references.
 	//
-	tlist := []Ref{}
+	tlist := []NodeRef{}
 	for _, tref := range trefs {
 		_, ok := dbi.TeacherMap[tref]
 		if !ok {

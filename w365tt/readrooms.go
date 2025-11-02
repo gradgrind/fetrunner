@@ -9,9 +9,9 @@ import (
 )
 
 func (dbi *DbTopLevel) readRooms(newdb *db.DbTopLevel) {
-	dbi.RealRooms = map[Ref]*db.Room{}
-	dbi.RoomTags = map[string]Ref{}
-	dbi.RoomChoiceNames = map[string]Ref{}
+	dbi.RealRooms = map[NodeRef]*db.Room{}
+	dbi.RoomTags = map[string]NodeRef{}
+	dbi.RoomChoiceNames = map[string]NodeRef{}
 	for _, e := range dbi.Rooms {
 		// Perform some checks and add to the RoomTags map.
 		_, nok := dbi.RoomTags[e.Tag]
@@ -33,7 +33,7 @@ func (dbi *DbTopLevel) readRooms(newdb *db.DbTopLevel) {
 
 // In the case of RoomGroups, cater for empty Tags (Shortcuts).
 func (dbi *DbTopLevel) readRoomGroups(newdb *db.DbTopLevel) {
-	dbi.RoomGroupMap = map[Ref]*db.RoomGroup{}
+	dbi.RoomGroupMap = map[NodeRef]*db.RoomGroup{}
 	for _, e := range dbi.RoomGroups {
 		if e.Tag != "" {
 			_, nok := dbi.RoomTags[e.Tag]
@@ -58,7 +58,7 @@ func (dbi *DbTopLevel) checkRoomGroups(newdb *db.DbTopLevel) {
 	for _, e := range newdb.RoomGroups {
 		// Collect the Ids and Tags of the component rooms.
 		taglist := []string{}
-		reflist := []Ref{}
+		reflist := []NodeRef{}
 		for _, rref := range e.Rooms {
 			r, ok := dbi.RealRooms[rref]
 			if ok {
@@ -100,12 +100,12 @@ func (dbi *DbTopLevel) checkRoomGroups(newdb *db.DbTopLevel) {
 
 func (dbi *DbTopLevel) makeRoomChoiceGroup(
 	newdb *db.DbTopLevel,
-	rooms []Ref,
-) (Ref, string) {
+	rooms []NodeRef,
+) (NodeRef, string) {
 	erlist := []string{} // Error messages
 	// Collect the Ids and Tags of the component rooms.
 	taglist := []string{}
-	reflist := []Ref{}
+	reflist := []NodeRef{}
 	for _, rref := range rooms {
 		r, ok := dbi.RealRooms[rref]
 		if ok {

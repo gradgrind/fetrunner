@@ -6,10 +6,26 @@ func (db *DbTopLevel) addConstraint(c *Constraint) {
 	db.Constraints = append(db.Constraints, c)
 }
 
+// +++ For teacher, class and room constraints
+
+type ResourceN struct {
+	Resource NodeRef
+	N        int
+}
+
+type ResourceNotAvailable struct {
+	Resource NodeRef
+	// NotAvailable is an ordered list of time-slots in which the teacher
+	// is to be regarded as not available for the timetable.
+	NotAvailable []TimeSlot
+}
+
+// ---
+
 // ++ ActivitiesEndDay
 
 func (db *DbTopLevel) NewActivitiesEndDay(
-	id Ref, weight int, course Ref,
+	id NodeRef, weight int, course NodeRef,
 ) *Constraint {
 	c := &Constraint{
 		CType:  "ActivitiesEndDay",
@@ -26,13 +42,13 @@ func (db *DbTopLevel) NewActivitiesEndDay(
 // Permissible starting hours are before or after the specified hour,
 // not including the specified hour.
 type BeforeAfterHour struct {
-	Courses []Ref // Courses or SuperCourses
-	After   bool  // false => before given hour, true => after given hour
+	Courses []NodeRef // Courses or SuperCourses
+	After   bool      // false => before given hour, true => after given hour
 	Hour    int
 }
 
 func (db *DbTopLevel) NewBeforeAfterHour(
-	id Ref, weight int, courses []Ref, after bool, hour int,
+	id NodeRef, weight int, courses []NodeRef, after bool, hour int,
 ) *Constraint {
 	c := &Constraint{
 		CType:  "BeforeAfterHour",
@@ -50,7 +66,7 @@ func (db *DbTopLevel) NewBeforeAfterHour(
 // If not present, all courses will by default apply it as a hard constraint,
 // except for courses which have an overriding DAYS_BETWEEN constraint.
 func (db *DbTopLevel) NewAutomaticDifferentDays(
-	id Ref, weight int, consecutiveIfSameDay bool,
+	id NodeRef, weight int, consecutiveIfSameDay bool,
 ) *Constraint {
 	c := &Constraint{
 		CType:  "AutomaticDifferentDays",
@@ -68,14 +84,14 @@ func (db *DbTopLevel) NewAutomaticDifferentDays(
 // It does not connect the courses. If DaysBetween = 1, this constraint
 // overrides the global AutomaticDifferentDays constraint for these courses.
 type DaysBetween struct {
-	Courses              []Ref // Courses or SuperCourses
+	Courses              []NodeRef // Courses or SuperCourses
 	DaysBetween          int
 	ConsecutiveIfSameDay bool
 }
 
 func (db *DbTopLevel) NewDaysBetween(
-	id Ref, weight int,
-	courses []Ref, daysBetween int, consecutiveIfSameDay bool,
+	id NodeRef, weight int,
+	courses []NodeRef, daysBetween int, consecutiveIfSameDay bool,
 ) *Constraint {
 	c := &Constraint{
 		CType:  "DaysBetween",
@@ -98,15 +114,15 @@ func (db *DbTopLevel) NewDaysBetween(
 // activity 2, etc.
 
 type DaysBetweenJoin struct {
-	Course1              Ref // Course or SuperCourse
-	Course2              Ref // Course or SuperCourse
+	Course1              NodeRef // Course or SuperCourse
+	Course2              NodeRef // Course or SuperCourse
 	DaysBetween          int
 	ConsecutiveIfSameDay bool
 }
 
 func (db *DbTopLevel) NewDaysBetweenJoin(
-	id Ref, weight int,
-	course1 Ref, course2 Ref, daysBetween int, consecutiveIfSameDay bool,
+	id NodeRef, weight int,
+	course1 NodeRef, course2 NodeRef, daysBetween int, consecutiveIfSameDay bool,
 ) *Constraint {
 	c := &Constraint{
 		CType:  "DaysBetweenJoin",
@@ -128,7 +144,7 @@ func (db *DbTopLevel) NewDaysBetweenJoin(
 // To avoid complications, it is required that the number and lengths of
 // activities be the same in each course.
 func (db *DbTopLevel) NewParallelCourses(
-	id Ref, weight int, courses []Ref,
+	id NodeRef, weight int, courses []NodeRef,
 ) *Constraint {
 	c := &Constraint{
 		CType:  "ParallelCourses",
@@ -145,7 +161,7 @@ func (db *DbTopLevel) NewParallelCourses(
 // There should be at most one of these. The breaks are immediately before
 // the specified hours.
 func (db *DbTopLevel) NewDoubleActivityNotOverBreaks(
-	id Ref, weight int, hours []int,
+	id NodeRef, weight int, hours []int,
 ) *Constraint {
 	c := &Constraint{
 		CType:  "DoubleActivityNotOverBreaks",
@@ -162,14 +178,14 @@ func (db *DbTopLevel) NewDoubleActivityNotOverBreaks(
 // The start of an activity in `Course2` should be at least `Hours` after
 // the end of an activity in `Course1`.
 type MinHoursFollowing struct {
-	Course1 Ref // Course or SuperCourse
-	Course2 Ref // Course or SuperCourse
+	Course1 NodeRef // Course or SuperCourse
+	Course2 NodeRef // Course or SuperCourse
 	Hours   int
 }
 
 func (db *DbTopLevel) NewMinHoursFollowing(
-	id Ref, weight int,
-	course1 Ref, course2 Ref, hours int,
+	id NodeRef, weight int,
+	course1 NodeRef, course2 NodeRef, hours int,
 ) *Constraint {
 	c := &Constraint{
 		CType:  "MinHoursFollowing",

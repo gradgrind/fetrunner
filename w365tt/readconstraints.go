@@ -25,16 +25,16 @@ var ConstraintMap []DbW365Pair = []DbW365Pair{
 
 // Parameter-reading functions for the constraints
 
-func a2r(r any) Ref {
-	return Ref(r.(string))
+func a2r(r any) NodeRef {
+	return NodeRef(r.(string))
 }
 
 func a2i(i any) int {
 	return int(i.(float64))
 }
 
-func a2rr(rr any) []Ref {
-	rlist := []Ref{}
+func a2rr(rr any) []NodeRef {
+	rlist := []NodeRef{}
 	for _, r := range rr.([]any) {
 		rlist = append(rlist, a2r(r))
 	}

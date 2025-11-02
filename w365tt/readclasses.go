@@ -11,12 +11,12 @@ func (dbi *DbTopLevel) readClasses(newdb *db.DbTopLevel) {
 	// To handle that, the Group references are first gathered here. Then,
 	// when a Group is "used" it is flagged. At the end, any unused Groups
 	// can be found and reported.
-	pregroups := map[Ref]bool{}
+	pregroups := map[NodeRef]bool{}
 	for _, n := range dbi.Groups {
 		pregroups[n.Id] = false
 	}
 
-	dbi.GroupRefMap = map[Ref]Ref{}
+	dbi.GroupRefMap = map[NodeRef]NodeRef{}
 	for _, e := range dbi.Classes {
 		// MaxAfternoons = 0 has a special meaning (all blocked)
 		amax := e.MaxAfternoons
@@ -32,7 +32,7 @@ func (dbi *DbTopLevel) readClasses(newdb *db.DbTopLevel) {
 			if dname == "" {
 				dname = "#div" + strconv.Itoa(i+1)
 			}
-			glist := []Ref{}
+			glist := []NodeRef{}
 			for _, g := range wdiv.Groups {
 				// get Tag
 				flag, ok := pregroups[g]

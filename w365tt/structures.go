@@ -7,7 +7,7 @@ import (
 
 // The structures used for the "database", adapted to read from W365
 
-type Ref = db.Ref // Element reference
+type NodeRef = db.NodeRef // Element reference
 
 type Info struct {
 	Institution        string
@@ -17,14 +17,14 @@ type Info struct {
 }
 
 type Day struct {
-	Id   Ref
+	Id   NodeRef
 	Type string
 	Name string
 	Tag  string `json:"Shortcut"`
 }
 
 type Hour struct {
-	Id    Ref
+	Id    NodeRef
 	Type  string
 	Name  string
 	Tag   string `json:"Shortcut"`
@@ -38,7 +38,7 @@ type TimeSlot struct {
 }
 
 type Teacher struct {
-	Id               Ref
+	Id               NodeRef
 	Type             string
 	Name             string
 	Tag              string `json:"Shortcut"`
@@ -67,14 +67,14 @@ func (t *Teacher) UnmarshalJSON(data []byte) error {
 }
 
 type Subject struct {
-	Id   Ref
+	Id   NodeRef
 	Type string
 	Name string
 	Tag  string `json:"Shortcut"`
 }
 
 type Room struct {
-	Id           Ref
+	Id           NodeRef
 	Type         string
 	Name         string
 	Tag          string     `json:"Shortcut"`
@@ -82,15 +82,15 @@ type Room struct {
 }
 
 type RoomGroup struct {
-	Id    Ref
+	Id    NodeRef
 	Type  string
 	Name  string
 	Tag   string `json:"Shortcut"`
-	Rooms []Ref
+	Rooms []NodeRef
 }
 
 type Class struct {
-	Id               Ref
+	Id               NodeRef
 	Type             string
 	Name             string
 	Tag              string `json:"Shortcut"`
@@ -120,59 +120,59 @@ func (c *Class) UnmarshalJSON(data []byte) error {
 }
 
 type Group struct {
-	Id   Ref
+	Id   NodeRef
 	Type string
 	Tag  string `json:"Shortcut"`
 }
 
 type Division struct {
-	Id     Ref
+	Id     NodeRef
 	Type   string
 	Name   string
-	Groups []Ref
+	Groups []NodeRef
 }
 
 type Course struct {
-	Id             Ref
+	Id             NodeRef
 	Type           string
-	Subjects       []Ref
-	Groups         []Ref // can be `Class` or `Group`
-	Teachers       []Ref
-	PreferredRooms []Ref
+	Subjects       []NodeRef
+	Groups         []NodeRef // can be `Class` or `Group`
+	Teachers       []NodeRef
+	PreferredRooms []NodeRef
 }
 
 type SuperCourse struct {
-	Id         Ref
+	Id         NodeRef
 	Type       string
-	EpochPlan  Ref
+	EpochPlan  NodeRef
 	SubCourses []SubCourse
 }
 
 type SubCourse struct {
-	Id             Ref
+	Id             NodeRef
 	Type           string
-	Subjects       []Ref
-	Groups         []Ref // can be `Class` or `Group`
-	Teachers       []Ref
-	PreferredRooms []Ref
+	Subjects       []NodeRef
+	Groups         []NodeRef // can be `Class` or `Group`
+	Teachers       []NodeRef
+	PreferredRooms []NodeRef
 }
 
 type Lesson struct {
-	Id       Ref
+	Id       NodeRef
 	Type     string
-	Course   Ref // Course or SuperCourse Elements
+	Course   NodeRef // Course or SuperCourse Elements
 	Duration int
 	Day      int
 	Hour     int
 	Fixed    bool
-	Rooms    []Ref `json:"LocalRooms"` // only Room Elements
+	Rooms    []NodeRef `json:"LocalRooms"` // only Room Elements
 	//Flags      []string
 	//Background string
 	//Footnote   string
 }
 
 type EpochPlan struct {
-	Id   Ref
+	Id   NodeRef
 	Type string
 	Tag  string `json:"Shortcut"`
 	Name string
@@ -197,15 +197,15 @@ type DbTopLevel struct {
 	Constraints  []map[string]any
 
 	// These fields do not belong in the JSON object.
-	RealRooms       map[Ref]*db.Room      `json:"-"`
-	RoomGroupMap    map[Ref]*db.RoomGroup `json:"-"`
-	SubjectMap      map[Ref]*db.Subject   `json:"-"`
-	GroupRefMap     map[Ref]Ref           `json:"-"`
-	TeacherMap      map[Ref]bool          `json:"-"`
-	CourseMap       map[Ref]bool          `json:"-"`
-	SubjectTags     map[string]Ref        `json:"-"`
-	RoomTags        map[string]Ref        `json:"-"`
-	RoomChoiceNames map[string]Ref        `json:"-"`
+	RealRooms       map[NodeRef]*db.Room      `json:"-"`
+	RoomGroupMap    map[NodeRef]*db.RoomGroup `json:"-"`
+	SubjectMap      map[NodeRef]*db.Subject   `json:"-"`
+	GroupRefMap     map[NodeRef]NodeRef       `json:"-"`
+	TeacherMap      map[NodeRef]bool          `json:"-"`
+	CourseMap       map[NodeRef]bool          `json:"-"`
+	SubjectTags     map[string]NodeRef        `json:"-"`
+	RoomTags        map[string]NodeRef        `json:"-"`
+	RoomChoiceNames map[string]NodeRef        `json:"-"`
 }
 
 // Block all afternoons if nAfternnons == 0.

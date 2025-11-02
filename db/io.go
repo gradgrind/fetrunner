@@ -41,7 +41,7 @@ func LoadDb(fpath string) *DbTopLevel {
 	return v
 }
 
-func (db *DbTopLevel) testElement(ref Ref, element Element) {
+func (db *DbTopLevel) testElement(ref NodeRef, element Element) {
 	if ref == "" {
 		base.Error.Fatalf("Element has no Id:\n  -- %+v\n", element)
 	}
