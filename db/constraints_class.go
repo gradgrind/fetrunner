@@ -1,5 +1,16 @@
 package db
 
+var (
+	C_ClassNotAvailable        = "ClassNotAvailable"
+	C_ClassMinActivitiesPerDay = "ClassMinActivitiesPerDay"
+	C_ClassMaxActivitiesPerDay = "ClassMaxActivitiesPerDay"
+	C_ClassMaxGapsPerDay       = "ClassMaxGapsPerDay"
+	C_ClassMaxGapsPerWeek      = "ClassMaxGapsPerWeek"
+	C_ClassMaxAfternoons       = "ClassMaxAfternoons"
+	C_ClassLunchBreak          = "ClassLunchBreak"
+	C_ClassForceFirstHour      = "ClassForceFirstHour"
+)
+
 // ++ ClassNotAvailable
 
 // TimeSlots in which the class is not available.
@@ -7,13 +18,12 @@ func (db *DbTopLevel) NewClassNotAvailable(
 	id NodeRef, weight int, tid NodeRef, notAvailable []TimeSlot,
 ) *Constraint {
 	c := &Constraint{
-		CType:  "ClassNotAvailable",
+		CType:  C_ClassNotAvailable,
 		Id:     id,
 		Weight: weight,
 		Data:   ResourceNotAvailable{tid, notAvailable},
 	}
-	r := db.GetElement(tid).(Resource)
-	r.addConstraint(c)
+	db.addConstraint(c)
 	return c
 }
 
@@ -24,13 +34,12 @@ func (db *DbTopLevel) NewClassMinActivitiesPerDay(
 	id NodeRef, weight int, tid NodeRef, n int,
 ) *Constraint {
 	c := &Constraint{
-		CType:  "ClassMinActivitiesPerDay",
+		CType:  C_ClassMinActivitiesPerDay,
 		Id:     id,
 		Weight: weight,
 		Data:   ResourceN{tid, n},
 	}
-	r := db.GetElement(tid).(Resource)
-	r.addConstraint(c)
+	db.addConstraint(c)
 	return c
 }
 
@@ -41,13 +50,12 @@ func (db *DbTopLevel) NewClassMaxActivitiesPerDay(
 	id NodeRef, weight int, tid NodeRef, n int,
 ) *Constraint {
 	c := &Constraint{
-		CType:  "ClassMaxActivitiesPerDay",
+		CType:  C_ClassMaxActivitiesPerDay,
 		Id:     id,
 		Weight: weight,
 		Data:   ResourceN{tid, n},
 	}
-	r := db.GetElement(tid).(Resource)
-	r.addConstraint(c)
+	db.addConstraint(c)
 	return c
 }
 
@@ -57,13 +65,12 @@ func (db *DbTopLevel) NewClassMaxGapsPerDay(
 	id NodeRef, weight int, tid NodeRef, n int,
 ) *Constraint {
 	c := &Constraint{
-		CType:  "ClassMaxGapsPerDay",
+		CType:  C_ClassMaxGapsPerDay,
 		Id:     id,
 		Weight: weight,
 		Data:   ResourceN{tid, n},
 	}
-	r := db.GetElement(tid).(Resource)
-	r.addConstraint(c)
+	db.addConstraint(c)
 	return c
 }
 
@@ -73,13 +80,12 @@ func (db *DbTopLevel) NewClassMaxGapsPerWeek(
 	id NodeRef, weight int, tid NodeRef, n int,
 ) *Constraint {
 	c := &Constraint{
-		CType:  "ClassMaxGapsPerWeek",
+		CType:  C_ClassMaxGapsPerWeek,
 		Id:     id,
 		Weight: weight,
 		Data:   ResourceN{tid, n},
 	}
-	r := db.GetElement(tid).(Resource)
-	r.addConstraint(c)
+	db.addConstraint(c)
 	return c
 }
 
@@ -89,13 +95,12 @@ func (db *DbTopLevel) NewClassMaxAfternoons(
 	id NodeRef, weight int, tid NodeRef, n int,
 ) *Constraint {
 	c := &Constraint{
-		CType:  "ClassMaxAfternoons",
+		CType:  C_ClassMaxAfternoons,
 		Id:     id,
 		Weight: weight,
 		Data:   ResourceN{tid, n},
 	}
-	r := db.GetElement(tid).(Resource)
-	r.addConstraint(c)
+	db.addConstraint(c)
 	return c
 }
 
@@ -105,13 +110,12 @@ func (db *DbTopLevel) NewClassLunchBreak(
 	id NodeRef, weight int, tid NodeRef,
 ) *Constraint {
 	c := &Constraint{
-		CType:  "ClassLunchBreak",
+		CType:  C_ClassLunchBreak,
 		Id:     id,
 		Weight: weight,
 		Data:   tid,
 	}
-	r := db.GetElement(tid).(Resource)
-	r.addConstraint(c)
+	db.addConstraint(c)
 	return c
 }
 
@@ -121,12 +125,11 @@ func (db *DbTopLevel) NewClassForceFirstHour(
 	id NodeRef, weight int, tid NodeRef,
 ) *Constraint {
 	c := &Constraint{
-		CType:  "ClassForceFirstHour",
+		CType:  C_ClassForceFirstHour,
 		Id:     id,
 		Weight: weight,
 		Data:   tid,
 	}
-	r := db.GetElement(tid).(Resource)
-	r.addConstraint(c)
+	db.addConstraint(c)
 	return c
 }

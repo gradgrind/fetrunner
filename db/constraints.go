@@ -3,7 +3,7 @@ package db
 const MAXWEIGHT = 100
 
 func (db *DbTopLevel) addConstraint(c *Constraint) {
-	db.Constraints = append(db.Constraints, c)
+	db.Constraints[c.CType] = append(db.Constraints[c.CType], c)
 }
 
 // +++ For teacher, class and room constraints

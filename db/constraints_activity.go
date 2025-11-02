@@ -1,5 +1,10 @@
 package db
 
+var (
+	C_ActivityStartTime = "ActivityStartTime"
+	C_ActivityRooms     = "ActivityRooms"
+)
+
 // ++ ActivityStartTime
 
 type ActivityStartTime struct {
@@ -13,7 +18,7 @@ func (db *DbTopLevel) NewActivityStartTime(
 	id NodeRef, weight int, aid NodeRef, day int, hour int, fixed bool,
 ) *Constraint {
 	c := &Constraint{
-		CType:  "ActivityStartTime",
+		CType:  C_ActivityStartTime,
 		Id:     id,
 		Weight: weight,
 		Data:   ActivityStartTime{aid, day, hour, fixed},
@@ -35,7 +40,7 @@ func (db *DbTopLevel) NewActivityRooms(
 	aid NodeRef, rooms []NodeRef, roomChoices [][]NodeRef,
 ) *Constraint {
 	c := &Constraint{
-		CType:  "ActivityStartTime",
+		CType:  C_ActivityRooms,
 		Id:     id,
 		Weight: weight,
 		Data:   ActivityRooms{aid, rooms, roomChoices},

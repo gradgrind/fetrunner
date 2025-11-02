@@ -98,6 +98,9 @@ func (dbi *DbTopLevel) readTeachers(newdb *db.DbTopLevel) {
 		n.Tag = e.Tag
 		n.Name = e.Name
 		n.Firstname = e.Firstname
+
+		//TODO: add constraints ...
+
 		n.NotAvailable = tsl
 		n.MinActivitiesPerDay = e.MinLessonsPerDay
 		n.MaxActivitiesPerDay = e.MaxLessonsPerDay

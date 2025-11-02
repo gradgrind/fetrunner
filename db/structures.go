@@ -119,8 +119,7 @@ type Subject struct {
 // A Room is a resource which can be specified for an activity.
 type Room struct {
 	ResourceBase
-	Name        string
-	Constraints []Constraint
+	Name string
 }
 
 // IsReal reports whether r is an actual [Room], rather than a [RoomGroup] or
@@ -296,12 +295,12 @@ type DbTopLevel struct {
 	RoomGroups       []*RoomGroup       `json:",omitempty"`
 	RoomChoiceGroups []*RoomChoiceGroup `json:",omitempty"`
 	Classes          []*Class
-	Groups           []*Group       `json:",omitempty"`
-	Courses          []*Course      `json:",omitempty"`
-	SuperCourses     []*SuperCourse `json:",omitempty"`
-	SubCourses       []*SubCourse   `json:",omitempty"`
-	Activities       []*Activity    `json:",omitempty"`
-	Constraints      []*Constraint  `json:",omitempty"`
+	Groups           []*Group                 `json:",omitempty"`
+	Courses          []*Course                `json:",omitempty"`
+	SuperCourses     []*SuperCourse           `json:",omitempty"`
+	SubCourses       []*SubCourse             `json:",omitempty"`
+	Activities       []*Activity              `json:",omitempty"`
+	Constraints      map[string][]*Constraint `json:",omitempty"`
 
 	// This field is a convenience structure built from other elements
 	// of the `DbTopLevel`. It should not be saved with the rest of the
@@ -327,27 +326,13 @@ func (db *DbTopLevel) Ref2Tag(ref NodeRef) string {
 
 type ResourceBase struct {
 	ElementBase
-	Constraints []*Constraint
 }
 
 type Resource interface {
 	GetResourceTag() string
-	addConstraint(*Constraint)
-}
-
-func (r *ResourceBase) addConstraint(c *Constraint) {
-	r.Constraints = append(r.Constraints, c)
 }
 
 func (r *ResourceBase) GetResourceTag() string {
-	return r.Tag
-}
-
-func (t *Teacher) GetResourceTag() string {
-	return t.Tag
-}
-
-func (r *Room) GetResourceTag() string {
 	return r.Tag
 }
 

@@ -26,7 +26,13 @@ func (dbi *DbTopLevel) readRooms(newdb *db.DbTopLevel) {
 		r := newdb.NewRoom(e.Id)
 		r.Tag = e.Tag
 		r.Name = e.Name
-		r.NotAvailable = tsl
+		if len(tsl) != 0 {
+			//TODO: Add a constraint
+
+			//--r.NotAvailable = tsl
+
+			newdb.NewRoomNotAvailable("", db.MAXWEIGHT, r.Id, tsl)
+		}
 		dbi.RealRooms[e.Id] = r
 	}
 }

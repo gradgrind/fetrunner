@@ -9,9 +9,10 @@ import (
 )
 
 func NewDb() *DbTopLevel {
-	db := &DbTopLevel{}
-	db.Elements = map[NodeRef]Element{}
-	return db
+	return &DbTopLevel{
+		Constraints: map[string][]*Constraint{},
+		Elements:    map[NodeRef]Element{},
+	}
 }
 
 func (db *DbTopLevel) newId() NodeRef {

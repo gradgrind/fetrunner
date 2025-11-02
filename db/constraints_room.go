@@ -1,18 +1,21 @@
 package db
 
+var (
+	C_RoomNotAvailable = "RoomNotAvailable"
+)
+
 // ++ RoomNotAvailable
 
 // TimeSlots in which the room is not available.
 func (db *DbTopLevel) NewRoomNotAvailable(
-	id NodeRef, weight int, tid NodeRef, notAvailable []TimeSlot,
+	cid NodeRef, weight int, rid NodeRef, notAvailable []TimeSlot,
 ) *Constraint {
 	c := &Constraint{
-		CType:  "RoomNotAvailable",
-		Id:     id,
+		CType:  C_RoomNotAvailable,
+		Id:     cid,
 		Weight: weight,
-		Data:   ResourceNotAvailable{tid, notAvailable},
+		Data:   ResourceNotAvailable{rid, notAvailable},
 	}
-	r := db.GetElement(tid).(Resource)
-	r.addConstraint(c)
+	db.addConstraint(c)
 	return c
 }
