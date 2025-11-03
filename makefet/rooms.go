@@ -37,6 +37,7 @@ type placedRoom struct {
 	Real_Room            []string `xml:",omitempty"`
 	Permanently_Locked   bool     // false
 	Active               bool     // true
+	Comments             string
 }
 
 type roomChoice struct {
@@ -46,6 +47,7 @@ type roomChoice struct {
 	Number_of_Preferred_Rooms int
 	Preferred_Room            []string
 	Active                    bool // true
+	Comments                  string
 }
 
 type roomNotAvailable struct {
@@ -55,6 +57,7 @@ type roomNotAvailable struct {
 	Number_of_Not_Available_Times int
 	Not_Available_Time            []notAvailableTime
 	Active                        bool
+	Comments                      string
 }
 
 // Generate the fet entries for the basic ("real") rooms.

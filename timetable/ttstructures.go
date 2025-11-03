@@ -97,6 +97,10 @@ func BasicSetup(db *db.DbTopLevel) *TtSharedData {
 	// Get the courses (-> CourseInfo) and activities for the timetable
 	tt_shared_data.CollectCourses()
 
+	//TODO: Perhaps this should be called from the back-end, in preparation
+	// for a generator run?
+	tt_shared_data.preprocessConstraints()
+
 	return tt_shared_data
 }
 

@@ -12,11 +12,8 @@ func (fetinfo *fetInfo) handle_room_constraints() {
 	for _, rna := range db0.Constraints[db.C_RoomNotAvailable] {
 		// The weight is assumed to be 100%.
 		data := rna.Data.(db.ResourceNotAvailable)
-		_ = data.Resource //NodeRef
-		// NotAvailable is an ordered list of time-slots in which the teacher
-		// is to be regarded as not available for the timetable.
-		_ = data.NotAvailable //[]TimeSlot
-
+		// `NotAvailable` is an ordered list of time-slots in which the
+		// teacher is to be regarded as not available for the timetable.
 		nats := []notAvailableTime{}
 		for _, slot := range data.NotAvailable {
 			nats = append(nats,
@@ -28,10 +25,11 @@ func (fetinfo *fetInfo) handle_room_constraints() {
 			natimes = append(natimes,
 				roomNotAvailable{
 					Weight_Percentage:             100,
-					Room:                          db0.Ref2Tag(rna.Id),
+					Room:                          db0.Ref2Tag(data.Resource),
 					Number_of_Not_Available_Times: len(nats),
 					Not_Available_Time:            nats,
 					Active:                        true,
+					Comments:                      string(rna.Id),
 				})
 		}
 	}

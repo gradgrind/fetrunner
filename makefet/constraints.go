@@ -18,6 +18,7 @@ type teacherNotAvailable struct {
 	Number_of_Not_Available_Times int
 	Not_Available_Time            []notAvailableTime
 	Active                        bool
+	Comments                      string
 }
 
 type studentsNotAvailable struct {
@@ -27,6 +28,7 @@ type studentsNotAvailable struct {
 	Number_of_Not_Available_Times int
 	Not_Available_Time            []notAvailableTime
 	Active                        bool
+	Comments                      string
 }
 
 type startingTime struct {
@@ -37,6 +39,7 @@ type startingTime struct {
 	Preferred_Hour     string
 	Permanently_Locked bool
 	Active             bool
+	Comments           string
 }
 
 type minDaysBetweenActivities struct {
@@ -47,6 +50,7 @@ type minDaysBetweenActivities struct {
 	Activity_Id             []timetable.ActivityIndex
 	MinDays                 int
 	Active                  bool
+	Comments                string
 }
 
 // *** Teacher constraints
@@ -58,6 +62,7 @@ type lunchBreakT struct {
 	Interval_End_Hour   string
 	Maximum_Hours_Daily int
 	Active              bool
+	Comments            string
 }
 
 type maxGapsPerDayT struct {
@@ -66,6 +71,7 @@ type maxGapsPerDayT struct {
 	Teacher           string
 	Max_Gaps          int
 	Active            bool
+	Comments          string
 }
 
 type maxGapsPerWeekT struct {
@@ -74,6 +80,7 @@ type maxGapsPerWeekT struct {
 	Teacher           string
 	Max_Gaps          int
 	Active            bool
+	Comments          string
 }
 
 type minLessonsPerDayT struct {
@@ -83,6 +90,7 @@ type minLessonsPerDayT struct {
 	Minimum_Hours_Daily int
 	Allow_Empty_Days    bool
 	Active              bool
+	Comments            string
 }
 
 type maxLessonsPerDayT struct {
@@ -91,6 +99,7 @@ type maxLessonsPerDayT struct {
 	Teacher             string
 	Maximum_Hours_Daily int
 	Active              bool
+	Comments            string
 }
 
 type maxDaysT struct {
@@ -99,6 +108,7 @@ type maxDaysT struct {
 	Teacher           string
 	Max_Days_Per_Week int
 	Active            bool
+	Comments          string
 }
 
 // for MaxAfternoons
@@ -111,6 +121,7 @@ type maxDaysinIntervalPerWeekT struct {
 	// Interval_End_Hour void ("") means the end of the day (which has no name)
 	Max_Days_Per_Week int
 	Active            bool
+	Comments          string
 }
 
 // *** Class constraints
@@ -123,6 +134,7 @@ type lunchBreak struct {
 	Interval_End_Hour   string
 	Maximum_Hours_Daily int
 	Active              bool
+	Comments            string
 }
 
 type maxGapsPerDay struct {
@@ -131,6 +143,7 @@ type maxGapsPerDay struct {
 	Max_Gaps          int
 	Students          string
 	Active            bool
+	Comments          string
 }
 
 type maxGapsPerWeek struct {
@@ -139,6 +152,7 @@ type maxGapsPerWeek struct {
 	Max_Gaps          int
 	Students          string
 	Active            bool
+	Comments          string
 }
 
 type minLessonsPerDay struct {
@@ -148,6 +162,7 @@ type minLessonsPerDay struct {
 	Students            string
 	Allow_Empty_Days    bool
 	Active              bool
+	Comments            string
 }
 
 type maxLessonsPerDay struct {
@@ -156,6 +171,7 @@ type maxLessonsPerDay struct {
 	Maximum_Hours_Daily int
 	Students            string
 	Active              bool
+	Comments            string
 }
 
 // for MaxAfternoons
@@ -168,6 +184,7 @@ type maxDaysinIntervalPerWeek struct {
 	// Interval_End_Hour void ("") means the end of the day (which has no name)
 	Max_Days_Per_Week int
 	Active            bool
+	Comments          string
 }
 
 // for ForceFirstHour
@@ -177,4 +194,5 @@ type maxLateStarts struct {
 	Max_Beginnings_At_Second_Hour int
 	Students                      string
 	Active                        bool
+	Comments                      string
 }

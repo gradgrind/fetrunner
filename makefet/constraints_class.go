@@ -1,6 +1,8 @@
 package fet
 
 import (
+	"fetrunner/db"
+	"slices"
 	"strconv"
 )
 
@@ -27,37 +29,35 @@ for the gaps that are thus created by adjusting the max-gaps constraints.
 
 func (fetinfo *fetInfo) handle_class_constraints() {
 	tt_data := fetinfo.tt_data
-	shared_data := tt_data.SharedData
-	ndays := shared_data.NDays
-	nhours := shared_data.NHours
-	db := shared_data.Db
-	cmap := tt_data.HardConstraints
+	db0 := tt_data.Db
+	ndays := tt_data.NDays
+	nhours := tt_data.NHours
 
 	natimes := []studentsNotAvailable{}
-	for cix, matrix := range tt_data.ClassNotAvailable {
+	cnamap := map[db.NodeRef][]db.TimeSlot{}
+	for _, c := range db0.Constraints[db.C_ClassNotAvailable] {
+		// The weight is assumed to be 100%.
+		data := c.Data.(db.ResourceNotAvailable)
+		cref := data.Resource
+		cnamap[cref] = data.NotAvailable
+		// `NotAvailable` is an ordered list of time-slots in which the
+		// class is to be regarded as not available for the timetable.
 		nats := []notAvailableTime{}
-		for d, hlist := range matrix {
-			for h, blocked := range hlist {
-				if blocked {
-					nats = append(nats,
-						notAvailableTime{
-							Day:  strconv.Itoa(d),
-							Hour: strconv.Itoa(h)})
-				}
-			}
+		for _, slot := range data.NotAvailable {
+			nats = append(nats,
+				notAvailableTime{
+					Day:  db0.Days[slot.Day].GetTag(),
+					Hour: db0.Hours[slot.Hour].GetTag()})
 		}
 		if len(nats) > 0 {
-			cl := db.Classes[cix]
-			if len(cl.Tag) == 0 {
-				continue
-			}
 			natimes = append(natimes,
 				studentsNotAvailable{
 					Weight_Percentage:             100,
-					Students:                      cl.Tag,
+					Students:                      db0.Ref2Tag(cref),
 					Number_of_Not_Available_Times: len(nats),
 					Not_Available_Time:            nats,
 					Active:                        true,
+					Comments:                      string(c.Id),
 				})
 		}
 	}
@@ -65,17 +65,17 @@ func (fetinfo *fetInfo) handle_class_constraints() {
 		ConstraintStudentsSetNotAvailableTimes = natimes
 
 	cminlpd := []minLessonsPerDay{}
-	for _, c := range cmap[timetable.ClassMinLessonsPerDay] {
-		cn := c.(*timetable.ClassConstraint)
-		n := cn.Value.(int)
+	for _, c := range db0.Constraints[db.C_ClassMinActivitiesPerDay] {
+		data := c.Data.(db.ResourceN)
+		n := data.N
 		if n >= 2 && n <= nhours {
-			cl := db.Classes[cn.ClassIndex]
 			cminlpd = append(cminlpd, minLessonsPerDay{
 				Weight_Percentage:   100,
-				Students:            cl.Tag,
+				Students:            db0.Ref2Tag(data.Resource),
 				Minimum_Hours_Daily: n,
 				Allow_Empty_Days:    true,
 				Active:              true,
+				Comments:            string(c.Id),
 			})
 		}
 	}
@@ -83,16 +83,16 @@ func (fetinfo *fetInfo) handle_class_constraints() {
 		ConstraintStudentsSetMinHoursDaily = cminlpd
 
 	cmaxlpd := []maxLessonsPerDay{}
-	for _, c := range cmap[timetable.ClassMaxLessonsPerDay] {
-		cn := c.(*timetable.ClassConstraint)
-		n := cn.Value.(int)
-		if n >= 0 && n < nhours {
-			cl := db.Classes[cn.ClassIndex]
+	for _, c := range db0.Constraints[db.C_ClassMaxActivitiesPerDay] {
+		data := c.Data.(db.ResourceN)
+		n := data.N
+		if n >= 2 && n <= nhours {
 			cmaxlpd = append(cmaxlpd, maxLessonsPerDay{
 				Weight_Percentage:   100,
-				Students:            cl.Tag,
+				Students:            db0.Ref2Tag(data.Resource),
 				Maximum_Hours_Daily: n,
 				Active:              true,
+				Comments:            string(c.Id),
 			})
 		}
 	}
@@ -102,106 +102,92 @@ func (fetinfo *fetInfo) handle_class_constraints() {
 	cmaxaft := []maxDaysinIntervalPerWeek{}
 	// Gather the max afternoons constraints as they may influence the
 	// max-gaps constraints.
-	//    class index -> max number of afternoons
-	pmmap := map[int]int{}
-	h0 := db.Info.FirstAfternoonHour
+	//    class ref -> max number of afternoons
+	pmmap := map[db.NodeRef]int{}
+	h0 := db0.Info.FirstAfternoonHour
 	if h0 > 0 {
-		for _, c := range cmap[timetable.ClassMaxAfternoons] {
-			cn := c.(*timetable.ClassConstraint)
-			n := cn.Value.(int)
-			cl := db.Classes[cn.ClassIndex]
+		for _, c := range db0.Constraints[db.C_ClassMaxAfternoons] {
+			data := c.Data.(db.ResourceN)
+			n := data.N
 			cmaxaft = append(cmaxaft, maxDaysinIntervalPerWeek{
 				Weight_Percentage:   100,
-				Students:            cl.Tag,
+				Students:            db0.Ref2Tag(data.Resource),
 				Interval_Start_Hour: strconv.Itoa(h0),
 				Interval_End_Hour:   "", // end of day
 				Max_Days_Per_Week:   n,
 				Active:              true,
+				Comments:            string(c.Id),
 			})
-			pmmap[cn.ClassIndex] = n
+			pmmap[data.Resource] = n
 		}
 	}
 	fetinfo.fetdata.Time_Constraints_List.
 		ConstraintStudentsSetIntervalMaxDaysPerWeek = cmaxaft
 
-	cmaxls := []maxLateStarts{}
-	for _, c := range cmap[timetable.ClassForceFirstHour] {
-		cn := c.(*timetable.ClassConstraint)
-		if cn.Value.(bool) {
-			cl := db.Classes[cn.ClassIndex]
-			cmaxls = append(cmaxls, maxLateStarts{
-				Weight_Percentage:             100,
-				Max_Beginnings_At_Second_Hour: 0,
-				Students:                      cl.Tag,
-				Active:                        true,
-			})
-		}
-	}
-	fetinfo.fetdata.Time_Constraints_List.
-		ConstraintStudentsSetEarlyMaxBeginningsAtSecondHour = cmaxls
-
 	clblist := []lunchBreak{}
 	// Gather the lunch-break constraints as they may influence the
 	// max-gaps constraints.
-	//    class index -> number of days with lunch break
-	lbmap := map[int]int{}
-	if mbhours := db.Info.MiddayBreak; len(mbhours) != 0 {
-		for _, c := range cmap[timetable.ClassLunchBreak] {
-			cn := c.(*timetable.ClassConstraint)
-			if cn.Value.(bool) {
-				// Generate the constraint unless all days have a blocked
-				// lesson at lunchtime.
-				nat := tt_data.ClassNotAvailable[cn.ClassIndex]
-				lbdays := ndays
-				for d := range ndays {
-					for _, h := range mbhours {
-						if nat[d][h] {
-							lbdays--
-							break
-						}
-					}
-				}
-				if lbdays != 0 {
-					// Add a lunch-break constraint.
-					cl := db.Classes[cn.ClassIndex]
-					clblist = append(clblist, lunchBreak{
-						Weight_Percentage:   100,
-						Students:            cl.Tag,
-						Interval_Start_Hour: strconv.Itoa(mbhours[0]),
-						Interval_End_Hour:   strconv.Itoa(mbhours[0] + len(mbhours)),
-						Maximum_Hours_Daily: len(mbhours) - 1,
-						Active:              true,
-					})
-					lbmap[cn.ClassIndex] = lbdays
+	//    class ref -> number of days with lunch break
+	lbmap := map[db.NodeRef]int{}
+	if mbhours := db0.Info.MiddayBreak; len(mbhours) != 0 {
+		for _, c := range db0.Constraints[db.C_ClassLunchBreak] {
+			cref := c.Data.(db.NodeRef)
+			// Generate the constraint unless all days have a blocked
+			// lesson at lunchtime.
+			lbdmap := make([]bool, ndays)
+			for _, ts := range cnamap[cref] {
+				if slices.Contains(mbhours, ts.Hour) {
+					lbdmap[ts.Day] = true
 				}
 			}
+			lbdays := ndays
+			for _, b := range lbdmap {
+				if b {
+					lbdays--
+				}
+			}
+			if lbdays != 0 {
+				// Add a lunch-break constraint.
+				clblist = append(clblist, lunchBreak{
+					Weight_Percentage:   100,
+					Students:            db0.Ref2Tag(cref),
+					Interval_Start_Hour: strconv.Itoa(mbhours[0]),
+					Interval_End_Hour:   strconv.Itoa(mbhours[0] + len(mbhours)),
+					Maximum_Hours_Daily: len(mbhours) - 1,
+					Active:              true,
+					Comments:            string(c.Id),
+				})
+				lbmap[cref] = lbdays
+			}
+
 		}
 	}
 	fetinfo.fetdata.Time_Constraints_List.
 		ConstraintStudentsSetMaxHoursDailyInInterval = clblist
 
 	cmaxgpd := []maxGapsPerDay{}
-	for _, c := range cmap[timetable.ClassMaxGapsPerDay] {
-		cn := c.(*timetable.ClassConstraint)
-		n := cn.Value.(int)
+	for _, c := range db0.Constraints[db.C_ClassMaxGapsPerDay] {
+		data := c.Data.(db.ResourceN)
+		n := data.N
+		cref := data.Resource
 		// Ensure that a gap is allowed if there are lunch breaks.
 		if n == 0 {
-			_, ok := lbmap[cn.ClassIndex]
+			_, ok := lbmap[cref]
 			if ok {
 				// lbdays > 0
-				maxpm, ok := pmmap[cn.ClassIndex]
+				maxpm, ok := pmmap[cref]
 				if !ok || maxpm != 0 {
 					n = 1
 				}
 			}
 		}
 		if n >= 0 {
-			cl := db.Classes[cn.ClassIndex]
 			cmaxgpd = append(cmaxgpd, maxGapsPerDay{
 				Weight_Percentage: 100,
-				Students:          cl.Tag,
+				Students:          db0.Ref2Tag(cref),
 				Max_Gaps:          n,
 				Active:            true,
+				Comments:          string(c.Id),
 			})
 		}
 	}
@@ -209,24 +195,24 @@ func (fetinfo *fetInfo) handle_class_constraints() {
 		ConstraintStudentsSetMaxGapsPerDay = cmaxgpd
 
 	cmaxgpw := []maxGapsPerWeek{}
-	for _, c := range cmap[timetable.ClassMaxGapsPerWeek] {
-		cn := c.(*timetable.ClassConstraint)
-		n := cn.Value.(int)
+	for _, c := range db0.Constraints[db.C_ClassMaxGapsPerWeek] {
+		data := c.Data.(db.ResourceN)
+		n := data.N
+		cref := data.Resource
 		if n >= 0 {
 			// Adjust to accommodate lunch breaks
-			lbdays, ok := lbmap[cn.ClassIndex]
+			lbdays, ok := lbmap[cref]
 			if ok {
 				// lbdays > 0
-				maxpm, ok := pmmap[cn.ClassIndex]
+				maxpm, ok := pmmap[cref]
 				if ok && maxpm < lbdays {
 					lbdays = maxpm
 				}
 				n += lbdays
 			}
-			cl := db.Classes[cn.ClassIndex]
 			cmaxgpw = append(cmaxgpw, maxGapsPerWeek{
 				Weight_Percentage: 100,
-				Students:          cl.Tag,
+				Students:          db0.Ref2Tag(cref),
 				Max_Gaps:          n,
 				Active:            true,
 			})
@@ -234,4 +220,19 @@ func (fetinfo *fetInfo) handle_class_constraints() {
 	}
 	fetinfo.fetdata.Time_Constraints_List.
 		ConstraintStudentsSetMaxGapsPerWeek = cmaxgpw
+
+	cmaxls := []maxLateStarts{}
+	for _, c := range db0.Constraints[db.C_ClassForceFirstHour] {
+		cref := c.Data.(db.NodeRef)
+		cmaxls = append(cmaxls, maxLateStarts{
+			Weight_Percentage:             100,
+			Max_Beginnings_At_Second_Hour: 0,
+			Students:                      db0.Ref2Tag(cref),
+			Active:                        true,
+		})
+
+	}
+	fetinfo.fetdata.Time_Constraints_List.
+		ConstraintStudentsSetEarlyMaxBeginningsAtSecondHour = cmaxls
+
 }

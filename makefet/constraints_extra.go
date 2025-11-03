@@ -3,6 +3,7 @@ package fet
 import (
 	"encoding/xml"
 	"fetrunner/base"
+	"fetrunner/db"
 	"strconv"
 )
 
@@ -71,11 +72,7 @@ type sameStartingTime struct {
 func getExtraConstraints(fetinfo *fetInfo) {
 	tclist := &fetinfo.fetdata.Time_Constraints_List
 	tt_data := fetinfo.tt_data
-
-	//TODO--
-	//for ctype := range clist {
-	//	fmt.Printf("CTYPE: %s\n", ctype)
-	//}
+	db0 := tt_data.Db
 
 	fetinfo.handle_teacher_constraints()
 	fetinfo.handle_class_constraints()
@@ -84,146 +81,145 @@ func getExtraConstraints(fetinfo *fetInfo) {
 	//TODO: Specification pending
 	var doubleBlocked []bool
 
-	for _, clist := range []map[timetable.ConstraintType][]any{
-		tt_data.HardConstraints,
-		tt_data.SoftConstraints,
-	} {
-		for _, c := range clist[timetable.MinDaysBetween] {
-			cn := c.(*timetable.TtDaysBetween)
-			for _, alist := range cn.ActivityLists {
-				tclist.ConstraintMinDaysBetweenActivities = append(
-					tclist.ConstraintMinDaysBetweenActivities,
-					minDaysBetweenActivities{
-						Weight_Percentage:       weight2fet(cn.Weight),
-						Consecutive_If_Same_Day: cn.ConsecutiveIfSameDay,
-						Number_of_Activities:    len(alist),
-						Activity_Id:             alist,
-						MinDays:                 cn.DaysBetween,
-						Active:                  true,
-					})
-			}
-		}
+	for _, c := range db0.Constraints[db.C_DaysBetween] {
+		data := c.Data.(db.DaysBetween)
 
-		for _, c := range clist[timetable.DaysBetweenJoin] {
-			cn := c.(*timetable.TtDaysBetweenJoin)
-			for _, alist := range cn.ActivityLists {
-				tclist.ConstraintMinDaysBetweenActivities = append(
-					tclist.ConstraintMinDaysBetweenActivities,
-					minDaysBetweenActivities{
-						Weight_Percentage:       weight2fet(cn.Weight),
-						Consecutive_If_Same_Day: cn.ConsecutiveIfSameDay,
-						Number_of_Activities:    len(alist),
-						Activity_Id:             alist,
-						MinDays:                 cn.DaysBetween,
-						Active:                  true,
-					})
-			}
-		}
+		//TODO: Isn't there some preprocessing somewhere?!
 
-		for _, c := range clist[timetable.ParallelCourses] {
-			cn := c.(*timetable.TtParallelActivities)
-			for _, alist := range cn.ActivityGroups {
-				tclist.ConstraintActivitiesSameStartingTime = append(
-					tclist.ConstraintActivitiesSameStartingTime,
-					sameStartingTime{
-						Weight_Percentage:    weight2fet(cn.Weight),
-						Number_of_Activities: len(alist),
-						Activity_Id:          alist,
-						Active:               true,
-					})
-			}
-		}
-
-		for _, c := range clist[timetable.ActivitiesEndDay] {
-			cn := c.(*base.ActivitiesEndDay)
-			cinfo := tt_data.Ref2CourseInfo[cn.Course]
-			for _, aid := range cinfo.TtActivities {
-				tclist.ConstraintActivityEndsStudentsDay = append(
-					tclist.ConstraintActivityEndsStudentsDay,
-					lessonEndsDay{
-						Weight_Percentage: weight2fet(cn.Weight),
-						Activity_Id:       aid,
-						Active:            true,
-					})
-			}
-		}
-
-		for _, c := range clist[timetable.DoubleActivityNotOverBreaks] {
-			cn := c.(*base.DoubleActivityNotOverBreaks)
-
-			if len(doubleBlocked) != 0 {
-				base.Error.Fatalln("Constraint DoubleActivityNotOverBreaks" +
-					" specified more than once")
-			}
-
-			timeslots := []preferredStart{}
-			// Note that a double lesson can't start in the last slot of
-			// the day.
-			doubleBlocked = make([]bool, tt_data.NHours-1)
-			for _, h := range cn.Hours {
-				doubleBlocked[h-1] = true
-			}
-			for d := 0; d < tt_data.NDays; d++ {
-				for h, bl := range doubleBlocked {
-					if !bl {
-						timeslots = append(timeslots, preferredStart{
-							Preferred_Starting_Day:  strconv.Itoa(d),
-							Preferred_Starting_Hour: strconv.Itoa(h),
-						})
-					}
-				}
-			}
-			tclist.ConstraintActivitiesPreferredStartingTimes = append(
-				tclist.ConstraintActivitiesPreferredStartingTimes,
-				preferredStarts{
-					Weight_Percentage:                  weight2fet(cn.Weight),
-					Duration:                           "2",
-					Number_of_Preferred_Starting_Times: len(timeslots),
-					Preferred_Starting_Time:            timeslots,
-					Active:                             true,
+		for _, alist := range cn.ActivityLists {
+			tclist.ConstraintMinDaysBetweenActivities = append(
+				tclist.ConstraintMinDaysBetweenActivities,
+				minDaysBetweenActivities{
+					Weight_Percentage:       weight2fet(c.Weight),
+					Consecutive_If_Same_Day: data.ConsecutiveIfSameDay,
+					Number_of_Activities:    len(alist),
+					Activity_Id:             alist,
+					MinDays:                 data.DaysBetween,
+					Active:                  true,
 				})
 		}
+	}
 
-		for _, c := range clist[timetable.BeforeAfterHour] {
-			cn := c.(*base.BeforeAfterHour)
-			timeslots := []preferredTime{}
-			if cn.After {
-				for d := 0; d < tt_data.NDays; d++ {
-					for h := cn.Hour + 1; h < tt_data.NHours; h++ {
-						timeslots = append(timeslots, preferredTime{
-							Preferred_Day:  strconv.Itoa(d),
-							Preferred_Hour: strconv.Itoa(h),
-						})
-					}
-				}
-			} else {
-				for d := 0; d < tt_data.NDays; d++ {
-					for h := 0; h < cn.Hour; h++ {
-						timeslots = append(timeslots, preferredTime{
-							Preferred_Day:  strconv.Itoa(d),
-							Preferred_Hour: strconv.Itoa(h),
-						})
-					}
-				}
-			}
-			for _, k := range cn.Courses {
-				cinfo, ok := tt_data.Ref2CourseInfo[k]
-				if !ok {
-					base.Bug.Fatalf("Invalid course: %s\n", k)
-				}
-				for _, aid := range cinfo.TtActivities {
-					tclist.ConstraintActivityPreferredTimeSlots = append(
-						tclist.ConstraintActivityPreferredTimeSlots,
-						activityPreferredTimes{
-							Weight_Percentage:              weight2fet(cn.Weight),
-							Activity_Id:                    aid,
-							Number_of_Preferred_Time_Slots: len(timeslots),
-							Preferred_Time_Slot:            timeslots,
-							Active:                         true,
-						})
+	for _, c := range clist[timetable.DaysBetweenJoin] {
+		cn := c.(*timetable.TtDaysBetweenJoin)
+		for _, alist := range cn.ActivityLists {
+			tclist.ConstraintMinDaysBetweenActivities = append(
+				tclist.ConstraintMinDaysBetweenActivities,
+				minDaysBetweenActivities{
+					Weight_Percentage:       weight2fet(cn.Weight),
+					Consecutive_If_Same_Day: cn.ConsecutiveIfSameDay,
+					Number_of_Activities:    len(alist),
+					Activity_Id:             alist,
+					MinDays:                 cn.DaysBetween,
+					Active:                  true,
+				})
+		}
+	}
+
+	for _, c := range clist[timetable.ParallelCourses] {
+		cn := c.(*timetable.TtParallelActivities)
+		for _, alist := range cn.ActivityGroups {
+			tclist.ConstraintActivitiesSameStartingTime = append(
+				tclist.ConstraintActivitiesSameStartingTime,
+				sameStartingTime{
+					Weight_Percentage:    weight2fet(cn.Weight),
+					Number_of_Activities: len(alist),
+					Activity_Id:          alist,
+					Active:               true,
+				})
+		}
+	}
+
+	for _, c := range clist[timetable.ActivitiesEndDay] {
+		cn := c.(*base.ActivitiesEndDay)
+		cinfo := tt_data.Ref2CourseInfo[cn.Course]
+		for _, aid := range cinfo.TtActivities {
+			tclist.ConstraintActivityEndsStudentsDay = append(
+				tclist.ConstraintActivityEndsStudentsDay,
+				lessonEndsDay{
+					Weight_Percentage: weight2fet(cn.Weight),
+					Activity_Id:       aid,
+					Active:            true,
+				})
+		}
+	}
+
+	for _, c := range clist[timetable.DoubleActivityNotOverBreaks] {
+		cn := c.(*base.DoubleActivityNotOverBreaks)
+
+		if len(doubleBlocked) != 0 {
+			base.Error.Fatalln("Constraint DoubleActivityNotOverBreaks" +
+				" specified more than once")
+		}
+
+		timeslots := []preferredStart{}
+		// Note that a double lesson can't start in the last slot of
+		// the day.
+		doubleBlocked = make([]bool, tt_data.NHours-1)
+		for _, h := range cn.Hours {
+			doubleBlocked[h-1] = true
+		}
+		for d := 0; d < tt_data.NDays; d++ {
+			for h, bl := range doubleBlocked {
+				if !bl {
+					timeslots = append(timeslots, preferredStart{
+						Preferred_Starting_Day:  strconv.Itoa(d),
+						Preferred_Starting_Hour: strconv.Itoa(h),
+					})
 				}
 			}
 		}
+		tclist.ConstraintActivitiesPreferredStartingTimes = append(
+			tclist.ConstraintActivitiesPreferredStartingTimes,
+			preferredStarts{
+				Weight_Percentage:                  weight2fet(cn.Weight),
+				Duration:                           "2",
+				Number_of_Preferred_Starting_Times: len(timeslots),
+				Preferred_Starting_Time:            timeslots,
+				Active:                             true,
+			})
+	}
+
+	for _, c := range clist[timetable.BeforeAfterHour] {
+		cn := c.(*base.BeforeAfterHour)
+		timeslots := []preferredTime{}
+		if cn.After {
+			for d := 0; d < tt_data.NDays; d++ {
+				for h := cn.Hour + 1; h < tt_data.NHours; h++ {
+					timeslots = append(timeslots, preferredTime{
+						Preferred_Day:  strconv.Itoa(d),
+						Preferred_Hour: strconv.Itoa(h),
+					})
+				}
+			}
+		} else {
+			for d := 0; d < tt_data.NDays; d++ {
+				for h := 0; h < cn.Hour; h++ {
+					timeslots = append(timeslots, preferredTime{
+						Preferred_Day:  strconv.Itoa(d),
+						Preferred_Hour: strconv.Itoa(h),
+					})
+				}
+			}
+		}
+		for _, k := range cn.Courses {
+			cinfo, ok := tt_data.Ref2CourseInfo[k]
+			if !ok {
+				base.Bug.Fatalf("Invalid course: %s\n", k)
+			}
+			for _, aid := range cinfo.TtActivities {
+				tclist.ConstraintActivityPreferredTimeSlots = append(
+					tclist.ConstraintActivityPreferredTimeSlots,
+					activityPreferredTimes{
+						Weight_Percentage:              weight2fet(cn.Weight),
+						Activity_Id:                    aid,
+						Number_of_Preferred_Time_Slots: len(timeslots),
+						Preferred_Time_Slot:            timeslots,
+						Active:                         true,
+					})
+			}
+		}
+
 	}
 
 	/* TODO: Specification pending
