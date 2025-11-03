@@ -22,6 +22,17 @@ type ResourceNotAvailable struct {
 
 // ---
 
+var (
+	C_ActivitiesEndDay            = "ActivitiesEndDay"
+	C_BeforeAfterHour             = "BeforeAfterHour"
+	C_AutomaticDifferentDays      = "AutomaticDifferentDays"
+	C_DaysBetween                 = "DaysBetween"
+	C_DaysBetweenJoin             = "DaysBetweenJoin"
+	C_MinHoursFollowing           = "MinHoursFollowing"
+	C_DoubleActivityNotOverBreaks = "DoubleActivityNotOverBreaks"
+	C_ParallelCourses             = "ParallelCourses"
+)
+
 // ++ ActivitiesEndDay
 
 func (db *DbTopLevel) NewActivitiesEndDay(

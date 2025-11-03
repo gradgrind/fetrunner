@@ -178,7 +178,7 @@ type EpochPlan struct {
 	Name string
 }
 
-type DbTopLevel struct {
+type W365TopLevel struct {
 	Info Info `json:"W365TT"`
 	//PrintTables  []*ttprint.PrintTable
 	FetData      map[string]string
@@ -201,15 +201,15 @@ type DbTopLevel struct {
 	RoomGroupMap    map[NodeRef]*db.RoomGroup `json:"-"`
 	SubjectMap      map[NodeRef]*db.Subject   `json:"-"`
 	GroupRefMap     map[NodeRef]NodeRef       `json:"-"`
-	TeacherMap      map[NodeRef]bool          `json:"-"`
-	CourseMap       map[NodeRef]bool          `json:"-"`
+	TeacherMap      map[NodeRef]struct{}      `json:"-"`
+	CourseMap       map[NodeRef]struct{}      `json:"-"`
 	SubjectTags     map[string]NodeRef        `json:"-"`
 	RoomTags        map[string]NodeRef        `json:"-"`
 	RoomChoiceNames map[string]NodeRef        `json:"-"`
 }
 
 // Block all afternoons if nAfternnons == 0.
-func (dbp *DbTopLevel) handleZeroAfternoons(
+func (dbp *W365TopLevel) handleZeroAfternoons(
 	notAvailable []TimeSlot,
 	nAfternoons int,
 ) []db.TimeSlot {

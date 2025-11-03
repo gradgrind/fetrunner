@@ -10,6 +10,7 @@ import (
 
 func NewDb() *DbTopLevel {
 	return &DbTopLevel{
+		Placements:  map[string][]*ActivityPlacement{},
 		Constraints: map[string][]*Constraint{},
 		Elements:    map[NodeRef]Element{},
 	}

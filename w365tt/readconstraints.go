@@ -13,14 +13,14 @@ type DbW365Pair struct {
 // List providing a mapping between Db constraint names and
 // W365 constraint names:
 var ConstraintMap []DbW365Pair = []DbW365Pair{
-	{"ActivitiesEndDay", "MARGIN_HOUR"},
-	{"BeforeAfterHour", "BEFORE_AFTER_HOUR"},
-	{"AutomaticDifferentDays", "AUTOMATIC_DIFFERENT_DAYS"},
-	{"DaysBetween", "DAYS_BETWEEN"},
-	{"DaysBetweenJoin", "DAYS_BETWEEN_JOIN"},
-	{"MinHoursFollowing", "MIN_HOURS_FOLLOWING"},
-	{"DoubleActivityNotOverBreaks", "DOUBLE_LESSON_NOT_OVER_BREAKS"},
-	{"ParallelCourses", "PARALLEL_COURSES"},
+	{db.C_ActivitiesEndDay, "MARGIN_HOUR"},
+	{db.C_BeforeAfterHour, "BEFORE_AFTER_HOUR"},
+	{db.C_AutomaticDifferentDays, "AUTOMATIC_DIFFERENT_DAYS"},
+	{db.C_DaysBetween, "DAYS_BETWEEN"},
+	{db.C_DaysBetweenJoin, "DAYS_BETWEEN_JOIN"},
+	{db.C_MinHoursFollowing, "MIN_HOURS_FOLLOWING"},
+	{db.C_DoubleActivityNotOverBreaks, "DOUBLE_LESSON_NOT_OVER_BREAKS"},
+	{db.C_ParallelCourses, "PARALLEL_COURSES"},
 }
 
 // Parameter-reading functions for the constraints
@@ -51,7 +51,7 @@ func a2ii(ii any) []int {
 
 // Read the constraints read from a W365 JSON file into the equivalent
 // internal constraints.
-func (db *DbTopLevel) readConstraints(newdb *db.DbTopLevel) {
+func (db *W365TopLevel) readConstraints(newdb *db.DbTopLevel) {
 	cmap := map[string]string{}
 	for _, pair := range ConstraintMap {
 		cmap[pair.W365] = pair.Db

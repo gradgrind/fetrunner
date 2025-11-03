@@ -1,30 +1,34 @@
 package fet
 
-import "strconv"
+import (
+	"fetrunner/db"
+)
 
 func (fetinfo *fetInfo) handle_room_constraints() {
 	tt_data := fetinfo.tt_data
-	db := tt_data.Db
+	db0 := tt_data.Db
 
 	natimes := []roomNotAvailable{}
-	for rix, matrix := range tt_data.RoomNotAvailable {
+	for _, rna := range db0.Constraints[db.C_RoomNotAvailable] {
+		// The weight is assumed to be 100%.
+		data := rna.Data.(db.ResourceNotAvailable)
+		_ = data.Resource //NodeRef
+		// NotAvailable is an ordered list of time-slots in which the teacher
+		// is to be regarded as not available for the timetable.
+		_ = data.NotAvailable //[]TimeSlot
+
 		nats := []notAvailableTime{}
-		for d, hlist := range matrix {
-			for h, blocked := range hlist {
-				if blocked {
-					nats = append(nats,
-						notAvailableTime{
-							Day:  strconv.Itoa(d),
-							Hour: strconv.Itoa(h)})
-				}
-			}
+		for _, slot := range data.NotAvailable {
+			nats = append(nats,
+				notAvailableTime{
+					Day:  db0.Days[slot.Day].GetTag(),
+					Hour: db0.Hours[slot.Hour].GetTag()})
 		}
 		if len(nats) > 0 {
-			r := db.Rooms[rix]
 			natimes = append(natimes,
 				roomNotAvailable{
 					Weight_Percentage:             100,
-					Room:                          r.Tag,
+					Room:                          db0.Ref2Tag(rna.Id),
 					Number_of_Not_Available_Times: len(nats),
 					Not_Available_Time:            nats,
 					Active:                        true,

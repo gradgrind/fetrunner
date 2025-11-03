@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func (dbi *DbTopLevel) readSubjects(newdb *db.DbTopLevel) {
+func (dbi *W365TopLevel) readSubjects(newdb *db.DbTopLevel) {
 	dbi.SubjectMap = map[NodeRef]*db.Subject{}
 	dbi.SubjectTags = map[string]NodeRef{}
 	for _, e := range dbi.Subjects {
@@ -25,7 +25,7 @@ func (dbi *DbTopLevel) readSubjects(newdb *db.DbTopLevel) {
 	}
 }
 
-func (dbi *DbTopLevel) makeNewSubject(
+func (dbi *W365TopLevel) makeNewSubject(
 	newdb *db.DbTopLevel,
 	tag string,
 	name string,
@@ -37,8 +37,8 @@ func (dbi *DbTopLevel) makeNewSubject(
 	return s.Id
 }
 
-func (dbi *DbTopLevel) readCourses(newdb *db.DbTopLevel) {
-	dbi.CourseMap = map[NodeRef]bool{}
+func (dbi *W365TopLevel) readCourses(newdb *db.DbTopLevel) {
+	dbi.CourseMap = map[NodeRef]struct{}{}
 	for _, e := range dbi.Courses {
 		subject := dbi.getCourseSubject(newdb, e.Subjects, e.Id)
 		room := dbi.getCourseRoom(newdb, e.PreferredRooms, e.Id)
@@ -49,11 +49,11 @@ func (dbi *DbTopLevel) readCourses(newdb *db.DbTopLevel) {
 		n.Groups = groups
 		n.Teachers = teachers
 		n.Room = room
-		dbi.CourseMap[e.Id] = true
+		dbi.CourseMap[e.Id] = struct{}{}
 	}
 }
 
-func (dbi *DbTopLevel) readSuperCourses(newdb *db.DbTopLevel) {
+func (dbi *W365TopLevel) readSuperCourses(newdb *db.DbTopLevel) {
 	// In the input from W365 the subjects for the SuperCourses must be
 	// taken from the linked EpochPlan.
 	// The EpochPlans are otherwise not needed.
@@ -101,11 +101,11 @@ func (dbi *DbTopLevel) readSuperCourses(newdb *db.DbTopLevel) {
 		}
 		n := newdb.NewSuperCourse(spc.Id)
 		n.Subject = subject
-		dbi.CourseMap[n.Id] = true
+		dbi.CourseMap[n.Id] = struct{}{}
 	}
 }
 
-func (dbi *DbTopLevel) getCourseSubject(
+func (dbi *W365TopLevel) getCourseSubject(
 	newdb *db.DbTopLevel,
 	srefs []NodeRef,
 	courseId NodeRef,
@@ -160,18 +160,16 @@ func (dbi *DbTopLevel) getCourseSubject(
 	return subject
 }
 
-func (dbi *DbTopLevel) getCourseRoom(
+// Deal with rooms. W365 can have a single RoomGroup or a list of Rooms.
+// If there is a list of Rooms, this is converted to a RoomChoiceGroup.
+// The result should be a single Room, RoomChoiceGroup or RoomGroup
+// in the "Room" field.
+// If a list of rooms recurs, the same RoomChoiceGroup is used.
+func (dbi *W365TopLevel) getCourseRoom(
 	newdb *db.DbTopLevel,
 	rrefs []NodeRef,
 	courseId NodeRef,
 ) NodeRef {
-	//
-	// Deal with rooms. W365 can have a single RoomGroup or a list of Rooms.
-	// If there is a list of Rooms, this is converted to a RoomChoiceGroup.
-	// In the end there should be a single Room, RoomChoiceGroup or RoomGroup
-	// in the "Room" field.
-	// If a list of rooms recurs, the same RoomChoiceGroup is used.
-	//
 	room := NodeRef("")
 	if len(rrefs) > 1 {
 		// Make a RoomChoiceGroup
@@ -199,7 +197,7 @@ func (dbi *DbTopLevel) getCourseRoom(
 	return room
 }
 
-func (dbi *DbTopLevel) getCourseGroups(
+func (dbi *W365TopLevel) getCourseGroups(
 	grefs []NodeRef,
 	courseId NodeRef,
 ) []NodeRef {
@@ -219,7 +217,7 @@ func (dbi *DbTopLevel) getCourseGroups(
 	return glist
 }
 
-func (dbi *DbTopLevel) getCourseTeachers(
+func (dbi *W365TopLevel) getCourseTeachers(
 	trefs []NodeRef,
 	courseId NodeRef,
 ) []NodeRef {

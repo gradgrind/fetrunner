@@ -11,7 +11,7 @@ import (
 )
 
 // Read to the local, tweaked DbTopLevel
-func ReadJSON(jsonpath string) *DbTopLevel {
+func ReadJSON(jsonpath string) *W365TopLevel {
 	// Open the  JSON file
 	jsonFile, err := os.Open(jsonpath)
 	if err != nil {
@@ -22,7 +22,7 @@ func ReadJSON(jsonpath string) *DbTopLevel {
 	// read the opened XML file as a byte array.
 	byteValue, _ := io.ReadAll(jsonFile)
 	base.Message.Printf("*+ Reading: %s\n", jsonpath)
-	v := DbTopLevel{}
+	v := W365TopLevel{}
 	err = json.Unmarshal(byteValue, &v)
 	if err != nil {
 		base.Error.Fatalf("Could not unmarshal json: %s\n", err)
@@ -52,7 +52,7 @@ func LoadJSON(newdb *db.DbTopLevel, jsonpath string) {
 	dbi.readConstraints(newdb)
 }
 
-func (dbi *DbTopLevel) readDays(newdb *db.DbTopLevel) {
+func (dbi *W365TopLevel) readDays(newdb *db.DbTopLevel) {
 	for _, e := range dbi.Days {
 		n := newdb.NewDay(e.Id)
 		n.Tag = e.Tag
@@ -60,7 +60,7 @@ func (dbi *DbTopLevel) readDays(newdb *db.DbTopLevel) {
 	}
 }
 
-func (dbi *DbTopLevel) readHours(newdb *db.DbTopLevel) {
+func (dbi *W365TopLevel) readHours(newdb *db.DbTopLevel) {
 	for i, e := range dbi.Hours {
 		tag := e.Tag
 		if tag == "" {
@@ -85,31 +85,72 @@ func (dbi *DbTopLevel) readHours(newdb *db.DbTopLevel) {
 	}
 }
 
-func (dbi *DbTopLevel) readTeachers(newdb *db.DbTopLevel) {
-	dbi.TeacherMap = map[NodeRef]bool{}
+func (dbi *W365TopLevel) readTeachers(newdb *db.DbTopLevel) {
+	dbi.TeacherMap = map[NodeRef]struct{}{}
+	tagmap := map[string]struct{}{} // to test for duplicate tags
 	for _, e := range dbi.Teachers {
-		// MaxAfternoons = 0 has a special meaning (all blocked)
-		amax := e.MaxAfternoons
-		tsl := dbi.handleZeroAfternoons(e.NotAvailable, amax)
-		if amax == 0 {
-			amax = -1
+		// Perform some checks and add to the tag map.
+		_, nok := tagmap[e.Tag]
+		if nok {
+			base.Error.Fatalf(
+				"Teacher Tag (Shortcut) defined twice: %s\n",
+				e.Tag)
 		}
+		tagmap[e.Tag] = struct{}{}
+
+		// Make new teacher node
 		n := newdb.NewTeacher(e.Id)
 		n.Tag = e.Tag
 		n.Name = e.Name
 		n.Firstname = e.Firstname
 
-		//TODO: add constraints ...
+		dbi.TeacherMap[e.Id] = struct{}{} // flag the Id as valid teacher
 
-		n.NotAvailable = tsl
-		n.MinActivitiesPerDay = e.MinLessonsPerDay
-		n.MaxActivitiesPerDay = e.MaxLessonsPerDay
-		n.MaxDays = e.MaxDays
-		n.MaxGapsPerDay = e.MaxGapsPerDay
-		n.MaxGapsPerWeek = e.MaxGapsPerWeek
-		n.MaxAfternoons = amax
-		n.LunchBreak = e.LunchBreak
+		// +++ Add constraints ...
 
-		dbi.TeacherMap[e.Id] = true
+		// MaxAfternoons = 0 has a special meaning (all blocked), so the
+		// corresponding constraint is not needed, see `handleZeroAfternoons`.
+		amax := e.MaxAfternoons
+		if amax > 0 {
+			newdb.NewTeacherMaxAfternoons(
+				"", db.MAXWEIGHT, n.Id, amax)
+		}
+		// Not available times – add all afternoons if amax == 0
+		tsl := dbi.handleZeroAfternoons(e.NotAvailable, amax)
+		if len(tsl) != 0 {
+			// Add a constraint
+			newdb.NewTeacherNotAvailable("", db.MAXWEIGHT, n.Id, tsl)
+		}
+
+		// MinActivitiesPerDay
+		if e.MinLessonsPerDay > 0 {
+			newdb.NewTeacherMinActivitiesPerDay(
+				"", db.MAXWEIGHT, n.Id, e.MinLessonsPerDay)
+		}
+		// MaxActivitiesPerDay
+		if e.MaxLessonsPerDay > 0 {
+			newdb.NewTeacherMaxActivitiesPerDay(
+				"", db.MAXWEIGHT, n.Id, e.MaxLessonsPerDay)
+		}
+		// MaxDays
+		if e.MaxDays > 0 {
+			newdb.NewTeacherMaxDays(
+				"", db.MAXWEIGHT, n.Id, e.MaxDays)
+		}
+		// MaxGapsPerDay
+		if e.MaxGapsPerDay >= 0 {
+			newdb.NewTeacherMaxGapsPerDay(
+				"", db.MAXWEIGHT, n.Id, e.MaxGapsPerDay)
+		}
+		// MaxGapsPerWeek
+		if e.MaxGapsPerWeek >= 0 {
+			newdb.NewTeacherMaxGapsPerWeek(
+				"", db.MAXWEIGHT, n.Id, e.MaxGapsPerWeek)
+		}
+		// LunchBreak
+		if e.LunchBreak {
+			newdb.NewTeacherLunchBreak(
+				"", db.MAXWEIGHT, n.Id)
+		}
 	}
 }

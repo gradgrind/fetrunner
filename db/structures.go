@@ -241,13 +241,21 @@ type GeneralRoom interface {
 	IsReal() bool
 }
 
-// A Activity is an activity which needs placing in the timetable.
+// An Activity is an activity which needs placing in the timetable.
 // Its resources are determined by the course ([Course] or [SuperCourse]) to
 // which it belongs.
 type Activity struct {
 	ElementBase
 	Course   NodeRef // [Course] or [SuperCourse] element
 	Duration int     // number of "hours" covered
+}
+
+// Placement details for an Activity, possibly the result of a generator run.
+type ActivityPlacement struct {
+	Activity NodeRef
+	Day      int
+	Hour     int
+	Rooms    []NodeRef // "real" rooms
 }
 
 // ActivityCourse is a type of course which can have activities, i.e. a
@@ -295,12 +303,13 @@ type DbTopLevel struct {
 	RoomGroups       []*RoomGroup       `json:",omitempty"`
 	RoomChoiceGroups []*RoomChoiceGroup `json:",omitempty"`
 	Classes          []*Class
-	Groups           []*Group                 `json:",omitempty"`
-	Courses          []*Course                `json:",omitempty"`
-	SuperCourses     []*SuperCourse           `json:",omitempty"`
-	SubCourses       []*SubCourse             `json:",omitempty"`
-	Activities       []*Activity              `json:",omitempty"`
-	Constraints      map[string][]*Constraint `json:",omitempty"`
+	Groups           []*Group                        `json:",omitempty"`
+	Courses          []*Course                       `json:",omitempty"`
+	SuperCourses     []*SuperCourse                  `json:",omitempty"`
+	SubCourses       []*SubCourse                    `json:",omitempty"`
+	Activities       []*Activity                     `json:",omitempty"`
+	Placements       map[string][]*ActivityPlacement `json:",omitempty"`
+	Constraints      map[string][]*Constraint        `json:",omitempty"`
 
 	// This field is a convenience structure built from other elements
 	// of the `DbTopLevel`. It should not be saved with the rest of the

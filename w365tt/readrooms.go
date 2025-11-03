@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func (dbi *DbTopLevel) readRooms(newdb *db.DbTopLevel) {
+func (dbi *W365TopLevel) readRooms(newdb *db.DbTopLevel) {
 	dbi.RealRooms = map[NodeRef]*db.Room{}
 	dbi.RoomTags = map[string]NodeRef{}
 	dbi.RoomChoiceNames = map[string]NodeRef{}
@@ -27,10 +27,7 @@ func (dbi *DbTopLevel) readRooms(newdb *db.DbTopLevel) {
 		r.Tag = e.Tag
 		r.Name = e.Name
 		if len(tsl) != 0 {
-			//TODO: Add a constraint
-
-			//--r.NotAvailable = tsl
-
+			// Add a constraint
 			newdb.NewRoomNotAvailable("", db.MAXWEIGHT, r.Id, tsl)
 		}
 		dbi.RealRooms[e.Id] = r
@@ -38,7 +35,7 @@ func (dbi *DbTopLevel) readRooms(newdb *db.DbTopLevel) {
 }
 
 // In the case of RoomGroups, cater for empty Tags (Shortcuts).
-func (dbi *DbTopLevel) readRoomGroups(newdb *db.DbTopLevel) {
+func (dbi *W365TopLevel) readRoomGroups(newdb *db.DbTopLevel) {
 	dbi.RoomGroupMap = map[NodeRef]*db.RoomGroup{}
 	for _, e := range dbi.RoomGroups {
 		if e.Tag != "" {
@@ -60,7 +57,7 @@ func (dbi *DbTopLevel) readRoomGroups(newdb *db.DbTopLevel) {
 }
 
 // Call this after all room types have been "read".
-func (dbi *DbTopLevel) checkRoomGroups(newdb *db.DbTopLevel) {
+func (dbi *W365TopLevel) checkRoomGroups(newdb *db.DbTopLevel) {
 	for _, e := range newdb.RoomGroups {
 		// Collect the Ids and Tags of the component rooms.
 		taglist := []string{}
@@ -104,7 +101,7 @@ func (dbi *DbTopLevel) checkRoomGroups(newdb *db.DbTopLevel) {
 	}
 }
 
-func (dbi *DbTopLevel) makeRoomChoiceGroup(
+func (dbi *W365TopLevel) makeRoomChoiceGroup(
 	newdb *db.DbTopLevel,
 	rooms []NodeRef,
 ) (NodeRef, string) {
