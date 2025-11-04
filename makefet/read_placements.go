@@ -31,7 +31,7 @@ type ActivityPlacement struct {
 }
 
 func ReadPlacements(
-	tt_data *timetable.TtSharedData,
+	tt_data *timetable.TtData,
 	xmlpath string,
 ) []ActivityPlacement {
 	// Open the  XML activities file

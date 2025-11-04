@@ -8,10 +8,10 @@ import (
 )
 
 // Make a shortish string view of a CourseInfo – can be useful in tests
-func (tt_shared_data *TtSharedData) View(cinfo *CourseInfo) string {
+func (tt_data *TtData) View(cinfo *CourseInfo) string {
 	tlist := []string{}
 	for _, t := range cinfo.Teachers {
-		tlist = append(tlist, tt_shared_data.Db.Teachers[t].GetTag())
+		tlist = append(tlist, tt_data.Db.Teachers[t].GetTag())
 	}
 	glist := []string{}
 	for _, g := range cinfo.Groups {
@@ -26,10 +26,10 @@ func (tt_shared_data *TtSharedData) View(cinfo *CourseInfo) string {
 
 // Collect courses (Course and SuperCourse) and their activities.
 // Build a list of CourseInfo structures.
-func (tt_shared_data *TtSharedData) CollectCourses() {
-	db0 := tt_shared_data.Db
-	tt_shared_data.Ref2CourseInfo = map[NodeRef]*CourseInfo{}
-	tt_shared_data.Activities = []*TtActivity{{}} // first entry is empty
+func (tt_data *TtData) CollectCourses() {
+	db0 := tt_data.Db
+	tt_data.Ref2CourseInfo = map[NodeRef]*CourseInfo{}
+	tt_data.Activities = []*TtActivity{{}} // first entry is empty
 
 	// *** Gather the SuperCourses. ***
 	for _, spc := range db0.SuperCourses {
@@ -49,12 +49,12 @@ func (tt_shared_data *TtSharedData) CollectCourses() {
 				if !slices.Contains(groups, g) {
 					groups = append(groups, g)
 					agroups = append(agroups,
-						tt_shared_data.AtomicGroupIndex[gref]...)
+						tt_data.AtomicGroupIndex[gref]...)
 				}
 			}
 			// Add teachers
 			for _, tref := range sbc.Teachers {
-				t, ok := tt_shared_data.TeacherIndex[tref]
+				t, ok := tt_data.TeacherIndex[tref]
 				if !ok {
 					panic("Invalid Teacher ref: " + tref)
 				}
@@ -62,7 +62,7 @@ func (tt_shared_data *TtSharedData) CollectCourses() {
 			}
 			// Add rooms
 			if sbc.Room != "" {
-				r, ok := tt_shared_data.RoomIndex[sbc.Room]
+				r, ok := tt_data.RoomIndex[sbc.Room]
 				if ok {
 					rooms = append(rooms, r)
 					continue
@@ -74,7 +74,7 @@ func (tt_shared_data *TtSharedData) CollectCourses() {
 				rg, ok := gr.(*db.RoomGroup)
 				if ok {
 					for _, rr := range rg.Rooms {
-						r, ok = tt_shared_data.RoomIndex[rr]
+						r, ok = tt_data.RoomIndex[rr]
 						if !ok {
 							panic(fmt.Sprintf(
 								"Bug: Unknown room in RoomGroup %s: %s",
@@ -89,7 +89,7 @@ func (tt_shared_data *TtSharedData) CollectCourses() {
 				if ok {
 					roomlist := []RoomIndex{}
 					for _, rr := range rcg.Rooms {
-						r, ok = tt_shared_data.RoomIndex[rr]
+						r, ok = tt_data.RoomIndex[rr]
 						if !ok {
 							panic(fmt.Sprintf(
 								"Bug: Unknown room in RoomChoiceGroup %s: %s",
@@ -138,12 +138,12 @@ func (tt_shared_data *TtSharedData) CollectCourses() {
 		}
 
 		// Filter out any "necessary" rooms from the choices
-		tt_shared_data.roomChoiceFilter(cinfo)
+		tt_data.roomChoiceFilter(cinfo)
 
-		tt_shared_data.makeActivities(cinfo)
-		tt_shared_data.CourseInfoList = append(
-			tt_shared_data.CourseInfoList, cinfo)
-		tt_shared_data.Ref2CourseInfo[cref] = cinfo
+		tt_data.makeActivities(cinfo)
+		tt_data.CourseInfoList = append(
+			tt_data.CourseInfoList, cinfo)
+		tt_data.Ref2CourseInfo[cref] = cinfo
 	}
 
 	// *** Gather the plain Courses. ***
@@ -159,13 +159,13 @@ func (tt_shared_data *TtSharedData) CollectCourses() {
 				panic("Invalid Group ref: " + gref)
 			}
 			groups = append(groups, g)
-			agroups = append(agroups, tt_shared_data.AtomicGroupIndex[gref]...)
+			agroups = append(agroups, tt_data.AtomicGroupIndex[gref]...)
 		}
 
 		// Get teachers
 		teachers := []TeacherIndex{}
 		for _, tref := range c.Teachers {
-			t, ok := tt_shared_data.TeacherIndex[tref]
+			t, ok := tt_data.TeacherIndex[tref]
 			if !ok {
 				panic("Invalid Teacher ref: " + tref)
 			}
@@ -176,7 +176,7 @@ func (tt_shared_data *TtSharedData) CollectCourses() {
 		rooms := []RoomIndex{}
 		crooms := [][]RoomIndex{}
 		if c.Room != "" {
-			r, ok := tt_shared_data.RoomIndex[c.Room]
+			r, ok := tt_data.RoomIndex[c.Room]
 			if ok {
 				rooms = append(rooms, r)
 			} else {
@@ -185,7 +185,7 @@ func (tt_shared_data *TtSharedData) CollectCourses() {
 				rg, ok := gr.(*db.RoomGroup)
 				if ok {
 					for _, rr := range rg.Rooms {
-						r, ok = tt_shared_data.RoomIndex[rr]
+						r, ok = tt_data.RoomIndex[rr]
 						if !ok {
 							panic(fmt.Sprintf(
 								"Unknown room in RoomGroup %s: %s",
@@ -198,7 +198,7 @@ func (tt_shared_data *TtSharedData) CollectCourses() {
 					if ok {
 						roomlist := []RoomIndex{}
 						for _, rr := range rcg.Rooms {
-							r, ok = tt_shared_data.RoomIndex[rr]
+							r, ok = tt_data.RoomIndex[rr]
 							if !ok {
 								panic(fmt.Sprintf(
 									"Unknown room in RoomChoiceGroup %s: %s",
@@ -237,23 +237,23 @@ func (tt_shared_data *TtSharedData) CollectCourses() {
 			//Activities
 		}
 
-		tt_shared_data.makeActivities(cinfo)
-		tt_shared_data.CourseInfoList = append(
-			tt_shared_data.CourseInfoList, cinfo)
-		tt_shared_data.Ref2CourseInfo[cref] = cinfo
+		tt_data.makeActivities(cinfo)
+		tt_data.CourseInfoList = append(
+			tt_data.CourseInfoList, cinfo)
+		tt_data.Ref2CourseInfo[cref] = cinfo
 	}
 }
 
 // Build a `TtActivity` for each `Activity` – they are already sorted
 // with the longest first.
-func (tt_shared_data *TtSharedData) makeActivities(cinfo *CourseInfo) {
+func (tt_data *TtData) makeActivities(cinfo *CourseInfo) {
 	for _, l := range cinfo.Activities {
-		aix := ActivityIndex(len(tt_shared_data.Activities))
+		aix := ActivityIndex(len(tt_data.Activities))
 		ttl := &TtActivity{
 			CourseInfo: cinfo,
 			Activity:   l,
 		}
 		cinfo.TtActivities = append(cinfo.TtActivities, aix)
-		tt_shared_data.Activities = append(tt_shared_data.Activities, ttl)
+		tt_data.Activities = append(tt_data.Activities, ttl)
 	}
 }

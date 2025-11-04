@@ -11,9 +11,8 @@ import (
  * activity lists to assist in the implementation of the constraint.
  */
 type TtDaysBetween struct {
-	Constraint           string
+	Id                   NodeRef
 	Weight               int
-	Course               NodeRef // Course or SuperCourse
 	DaysBetween          int
 	ConsecutiveIfSameDay bool
 	ActivityLists        [][]ActivityIndex
@@ -60,19 +59,18 @@ func (c *TtParallelActivities) IsHard() bool {
 
 // `preprocessConstraints` produces the new constraints.
 // The result is a map, constraint-type -> list of constraints.
-func (tt_data *TtSharedData) preprocessConstraints() {
-	cmap := map[string][]*db.Constraint{}
+func (tt_data *TtData) preprocessConstraints() {
 	db0 := tt_data.Db
 
 	// If an "AutomaticDifferentDays" constraint is present (at most one is
 	// permitted), the `auto_weight` and `auto_consec` variables will be set
-	// accordingly, otherwise the default weight (`base.MAXWEIGHT`, i.e.
+	// accordingly, otherwise the default weight (`db.MAXWEIGHT`, i.e.
 	// a hard constraint) will be used.
 
-	var auto_id db.NodeRef = ""
+	var auto_id NodeRef = ""
 	auto_weight := -1
 	auto_consec := false
-	noauto_ddays := map[NodeRef]bool{} // collect default overrides
+	noauto_ddays := map[NodeRef]struct{}{} // collect default overrides
 
 	cadd := db0.Constraints[db.C_AutomaticDifferentDays]
 	if len(cadd) != 0 {
@@ -88,55 +86,43 @@ func (tt_data *TtSharedData) preprocessConstraints() {
 		}
 	}
 
-	//TODO ... ???
+	//TODO ... ??? Need "fixed" status for activities ... which is probably
+	// loaded from the placements when the TtData is built?
 
-	for _, cref := range db0.Constraints[db.C_DaysBetween] {
-		cn1 := &TtDaysBetween{
-			Constraint:           C_GENERAL_DAYS_BETWEEN,
-			Weight:               cn.Weight,
-			Course:               cref,
-			DaysBetween:          cn.DaysBetween,
-			ConsecutiveIfSameDay: cn.ConsecutiveIfSameDay,
-		}
-		cn1.ActivityLists = tt_shared_data.days_between_activities(cn1)
-		if c.IsHard() {
-			dd_hard = append(dd_hard, cn1)
-		} else {
-			dd_soft = append(dd_soft, cn1)
-		}
-		if cn.DaysBetween == 1 {
-			// Override default constraint
-			noauto_ddays[cref] = true
+	for _, c := range db0.Constraints[db.C_DaysBetween] {
+		data := c.Data.(db.DaysBetween)
+		for _, course := range data.Courses {
+			if data.DaysBetween == 1 || c.Weight == db.MAXWEIGHT {
+				// Override default constraint
+				noauto_ddays[course] = struct{}{}
+			}
+			tt_data.MinDaysBetweenActivities = append(
+				tt_data.MinDaysBetweenActivities, &TtDaysBetween{
+					Id:                   c.Id,
+					Weight:               c.Weight,
+					DaysBetween:          data.DaysBetween,
+					ConsecutiveIfSameDay: data.ConsecutiveIfSameDay,
+					ActivityLists: tt_data.days_between_activities(
+						course, c.Weight, data.ConsecutiveIfSameDay)})
 		}
 	}
 
-	{
-		cn, ok := c.(*base.DaysBetweenJoin)
-		if ok {
-			cn1 := &TtDaysBetweenJoin{
-				Constraint:           cn.Constraint,
-				Weight:               cn.Weight,
-				Course1:              cn.Course1,
-				Course2:              cn.Course2,
-				DaysBetween:          cn.DaysBetween,
-				ConsecutiveIfSameDay: cn.ConsecutiveIfSameDay,
-				ActivityLists:        tt_shared_data.days_between_join_activities(cn),
-			}
-			// Note that "ConsecutiveIfSameDay" is hard regardless of
-			// the weight.
-			if cn1.IsHard() {
-				tt_data.HardConstraints[DaysBetweenJoin] = append(
-					tt_data.HardConstraints[DaysBetweenJoin], cn1)
-			} else {
-				tt_data.SoftConstraints[DaysBetweenJoin] = append(
-					tt_data.SoftConstraints[DaysBetweenJoin], cn1)
-			}
-			continue
-		}
+	for _, c := range db0.Constraints[db.C_DaysBetweenJoin] {
+		data := c.Data.(db.DaysBetweenJoin)
+		tt_data.MinDaysBetweenActivities = append(
+			tt_data.MinDaysBetweenActivities, &TtDaysBetween{
+				Id:                   c.Id,
+				Weight:               c.Weight,
+				DaysBetween:          data.DaysBetween,
+				ConsecutiveIfSameDay: data.ConsecutiveIfSameDay,
+				ActivityLists: tt_data.days_between_join_activities(
+					data.Course1, data.Course2,
+					c.Weight, data.ConsecutiveIfSameDay)})
 	}
 
+	//TODO...
 	{
-		cn, ok := c.(*base.ParallelCourses)
+		cn, ok := c.(*db.ParallelCourses)
 		if ok {
 			// The courses must have the same number of activities and the
 			// lengths of the corresponding activities must also be the same.
@@ -215,7 +201,7 @@ func (tt_data *TtSharedData) preprocessConstraints() {
 
 	// Add automatic constraints, where implied.
 	if auto_weight < 0 {
-		auto_weight = base.MAXWEIGHT
+		auto_weight = db.MAXWEIGHT
 	}
 	for _, cinfo := range tt_shared_data.CourseInfoList {
 		cref := cinfo.Id
@@ -229,7 +215,7 @@ func (tt_data *TtSharedData) preprocessConstraints() {
 				ConsecutiveIfSameDay: auto_consec,
 			}
 			cn.ActivityLists = tt_shared_data.days_between_activities(cn)
-			if auto_weight == base.MAXWEIGHT || auto_consec {
+			if auto_weight == db.MAXWEIGHT || auto_consec {
 				dd_hard = append(dd_hard, cn)
 			} else {
 				dd_soft = append(dd_soft, cn)
@@ -245,20 +231,19 @@ func (tt_data *TtSharedData) preprocessConstraints() {
 	}
 }
 
-// Convert a `TtDaysBetween` constraint to be based on activities.
-func (tt_shared_data *TtSharedData) days_between_activities(
-	constraint *TtDaysBetween,
+// Construct the activity relationships for a `DaysBetween` constraint.
+func (tt_data *TtData) days_between_activities(
+	course NodeRef, weight int, consecutiveIfSameDay bool,
 ) [][]ActivityIndex {
 	allist := [][]ActivityIndex{}
-	cref := constraint.Course
-	cinfo := tt_shared_data.Ref2CourseInfo[cref]
+	cinfo := tt_data.Ref2CourseInfo[course]
 	fixeds := []ActivityIndex{}
 	unfixeds := []ActivityIndex{}
-	for i, l := range cinfo.Activities {
-		if l.Fixed {
-			fixeds = append(fixeds, cinfo.TtActivities[i])
+	for _, ai := range cinfo.TtActivities {
+		if tt_data.Activities[ai].Fixed {
+			fixeds = append(fixeds, ai)
 		} else {
-			unfixeds = append(unfixeds, cinfo.TtActivities[i])
+			unfixeds = append(unfixeds, ai)
 		}
 	}
 
@@ -266,7 +251,7 @@ func (tt_shared_data *TtSharedData) days_between_activities(
 		// No constraints necessary
 		//TODO
 		base.Warning.Printf("Ignoring superfluous DaysBetween constraint on"+
-			" course:\n  -- %s", tt_shared_data.View(cinfo))
+			" course:\n  -- %s", tt_data.View(cinfo))
 		return allist
 	}
 	// Collect the activity groups to which the constraint is to be applied
@@ -286,14 +271,14 @@ func (tt_shared_data *TtSharedData) days_between_activities(
 		}
 	}
 	// Add the constraints as `MinDaysBetweenActivities`
-	if constraint.Weight != 0 || constraint.ConsecutiveIfSameDay {
+	if weight != 0 || consecutiveIfSameDay {
 		// Add constraint
 		for _, alist := range aidlists {
-			if len(alist) > tt_shared_data.NDays {
+			if len(alist) > tt_data.NDays {
 				//TODO
 				base.Warning.Printf("Course has too many activities for"+
 					"DifferentDays constraint:\n  -- %s\n",
-					tt_shared_data.View(cinfo))
+					tt_data.View(cinfo))
 				continue
 			}
 			allist = append(allist, alist)
@@ -303,20 +288,21 @@ func (tt_shared_data *TtSharedData) days_between_activities(
 }
 
 // Construct the activity relationships for a `DaysBetweenJoin` constraint.
-func (tt_shared_data *TtSharedData) days_between_join_activities(
-	constraint *base.DaysBetweenJoin,
+func (tt_data *TtData) days_between_join_activities(
+	course1 NodeRef, course2 NodeRef, weight int, consecutiveIfSameDay bool,
 ) [][]ActivityIndex {
-	c1 := tt_shared_data.Ref2CourseInfo[constraint.Course1]
-	c2 := tt_shared_data.Ref2CourseInfo[constraint.Course2]
 	allist := [][]ActivityIndex{}
-	for i1, l1 := range c1.Activities {
-		for i2, l2 := range c2.Activities {
-			if l1.Fixed && l2.Fixed {
+	cinfo1 := tt_data.Ref2CourseInfo[course1]
+	cinfo2 := tt_data.Ref2CourseInfo[course2]
+	for _, ai1 := range cinfo1.TtActivities {
+		f1 := tt_data.Activities[ai1].Fixed
+		for _, ai2 := range cinfo2.TtActivities {
+			f2 := tt_data.Activities[ai2].Fixed
+			if f1 && f2 {
 				// both fixed => no constraint
 				continue
 			}
-			allist = append(allist, []ActivityIndex{
-				c1.TtActivities[i1], c2.TtActivities[i2]})
+			allist = append(allist, []ActivityIndex{ai1, ai2})
 		}
 	}
 	return allist

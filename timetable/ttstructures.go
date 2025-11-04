@@ -13,16 +13,14 @@ type TeacherIndex int
 type RoomIndex int
 type AtomicIndex int
 
-type TtSharedData struct {
+type TtData struct {
 	Db           *db.DbTopLevel
 	NDays        int
 	NHours       int
 	HoursPerWeek int
 
-	//TODO--
-	// `xxxNodes` are arrays mapping resource indexes to their corresponding
-	// atomic group, teacher or room nodes (they contains pointers).
-	AtomicGroups []db.Resource
+	//TODO??
+	AtomicGroups []*AtomicGroup
 
 	TeacherIndex map[NodeRef]TeacherIndex
 	RoomIndex    map[NodeRef]RoomIndex
@@ -40,6 +38,9 @@ type TtSharedData struct {
 	Activities     []*TtActivity
 	CourseInfoList []*CourseInfo
 	Ref2CourseInfo map[NodeRef]*CourseInfo
+
+	// Transformed constraints
+	MinDaysBetweenActivities []*TtDaysBetween
 }
 
 // A `CourseInfo` is a representation of a course (Course or SuperCourse) for
@@ -54,13 +55,18 @@ type CourseInfo struct {
 	Teachers     []TeacherIndex
 	FixedRooms   []RoomIndex
 	RoomChoices  [][]RoomIndex
-	Activities   []*db.Activity
+
+	//TODO: Why both?
+	//Activities   []*db.Activity
 	TtActivities []ActivityIndex
 }
 
 type TtActivity struct {
 	CourseInfo *CourseInfo
 	Activity   *db.Activity
+	Day        int
+	Hour       int
+	Fixed      bool
 }
 
 type ClassDivision struct {
@@ -70,10 +76,10 @@ type ClassDivision struct {
 
 // BasicSetup performs the initialization of a TtSharedData structure, collecting
 // "resources" (atomic student groups, teachers and rooms) and "activities".
-func BasicSetup(db *db.DbTopLevel) *TtSharedData {
+func BasicSetup(db *db.DbTopLevel) *TtData {
 	days := len(db.Days)
 	hours := len(db.Hours)
-	tt_shared_data := &TtSharedData{
+	tt_shared_data := &TtData{
 		Db:           db,
 		NDays:        days,
 		NHours:       hours,
@@ -104,17 +110,17 @@ func BasicSetup(db *db.DbTopLevel) *TtSharedData {
 	return tt_shared_data
 }
 
-func (tt_shared_data *TtSharedData) TeacherResources() {
-	tt_shared_data.TeacherIndex = map[NodeRef]TeacherIndex{}
-	for i, t := range tt_shared_data.Db.Teachers {
-		tt_shared_data.TeacherIndex[t.Id] = TeacherIndex(i)
+func (tt_data *TtData) TeacherResources() {
+	tt_data.TeacherIndex = map[NodeRef]TeacherIndex{}
+	for i, t := range tt_data.Db.Teachers {
+		tt_data.TeacherIndex[t.Id] = TeacherIndex(i)
 	}
 }
 
-func (tt_shared_data *TtSharedData) RoomResources() {
-	tt_shared_data.RoomIndex = map[NodeRef]RoomIndex{}
-	for i, r := range tt_shared_data.Db.Rooms {
-		tt_shared_data.RoomIndex[r.Id] = RoomIndex(i)
+func (tt_data *TtData) RoomResources() {
+	tt_data.RoomIndex = map[NodeRef]RoomIndex{}
+	for i, r := range tt_data.Db.Rooms {
+		tt_data.RoomIndex[r.Id] = RoomIndex(i)
 	}
 }
 

@@ -68,7 +68,7 @@ func weight2fet(w int) string {
 }
 
 type fetInfo struct {
-	tt_data       *timetable.TtSharedData
+	tt_data       *timetable.TtData
 	ref2grouponly map[Ref]string
 	fetdata       Fet
 
@@ -129,7 +129,7 @@ type basicSpaceConstraint struct {
 	Active            bool
 }
 
-func MakeFetFile(tt_data *timetable.TtSharedData) []byte {
+func MakeFetFile(tt_data *timetable.TtData) []byte {
 	dbdata := tt_data.Db
 
 	// Build ref-index -> fet-key mapping. This is needed for the class

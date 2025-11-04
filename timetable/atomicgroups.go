@@ -9,8 +9,8 @@ const ATOMIC_GROUP_SEP2 = "~"
 
 // Prepare filtered versions of the class Divisions containing only
 // those Divisions which have Groups used in activities.
-func (tt_shared_data *TtSharedData) FilterDivisions() {
-	db := tt_shared_data.Db
+func (tt_data *TtData) FilterDivisions() {
+	db := tt_data.Db
 
 	// Collect groups used in courses
 	usedgroups := map[NodeRef]bool{}
@@ -31,7 +31,7 @@ func (tt_shared_data *TtSharedData) FilterDivisions() {
 	}
 
 	// Filter the class divisions, discarding the division names.
-	for _, c := range tt_shared_data.Db.Classes {
+	for _, c := range tt_data.Db.Classes {
 		divs := [][]NodeRef{}
 		for _, div := range c.Divisions {
 			for _, gref := range div.Groups {
@@ -41,7 +41,7 @@ func (tt_shared_data *TtSharedData) FilterDivisions() {
 				}
 			}
 		}
-		tt_shared_data.ClassDivisions = append(tt_shared_data.ClassDivisions,
+		tt_data.ClassDivisions = append(tt_data.ClassDivisions,
 			ClassDivision{c, divs})
 	}
 }
@@ -56,26 +56,26 @@ func (a *AtomicGroup) GetResourceTag() string {
 	return a.Tag
 }
 
-func (tt_shared_data *TtSharedData) MakeAtomicGroups() {
+func (tt_data *TtData) MakeAtomicGroups() {
 	// An atomic group is an ordered list of single groups, one from each
 	// division.
-	tt_shared_data.AtomicGroupIndex = map[NodeRef][]AtomicIndex{}
-	db := tt_shared_data.Db
+	tt_data.AtomicGroupIndex = map[NodeRef][]AtomicIndex{}
+	db := tt_data.Db
 
 	// Go through the classes inspecting their Divisions.
 	// Build a list-basis for the atomic groups based on the Cartesian product.
-	for _, cdivs := range tt_shared_data.ClassDivisions {
+	for _, cdivs := range tt_data.ClassDivisions {
 		cl := cdivs.Class
 		if len(cdivs.Divisions) == 0 {
 			// Make an atomic group for the class
-			agix := len(tt_shared_data.AtomicGroups)
+			agix := len(tt_data.AtomicGroups)
 			ag := &AtomicGroup{
 				//Index: agix,
 				Class: cl.Id,
 				Tag:   cl.Tag + ATOMIC_GROUP_SEP1,
 			}
-			tt_shared_data.AtomicGroups = append(tt_shared_data.AtomicGroups, ag)
-			tt_shared_data.AtomicGroupIndex[cl.ClassGroup] = []AtomicIndex{
+			tt_data.AtomicGroups = append(tt_data.AtomicGroups, ag)
+			tt_data.AtomicGroupIndex[cl.ClassGroup] = []AtomicIndex{
 				AtomicIndex(agix)}
 			continue
 		}
@@ -109,17 +109,17 @@ func (tt_shared_data *TtSharedData) MakeAtomicGroups() {
 				gtag := db.Ref2Tag(gref)
 				glist = append(glist, gtag)
 			}
-			agix := len(tt_shared_data.AtomicGroups)
+			agix := len(tt_data.AtomicGroups)
 			ag := &AtomicGroup{
 				Class:  cl.Id,
 				Groups: ag,
 				Tag: cl.Tag + ATOMIC_GROUP_SEP1 +
 					strings.Join(glist, ATOMIC_GROUP_SEP2),
 			}
-			tt_shared_data.AtomicGroups = append(tt_shared_data.AtomicGroups, ag)
+			tt_data.AtomicGroups = append(tt_data.AtomicGroups, ag)
 			aglist = append(aglist, AtomicIndex(agix))
 		}
-		tt_shared_data.AtomicGroupIndex[cl.ClassGroup] = aglist
+		tt_data.AtomicGroupIndex[cl.ClassGroup] = aglist
 		// Map the individual groups to their atomic groups.
 		count := 1
 		divIndex := len(cdivs.Divisions)
@@ -130,8 +130,8 @@ func (tt_shared_data *TtSharedData) MakeAtomicGroups() {
 			for agi < len(aglist) {
 				for _, g := range divGroups {
 					for j := 0; j < count; j++ {
-						tt_shared_data.AtomicGroupIndex[g] = append(
-							tt_shared_data.AtomicGroupIndex[g], aglist[agi])
+						tt_data.AtomicGroupIndex[g] = append(
+							tt_data.AtomicGroupIndex[g], aglist[agi])
 						agi++
 					}
 				}
