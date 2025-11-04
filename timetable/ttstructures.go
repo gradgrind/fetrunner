@@ -41,6 +41,7 @@ type TtData struct {
 
 	// Transformed constraints
 	MinDaysBetweenActivities []*TtDaysBetween
+	ParallelActivities       []*TtParallelActivities
 }
 
 // A `CourseInfo` is a representation of a course (Course or SuperCourse) for
@@ -55,9 +56,6 @@ type CourseInfo struct {
 	Teachers     []TeacherIndex
 	FixedRooms   []RoomIndex
 	RoomChoices  [][]RoomIndex
-
-	//TODO: Why both?
-	//Activities   []*db.Activity
 	TtActivities []ActivityIndex
 }
 

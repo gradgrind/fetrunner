@@ -47,10 +47,9 @@ func (c *TtDaysBetweenJoin) IsHard() bool {
  * constraints.
  */
 type TtParallelActivities struct {
-	Constraint     string
-	Weight         int
-	Courses        []NodeRef // Courses or SuperCourses
-	ActivityGroups [][]ActivityIndex
+	Id         NodeRef
+	Weight     int
+	Activities []ActivityIndex
 }
 
 func (c *TtParallelActivities) IsHard() bool {
@@ -107,6 +106,25 @@ func (tt_data *TtData) preprocessConstraints() {
 		}
 	}
 
+	// Add automatic min-days-between constraints, where not overridden.
+	if auto_weight < 0 {
+		auto_weight = db.MAXWEIGHT
+	}
+	for _, cinfo := range tt_data.CourseInfoList {
+		cref := cinfo.Id
+
+		if _, ok := noauto_ddays[cref]; len(cinfo.TtActivities) > 1 && !ok {
+			tt_data.MinDaysBetweenActivities = append(
+				tt_data.MinDaysBetweenActivities, &TtDaysBetween{
+					Id:                   auto_id,
+					Weight:               auto_weight,
+					DaysBetween:          1,
+					ConsecutiveIfSameDay: auto_consec,
+					ActivityLists: tt_data.days_between_activities(
+						cref, auto_weight, auto_consec)})
+		}
+	}
+
 	for _, c := range db0.Constraints[db.C_DaysBetweenJoin] {
 		data := c.Data.(db.DaysBetweenJoin)
 		tt_data.MinDaysBetweenActivities = append(
@@ -120,114 +138,56 @@ func (tt_data *TtData) preprocessConstraints() {
 					c.Weight, data.ConsecutiveIfSameDay)})
 	}
 
-	//TODO...
-	{
-		cn, ok := c.(*db.ParallelCourses)
-		if ok {
-			// The courses must have the same number of activities and the
-			// lengths of the corresponding activities must also be the same.
+	for _, c := range db0.Constraints[db.C_DaysBetweenJoin] {
+		courses := c.Data.([]NodeRef)
+		// The courses must have the same number of activities and the
+		// lengths of the corresponding activities must also be the same.
 
-			//TODO: later ...
-			// A constraint is generated for each activity of the courses.
-
-			// Check activity lengths
-			footprint := []int{}         // activity durations
-			var alen int = 0             // number of activities in each course
-			var alists [][]ActivityIndex // collect the parallel activities
-			for i, cref := range cn.Courses {
-				cinfo := tt_shared_data.Ref2CourseInfo[cref]
+		// Check activity lengths
+		footprint := []int{}         // activity durations
+		var alen int = 0             // number of activities in each course
+		var alists [][]ActivityIndex // collect the parallel activities
+		for i, cref := range courses {
+			cinfo := tt_data.Ref2CourseInfo[cref]
+			if i == 0 {
+				alen = len(cinfo.TtActivities)
+				alists = make([][]ActivityIndex, alen)
+			} else if len(cinfo.TtActivities) != alen {
+				//TODO: This is a data error
+				clist := []string{}
+				for _, cr := range courses {
+					clist = append(clist, string(cr))
+				}
+				base.Error.Fatalf("Parallel courses have different"+
+					" activities: %s\n",
+					strings.Join(clist, ","))
+			}
+			for j, ai := range cinfo.TtActivities {
+				a := tt_data.Activities[ai]
 				if i == 0 {
-					alen = len(cinfo.TtActivities)
-					alists = make([][]ActivityIndex, alen)
-				} else if len(cinfo.TtActivities) != alen {
+					footprint = append(footprint, a.Activity.Duration)
+				} else if a.Activity.Duration != footprint[j] {
 					//TODO: This is a data error
 					clist := []string{}
-					for _, cr := range cn.Courses {
+					for _, cr := range courses {
 						clist = append(clist, string(cr))
 					}
-					base.Error.Fatalf("Parallel courses have different"+
-						" activities: %s\n",
+					base.Error.Fatalf("Parallel courses have activity"+
+						" mismatch: %s\n",
 						strings.Join(clist, ","))
 				}
-				for j, l := range cinfo.Activities {
-					if i == 0 {
-						footprint = append(footprint, l.Duration)
-					} else if l.Duration != footprint[j] {
-						//TODO: This is a data error
-						clist := []string{}
-						for _, cr := range cn.Courses {
-							clist = append(clist, string(cr))
-						}
-						base.Error.Fatalf("Parallel courses have activity"+
-							" mismatch: %s\n",
-							strings.Join(clist, ","))
-					}
-					alists[j] = append(alists[j], cinfo.TtActivities[j])
-				}
-			}
-			// alists is now a list of lists of parallel activity indexes.
-			cpa := &TtParallelActivities{
-				Constraint:     cn.Constraint,
-				Weight:         cn.Weight,
-				Courses:        cn.Courses,
-				ActivityGroups: alists,
-			}
-			if c.IsHard() {
-				tt_data.HardConstraints[ParallelCourses] = append(
-					tt_data.HardConstraints[ParallelCourses], cpa)
-			} else {
-				tt_data.SoftConstraints[ParallelCourses] = append(
-					tt_data.SoftConstraints[ParallelCourses], cpa)
-			}
-			continue
-		}
-	}
-
-	// Collect the other constraints according to type, but unmodified,
-	// separating them into hard and soft constraints,
-	cname := c.CType()
-	ctype, ok := cnmap[cname]
-	if !ok {
-		//TODO?
-		panic("Unknown constraint type: " + cname)
-	}
-	if c.IsHard() {
-		tt_data.HardConstraints[ctype] = append(
-			tt_data.HardConstraints[ctype], c)
-	} else {
-		tt_data.SoftConstraints[ctype] = append(
-			tt_data.SoftConstraints[ctype], c)
-	}
-
-	// Add automatic constraints, where implied.
-	if auto_weight < 0 {
-		auto_weight = db.MAXWEIGHT
-	}
-	for _, cinfo := range tt_shared_data.CourseInfoList {
-		cref := cinfo.Id
-
-		if len(cinfo.Activities) > 1 && !noauto_ddays[cref] {
-			cn := &TtDaysBetween{
-				Constraint:           C_GENERAL_DAYS_BETWEEN,
-				Weight:               auto_weight,
-				Course:               cref,
-				DaysBetween:          1,
-				ConsecutiveIfSameDay: auto_consec,
-			}
-			cn.ActivityLists = tt_shared_data.days_between_activities(cn)
-			if auto_weight == db.MAXWEIGHT || auto_consec {
-				dd_hard = append(dd_hard, cn)
-			} else {
-				dd_soft = append(dd_soft, cn)
+				alists[j] = append(alists[j], cinfo.TtActivities[j])
 			}
 		}
-	}
-	// Now add these as new constraints to the constraint map
-	if len(dd_hard) != 0 {
-		tt_data.HardConstraints[MinDaysBetween] = dd_hard
-	}
-	if len(dd_soft) != 0 {
-		tt_data.SoftConstraints[MinDaysBetween] = dd_soft
+		// `alists` is now a list of lists of parallel activity indexes.
+		for _, alist := range alists {
+			tt_data.ParallelActivities = append(
+				tt_data.ParallelActivities, &TtParallelActivities{
+					Id:         c.Id,
+					Weight:     c.Weight,
+					Activities: alist,
+				})
+		}
 	}
 }
 

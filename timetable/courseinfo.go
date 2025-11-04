@@ -123,8 +123,6 @@ func (tt_data *TtData) CollectCourses() {
 			panic("Invalid Subject ref: " + spc.Subject)
 		}
 
-		//fmt.Printf("^^^^ %s\n\n", sbj.Tag)
-
 		cinfo := &CourseInfo{
 			Id:           cref,
 			Subject:      sbj.Tag,
@@ -133,14 +131,13 @@ func (tt_data *TtData) CollectCourses() {
 			Teachers:     slices.Compact(teachers),
 			FixedRooms:   slices.Compact(rooms),
 			RoomChoices:  crooms,
-			Activities:   spc.Activities,
-			//Activities
+			//TtActivities: set below,
 		}
+		tt_data.makeActivities(cinfo, spc.Activities)
 
 		// Filter out any "necessary" rooms from the choices
 		tt_data.roomChoiceFilter(cinfo)
 
-		tt_data.makeActivities(cinfo)
 		tt_data.CourseInfoList = append(
 			tt_data.CourseInfoList, cinfo)
 		tt_data.Ref2CourseInfo[cref] = cinfo
@@ -233,11 +230,9 @@ func (tt_data *TtData) CollectCourses() {
 			Teachers:     teachers,
 			FixedRooms:   rooms,
 			RoomChoices:  crooms,
-			Activities:   c.Activities,
-			//Activities
+			//TtActivities: set below,
 		}
-
-		tt_data.makeActivities(cinfo)
+		tt_data.makeActivities(cinfo, c.Activities)
 		tt_data.CourseInfoList = append(
 			tt_data.CourseInfoList, cinfo)
 		tt_data.Ref2CourseInfo[cref] = cinfo
@@ -246,14 +241,20 @@ func (tt_data *TtData) CollectCourses() {
 
 // Build a `TtActivity` for each `Activity` – they are already sorted
 // with the longest first.
-func (tt_data *TtData) makeActivities(cinfo *CourseInfo) {
-	for _, l := range cinfo.Activities {
+func (tt_data *TtData) makeActivities(
+	cinfo *CourseInfo, activities []*db.Activity,
+) {
+	for _, a := range activities {
 		aix := ActivityIndex(len(tt_data.Activities))
-		ttl := &TtActivity{
-			CourseInfo: cinfo,
-			Activity:   l,
-		}
 		cinfo.TtActivities = append(cinfo.TtActivities, aix)
-		tt_data.Activities = append(tt_data.Activities, ttl)
+		tt_data.Activities = append(tt_data.Activities, &TtActivity{
+			CourseInfo: cinfo,
+			Activity:   a,
+			//Day: ,
+			//Hour: ,
+			//Fixed: ,
+		})
 	}
 }
+
+//TODO: the placement fields of the TtActivities
