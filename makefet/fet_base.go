@@ -1,5 +1,5 @@
-// Package fet handles interaction with the fet timetabling program.
-package fet
+// Package makefet generates an input file for the FET timetabling program.
+package makefet
 
 import (
 	"encoding/xml"
@@ -179,6 +179,7 @@ func MakeFetFile(tt_data *timetable.TtData) []byte {
 	getRooms(&fetinfo)
 	getClasses(&fetinfo)
 	getActivities(&fetinfo)
+	addPlacementConstraints(&fetinfo)
 	getExtraConstraints(&fetinfo)
 
 	return append([]byte(xml.Header), makeXML(fetinfo.fetdata, 0)...)
@@ -186,11 +187,11 @@ func MakeFetFile(tt_data *timetable.TtData) []byte {
 
 /*
 func getString(val interface{}) string {
-	s, ok := val.(string)
-	if !ok {
-		b, _ := json.Marshal(val)
-		s = string(b)
-	}
-	return s
+    s, ok := val.(string)
+    if !ok {
+        b, _ := json.Marshal(val)
+        s = string(b)
+    }
+    return s
 }
 */

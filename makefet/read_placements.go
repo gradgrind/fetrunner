@@ -1,4 +1,4 @@
-package fet
+package makefet
 
 import (
 	"encoding/xml"
