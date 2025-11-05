@@ -24,42 +24,34 @@ func (c *TtDaysBetween) IsHard() bool {
 	return c.Weight == db.MAXWEIGHT || c.ConsecutiveIfSameDay
 }
 
-/* The DaysBetweenJoin constraints are converted to TtDaysBetweenJoin and
- * gain activity lists to assist in the implementation of the constraint.
- */
-type TtDaysBetweenJoin struct {
-	Constraint           string
-	Weight               int
-	Course1              NodeRef // Course or SuperCourse
-	Course2              NodeRef // Course or SuperCourse
-	DaysBetween          int
-	ConsecutiveIfSameDay bool
-	ActivityLists        [][]ActivityIndex
-}
-
-func (c *TtDaysBetweenJoin) IsHard() bool {
-	// Note that "ConsecutiveIfSameDay" is hard regardless of
-	// the weight.
-	return c.Weight == db.MAXWEIGHT || c.ConsecutiveIfSameDay
-}
-
 /* The ParallelCourses constraints are transformed to TtParallelActivities
  * constraints.
  */
 type TtParallelActivities struct {
-	Id         NodeRef
-	Weight     int
-	Activities []ActivityIndex
+	Id            NodeRef
+	Weight        int
+	ActivityLists [][]ActivityIndex
 }
 
 func (c *TtParallelActivities) IsHard() bool {
 	return c.Weight == db.MAXWEIGHT
 }
 
-// `preprocessConstraints` produces the new constraints.
-// The result is a map, constraint-type -> list of constraints.
+// `preprocessConstraints` produces the new constraints, which are then
+// accessible in `TtData`. It also adds the fixed activity placements to
+// the `TtAcivity` items.
 func (tt_data *TtData) preprocessConstraints() {
 	db0 := tt_data.Db
+
+	// Deal with the fixed activity placements.
+	for _, c := range db0.Constraints[db.C_ActivityStartTime] {
+		if c.IsHard() {
+			data := c.Data.(db.ActivityStartTime)
+			aix := tt_data.Ref2ActivityIndex[data.Activity]
+			tt_data.Activities[aix].FixedStartTime = &db.TimeSlot{
+				Day: data.Day, Hour: data.Hour}
+		}
+	}
 
 	// If an "AutomaticDifferentDays" constraint is present (at most one is
 	// permitted), the `auto_weight` and `auto_consec` variables will be set
@@ -113,7 +105,7 @@ func (tt_data *TtData) preprocessConstraints() {
 	for _, cinfo := range tt_data.CourseInfoList {
 		cref := cinfo.Id
 
-		if _, ok := noauto_ddays[cref]; len(cinfo.TtActivities) > 1 && !ok {
+		if _, ok := noauto_ddays[cref]; len(cinfo.Activities) > 1 && !ok {
 			tt_data.MinDaysBetweenActivities = append(
 				tt_data.MinDaysBetweenActivities, &TtDaysBetween{
 					Id:                   auto_id,
@@ -134,8 +126,7 @@ func (tt_data *TtData) preprocessConstraints() {
 				DaysBetween:          data.DaysBetween,
 				ConsecutiveIfSameDay: data.ConsecutiveIfSameDay,
 				ActivityLists: tt_data.days_between_join_activities(
-					data.Course1, data.Course2,
-					c.Weight, data.ConsecutiveIfSameDay)})
+					data.Course1, data.Course2)})
 	}
 
 	for _, c := range db0.Constraints[db.C_DaysBetweenJoin] {
@@ -150,9 +141,9 @@ func (tt_data *TtData) preprocessConstraints() {
 		for i, cref := range courses {
 			cinfo := tt_data.Ref2CourseInfo[cref]
 			if i == 0 {
-				alen = len(cinfo.TtActivities)
+				alen = len(cinfo.Activities)
 				alists = make([][]ActivityIndex, alen)
-			} else if len(cinfo.TtActivities) != alen {
+			} else if len(cinfo.Activities) != alen {
 				//TODO: This is a data error
 				clist := []string{}
 				for _, cr := range courses {
@@ -162,11 +153,11 @@ func (tt_data *TtData) preprocessConstraints() {
 					" activities: %s\n",
 					strings.Join(clist, ","))
 			}
-			for j, ai := range cinfo.TtActivities {
-				a := tt_data.Activities[ai]
+			for j, ai := range cinfo.Activities {
+				a := db0.Activities[ai]
 				if i == 0 {
-					footprint = append(footprint, a.Activity.Duration)
-				} else if a.Activity.Duration != footprint[j] {
+					footprint = append(footprint, a.Duration)
+				} else if a.Duration != footprint[j] {
 					//TODO: This is a data error
 					clist := []string{}
 					for _, cr := range courses {
@@ -176,18 +167,16 @@ func (tt_data *TtData) preprocessConstraints() {
 						" mismatch: %s\n",
 						strings.Join(clist, ","))
 				}
-				alists[j] = append(alists[j], cinfo.TtActivities[j])
+				alists[j] = append(alists[j], cinfo.Activities[j])
 			}
 		}
 		// `alists` is now a list of lists of parallel activity indexes.
-		for _, alist := range alists {
-			tt_data.ParallelActivities = append(
-				tt_data.ParallelActivities, &TtParallelActivities{
-					Id:         c.Id,
-					Weight:     c.Weight,
-					Activities: alist,
-				})
-		}
+		tt_data.ParallelActivities = append(
+			tt_data.ParallelActivities, &TtParallelActivities{
+				Id:            c.Id,
+				Weight:        c.Weight,
+				ActivityLists: alists,
+			})
 	}
 }
 
@@ -199,8 +188,8 @@ func (tt_data *TtData) days_between_activities(
 	cinfo := tt_data.Ref2CourseInfo[course]
 	fixeds := []ActivityIndex{}
 	unfixeds := []ActivityIndex{}
-	for _, ai := range cinfo.TtActivities {
-		if tt_data.Activities[ai].Fixed {
+	for _, ai := range cinfo.Activities {
+		if tt_data.Activities[ai].FixedStartTime != nil {
 			fixeds = append(fixeds, ai)
 		} else {
 			unfixeds = append(unfixeds, ai)
@@ -218,7 +207,7 @@ func (tt_data *TtData) days_between_activities(
 	aidlists := [][]ActivityIndex{}
 	if len(fixeds) <= 1 {
 		// At most 1 fixed activity, so all activities are relevant
-		aidlists = append(aidlists, cinfo.TtActivities)
+		aidlists = append(aidlists, cinfo.Activities)
 	} else {
 		// Multiple fixed activities, at least one unfixed one:
 		for _, aidf := range fixeds {
@@ -249,15 +238,15 @@ func (tt_data *TtData) days_between_activities(
 
 // Construct the activity relationships for a `DaysBetweenJoin` constraint.
 func (tt_data *TtData) days_between_join_activities(
-	course1 NodeRef, course2 NodeRef, weight int, consecutiveIfSameDay bool,
+	course1 NodeRef, course2 NodeRef,
 ) [][]ActivityIndex {
 	allist := [][]ActivityIndex{}
 	cinfo1 := tt_data.Ref2CourseInfo[course1]
 	cinfo2 := tt_data.Ref2CourseInfo[course2]
-	for _, ai1 := range cinfo1.TtActivities {
-		f1 := tt_data.Activities[ai1].Fixed
-		for _, ai2 := range cinfo2.TtActivities {
-			f2 := tt_data.Activities[ai2].Fixed
+	for _, ai1 := range cinfo1.Activities {
+		f1 := tt_data.Activities[ai1].FixedStartTime != nil
+		for _, ai2 := range cinfo2.Activities {
+			f2 := tt_data.Activities[ai2].FixedStartTime != nil
 			if f1 && f2 {
 				// both fixed => no constraint
 				continue

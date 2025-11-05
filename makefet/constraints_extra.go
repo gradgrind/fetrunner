@@ -4,7 +4,7 @@ import (
 	"encoding/xml"
 	"fetrunner/base"
 	"fetrunner/db"
-	"strconv"
+	"fetrunner/timetable"
 )
 
 type preferredSlots struct {
@@ -48,14 +48,14 @@ type preferredStart struct {
 type lessonEndsDay struct {
 	XMLName           xml.Name `xml:"ConstraintActivityEndsStudentsDay"`
 	Weight_Percentage string
-	Activity_Id       ActivityIndex
+	Activity_Id       int
 	Active            bool
 }
 
 type activityPreferredTimes struct {
 	XMLName                        xml.Name `xml:"ConstraintActivityPreferredTimeSlots"`
 	Weight_Percentage              string
-	Activity_Id                    ActivityIndex
+	Activity_Id                    int
 	Number_of_Preferred_Time_Slots int
 	Preferred_Time_Slot            []preferredTime
 	Active                         bool
@@ -65,8 +65,14 @@ type sameStartingTime struct {
 	XMLName              xml.Name `xml:"ConstraintActivitiesSameStartingTime"`
 	Weight_Percentage    string
 	Number_of_Activities int
-	Activity_Id          []ActivityIndex
+	Activity_Id          []int
 	Active               bool
+}
+
+func activityIndex2fet(
+	ttd *timetable.TtData, ai timetable.ActivityIndex,
+) int {
+	return int(ai) + 1
 }
 
 func getExtraConstraints(fetinfo *fetInfo) {
@@ -78,75 +84,61 @@ func getExtraConstraints(fetinfo *fetInfo) {
 	fetinfo.handle_class_constraints()
 	fetinfo.handle_room_constraints()
 
-	//TODO: Specification pending
-	var doubleBlocked []bool
-
-	for _, c := range db0.Constraints[db.C_DaysBetween] {
-		data := c.Data.(db.DaysBetween)
-
-		//TODO: Isn't there some preprocessing somewhere?!
-
-		for _, alist := range cn.ActivityLists {
+	for _, c := range tt_data.MinDaysBetweenActivities {
+		w := weight2fet(c.Weight)
+		for _, alist := range c.ActivityLists {
+			aidlist := make([]int, len(alist))
+			for i, ai := range alist {
+				aidlist[i] = activityIndex2fet(tt_data, ai)
+			}
 			tclist.ConstraintMinDaysBetweenActivities = append(
 				tclist.ConstraintMinDaysBetweenActivities,
 				minDaysBetweenActivities{
-					Weight_Percentage:       weight2fet(c.Weight),
-					Consecutive_If_Same_Day: data.ConsecutiveIfSameDay,
+					Weight_Percentage:       w,
+					Consecutive_If_Same_Day: c.ConsecutiveIfSameDay,
 					Number_of_Activities:    len(alist),
-					Activity_Id:             alist,
-					MinDays:                 data.DaysBetween,
+					Activity_Id:             aidlist,
+					MinDays:                 c.DaysBetween,
 					Active:                  true,
 				})
 		}
 	}
 
-	for _, c := range clist[timetable.DaysBetweenJoin] {
-		cn := c.(*timetable.TtDaysBetweenJoin)
-		for _, alist := range cn.ActivityLists {
-			tclist.ConstraintMinDaysBetweenActivities = append(
-				tclist.ConstraintMinDaysBetweenActivities,
-				minDaysBetweenActivities{
-					Weight_Percentage:       weight2fet(cn.Weight),
-					Consecutive_If_Same_Day: cn.ConsecutiveIfSameDay,
-					Number_of_Activities:    len(alist),
-					Activity_Id:             alist,
-					MinDays:                 cn.DaysBetween,
-					Active:                  true,
-				})
-		}
-	}
-
-	for _, c := range clist[timetable.ParallelCourses] {
-		cn := c.(*timetable.TtParallelActivities)
-		for _, alist := range cn.ActivityGroups {
+	for _, c := range tt_data.ParallelActivities {
+		w := weight2fet(c.Weight)
+		for _, alist := range c.ActivityLists {
+			aidlist := make([]int, len(alist))
+			for i, ai := range alist {
+				aidlist[i] = activityIndex2fet(tt_data, ai)
+			}
 			tclist.ConstraintActivitiesSameStartingTime = append(
 				tclist.ConstraintActivitiesSameStartingTime,
 				sameStartingTime{
-					Weight_Percentage:    weight2fet(cn.Weight),
-					Number_of_Activities: len(alist),
-					Activity_Id:          alist,
+					Weight_Percentage:    w,
+					Number_of_Activities: len(aidlist),
+					Activity_Id:          aidlist,
 					Active:               true,
 				})
 		}
 	}
 
-	for _, c := range clist[timetable.ActivitiesEndDay] {
-		cn := c.(*base.ActivitiesEndDay)
-		cinfo := tt_data.Ref2CourseInfo[cn.Course]
-		for _, aid := range cinfo.TtActivities {
+	for _, c := range db0.Constraints[db.C_ActivitiesEndDay] {
+		w := weight2fet(c.Weight)
+		course := c.Data.(db.NodeRef)
+		cinfo := tt_data.Ref2CourseInfo[course]
+		for _, ai := range cinfo.Activities {
 			tclist.ConstraintActivityEndsStudentsDay = append(
 				tclist.ConstraintActivityEndsStudentsDay,
 				lessonEndsDay{
-					Weight_Percentage: weight2fet(cn.Weight),
-					Activity_Id:       aid,
+					Weight_Percentage: w,
+					Activity_Id:       activityIndex2fet(tt_data, ai),
 					Active:            true,
 				})
 		}
 	}
 
-	for _, c := range clist[timetable.DoubleActivityNotOverBreaks] {
-		cn := c.(*base.DoubleActivityNotOverBreaks)
-
+	var doubleBlocked []bool
+	for _, c := range db0.Constraints[db.C_DoubleActivityNotOverBreaks] {
 		if len(doubleBlocked) != 0 {
 			base.Error.Fatalln("Constraint DoubleActivityNotOverBreaks" +
 				" specified more than once")
@@ -156,15 +148,15 @@ func getExtraConstraints(fetinfo *fetInfo) {
 		// Note that a double lesson can't start in the last slot of
 		// the day.
 		doubleBlocked = make([]bool, tt_data.NHours-1)
-		for _, h := range cn.Hours {
+		for _, h := range c.Data.([]int) {
 			doubleBlocked[h-1] = true
 		}
 		for d := 0; d < tt_data.NDays; d++ {
 			for h, bl := range doubleBlocked {
 				if !bl {
 					timeslots = append(timeslots, preferredStart{
-						Preferred_Starting_Day:  strconv.Itoa(d),
-						Preferred_Starting_Hour: strconv.Itoa(h),
+						Preferred_Starting_Day:  day2Tag(db0, d),
+						Preferred_Starting_Hour: hour2Tag(db0, h),
 					})
 				}
 			}
@@ -172,7 +164,7 @@ func getExtraConstraints(fetinfo *fetInfo) {
 		tclist.ConstraintActivitiesPreferredStartingTimes = append(
 			tclist.ConstraintActivitiesPreferredStartingTimes,
 			preferredStarts{
-				Weight_Percentage:                  weight2fet(cn.Weight),
+				Weight_Percentage:                  weight2fet(c.Weight),
 				Duration:                           "2",
 				Number_of_Preferred_Starting_Times: len(timeslots),
 				Preferred_Starting_Time:            timeslots,
@@ -180,39 +172,40 @@ func getExtraConstraints(fetinfo *fetInfo) {
 			})
 	}
 
-	for _, c := range clist[timetable.BeforeAfterHour] {
-		cn := c.(*base.BeforeAfterHour)
+	for _, c := range db0.Constraints[db.C_BeforeAfterHour] {
+		w := weight2fet(c.Weight)
+		data := c.Data.(*db.BeforeAfterHour)
 		timeslots := []preferredTime{}
-		if cn.After {
+		if data.After {
 			for d := 0; d < tt_data.NDays; d++ {
-				for h := cn.Hour + 1; h < tt_data.NHours; h++ {
+				for h := data.Hour + 1; h < tt_data.NHours; h++ {
 					timeslots = append(timeslots, preferredTime{
-						Preferred_Day:  strconv.Itoa(d),
-						Preferred_Hour: strconv.Itoa(h),
+						Preferred_Day:  day2Tag(db0, d),
+						Preferred_Hour: hour2Tag(db0, h),
 					})
 				}
 			}
 		} else {
 			for d := 0; d < tt_data.NDays; d++ {
-				for h := 0; h < cn.Hour; h++ {
+				for h := 0; h < data.Hour; h++ {
 					timeslots = append(timeslots, preferredTime{
-						Preferred_Day:  strconv.Itoa(d),
-						Preferred_Hour: strconv.Itoa(h),
+						Preferred_Day:  day2Tag(db0, d),
+						Preferred_Hour: hour2Tag(db0, h),
 					})
 				}
 			}
 		}
-		for _, k := range cn.Courses {
-			cinfo, ok := tt_data.Ref2CourseInfo[k]
+		for _, course := range data.Courses {
+			cinfo, ok := tt_data.Ref2CourseInfo[course]
 			if !ok {
-				base.Bug.Fatalf("Invalid course: %s\n", k)
+				base.Bug.Fatalf("Invalid course: %s\n", course)
 			}
-			for _, aid := range cinfo.TtActivities {
+			for _, ai := range cinfo.Activities {
 				tclist.ConstraintActivityPreferredTimeSlots = append(
 					tclist.ConstraintActivityPreferredTimeSlots,
 					activityPreferredTimes{
-						Weight_Percentage:              weight2fet(cn.Weight),
-						Activity_Id:                    aid,
+						Weight_Percentage:              w,
+						Activity_Id:                    activityIndex2fet(tt_data, ai),
 						Number_of_Preferred_Time_Slots: len(timeslots),
 						Preferred_Time_Slot:            timeslots,
 						Active:                         true,
@@ -222,33 +215,31 @@ func getExtraConstraints(fetinfo *fetInfo) {
 
 	}
 
-	/* TODO: Specification pending
-	{
-		cn, ok := c.(*base.MinHoursFollowing)
-		if ok {
-			c1 := fetinfo.courseInfo[cn.Course1]
-			c2 := fetinfo.courseInfo[cn.Course2]
+	//TODO
+	for _, c := range db0.Constraints[db.C_MinHoursFollowing] {
+		base.Error.Printf("!!! Constraint not implemented:\n%+v\n", c)
+		//w := weight2fet(c.Weight)
+		//data := c.Data.(*db.MinHoursFollowing)
 
-			//TODO
+		//MinHoursFollowing{
+		//	Course1: course1,
+		//	Course2: course2,
+		//	Hours:   hours,
+		//}
 
-			mdba := []minDaysBetweenActivities{}
-			for _, l1 := range c1.activities {
-				for _, l2 := range c2.activities {
-					mdba = append(mdba, minDaysBetweenActivities{
-						Weight_Percentage:       weight2fet(cn.Weight),
-						Consecutive_If_Same_Day: cn.ConsecutiveIfSameDay,
-						Number_of_Activities:    2,
-						Activity_Id:             []timetable.ActivityIndex{l1, l2},
-						MinDays:                 cn.DaysBetween,
-						Active:                  true,
-					})
-				}
-			}
-			// Append constraints to full list
-			tclist.ConstraintMinDaysBetweenActivities = append(
-				tclist.ConstraintMinDaysBetweenActivities,
-				mdba...)
-		}
+		/* It may be better to specify these constraints in a better way!
+
+		   <ConstraintStudentsSetMinGapsBetweenOrderedPairOfActivityTags>
+		     <Weight_Percentage>100</Weight_Percentage>
+		     <Students>12G</Students>
+		     <First_Activity_Tag>tag2</First_Activity_Tag>
+		     <Second_Activity_Tag>tag1</Second_Activity_Tag>
+		     <MinGaps>1</MinGaps>
+		     <Active>true</Active>
+		     <Comments></Comments>
+		   </ConstraintStudentsSetMinGapsBetweenOrderedPairOfActivityTags>
+
+		*/
 	}
-	*/
+
 }

@@ -67,6 +67,14 @@ func weight2fet(w int) string {
 	return strconv.FormatFloat(wfet, 'f', 3, 64)
 }
 
+func day2Tag(db0 *db.DbTopLevel, d int) string {
+	return db0.Days[d].GetTag()
+}
+
+func hour2Tag(db0 *db.DbTopLevel, h int) string {
+	return db0.Hours[h].GetTag()
+}
+
 type fetInfo struct {
 	tt_data       *timetable.TtData
 	ref2grouponly map[Ref]string

@@ -31,7 +31,7 @@ type fetRoomsList struct {
 type placedRoom struct {
 	XMLName              xml.Name `xml:"ConstraintActivityPreferredRoom"`
 	Weight_Percentage    int
-	Activity_Id          ActivityIndex
+	Activity_Id          int
 	Room                 string
 	Number_of_Real_Rooms int      `xml:",omitempty"`
 	Real_Room            []string `xml:",omitempty"`
@@ -43,7 +43,7 @@ type placedRoom struct {
 type roomChoice struct {
 	XMLName                   xml.Name `xml:"ConstraintActivityPreferredRooms"`
 	Weight_Percentage         int
-	Activity_Id               ActivityIndex
+	Activity_Id               int
 	Number_of_Preferred_Rooms int
 	Preferred_Room            []string
 	Active                    bool // true

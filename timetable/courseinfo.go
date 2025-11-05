@@ -29,7 +29,13 @@ func (tt_data *TtData) View(cinfo *CourseInfo) string {
 func (tt_data *TtData) CollectCourses() {
 	db0 := tt_data.Db
 	tt_data.Ref2CourseInfo = map[NodeRef]*CourseInfo{}
-	tt_data.Activities = []*TtActivity{{}} // first entry is empty
+
+	// The list of `TtActivity` items shadows the list of `Activity` items.
+	tt_data.Activities = make([]*TtActivity, len(db0.Activities))
+	tt_data.Ref2ActivityIndex = map[NodeRef]ActivityIndex{}
+	for i, a := range db0.Activities {
+		tt_data.Ref2ActivityIndex[a.Id] = ActivityIndex(i)
+	}
 
 	// *** Gather the SuperCourses. ***
 	for _, spc := range db0.SuperCourses {
@@ -133,7 +139,7 @@ func (tt_data *TtData) CollectCourses() {
 			RoomChoices:  crooms,
 			//TtActivities: set below,
 		}
-		tt_data.makeActivities(cinfo, spc.Activities)
+		tt_data.makeActivities(len(tt_data.CourseInfoList), spc.Activities)
 
 		// Filter out any "necessary" rooms from the choices
 		tt_data.roomChoiceFilter(cinfo)
@@ -232,7 +238,7 @@ func (tt_data *TtData) CollectCourses() {
 			RoomChoices:  crooms,
 			//TtActivities: set below,
 		}
-		tt_data.makeActivities(cinfo, c.Activities)
+		tt_data.makeActivities(len(tt_data.CourseInfoList), c.Activities)
 		tt_data.CourseInfoList = append(
 			tt_data.CourseInfoList, cinfo)
 		tt_data.Ref2CourseInfo[cref] = cinfo
@@ -242,19 +248,15 @@ func (tt_data *TtData) CollectCourses() {
 // Build a `TtActivity` for each `Activity` – they are already sorted
 // with the longest first.
 func (tt_data *TtData) makeActivities(
-	cinfo *CourseInfo, activities []*db.Activity,
+	cinfo int, activities []*db.Activity,
 ) {
 	for _, a := range activities {
-		aix := ActivityIndex(len(tt_data.Activities))
-		cinfo.TtActivities = append(cinfo.TtActivities, aix)
+		aix := tt_data.Ref2ActivityIndex[a.Id]
+		cinfop := tt_data.CourseInfoList[cinfo]
+		cinfop.Activities = append(cinfop.Activities, aix)
 		tt_data.Activities = append(tt_data.Activities, &TtActivity{
 			CourseInfo: cinfo,
-			Activity:   a,
-			//Day: ,
-			//Hour: ,
-			//Fixed: ,
+			//FixedSTartTime: , // will be set later
 		})
 	}
 }
-
-//TODO: the placement fields of the TtActivities

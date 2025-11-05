@@ -35,9 +35,10 @@ type TtData struct {
 
 	// Set up by `CollectCourses`, which calls `makeActivities`
 	// Note that activity 0 is invalid, the first activity has index 1.
-	Activities     []*TtActivity
-	CourseInfoList []*CourseInfo
-	Ref2CourseInfo map[NodeRef]*CourseInfo
+	Activities        []*TtActivity
+	Ref2ActivityIndex map[NodeRef]ActivityIndex
+	CourseInfoList    []*CourseInfo
+	Ref2CourseInfo    map[NodeRef]*CourseInfo
 
 	// Transformed constraints
 	MinDaysBetweenActivities []*TtDaysBetween
@@ -56,15 +57,12 @@ type CourseInfo struct {
 	Teachers     []TeacherIndex
 	FixedRooms   []RoomIndex
 	RoomChoices  [][]RoomIndex
-	TtActivities []ActivityIndex
+	Activities   []ActivityIndex
 }
 
 type TtActivity struct {
-	CourseInfo *CourseInfo
-	Activity   *db.Activity
-	Day        int
-	Hour       int
-	Fixed      bool
+	CourseInfo     int // index to `TtData.CourseInfoList`
+	FixedStartTime *db.TimeSlot
 }
 
 type ClassDivision struct {
@@ -77,7 +75,7 @@ type ClassDivision struct {
 func BasicSetup(db *db.DbTopLevel) *TtData {
 	days := len(db.Days)
 	hours := len(db.Hours)
-	tt_shared_data := &TtData{
+	tt_data := &TtData{
 		Db:           db,
 		NDays:        days,
 		NHours:       hours,
@@ -85,27 +83,27 @@ func BasicSetup(db *db.DbTopLevel) *TtData {
 	}
 
 	// Collect ClassDivisions
-	tt_shared_data.FilterDivisions()
+	tt_data.FilterDivisions()
 
 	// Atomic groups: an atomic group is a "resource", it is an ordered list
 	// of single groups, one from each division.
 	// The atomic groups take the lowest resource indexes (starting at 0).
 	// `AtomicGroups` maps the classes and groups to a list of their resource
 	// indexes.
-	tt_shared_data.MakeAtomicGroups()
+	tt_data.MakeAtomicGroups()
 
 	// Add teachers and rooms to resource array
-	tt_shared_data.TeacherResources()
-	tt_shared_data.RoomResources()
+	tt_data.TeacherResources()
+	tt_data.RoomResources()
 
 	// Get the courses (-> CourseInfo) and activities for the timetable
-	tt_shared_data.CollectCourses()
+	tt_data.CollectCourses()
 
 	//TODO: Perhaps this should be called from the back-end, in preparation
 	// for a generator run?
-	tt_shared_data.preprocessConstraints()
+	tt_data.preprocessConstraints()
 
-	return tt_shared_data
+	return tt_data
 }
 
 func (tt_data *TtData) TeacherResources() {
@@ -120,19 +118,6 @@ func (tt_data *TtData) RoomResources() {
 	for i, r := range tt_data.Db.Rooms {
 		tt_data.RoomIndex[r.Id] = RoomIndex(i)
 	}
-}
-
-type MinDaysBetweenActivities struct {
-	// Result of processing constraints DifferentDays and DaysBetween
-	Weight               int
-	ConsecutiveIfSameDay bool
-	Activities           []ActivityIndex
-	MinDays              int
-}
-
-type ParallelActivities struct {
-	Weight         int
-	ActivityGroups [][]ActivityIndex
 }
 
 // This structure is used to return the placement results from the

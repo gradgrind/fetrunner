@@ -2,7 +2,6 @@ package fet
 
 import (
 	"encoding/xml"
-	"fetrunner/timetable"
 )
 
 type notAvailableTime struct {
@@ -34,7 +33,7 @@ type studentsNotAvailable struct {
 type startingTime struct {
 	XMLName            xml.Name `xml:"ConstraintActivityPreferredStartingTime"`
 	Weight_Percentage  int
-	Activity_Id        timetable.ActivityIndex
+	Activity_Id        int
 	Preferred_Day      string
 	Preferred_Hour     string
 	Permanently_Locked bool
@@ -47,7 +46,7 @@ type minDaysBetweenActivities struct {
 	Weight_Percentage       string
 	Consecutive_If_Same_Day bool
 	Number_of_Activities    int
-	Activity_Id             []timetable.ActivityIndex
+	Activity_Id             []int
 	MinDays                 int
 	Active                  bool
 	Comments                string

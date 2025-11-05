@@ -7,11 +7,9 @@ import (
 	"strconv"
 )
 
-type ActivityIndex = timetable.ActivityIndex
-
 type fetActivity struct {
 	XMLName           xml.Name `xml:"Activity"`
-	Id                ActivityIndex
+	Id                int
 	Teacher           []string `xml:",omitempty"`
 	Subject           string
 	Activity_Tag      string   `xml:",omitempty"`
@@ -19,7 +17,7 @@ type fetActivity struct {
 	Active            bool
 	Total_Duration    int
 	Duration          int
-	Activity_Group_Id ActivityIndex
+	Activity_Group_Id int
 	Comments          string
 }
 
@@ -42,6 +40,7 @@ type fetActivityTags struct {
 // Generate the fet activties.
 func getActivities(fetinfo *fetInfo) {
 	tt_data := fetinfo.tt_data
+	db0 := tt_data.Db
 
 	// ************* Start with the activity tags
 	tags := []fetActivityTag{}
@@ -61,11 +60,9 @@ func getActivities(fetinfo *fetInfo) {
 
 	// ************* Now the activities
 	activities := []fetActivity{}
-	for aid, tt_activity := range tt_data.Activities {
-		if aid == 0 {
-			continue
-		}
-		cinfo := tt_activity.CourseInfo
+
+	for ai, tt_activity := range tt_data.Activities {
+		cinfo := tt_data.CourseInfoList[tt_activity.CourseInfo]
 		// Teachers
 		tlist := []string{}
 		for _, ti := range cinfo.Teachers {
@@ -85,29 +82,30 @@ func getActivities(fetinfo *fetInfo) {
 		}
 		*/
 
-		// Generate the Activities for this course (one per Lesson).
+		// Get the total duration for this course.
 		totalDuration := 0
-		//llist := []*ttbase.Activity{}
-		for _, l := range cinfo.Activities {
-			totalDuration += l.Duration
-			//llist = append(llist, l)
+		for _, aix := range cinfo.Activities {
+			totalDuration += db0.Activities[aix].Duration
 		}
-		var agid ActivityIndex = 0
-		if len(cinfo.TtActivities) > 1 {
-			agid = cinfo.TtActivities[0]
+		// Start FET activity indexes at 1
+		agid := 0
+		if len(cinfo.Activities) > 1 {
+			agid = activityIndex2fet(tt_data, cinfo.Activities[0])
 		}
+		a := db0.Activities[ai]
 		activities = append(activities,
 			fetActivity{
-				Id:       ActivityIndex(aid),
+				Id: activityIndex2fet(
+					tt_data, timetable.ActivityIndex(ai)),
 				Teacher:  tlist,
 				Subject:  cinfo.Subject,
 				Students: glist,
 				//Activity_Tag:      atag,
 				Active:            true,
 				Total_Duration:    totalDuration,
-				Duration:          tt_activity.Activity.Duration,
+				Duration:          a.Duration,
 				Activity_Group_Id: agid,
-				Comments:          string(tt_activity.Activity.GetRef()),
+				Comments:          string(a.GetRef()),
 			},
 		)
 	}
@@ -139,7 +137,7 @@ func addPlacementConstraints(fetinfo *fetInfo) {
 		scl := &fetinfo.fetdata.Space_Constraints_List
 		tcl := &fetinfo.fetdata.Time_Constraints_List
 		for i, l := range cinfo.Activities {
-			aid := cinfo.TtActivities[i]
+			aid := cinfo.Activities[i]
 			_, ok := armap[int(aid)]
 			if ok && len(rooms) != 0 {
 				scl.ConstraintActivityPreferredRooms = append(
