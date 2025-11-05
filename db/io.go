@@ -14,7 +14,7 @@ func (db *DbTopLevel) SaveDb(fpath string) bool {
 		base.Error.Println(err)
 		return false
 	}
-	if err := os.WriteFile(fpath, j, 0666); err != nil {
+	if err := os.WriteFile(fpath, j, 0644); err != nil {
 		base.Error.Println(err)
 		return false
 	}

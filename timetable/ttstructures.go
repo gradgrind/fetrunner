@@ -70,7 +70,7 @@ type ClassDivision struct {
 	Divisions [][]NodeRef
 }
 
-// BasicSetup performs the initialization of a TtSharedData structure, collecting
+// BasicSetup performs the initialization of a TtData structure, collecting
 // "resources" (atomic student groups, teachers and rooms) and "activities".
 func BasicSetup(db *db.DbTopLevel) *TtData {
 	days := len(db.Days)

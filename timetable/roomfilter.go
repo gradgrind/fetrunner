@@ -142,19 +142,3 @@ func (tt_data *TtData) errorRCG(cinfo *CourseInfo, rooms []RoomIndex) {
 	base.Error.Printf("Course %s: Invalid room-choice-group with %s\n",
 		tt_data.View(cinfo), strings.Join(rlist, ", "))
 }
-
-/* TODO: with new error handler?
-func init() {
-	base.ErrorMessages["timetable__errorRCG__INVALID_ROOM_CHOICE_GROUPS"] =
-		"Course %s: Invalid room-choice-group with %s"
-}
-
-func (tt_shared_data *TtSharedData) errorRCG(cinfo *CourseInfo, rooms []RoomIndex) {
-	rlist := []string{}
-	for _, r := range rooms {
-		rlist = append(rlist, tt_shared_data.Resources[r].GetResourceTag())
-	}
-	base.ERROR("timetable__errorRCG__INVALID_ROOM_CHOICE_GROUPS",
-		tt_shared_data.View(cinfo), strings.Join(rlist, ", "))
-}
-*/

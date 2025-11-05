@@ -29,6 +29,7 @@ import (
 	"fetrunner/base"
 	"fetrunner/db"
 	"fetrunner/fet"
+	"fetrunner/makefet"
 	"fetrunner/timetable"
 	"fetrunner/w365tt"
 	"flag"
@@ -101,7 +102,6 @@ func main() {
 	db0.SaveDb(filepath.Join(d1, f1+"_DB.json"))
 
 	// Make FET file
-	//TODO
 	tt_data := timetable.BasicSetup(db0)
 	base.Report(fmt.Sprintf("Atomic Groups: %d\n",
 		len(tt_data.AtomicGroups)))
@@ -111,10 +111,15 @@ func main() {
 		len(db0.Rooms)))
 	base.Report(fmt.Sprintf("Activities: %d\n",
 		len(tt_data.Activities)-1))
+	fetbytes := makefet.MakeFetFile(tt_data)
+	fetpath := filepath.Join(d1, f1+".fet")
+	if err := os.WriteFile(fetpath, fetbytes, 0644); err != nil {
+		base.Error.Println(err)
+		return
+	}
 
 	// Process the FET file
-
-	bdata.Source, err = fet.FetRead(bdata, abspath)
+	bdata.Source, err = fet.FetRead(bdata, fetpath)
 	if err != nil {
 		log.Fatal(err)
 	}
