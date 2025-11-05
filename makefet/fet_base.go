@@ -179,7 +179,10 @@ func MakeFetFile(tt_data *timetable.TtData) []byte {
 	getRooms(&fetinfo)
 	getClasses(&fetinfo)
 	getActivities(&fetinfo)
-	addPlacementConstraints(&fetinfo)
+
+	//TODO: Handle WITHOUT_ROMM_CONSTRAINTS
+	addPlacementConstraints(&fetinfo, false)
+
 	getExtraConstraints(&fetinfo)
 
 	return append([]byte(xml.Header), makeXML(fetinfo.fetdata, 0)...)
