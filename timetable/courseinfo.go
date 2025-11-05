@@ -137,9 +137,19 @@ func (tt_data *TtData) CollectCourses() {
 			Teachers:     slices.Compact(teachers),
 			FixedRooms:   slices.Compact(rooms),
 			RoomChoices:  crooms,
-			//TtActivities: set below,
+			//Activities: set below,
 		}
-		tt_data.makeActivities(len(tt_data.CourseInfoList), spc.Activities)
+
+		// Build a `TtActivity` for each `Activity` – they are already sorted
+		// with the longest first.
+		for _, a := range spc.Activities {
+			aix := tt_data.Ref2ActivityIndex[a.Id]
+			cinfo.Activities = append(cinfo.Activities, aix)
+			tt_data.Activities[aix] = &TtActivity{
+				CourseInfo: len(tt_data.CourseInfoList),
+				//FixedStartTime: , // will be set later
+			}
+		}
 
 		// Filter out any "necessary" rooms from the choices
 		tt_data.roomChoiceFilter(cinfo)
@@ -236,27 +246,22 @@ func (tt_data *TtData) CollectCourses() {
 			Teachers:     teachers,
 			FixedRooms:   rooms,
 			RoomChoices:  crooms,
-			//TtActivities: set below,
+			//Activities: set below,
 		}
-		tt_data.makeActivities(len(tt_data.CourseInfoList), c.Activities)
+
+		// Build a `TtActivity` for each `Activity` – they are already sorted
+		// with the longest first.
+		for _, a := range c.Activities {
+			aix := tt_data.Ref2ActivityIndex[a.Id]
+			cinfo.Activities = append(cinfo.Activities, aix)
+			tt_data.Activities[aix] = &TtActivity{
+				CourseInfo: len(tt_data.CourseInfoList),
+				//FixedStartTime: , // will be set later
+			}
+		}
+
 		tt_data.CourseInfoList = append(
 			tt_data.CourseInfoList, cinfo)
 		tt_data.Ref2CourseInfo[cref] = cinfo
-	}
-}
-
-// Build a `TtActivity` for each `Activity` – they are already sorted
-// with the longest first.
-func (tt_data *TtData) makeActivities(
-	cinfo int, activities []*db.Activity,
-) {
-	for _, a := range activities {
-		aix := tt_data.Ref2ActivityIndex[a.Id]
-		cinfop := tt_data.CourseInfoList[cinfo]
-		cinfop.Activities = append(cinfop.Activities, aix)
-		tt_data.Activities = append(tt_data.Activities, &TtActivity{
-			CourseInfo: cinfo,
-			//FixedSTartTime: , // will be set later
-		})
 	}
 }
