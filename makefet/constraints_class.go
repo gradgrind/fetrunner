@@ -3,7 +3,6 @@ package makefet
 import (
 	"fetrunner/db"
 	"slices"
-	"strconv"
 )
 
 /* Lunch-breaks
@@ -113,7 +112,7 @@ func (fetinfo *fetInfo) handle_class_constraints() {
 				cmaxaft = append(cmaxaft, maxDaysinIntervalPerWeek{
 					Weight_Percentage:   100,
 					Students:            db0.Ref2Tag(data.Resource),
-					Interval_Start_Hour: strconv.Itoa(h0),
+					Interval_Start_Hour: db0.Hours[h0].GetTag(),
 					Interval_End_Hour:   "", // end of day
 					Max_Days_Per_Week:   n,
 					Active:              true,
@@ -153,8 +152,8 @@ func (fetinfo *fetInfo) handle_class_constraints() {
 				clblist = append(clblist, lunchBreak{
 					Weight_Percentage:   100,
 					Students:            db0.Ref2Tag(cref),
-					Interval_Start_Hour: strconv.Itoa(mbhours[0]),
-					Interval_End_Hour:   strconv.Itoa(mbhours[0] + len(mbhours)),
+					Interval_Start_Hour: db0.Hours[mbhours[0]].GetTag(),
+					Interval_End_Hour:   db0.Hours[mbhours[0]+len(mbhours)].GetTag(),
 					Maximum_Hours_Daily: len(mbhours) - 1,
 					Active:              true,
 					Comments:            string(c.Id),
