@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"runtime/debug"
 	"slices"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -406,6 +407,12 @@ tickloop:
 	snn := 0
 	snall := 0
 	result := basic_data.current_instance
+	type constraintinfo struct {
+		c string
+		n int
+		N int
+	}
+	infolist := []constraintinfo{}
 	for c, clist := range basic_data.HardConstraintMap {
 		n := 0
 		for _, cix := range clist {
@@ -414,11 +421,13 @@ tickloop:
 			}
 		}
 		if len(clist) != 0 {
-			base.Message.Printf("$ (HARD) %s: %d / %d\n", c, n, len(clist))
+			infolist = append(infolist,
+				constraintinfo{string(c) + " (HARD)", n, len(clist)})
 			hnn += n
 			hnall += len(clist)
 		}
 	}
+
 	for c, clist := range basic_data.SoftConstraintMap {
 		n := 0
 		for _, cix := range clist {
@@ -427,11 +436,19 @@ tickloop:
 			}
 		}
 		if len(clist) != 0 {
-			base.Message.Printf("$ (SOFT) %s: %d / %d\n", c, n, len(clist))
+			infolist = append(infolist,
+				constraintinfo{string(c) + " (SOFT)", n, len(clist)})
 			snn += n
 			snall += len(clist)
 		}
 	}
+	slices.SortFunc(infolist, func(a, b constraintinfo) int {
+		return strings.Compare(a.c, b.c)
+	})
+	for _, info := range infolist {
+		base.Message.Printf("$ %s: %d / %d\n", info.c, info.n, info.N)
+	}
+
 	report := fmt.Sprintf(
 		"::: ALL CONSTRAINTS: (hard) %d / %d  (soft) %d / %d\n",
 		hnn, hnall, snn, snall)

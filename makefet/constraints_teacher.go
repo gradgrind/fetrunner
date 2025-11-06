@@ -124,16 +124,18 @@ func (fetinfo *fetInfo) handle_teacher_constraints() {
 		for _, c := range db0.Constraints[db.C_TeacherMaxAfternoons] {
 			data := c.Data.(db.ResourceN)
 			n := data.N
-			tmaxaft = append(tmaxaft, maxDaysinIntervalPerWeekT{
-				Weight_Percentage:   100,
-				Teacher:             db0.Ref2Tag(data.Resource),
-				Interval_Start_Hour: strconv.Itoa(h0),
-				Interval_End_Hour:   "", // end of day
-				Max_Days_Per_Week:   n,
-				Active:              true,
-				Comments:            string(c.Id),
-			})
-			pmmap[data.Resource] = n
+			if n < ndays {
+				tmaxaft = append(tmaxaft, maxDaysinIntervalPerWeekT{
+					Weight_Percentage:   100,
+					Teacher:             db0.Ref2Tag(data.Resource),
+					Interval_Start_Hour: strconv.Itoa(h0),
+					Interval_End_Hour:   "", // end of day
+					Max_Days_Per_Week:   n,
+					Active:              true,
+					Comments:            string(c.Id),
+				})
+				pmmap[data.Resource] = n
+			}
 		}
 	}
 	fetinfo.fetdata.Time_Constraints_List.
