@@ -36,7 +36,7 @@ type fetActivityTags struct {
 	Activity_Tag []fetActivityTag
 }
 
-// Generate the fet activties.
+// Generate the fet activities.
 func getActivities(fetinfo *fetInfo) {
 	tt_data := fetinfo.tt_data
 	db0 := tt_data.Db

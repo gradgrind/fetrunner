@@ -31,6 +31,9 @@ var (
 	C_MinHoursFollowing           = "MinHoursFollowing"
 	C_DoubleActivityNotOverBreaks = "DoubleActivityNotOverBreaks"
 	C_ParallelCourses             = "ParallelCourses"
+
+	C_SetStartingTime = "SetStartingTime"
+	C_SetRooms        = "SetRooms"
 )
 
 // ++ ActivitiesEndDay
@@ -219,16 +222,16 @@ func (db *DbTopLevel) NewMinHoursFollowing(
 // ++ NotOnSameDay
 
 func (db *DbTopLevel) NewNotOnSameDay(
-	id Ref, weight int, subjects []Ref,
+    id Ref, weight int, subjects []Ref,
 ) *Constraint {
-	c := &Constraint{
-		CType:  "NotOnSameDay",
-		Id:     id,
-		Weight: weight,
-		Data:   subjects,
-	}
-	db.addConstraint(c)
-	return c
+    c := &Constraint{
+        CType:  "NotOnSameDay",
+        Id:     id,
+        Weight: weight,
+        Data:   subjects,
+    }
+    db.addConstraint(c)
+    return c
 }
 */
 

@@ -1,5 +1,7 @@
 package makefet
 
+import "fetrunner/db"
+
 func addPlacementConstraints(fetinfo *fetInfo, without_rooms bool) {
 	tt_data := fetinfo.tt_data
 	db0 := tt_data.Db
@@ -18,6 +20,7 @@ func addPlacementConstraints(fetinfo *fetInfo, without_rooms bool) {
 		scl := &fetinfo.fetdata.Space_Constraints_List
 		tcl := &fetinfo.fetdata.Time_Constraints_List
 		for _, ai := range cinfo.Activities {
+			a := db0.Activities[ai]
 			aid := activityIndex2fet(tt_data, ai)
 			if len(rooms) != 0 {
 				scl.ConstraintActivityPreferredRooms = append(
@@ -28,11 +31,13 @@ func addPlacementConstraints(fetinfo *fetInfo, without_rooms bool) {
 						Number_of_Preferred_Rooms: len(rooms),
 						Preferred_Room:            rooms,
 						Active:                    true,
+						Comments: resource_constraint(
+							"", a.Id, db.C_SetRooms),
 					},
 				)
 			}
-			a := tt_data.Activities[ai]
-			start := a.FixedStartTime
+			tta := tt_data.Activities[ai]
+			start := tta.FixedStartTime
 			if start != nil {
 				tcl.ConstraintActivityPreferredStartingTime = append(
 					tcl.ConstraintActivityPreferredStartingTime,
@@ -43,6 +48,8 @@ func addPlacementConstraints(fetinfo *fetInfo, without_rooms bool) {
 						Preferred_Hour:     hour2Tag(db0, start.Hour),
 						Permanently_Locked: true,
 						Active:             true,
+						Comments: resource_constraint(
+							"", a.Id, db.C_SetStartingTime),
 					},
 				)
 			}

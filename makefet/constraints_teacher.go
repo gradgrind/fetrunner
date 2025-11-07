@@ -54,7 +54,8 @@ func (fetinfo *fetInfo) handle_teacher_constraints() {
 					Number_of_Not_Available_Times: len(nats),
 					Not_Available_Time:            nats,
 					Active:                        true,
-					Comments:                      string(c.Id),
+					Comments: resource_constraint(
+						c.Id, tref, db.C_TeacherNotAvailable),
 				})
 		}
 	}
@@ -66,12 +67,14 @@ func (fetinfo *fetInfo) handle_teacher_constraints() {
 		data := c.Data.(db.ResourceN)
 		n := data.N
 		if n >= 0 && n < ndays {
+			tref := data.Resource
 			tmaxdpw = append(tmaxdpw, maxDaysT{
 				Weight_Percentage: 100,
-				Teacher:           db0.Ref2Tag(data.Resource),
+				Teacher:           db0.Ref2Tag(tref),
 				Max_Days_Per_Week: n,
 				Active:            true,
-				Comments:          string(c.Id),
+				Comments: resource_constraint(
+					c.Id, tref, db.C_TeacherMaxDays),
 			})
 		}
 	}
@@ -83,13 +86,15 @@ func (fetinfo *fetInfo) handle_teacher_constraints() {
 		data := c.Data.(db.ResourceN)
 		n := data.N
 		if n >= 2 && n <= nhours {
+			tref := data.Resource
 			tminlpd = append(tminlpd, minLessonsPerDayT{
 				Weight_Percentage:   100,
-				Teacher:             db0.Ref2Tag(data.Resource),
+				Teacher:             db0.Ref2Tag(tref),
 				Minimum_Hours_Daily: n,
 				Allow_Empty_Days:    true,
 				Active:              true,
-				Comments:            string(c.Id),
+				Comments: resource_constraint(
+					c.Id, tref, db.C_TeacherMinActivitiesPerDay),
 			})
 		}
 	}
@@ -101,12 +106,14 @@ func (fetinfo *fetInfo) handle_teacher_constraints() {
 		data := c.Data.(db.ResourceN)
 		n := data.N
 		if n >= 2 && n <= nhours {
+			tref := data.Resource
 			tmaxlpd = append(tmaxlpd, maxLessonsPerDayT{
 				Weight_Percentage:   100,
-				Teacher:             db0.Ref2Tag(data.Resource),
+				Teacher:             db0.Ref2Tag(tref),
 				Maximum_Hours_Daily: n,
 				Active:              true,
-				Comments:            string(c.Id),
+				Comments: resource_constraint(
+					c.Id, tref, db.C_TeacherMaxActivitiesPerDay),
 			})
 		}
 	}
@@ -124,14 +131,16 @@ func (fetinfo *fetInfo) handle_teacher_constraints() {
 			data := c.Data.(db.ResourceN)
 			n := data.N
 			if n < ndays {
+				tref := data.Resource
 				tmaxaft = append(tmaxaft, maxDaysinIntervalPerWeekT{
 					Weight_Percentage:   100,
-					Teacher:             db0.Ref2Tag(data.Resource),
+					Teacher:             db0.Ref2Tag(tref),
 					Interval_Start_Hour: db0.Hours[h0].GetTag(),
 					Interval_End_Hour:   "", // end of day
 					Max_Days_Per_Week:   n,
 					Active:              true,
-					Comments:            string(c.Id),
+					Comments: resource_constraint(
+						c.Id, tref, db.C_TeacherMaxAfternoons),
 				})
 				pmmap[data.Resource] = n
 			}
@@ -171,7 +180,8 @@ func (fetinfo *fetInfo) handle_teacher_constraints() {
 					Interval_End_Hour:   db0.Hours[mbhours[0]+len(mbhours)].GetTag(),
 					Maximum_Hours_Daily: len(mbhours) - 1,
 					Active:              true,
-					Comments:            string(c.Id),
+					Comments: resource_constraint(
+						c.Id, tref, db.C_TeacherLunchBreak),
 				})
 				lbmap[tref] = lbdays
 			}
@@ -203,7 +213,8 @@ func (fetinfo *fetInfo) handle_teacher_constraints() {
 				Teacher:           db0.Ref2Tag(tref),
 				Max_Gaps:          n,
 				Active:            true,
-				Comments:          string(c.Id),
+				Comments: resource_constraint(
+					c.Id, tref, db.C_TeacherMaxGapsPerDay),
 			})
 		}
 	}
@@ -231,6 +242,8 @@ func (fetinfo *fetInfo) handle_teacher_constraints() {
 				Teacher:           db0.Ref2Tag(tref),
 				Max_Gaps:          n,
 				Active:            true,
+				Comments: resource_constraint(
+					c.Id, tref, db.C_TeacherMaxGapsPerWeek),
 			})
 		}
 	}

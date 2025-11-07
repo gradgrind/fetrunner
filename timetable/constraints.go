@@ -13,6 +13,7 @@ import (
 type TtDaysBetween struct {
 	Id                   NodeRef
 	Weight               int
+	Constraint           string
 	DaysBetween          int
 	ConsecutiveIfSameDay bool
 	ActivityLists        [][]ActivityIndex
@@ -91,6 +92,7 @@ func (tt_data *TtData) preprocessConstraints() {
 				tt_data.MinDaysBetweenActivities, &TtDaysBetween{
 					Id:                   c.Id,
 					Weight:               c.Weight,
+					Constraint:           db.C_DaysBetween,
 					DaysBetween:          data.DaysBetween,
 					ConsecutiveIfSameDay: data.ConsecutiveIfSameDay,
 					ActivityLists: tt_data.days_between_activities(
@@ -110,6 +112,7 @@ func (tt_data *TtData) preprocessConstraints() {
 				tt_data.MinDaysBetweenActivities, &TtDaysBetween{
 					Id:                   auto_id,
 					Weight:               auto_weight,
+					Constraint:           db.C_AutomaticDifferentDays,
 					DaysBetween:          1,
 					ConsecutiveIfSameDay: auto_consec,
 					ActivityLists: tt_data.days_between_activities(
@@ -123,13 +126,14 @@ func (tt_data *TtData) preprocessConstraints() {
 			tt_data.MinDaysBetweenActivities, &TtDaysBetween{
 				Id:                   c.Id,
 				Weight:               c.Weight,
+				Constraint:           db.C_DaysBetweenJoin,
 				DaysBetween:          data.DaysBetween,
 				ConsecutiveIfSameDay: data.ConsecutiveIfSameDay,
 				ActivityLists: tt_data.days_between_join_activities(
 					data.Course1, data.Course2)})
 	}
 
-	for _, c := range db0.Constraints[db.C_DaysBetweenJoin] {
+	for _, c := range db0.Constraints[db.C_ParallelCourses] {
 		courses := c.Data.([]NodeRef)
 		// The courses must have the same number of activities and the
 		// lengths of the corresponding activities must also be the same.

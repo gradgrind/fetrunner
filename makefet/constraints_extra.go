@@ -18,6 +18,7 @@ type preferredSlots struct {
 	Number_of_Preferred_Time_Slots int
 	Preferred_Time_Slot            []preferredTime
 	Active                         bool
+	Comments                       string
 }
 
 type preferredTime struct {
@@ -37,6 +38,7 @@ type preferredStarts struct {
 	Number_of_Preferred_Starting_Times int
 	Preferred_Starting_Time            []preferredStart
 	Active                             bool
+	Comments                           string
 }
 
 type preferredStart struct {
@@ -50,6 +52,7 @@ type lessonEndsDay struct {
 	Weight_Percentage string
 	Activity_Id       int
 	Active            bool
+	Comments          string
 }
 
 type activityPreferredTimes struct {
@@ -59,6 +62,7 @@ type activityPreferredTimes struct {
 	Number_of_Preferred_Time_Slots int
 	Preferred_Time_Slot            []preferredTime
 	Active                         bool
+	Comments                       string
 }
 
 type sameStartingTime struct {
@@ -67,11 +71,13 @@ type sameStartingTime struct {
 	Number_of_Activities int
 	Activity_Id          []int
 	Active               bool
+	Comments             string
 }
 
 func activityIndex2fet(
 	ttd *timetable.TtData, ai timetable.ActivityIndex,
 ) int {
+	_ = ttd
 	return int(ai) + 1
 }
 
@@ -91,6 +97,10 @@ func getExtraConstraints(fetinfo *fetInfo) {
 			for i, ai := range alist {
 				aidlist[i] = activityIndex2fet(tt_data, ai)
 			}
+			ref := c.Constraint
+			if c.Id != "" {
+				ref += ":" + string(c.Id)
+			}
 			tclist.ConstraintMinDaysBetweenActivities = append(
 				tclist.ConstraintMinDaysBetweenActivities,
 				minDaysBetweenActivities{
@@ -100,6 +110,7 @@ func getExtraConstraints(fetinfo *fetInfo) {
 					Activity_Id:             aidlist,
 					MinDays:                 c.DaysBetween,
 					Active:                  true,
+					Comments:                ref,
 				})
 		}
 	}
@@ -118,6 +129,8 @@ func getExtraConstraints(fetinfo *fetInfo) {
 					Number_of_Activities: len(aidlist),
 					Activity_Id:          aidlist,
 					Active:               true,
+					Comments: resource_constraint(
+						c.Id, "", db.C_ParallelCourses),
 				})
 		}
 	}

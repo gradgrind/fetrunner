@@ -2,6 +2,7 @@ package makefet
 
 import (
 	"encoding/xml"
+	"fetrunner/db"
 )
 
 type notAvailableTime struct {
@@ -194,4 +195,14 @@ type maxLateStarts struct {
 	Students                      string
 	Active                        bool
 	Comments                      string
+}
+
+func resource_constraint(
+	id db.NodeRef, resource db.NodeRef, constraint string,
+) string {
+	val := string(id)
+	if val == "" {
+		val = constraint + ":" + string(resource)
+	}
+	return val
 }

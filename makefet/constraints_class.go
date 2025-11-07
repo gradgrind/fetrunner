@@ -56,7 +56,8 @@ func (fetinfo *fetInfo) handle_class_constraints() {
 					Number_of_Not_Available_Times: len(nats),
 					Not_Available_Time:            nats,
 					Active:                        true,
-					Comments:                      string(c.Id),
+					Comments: resource_constraint(
+						c.Id, cref, db.C_ClassNotAvailable),
 				})
 		}
 	}
@@ -66,15 +67,17 @@ func (fetinfo *fetInfo) handle_class_constraints() {
 	cminlpd := []minLessonsPerDay{}
 	for _, c := range db0.Constraints[db.C_ClassMinActivitiesPerDay] {
 		data := c.Data.(db.ResourceN)
+		cref := data.Resource
 		n := data.N
 		if n >= 2 && n <= nhours {
 			cminlpd = append(cminlpd, minLessonsPerDay{
 				Weight_Percentage:   100,
-				Students:            db0.Ref2Tag(data.Resource),
+				Students:            db0.Ref2Tag(cref),
 				Minimum_Hours_Daily: n,
 				Allow_Empty_Days:    true,
 				Active:              true,
-				Comments:            string(c.Id),
+				Comments: resource_constraint(
+					c.Id, cref, db.C_ClassMinActivitiesPerDay),
 			})
 		}
 	}
@@ -84,14 +87,16 @@ func (fetinfo *fetInfo) handle_class_constraints() {
 	cmaxlpd := []maxLessonsPerDay{}
 	for _, c := range db0.Constraints[db.C_ClassMaxActivitiesPerDay] {
 		data := c.Data.(db.ResourceN)
+		cref := data.Resource
 		n := data.N
 		if n >= 2 && n <= nhours {
 			cmaxlpd = append(cmaxlpd, maxLessonsPerDay{
 				Weight_Percentage:   100,
-				Students:            db0.Ref2Tag(data.Resource),
+				Students:            db0.Ref2Tag(cref),
 				Maximum_Hours_Daily: n,
 				Active:              true,
-				Comments:            string(c.Id),
+				Comments: resource_constraint(
+					c.Id, cref, db.C_ClassMaxActivitiesPerDay),
 			})
 		}
 	}
@@ -107,16 +112,18 @@ func (fetinfo *fetInfo) handle_class_constraints() {
 	if h0 > 0 {
 		for _, c := range db0.Constraints[db.C_ClassMaxAfternoons] {
 			data := c.Data.(db.ResourceN)
+			cref := data.Resource
 			n := data.N
 			if n < ndays {
 				cmaxaft = append(cmaxaft, maxDaysinIntervalPerWeek{
 					Weight_Percentage:   100,
-					Students:            db0.Ref2Tag(data.Resource),
+					Students:            db0.Ref2Tag(cref),
 					Interval_Start_Hour: db0.Hours[h0].GetTag(),
 					Interval_End_Hour:   "", // end of day
 					Max_Days_Per_Week:   n,
 					Active:              true,
-					Comments:            string(c.Id),
+					Comments: resource_constraint(
+						c.Id, cref, db.C_ClassMaxAfternoons),
 				})
 				pmmap[data.Resource] = n
 			}
@@ -156,7 +163,8 @@ func (fetinfo *fetInfo) handle_class_constraints() {
 					Interval_End_Hour:   db0.Hours[mbhours[0]+len(mbhours)].GetTag(),
 					Maximum_Hours_Daily: len(mbhours) - 1,
 					Active:              true,
-					Comments:            string(c.Id),
+					Comments: resource_constraint(
+						c.Id, cref, db.C_ClassLunchBreak),
 				})
 				lbmap[cref] = lbdays
 			}
@@ -188,7 +196,8 @@ func (fetinfo *fetInfo) handle_class_constraints() {
 				Students:          db0.Ref2Tag(cref),
 				Max_Gaps:          n,
 				Active:            true,
-				Comments:          string(c.Id),
+				Comments: resource_constraint(
+					c.Id, cref, db.C_ClassMaxGapsPerDay),
 			})
 		}
 	}
@@ -216,6 +225,8 @@ func (fetinfo *fetInfo) handle_class_constraints() {
 				Students:          db0.Ref2Tag(cref),
 				Max_Gaps:          n,
 				Active:            true,
+				Comments: resource_constraint(
+					c.Id, cref, db.C_ClassMaxGapsPerWeek),
 			})
 		}
 	}
@@ -230,6 +241,8 @@ func (fetinfo *fetInfo) handle_class_constraints() {
 			Max_Beginnings_At_Second_Hour: 0,
 			Students:                      db0.Ref2Tag(cref),
 			Active:                        true,
+			Comments: resource_constraint(
+				c.Id, cref, db.C_ClassForceFirstHour),
 		})
 
 	}

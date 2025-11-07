@@ -22,14 +22,16 @@ func (fetinfo *fetInfo) handle_room_constraints() {
 					Hour: db0.Hours[slot.Hour].GetTag()})
 		}
 		if len(nats) > 0 {
+			rref := data.Resource
 			natimes = append(natimes,
 				roomNotAvailable{
 					Weight_Percentage:             100,
-					Room:                          db0.Ref2Tag(data.Resource),
+					Room:                          db0.Ref2Tag(rref),
 					Number_of_Not_Available_Times: len(nats),
 					Not_Available_Time:            nats,
 					Active:                        true,
-					Comments:                      string(rna.Id),
+					Comments: resource_constraint(
+						rna.Id, rref, db.C_RoomNotAvailable),
 				})
 		}
 	}
