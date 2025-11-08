@@ -207,9 +207,14 @@ func (fetdoc *FetDoc) GetDayTags() []autotimetable.TtItem {
 	root := fetdoc.Doc.Root()
 	days := []autotimetable.TtItem{}
 	for _, e := range root.SelectElement("Days_List").SelectElements("Day") {
+		longname := ""
+		elongname := e.SelectElement("Long_Name")
+		if elongname != nil {
+			longname = elongname.Text()
+		}
 		days = append(days, autotimetable.TtItem{
 			Id:  e.SelectElement("Name").Text(),
-			Ref: e.SelectElement("Long_Name").Text(),
+			Ref: longname,
 		})
 	}
 	return days
@@ -219,9 +224,14 @@ func (fetdoc *FetDoc) GetHourTags() []autotimetable.TtItem {
 	root := fetdoc.Doc.Root()
 	hours := []autotimetable.TtItem{}
 	for _, e := range root.SelectElement("Hours_List").SelectElements("Hour") {
+		longname := ""
+		elongname := e.SelectElement("Long_Name")
+		if elongname != nil {
+			longname = elongname.Text()
+		}
 		hours = append(hours, autotimetable.TtItem{
 			Id:  e.SelectElement("Name").Text(),
-			Ref: e.SelectElement("Long_Name").Text(),
+			Ref: longname,
 		})
 	}
 	return hours
