@@ -31,6 +31,14 @@ type FetDoc struct {
 	Necessary []ConstraintIndex
 }
 
+func readTextField(e *etree.Element, field string) string {
+	ef := e.SelectElement(field)
+	if ef == nil {
+		return ""
+	}
+	return ef.Text()
+}
+
 func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 	base.Message.Printf("SOURCE: %s\n", fetpath)
 	doc := etree.NewDocument()
@@ -105,11 +113,15 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 			// Ensure that the constraints are numbered in their Comments.
 			// This is to ease referencing in the results object.
 			comments := e.SelectElement("Comments")
-			if !r_constraint_number.MatchString(comments.Text()) {
-				constraint_counter++
-				comments.SetText(
-					fmt.Sprintf("_%d)", constraint_counter))
+			if comments == nil {
+				comments = e.CreateElement("Comments")
+			} else if r_constraint_number.MatchString(comments.Text()) {
+				goto skip1
 			}
+			constraint_counter++
+			comments.SetText(
+				fmt.Sprintf("_%d)", constraint_counter))
+		skip1:
 
 			if w == "100" {
 				// Hard constraint
@@ -153,11 +165,15 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 			// Ensure that the constraints are numbered in their Comments.
 			// This is to ease referencing in the results object.
 			comments := e.SelectElement("Comments")
-			if !r_constraint_number.Match([]byte(comments.Text())) {
-				constraint_counter++
-				comments.SetText(
-					fmt.Sprintf("_%d)", constraint_counter))
+			if comments == nil {
+				comments = e.CreateElement("Comments")
+			} else if r_constraint_number.MatchString(comments.Text()) {
+				goto skip2
 			}
+			constraint_counter++
+			comments.SetText(
+				fmt.Sprintf("_%d)", constraint_counter))
+		skip2:
 
 			if w == "100" {
 				// Hard constraint
@@ -197,7 +213,7 @@ func (fetdoc *FetDoc) GetActivityRefs() []autotimetable.TtItem {
 	for _, a := range fetdoc.Activities {
 		alist = append(alist, autotimetable.TtItem{
 			Id:  a.SelectElement("Id").Text(),
-			Ref: a.SelectElement("Comments").Text(),
+			Ref: readTextField(a, "Comments"),
 		})
 	}
 	return alist
@@ -207,14 +223,9 @@ func (fetdoc *FetDoc) GetDayTags() []autotimetable.TtItem {
 	root := fetdoc.Doc.Root()
 	days := []autotimetable.TtItem{}
 	for _, e := range root.SelectElement("Days_List").SelectElements("Day") {
-		longname := ""
-		elongname := e.SelectElement("Long_Name")
-		if elongname != nil {
-			longname = elongname.Text()
-		}
 		days = append(days, autotimetable.TtItem{
 			Id:  e.SelectElement("Name").Text(),
-			Ref: longname,
+			Ref: readTextField(e, "Long_Name"),
 		})
 	}
 	return days
@@ -224,14 +235,9 @@ func (fetdoc *FetDoc) GetHourTags() []autotimetable.TtItem {
 	root := fetdoc.Doc.Root()
 	hours := []autotimetable.TtItem{}
 	for _, e := range root.SelectElement("Hours_List").SelectElements("Hour") {
-		longname := ""
-		elongname := e.SelectElement("Long_Name")
-		if elongname != nil {
-			longname = elongname.Text()
-		}
 		hours = append(hours, autotimetable.TtItem{
 			Id:  e.SelectElement("Name").Text(),
-			Ref: longname,
+			Ref: readTextField(e, "Long_Name"),
 		})
 	}
 	return hours
@@ -245,7 +251,7 @@ func (fetdoc *FetDoc) GetRooms() []autotimetable.TtItem {
 		if e.SelectElement("Virtual").Text() == "false" {
 			rooms = append(rooms, autotimetable.TtItem{
 				Id:  e.SelectElement("Name").Text(),
-				Ref: e.SelectElement("Comments").Text(),
+				Ref: readTextField(e, "Comments"),
 			})
 			i++
 		}
