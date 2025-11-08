@@ -34,8 +34,9 @@ type BasicData struct {
 		LAST_TIME_1 int
 	}
 
-	Source            TtSource
-	BackendInterface  BackendInterface
+	Source           TtSource
+	BackendInterface BackendInterface
+
 	NActivities       int
 	NConstraints      ConstraintIndex
 	ConstraintTypes   []ConstraintType // ordered list of constraint types
@@ -68,10 +69,10 @@ type BasicData struct {
 }
 
 type TtSource interface {
-	GetActivityIds() []ActivityId
+	GetActivityRefs() []TtItem
 	GetRooms() []TtItem
-	GetDayTags() []string
-	GetHourTags() []string
+	GetDayTags() []TtItem
+	GetHourTags() []TtItem
 	// Return a string representation of the given constraint:
 	GetConstraintItems() []TtItem
 	// Prepare the "source" for a run with a set of enabled constraints:
@@ -83,11 +84,16 @@ type BackendInterface interface {
 	Tidy()
 }
 
-type ActivityId struct {
-	Id  int    // (generator) back-end activity index
-	Ref string // (input) source reference/identifier for activity, if
-	// distinct from `Id`
+type TtItem struct {
+	Id  string // generator back-end id
+	Ref string // source reference
 }
+
+//type ActivityId struct {
+//	Id  int    // (generator) back-end activity index
+//	Ref string // (input) source reference/identifier for activity, if
+//	// distinct from `Id`
+//}
 
 type TtInstance struct {
 	Tag     string

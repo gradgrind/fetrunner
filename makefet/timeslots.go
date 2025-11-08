@@ -2,7 +2,6 @@ package makefet
 
 import (
 	"encoding/xml"
-	"fmt"
 )
 
 type fetDay struct {
@@ -34,8 +33,8 @@ func getDays(fetinfo *fetInfo) {
 	//	dlist := []string{}
 	for _, n := range fetinfo.tt_data.Db.Days {
 		days = append(days, fetDay{
-			Name:      n.Tag,
-			Long_Name: n.Name,
+			Name:      n.GetTag(),
+			Long_Name: string(n.GetRef()),
 		})
 		//	dlist = append(dlist, n.Tag)
 	}
@@ -51,8 +50,8 @@ func getHours(fetinfo *fetInfo) {
 	//	hlist := []string{}
 	for _, n := range fetinfo.tt_data.Db.Hours {
 		hours = append(hours, fetHour{
-			Name:      n.Tag,
-			Long_Name: fmt.Sprintf("%s@%s-%s", n.Name, n.Start, n.End),
+			Name:      n.GetTag(),
+			Long_Name: string(n.GetRef()),
 		})
 		//	hlist = append(hlist, n.Tag)
 	}

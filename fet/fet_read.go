@@ -6,7 +6,6 @@ import (
 	"fetrunner/base"
 	"fmt"
 	"regexp"
-	"strconv"
 
 	"github.com/beevik/etree"
 )
@@ -192,36 +191,38 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 	return fetdoc, nil
 }
 
-// The ActivityIds are the (FET) Activity Id (int) and the content of the
-// "Comments" field (string).
-func (fetdoc *FetDoc) GetActivityIds() []autotimetable.ActivityId {
-	alist := []autotimetable.ActivityId{}
+// Return the list of Activity Id and Ref ("Comments") fields.
+func (fetdoc *FetDoc) GetActivityRefs() []autotimetable.TtItem {
+	alist := []autotimetable.TtItem{}
 	for _, a := range fetdoc.Activities {
-		id := a.SelectElement("Id").Text()
-		i, err := strconv.Atoi(id)
-		if err != nil {
-			panic("Activity Id is not an integer: " + id)
-		}
-		alist = append(alist, autotimetable.ActivityId{
-			Id: i, Ref: a.SelectElement("Comments").Text()})
+		alist = append(alist, autotimetable.TtItem{
+			Id:  a.SelectElement("Id").Text(),
+			Ref: a.SelectElement("Comments").Text(),
+		})
 	}
 	return alist
 }
 
-func (fetdoc *FetDoc) GetDayTags() []string {
+func (fetdoc *FetDoc) GetDayTags() []autotimetable.TtItem {
 	root := fetdoc.Doc.Root()
-	days := []string{}
+	days := []autotimetable.TtItem{}
 	for _, e := range root.SelectElement("Days_List").SelectElements("Day") {
-		days = append(days, e.SelectElement("Name").Text())
+		days = append(days, autotimetable.TtItem{
+			Id:  e.SelectElement("Name").Text(),
+			Ref: e.SelectElement("Long_Name").Text(),
+		})
 	}
 	return days
 }
 
-func (fetdoc *FetDoc) GetHourTags() []string {
+func (fetdoc *FetDoc) GetHourTags() []autotimetable.TtItem {
 	root := fetdoc.Doc.Root()
-	hours := []string{}
+	hours := []autotimetable.TtItem{}
 	for _, e := range root.SelectElement("Hours_List").SelectElements("Hour") {
-		hours = append(hours, e.SelectElement("Name").Text())
+		hours = append(hours, autotimetable.TtItem{
+			Id:  e.SelectElement("Name").Text(),
+			Ref: e.SelectElement("Long_Name").Text(),
+		})
 	}
 	return hours
 }
@@ -232,11 +233,9 @@ func (fetdoc *FetDoc) GetRooms() []autotimetable.TtItem {
 	i := 0
 	for _, e := range root.SelectElement("Rooms_List").ChildElements() {
 		if e.SelectElement("Virtual").Text() == "false" {
-			tag := e.SelectElement("Name").Text()
-			data := e.SelectElement("Comments").Text()
 			rooms = append(rooms, autotimetable.TtItem{
-				Key:  data,
-				Text: tag,
+				Id:  e.SelectElement("Name").Text(),
+				Ref: e.SelectElement("Comments").Text(),
 			})
 			i++
 		}
@@ -244,7 +243,7 @@ func (fetdoc *FetDoc) GetRooms() []autotimetable.TtItem {
 	return rooms
 }
 
-// Get a key and string representation of the constraints.
+// Get source and back-end representations of the constraints.
 func (fetdoc *FetDoc) GetConstraintItems() []autotimetable.TtItem {
 	clist := []autotimetable.TtItem{}
 	r_constraint_number := regexp.MustCompile(`^(_*[0-9]+)[)](.*)$`)
@@ -267,8 +266,8 @@ func (fetdoc *FetDoc) GetConstraintItems() []autotimetable.TtItem {
 			s = WriteElement(c)
 		}
 		clist = append(clist, autotimetable.TtItem{
-			Key:  key,
-			Text: s,
+			Id:  key,
+			Ref: s,
 		})
 	}
 	return clist

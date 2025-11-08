@@ -9,9 +9,9 @@ import (
 
 type Result struct {
 	Time                       int
-	Days                       []string
-	Hours                      []string
-	Activities                 []ActivityId
+	Days                       []TtItem
+	Hours                      []TtItem
+	Activities                 []TtItem
 	Constraints                []TtItem
 	ConstraintErrors           map[ConstraintIndex]string
 	Rooms                      []TtItem
@@ -20,11 +20,6 @@ type Result struct {
 	TotalHardConstraints       int
 	UnfulfilledSoftConstraints map[ConstraintType][]ConstraintIndex
 	TotalSoftConstraints       int
-}
-
-type TtItem struct {
-	Key  string
-	Text string
 }
 
 // Get the result of the current instance as a `Result` structure.
@@ -71,7 +66,7 @@ func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
 		Time:                       instance.Ticks,
 		Days:                       basic_data.Source.GetDayTags(),
 		Hours:                      basic_data.Source.GetHourTags(),
-		Activities:                 basic_data.Source.GetActivityIds(),
+		Activities:                 basic_data.Source.GetActivityRefs(),
 		Constraints:                clist,
 		ConstraintErrors:           basic_data.ConstraintErrors, // updated later
 		Rooms:                      rlist,

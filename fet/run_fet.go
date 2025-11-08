@@ -294,22 +294,22 @@ func (data *FetTtData) Results(
 	// ... room conversion
 	room2index := map[string]int{}
 	for i, r := range basic_data.Source.GetRooms() {
-		room2index[r.Text] = i
+		room2index[r.Id] = i
 
 	}
 	// ... day conversion
 	day2index := map[string]int{}
 	for i, d := range basic_data.Source.GetDayTags() {
-		day2index[d] = i
+		day2index[d.Id] = i
 	}
 	// ... hour conversion
 	hour2index := map[string]int{}
 	for i, h := range basic_data.Source.GetHourTags() {
-		hour2index[h] = i
+		hour2index[h.Id] = i
 	}
 	// ... activity conversion
-	activity2index := map[int]int{}
-	for i, a := range basic_data.Source.GetActivityIds() {
+	activity2index := map[string]int{}
+	for i, a := range basic_data.Source.GetActivityRefs() {
 		activity2index[a.Id] = i
 	}
 
@@ -349,7 +349,7 @@ type fetResultRoot struct { // The root node.
 
 type fetResultActivity struct {
 	XMLName   xml.Name `xml:"Activity"`
-	Id        int
+	Id        string
 	Day       string
 	Hour      string
 	Room      string
