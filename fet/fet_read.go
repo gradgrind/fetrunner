@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fetrunner/autotimetable"
 	"fetrunner/base"
+	"fmt"
+	"regexp"
 	"strconv"
 
 	"github.com/beevik/etree"
@@ -67,7 +69,10 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 	// Collect the constraints, dividing into soft and hard groups.
 	// Note that non-negotiable "basic" constraints are not included
 	// in the maps, but they are included in the `constraints` list.
-	// Inactive constraints will be removed
+	// Inactive constraints will be removed.
+
+	r_constraint_number := regexp.MustCompile(`^[0-9]+[)].*`)
+	constraint_counter := 0
 
 	constraints := []*etree.Element{}
 	hard_constraint_map := map[ConstraintType][]ConstraintIndex{}
@@ -97,6 +102,16 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 			}
 			constraint_types = append(constraint_types, ctype)
 			// ... duplicates wil be removed in `sort_constraint_types`
+
+			// Ensure that the constraints are numbered in their Comments.
+			// This is to ease referencing in the results object.
+			comments := e.SelectElement("Comments")
+			if !r_constraint_number.MatchString(comments.Text()) {
+				constraint_counter++
+				comments.SetText(
+					fmt.Sprintf("_%d)", constraint_counter))
+			}
+
 			if w == "100" {
 				// Hard constraint
 				hard_constraint_map[ctype] = append(hard_constraint_map[ctype],
@@ -135,6 +150,16 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 			}
 			constraint_types = append(constraint_types, ctype)
 			// ... duplicates wil be removed in `sort_constraint_types`
+
+			// Ensure that the constraints are numbered in their Comments.
+			// This is to ease referencing in the results object.
+			comments := e.SelectElement("Comments")
+			if !r_constraint_number.Match([]byte(comments.Text())) {
+				constraint_counter++
+				comments.SetText(
+					fmt.Sprintf("_%d)", constraint_counter))
+			}
+
 			if w == "100" {
 				// Hard constraint
 				hard_constraint_map[ctype] = append(hard_constraint_map[ctype],
@@ -222,13 +247,24 @@ func (fetdoc *FetDoc) GetRooms() []autotimetable.TtItem {
 // Get a key and string representation of the constraints.
 func (fetdoc *FetDoc) GetConstraintItems() []autotimetable.TtItem {
 	clist := []autotimetable.TtItem{}
+	r_constraint_number := regexp.MustCompile(`^(_*[0-9]+)[)](.*)$`)
 	for _, c := range fetdoc.Constraints {
-		// Make a JSON version of the constraint's XML
-		s := WriteElement(c)
-		key := ""
+		var (
+			key string
+			s   string
+		)
 		ce := c.SelectElement("Comments")
 		if ce != nil {
-			key = ce.Text()
+			comments := ce.Text()
+			sm := r_constraint_number.FindStringSubmatch(comments)
+			if len(sm) == 3 {
+				key = sm[1]
+				s = sm[2]
+			}
+		}
+		if len(key) == 0 {
+			// Make a JSON version of the constraint's XML
+			s = WriteElement(c)
 		}
 		clist = append(clist, autotimetable.TtItem{
 			Key:  key,

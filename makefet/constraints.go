@@ -3,6 +3,10 @@ package makefet
 import (
 	"encoding/xml"
 	"fetrunner/db"
+	"fetrunner/timetable"
+	"fmt"
+	"strconv"
+	"strings"
 )
 
 type notAvailableTime struct {
@@ -197,12 +201,33 @@ type maxLateStarts struct {
 	Comments                      string
 }
 
-func resource_constraint(
-	id db.NodeRef, resource db.NodeRef, constraint string,
+// The following methods generate the "Comments" fields for the constraints.
+
+func (fetinfo *fetInfo) resource_constraint(
+	ctype string, id db.NodeRef, resource db.NodeRef,
 ) string {
-	val := string(id)
-	if val == "" {
-		val = constraint + ":" + string(resource)
+	return fmt.Sprintf("%d)%s.%s:%s", fetinfo.next_constraint(),
+		ctype, id, resource)
+}
+
+func (fetinfo *fetInfo) param_constraint(
+	ctype string, id db.NodeRef, param string,
+) string {
+	return fmt.Sprintf("%d)%s.%s:%s", fetinfo.next_constraint(),
+		ctype, id, param)
+}
+
+func (fetinfo *fetInfo) activities_constraint(
+	ctype string, id db.NodeRef, alist []timetable.ActivityIndex,
+) string {
+	ailist := []string{}
+	for _, a := range alist {
+		ailist = append(ailist, strconv.Itoa(int(a)))
 	}
-	return val
+	return fetinfo.param_constraint(ctype, id, strings.Join(ailist, ","))
+}
+
+func (fetinfo *fetInfo) next_constraint() int {
+	fetinfo.constraint_counter++
+	return fetinfo.constraint_counter
 }

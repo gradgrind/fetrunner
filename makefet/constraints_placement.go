@@ -31,8 +31,8 @@ func addPlacementConstraints(fetinfo *fetInfo, without_rooms bool) {
 						Number_of_Preferred_Rooms: len(rooms),
 						Preferred_Room:            rooms,
 						Active:                    true,
-						Comments: resource_constraint(
-							"", a.Id, db.C_SetRooms),
+						Comments: fetinfo.resource_constraint(
+							db.C_SetRooms, "", a.Id),
 					},
 				)
 			}
@@ -48,8 +48,8 @@ func addPlacementConstraints(fetinfo *fetInfo, without_rooms bool) {
 						Preferred_Hour:     hour2Tag(db0, start.Hour),
 						Permanently_Locked: true,
 						Active:             true,
-						Comments: resource_constraint(
-							"", a.Id, db.C_SetStartingTime),
+						Comments: fetinfo.resource_constraint(
+							db.C_SetStartingTime, "", a.Id),
 					},
 				)
 			}

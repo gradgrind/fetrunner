@@ -30,8 +30,8 @@ func (fetinfo *fetInfo) handle_room_constraints() {
 					Number_of_Not_Available_Times: len(nats),
 					Not_Available_Time:            nats,
 					Active:                        true,
-					Comments: resource_constraint(
-						rna.Id, rref, db.C_RoomNotAvailable),
+					Comments: fetinfo.resource_constraint(
+						db.C_RoomNotAvailable, rna.Id, rref),
 				})
 		}
 	}

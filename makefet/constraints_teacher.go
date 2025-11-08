@@ -54,8 +54,8 @@ func (fetinfo *fetInfo) handle_teacher_constraints() {
 					Number_of_Not_Available_Times: len(nats),
 					Not_Available_Time:            nats,
 					Active:                        true,
-					Comments: resource_constraint(
-						c.Id, tref, db.C_TeacherNotAvailable),
+					Comments: fetinfo.resource_constraint(
+						db.C_TeacherNotAvailable, c.Id, tref),
 				})
 		}
 	}
@@ -73,8 +73,8 @@ func (fetinfo *fetInfo) handle_teacher_constraints() {
 				Teacher:           db0.Ref2Tag(tref),
 				Max_Days_Per_Week: n,
 				Active:            true,
-				Comments: resource_constraint(
-					c.Id, tref, db.C_TeacherMaxDays),
+				Comments: fetinfo.resource_constraint(
+					db.C_TeacherMaxDays, c.Id, tref),
 			})
 		}
 	}
@@ -93,8 +93,8 @@ func (fetinfo *fetInfo) handle_teacher_constraints() {
 				Minimum_Hours_Daily: n,
 				Allow_Empty_Days:    true,
 				Active:              true,
-				Comments: resource_constraint(
-					c.Id, tref, db.C_TeacherMinActivitiesPerDay),
+				Comments: fetinfo.resource_constraint(
+					db.C_TeacherMinActivitiesPerDay, c.Id, tref),
 			})
 		}
 	}
@@ -112,8 +112,8 @@ func (fetinfo *fetInfo) handle_teacher_constraints() {
 				Teacher:             db0.Ref2Tag(tref),
 				Maximum_Hours_Daily: n,
 				Active:              true,
-				Comments: resource_constraint(
-					c.Id, tref, db.C_TeacherMaxActivitiesPerDay),
+				Comments: fetinfo.resource_constraint(
+					db.C_TeacherMaxActivitiesPerDay, c.Id, tref),
 			})
 		}
 	}
@@ -139,8 +139,8 @@ func (fetinfo *fetInfo) handle_teacher_constraints() {
 					Interval_End_Hour:   "", // end of day
 					Max_Days_Per_Week:   n,
 					Active:              true,
-					Comments: resource_constraint(
-						c.Id, tref, db.C_TeacherMaxAfternoons),
+					Comments: fetinfo.resource_constraint(
+						db.C_TeacherMaxAfternoons, c.Id, tref),
 				})
 				pmmap[data.Resource] = n
 			}
@@ -180,8 +180,8 @@ func (fetinfo *fetInfo) handle_teacher_constraints() {
 					Interval_End_Hour:   db0.Hours[mbhours[0]+len(mbhours)].GetTag(),
 					Maximum_Hours_Daily: len(mbhours) - 1,
 					Active:              true,
-					Comments: resource_constraint(
-						c.Id, tref, db.C_TeacherLunchBreak),
+					Comments: fetinfo.resource_constraint(
+						db.C_TeacherLunchBreak, c.Id, tref),
 				})
 				lbmap[tref] = lbdays
 			}
@@ -213,8 +213,8 @@ func (fetinfo *fetInfo) handle_teacher_constraints() {
 				Teacher:           db0.Ref2Tag(tref),
 				Max_Gaps:          n,
 				Active:            true,
-				Comments: resource_constraint(
-					c.Id, tref, db.C_TeacherMaxGapsPerDay),
+				Comments: fetinfo.resource_constraint(
+					db.C_TeacherMaxGapsPerDay, c.Id, tref),
 			})
 		}
 	}
@@ -242,8 +242,8 @@ func (fetinfo *fetInfo) handle_teacher_constraints() {
 				Teacher:           db0.Ref2Tag(tref),
 				Max_Gaps:          n,
 				Active:            true,
-				Comments: resource_constraint(
-					c.Id, tref, db.C_TeacherMaxGapsPerWeek),
+				Comments: fetinfo.resource_constraint(
+					db.C_TeacherMaxGapsPerWeek, c.Id, tref),
 			})
 		}
 	}

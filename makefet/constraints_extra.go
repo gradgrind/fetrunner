@@ -5,6 +5,9 @@ import (
 	"fetrunner/base"
 	"fetrunner/db"
 	"fetrunner/timetable"
+	"fmt"
+	"strconv"
+	"strings"
 )
 
 type preferredSlots struct {
@@ -97,10 +100,6 @@ func getExtraConstraints(fetinfo *fetInfo) {
 			for i, ai := range alist {
 				aidlist[i] = activityIndex2fet(tt_data, ai)
 			}
-			ref := c.Constraint
-			if c.Id != "" {
-				ref += ":" + string(c.Id)
-			}
 			tclist.ConstraintMinDaysBetweenActivities = append(
 				tclist.ConstraintMinDaysBetweenActivities,
 				minDaysBetweenActivities{
@@ -110,7 +109,9 @@ func getExtraConstraints(fetinfo *fetInfo) {
 					Activity_Id:             aidlist,
 					MinDays:                 c.DaysBetween,
 					Active:                  true,
-					Comments:                ref,
+
+					Comments: fetinfo.activities_constraint(
+						c.Constraint, c.Id, alist),
 				})
 		}
 	}
@@ -129,8 +130,9 @@ func getExtraConstraints(fetinfo *fetInfo) {
 					Number_of_Activities: len(aidlist),
 					Activity_Id:          aidlist,
 					Active:               true,
-					Comments: resource_constraint(
-						c.Id, "", db.C_ParallelCourses),
+
+					Comments: fetinfo.activities_constraint(
+						db.C_ParallelCourses, c.Id, alist),
 				})
 		}
 	}
@@ -146,6 +148,10 @@ func getExtraConstraints(fetinfo *fetInfo) {
 					Weight_Percentage: w,
 					Activity_Id:       activityIndex2fet(tt_data, ai),
 					Active:            true,
+
+					Comments: fetinfo.param_constraint(
+						db.C_ActivitiesEndDay,
+						c.Id, strconv.Itoa(int(ai))),
 				})
 		}
 	}
@@ -161,8 +167,10 @@ func getExtraConstraints(fetinfo *fetInfo) {
 		// Note that a double lesson can't start in the last slot of
 		// the day.
 		doubleBlocked = make([]bool, tt_data.NHours-1)
+		hlist := []string{}
 		for _, h := range c.Data.([]int) {
 			doubleBlocked[h-1] = true
+			hlist = append(hlist, strconv.Itoa(h))
 		}
 		for d := 0; d < tt_data.NDays; d++ {
 			for h, bl := range doubleBlocked {
@@ -174,6 +182,7 @@ func getExtraConstraints(fetinfo *fetInfo) {
 				}
 			}
 		}
+
 		tclist.ConstraintActivitiesPreferredStartingTimes = append(
 			tclist.ConstraintActivitiesPreferredStartingTimes,
 			preferredStarts{
@@ -182,6 +191,10 @@ func getExtraConstraints(fetinfo *fetInfo) {
 				Number_of_Preferred_Starting_Times: len(timeslots),
 				Preferred_Starting_Time:            timeslots,
 				Active:                             true,
+
+				Comments: fetinfo.param_constraint(
+					db.C_DoubleActivityNotOverBreaks,
+					c.Id, strings.Join(hlist, ",")),
 			})
 	}
 
@@ -214,6 +227,13 @@ func getExtraConstraints(fetinfo *fetInfo) {
 				base.Bug.Fatalf("Invalid course: %s\n", course)
 			}
 			for _, ai := range cinfo.Activities {
+				var after string
+				if data.After {
+					after = "+"
+				} else {
+					after = "-"
+				}
+				arg := fmt.Sprintf("%d/%s/%d", ai, after, data.Hour)
 				tclist.ConstraintActivityPreferredTimeSlots = append(
 					tclist.ConstraintActivityPreferredTimeSlots,
 					activityPreferredTimes{
@@ -222,10 +242,12 @@ func getExtraConstraints(fetinfo *fetInfo) {
 						Number_of_Preferred_Time_Slots: len(timeslots),
 						Preferred_Time_Slot:            timeslots,
 						Active:                         true,
+
+						Comments: fetinfo.param_constraint(
+							db.C_BeforeAfterHour, c.Id, arg),
 					})
 			}
 		}
-
 	}
 
 	//TODO

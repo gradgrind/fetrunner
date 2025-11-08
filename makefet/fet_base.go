@@ -80,6 +80,8 @@ type fetInfo struct {
 	ref2grouponly map[Ref]string
 	fetdata       Fet
 
+	constraint_counter int // used to get unique index for each constraint
+
 	fetVirtualRooms map[string]string // cache for FET virtual rooms,
 	// "hash" -> FET-virtual-room tag
 	fetVirtualRoomN map[string]int // FET-virtual-room tag -> number of room sets
