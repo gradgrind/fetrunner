@@ -36,8 +36,6 @@ import (
 	"strings"
 )
 
-const VERSION = "0.0.3"
-
 func main() {
 
 	bdata := &autotimetable.BasicData{}
@@ -55,7 +53,7 @@ func main() {
 	flag.Parse()
 
 	if *v {
-		fmt.Printf("fetrunner version %s\n", VERSION)
+		fmt.Printf("fetrunner version %s\n", base.VERSION)
 		return
 	}
 
