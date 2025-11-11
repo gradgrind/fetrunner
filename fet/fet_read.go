@@ -113,14 +113,18 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 			// Ensure that the constraints are numbered in their Comments.
 			// This is to ease referencing in the results object.
 			comments := e.SelectElement("Comments")
+			comment := ""
 			if comments == nil {
 				comments = e.CreateElement("Comments")
-			} else if r_constraint_number.MatchString(comments.Text()) {
-				goto skip1
+			} else {
+				comment = comments.Text()
+				if r_constraint_number.MatchString(comment) {
+					goto skip1
+				}
 			}
 			constraint_counter++
 			comments.SetText(
-				fmt.Sprintf("_%d)", constraint_counter))
+				fmt.Sprintf("%d)%s", constraint_counter, comment))
 		skip1:
 
 			if w == "100" {
@@ -165,14 +169,18 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 			// Ensure that the constraints are numbered in their Comments.
 			// This is to ease referencing in the results object.
 			comments := e.SelectElement("Comments")
+			comment := ""
 			if comments == nil {
 				comments = e.CreateElement("Comments")
-			} else if r_constraint_number.MatchString(comments.Text()) {
-				goto skip2
+			} else {
+				comment = comments.Text()
+				if r_constraint_number.MatchString(comment) {
+					goto skip2
+				}
 			}
 			constraint_counter++
 			comments.SetText(
-				fmt.Sprintf("_%d)", constraint_counter))
+				fmt.Sprintf("%d)%s", constraint_counter, comment))
 		skip2:
 
 			if w == "100" {
@@ -262,7 +270,7 @@ func (fetdoc *FetDoc) GetRooms() []autotimetable.TtItem {
 // Get source and back-end representations of the constraints.
 func (fetdoc *FetDoc) GetConstraintItems() []autotimetable.TtItem {
 	clist := []autotimetable.TtItem{}
-	r_constraint_number := regexp.MustCompile(`^(_*[0-9]+)[)](.*)$`)
+	r_constraint_number := regexp.MustCompile(`^([0-9]+)[)](.*)$`)
 	for _, c := range fetdoc.Constraints {
 		var (
 			key string
