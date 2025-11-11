@@ -60,23 +60,6 @@ type roomNotAvailable struct {
 	Comments                      string
 }
 
-// Generate the fet entries for the basic ("real") rooms.
-func getRooms(fetinfo *fetInfo) {
-	rooms := []fetRoom{}
-	for _, n := range fetinfo.tt_data.Db.Rooms {
-		rooms = append(rooms, fetRoom{
-			Name:      n.Tag,
-			Long_Name: n.Name,
-			Capacity:  30000,
-			Virtual:   false,
-			Comments:  string(n.Id),
-		})
-	}
-	fetinfo.fetdata.Rooms_List = fetRoomsList{
-		Room: rooms,
-	}
-}
-
 func (fetinfo *fetInfo) getFetRooms(cinfo *timetable.CourseInfo) []string {
 	// The fet virtual rooms are cached at fetinfo.fetVirtualRooms.
 	var result []string

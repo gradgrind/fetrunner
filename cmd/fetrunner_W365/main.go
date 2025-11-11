@@ -109,6 +109,16 @@ func main() {
 		len(db0.Rooms)))
 	base.Report(fmt.Sprintf("Activities: %d\n",
 		len(tt_data.Activities)))
+
+	//
+
+	fetdoc := makefet.FetTree(db0)
+	fetdoc.Indent(2)
+	fetdoc.WriteToFile(filepath.Join(d1, f1+"_TEST.fet"))
+	return
+
+	//
+
 	fetbytes := makefet.MakeFetFile(tt_data)
 	fetpath := filepath.Join(d1, f1+".fet")
 	if err := os.WriteFile(fetpath, fetbytes, 0644); err != nil {
