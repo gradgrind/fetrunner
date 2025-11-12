@@ -2,12 +2,6 @@ package makefet
 
 import (
 	"encoding/xml"
-	"fetrunner/base"
-	"fetrunner/db"
-	"fetrunner/timetable"
-	"fmt"
-	"strconv"
-	"strings"
 )
 
 type preferredSlots struct {
@@ -77,44 +71,17 @@ type sameStartingTime struct {
 	Comments             string
 }
 
-func activityIndex2fet(
-	ttd *timetable.TtData, ai timetable.ActivityIndex,
-) int {
-	_ = ttd
-	return int(ai) + 1
-}
-
+/*
 func getExtraConstraints(fetinfo *fetInfo) {
 	tclist := &fetinfo.fetdata.Time_Constraints_List
 	tt_data := fetinfo.tt_data
+	db0 := tt_data.Db
 	db0 := tt_data.Db
 
 	fetinfo.handle_teacher_constraints()
 	fetinfo.handle_class_constraints()
 	fetinfo.handle_room_constraints()
 
-	for _, c := range tt_data.MinDaysBetweenActivities {
-		w := weight2fet(c.Weight)
-		for _, alist := range c.ActivityLists {
-			aidlist := make([]int, len(alist))
-			for i, ai := range alist {
-				aidlist[i] = activityIndex2fet(tt_data, ai)
-			}
-			tclist.ConstraintMinDaysBetweenActivities = append(
-				tclist.ConstraintMinDaysBetweenActivities,
-				minDaysBetweenActivities{
-					Weight_Percentage:       w,
-					Consecutive_If_Same_Day: c.ConsecutiveIfSameDay,
-					Number_of_Activities:    len(alist),
-					Activity_Id:             aidlist,
-					MinDays:                 c.DaysBetween,
-					Active:                  true,
-
-					Comments: fetinfo.activities_constraint(
-						c.Constraint, c.Id, alist),
-				})
-		}
-	}
 
 	for _, c := range tt_data.ParallelActivities {
 		w := weight2fet(c.Weight)
@@ -274,7 +241,8 @@ func getExtraConstraints(fetinfo *fetInfo) {
 		     <Comments></Comments>
 		   </ConstraintStudentsSetMinGapsBetweenOrderedPairOfActivityTags>
 
-		*/
+*/ /*
 	}
 
 }
+*/

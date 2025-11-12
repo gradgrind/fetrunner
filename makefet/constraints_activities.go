@@ -6,6 +6,7 @@ import (
 	"fetrunner/timetable"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 type preferred_time struct {
@@ -13,28 +14,11 @@ type preferred_time struct {
 	Preferred_Hour string
 }
 
-type preferred_start struct {
-	Preferred_Starting_Day  string
-	Preferred_Starting_Hour string
-}
-
 func add_activity_constraints(tt_data *timetable.TtData) {
 	before_after_hour(tt_data)
-
-	/*
-		db0 := tt_data.Db
-		tclist := tt_data.BackendData.(*FetData).time_constraints_list
-
-		//ConstraintActivityPreferredStartingTime    []startingTime
-			ConstraintActivityPreferredTimeSlots       []activityPreferredTimes
-			ConstraintActivitiesPreferredTimeSlots     []preferredSlots
-			ConstraintActivitiesPreferredStartingTimes []preferredStarts
-			ConstraintMinDaysBetweenActivities         []minDaysBetweenActivities
-			ConstraintActivityEndsStudentsDay          []lessonEndsDay
-			ConstraintActivitiesSameStartingTime       []sameStartingTime
-	*/
-
+	double_no_break(tt_data)
 	days_between(tt_data)
+	ends_day(tt_data)
 	parallel_activities(tt_data)
 }
 
@@ -58,6 +42,24 @@ func days_between(tt_data *timetable.TtData) {
 			c.CreateElement("Active").SetText("true")
 			c.CreateElement("Comments").SetText(activities_constraint(
 				c0.Constraint, c0.Id, alist))
+		}
+	}
+}
+
+func ends_day(tt_data *timetable.TtData) {
+	tclist := tt_data.BackendData.(*FetData).time_constraints_list
+	db0 := tt_data.Db
+	for _, c0 := range db0.Constraints[db.C_ActivitiesEndDay] {
+		w := weight2fet(c0.Weight)
+		course := c0.Data.(db.NodeRef)
+		cinfo := tt_data.Ref2CourseInfo[course]
+		for _, ai := range cinfo.Activities {
+			c := tclist.CreateElement("ConstraintActivityEndsStudentsDay")
+			c.CreateElement("Weight_Percentage").SetText(w)
+			c.CreateElement("Activity_Id").SetText(fet_activity_index(int(ai)))
+			c.CreateElement("Active").SetText("true")
+			c.CreateElement("Comments").SetText(param_constraint(
+				db.C_ActivitiesEndDay, c0.Id, strconv.Itoa(int(ai))))
 		}
 	}
 }
@@ -138,3 +140,76 @@ func before_after_hour(tt_data *timetable.TtData) {
 		}
 	}
 }
+
+func double_no_break(tt_data *timetable.TtData) {
+	db0 := tt_data.Db
+	tclist := tt_data.BackendData.(*FetData).time_constraints_list
+
+	var doubleBlocked []bool
+	for _, c0 := range db0.Constraints[db.C_DoubleActivityNotOverBreaks] {
+		if len(doubleBlocked) != 0 {
+			base.Error.Fatalln("Constraint DoubleActivityNotOverBreaks" +
+				" specified more than once")
+		}
+		w := weight2fet(c0.Weight)
+		timeslots := []preferred_time{}
+		// Note that a double lesson can't start in the last slot of
+		// the day.
+		doubleBlocked = make([]bool, tt_data.NHours-1)
+		hlist := []string{}
+		for _, h := range c0.Data.([]int) {
+			doubleBlocked[h-1] = true
+			hlist = append(hlist, strconv.Itoa(h))
+		}
+		for d := 0; d < tt_data.NDays; d++ {
+			for h, bl := range doubleBlocked {
+				if !bl {
+					timeslots = append(timeslots, preferred_time{
+						Preferred_Day:  db0.Days[d].GetTag(),
+						Preferred_Hour: db0.Hours[h].GetTag(),
+					})
+				}
+			}
+		}
+
+		c := tclist.CreateElement("ConstraintActivitiesPreferredStartingTimes")
+		c.CreateElement("Weight_Percentage").SetText(w)
+		c.CreateElement("Duration").SetText("2")
+		c.CreateElement("Number_of_Preferred_Starting_Times").
+			SetText(strconv.Itoa(len(timeslots)))
+		for _, t := range timeslots {
+			pts := c.CreateElement("Preferred_Starting_Time")
+			pts.CreateElement("Preferred_Starting_Day").SetText(t.Preferred_Day)
+			pts.CreateElement("Preferred_Starting_Hour").SetText(t.Preferred_Hour)
+		}
+		c.CreateElement("Active").SetText("true")
+		c.CreateElement("Comments").SetText(param_constraint(
+			db.C_DoubleActivityNotOverBreaks, c0.Id, strings.Join(hlist, ",")))
+	}
+}
+
+/* TODO
+for _, c0 := range db0.Constraints[db.C_MinHoursFollowing] {
+	base.Error.Printf("!!! Constraint not implemented:\n%+v\n", c0)
+	//w := weight2fet(c0.Weight)
+	//data := c0.Data.(*db.MinHoursFollowing)
+
+	//MinHoursFollowing{
+	//	Course1: course1,
+	//	Course2: course2,
+	//	Hours:   hours,
+	//}
+
+	// It may be better to specify these constraints in a better way!
+
+	   <ConstraintStudentsSetMinGapsBetweenOrderedPairOfActivityTags>
+	     <Weight_Percentage>100</Weight_Percentage>
+	     <Students>12G</Students>
+	     <First_Activity_Tag>tag2</First_Activity_Tag>
+	     <Second_Activity_Tag>tag1</Second_Activity_Tag>
+	     <MinGaps>1</MinGaps>
+	     <Active>true</Active>
+	     <Comments></Comments>
+	   </ConstraintStudentsSetMinGapsBetweenOrderedPairOfActivityTags>
+}
+*/
