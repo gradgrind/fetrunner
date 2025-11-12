@@ -60,8 +60,6 @@ func add_class_constraints(tt_data *timetable.TtData) {
 		}
 	}
 
-	//TODO: preferredstartinttimes
-
 	for _, c0 := range db0.Constraints[db.C_ClassMinActivitiesPerDay] {
 		data := c0.Data.(db.ResourceN)
 		cref := data.Resource

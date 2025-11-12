@@ -23,10 +23,17 @@ type FetData struct {
 	activity_tag_list      *etree.Element // in case these are needed
 	time_constraints_list  *etree.Element
 	space_constraints_list *etree.Element
+
+	// Cache for FET virtual rooms, "hash" -> FET-virtual-room tag
+	fet_virtual_rooms  map[string]string
+	fet_virtual_room_n map[string]int // FET-virtual-room tag -> number of room sets
 }
 
 func FetTree(tt_data *timetable.TtData) *etree.Document {
-	fetdata := &FetData{}
+	fetdata := &FetData{
+		fet_virtual_rooms:  map[string]string{},
+		fet_virtual_room_n: map[string]int{},
+	}
 	tt_data.BackendData = fetdata
 	db0 := tt_data.Db
 	institution := "The School"
@@ -65,8 +72,18 @@ func FetTree(tt_data *timetable.TtData) *etree.Document {
 	bcspace.CreateElement("Weight_Percentage").SetText("100")
 	bcspace.CreateElement("Active").SetText("true")
 
+	add_room_constraints(tt_data)
 	add_class_constraints(tt_data)
 	add_teacher_constraints(tt_data)
+
+	//TODO: Handle WITHOUT_ROMM_CONSTRAINTS
+	add_placement_constraints(tt_data, false)
+
+	//TODO: Do the blocked slots for all resources first, so that the
+	// placement constraints can follow them immediately. Then the other
+	// resource constraints.
+
+	//TODO: The remaining constraints
 
 	return doc
 }
