@@ -5,6 +5,7 @@ import (
 	"fetrunner/timetable"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/beevik/etree"
 )
@@ -18,8 +19,10 @@ const VIRTUAL_ROOM_PREFIX = "!"
 // const LUNCH_BREAK_NAME = "Lunch Break"
 
 type FetData struct {
-	room_list         *etree.Element // needed for adding virtual rooms
-	activity_tag_list *etree.Element // in case these are needed
+	room_list              *etree.Element // needed for adding virtual rooms
+	activity_tag_list      *etree.Element // in case these are needed
+	time_constraints_list  *etree.Element
+	space_constraints_list *etree.Element
 }
 
 func FetTree(tt_data *timetable.TtData) *etree.Document {
@@ -49,6 +52,21 @@ func FetTree(tt_data *timetable.TtData) *etree.Document {
 	fetdata.activity_tag_list = fetroot.CreateElement("Activity_Tags_List")
 
 	set_activities(fetroot, tt_data)
+
+	tclist := fetroot.CreateElement("Time_Constraints_List")
+	fetdata.time_constraints_list = tclist
+	bctime := tclist.CreateElement("ConstraintBasicCompulsoryTime")
+	bctime.CreateElement("Weight_Percentage").SetText("100")
+	bctime.CreateElement("Active").SetText("true")
+
+	sclist := fetroot.CreateElement("Space_Constraints_List")
+	fetdata.space_constraints_list = sclist
+	bcspace := sclist.CreateElement("ConstraintBasicCompulsorySpace")
+	bcspace.CreateElement("Weight_Percentage").SetText("100")
+	bcspace.CreateElement("Active").SetText("true")
+
+	add_class_constraints(tt_data)
+	add_teacher_constraints(tt_data)
 
 	return doc
 }
@@ -110,5 +128,26 @@ func set_rooms(fetroot *etree.Element, tt_data *timetable.TtData) {
 		fetroom.CreateElement("Virtual").SetText("false")
 		fetroom.CreateElement("Comments").SetText(string(n.GetRef()))
 	}
+}
 
+func resource_constraint(
+	ctype string, id db.NodeRef, resource db.NodeRef,
+) string {
+	return fmt.Sprintf("%s.%s:%s", ctype, id, resource)
+}
+
+func param_constraint(
+	ctype string, id db.NodeRef, param string,
+) string {
+	return fmt.Sprintf("%s.%s:%s", ctype, id, param)
+}
+
+func activities_constraint(
+	ctype string, id db.NodeRef, alist []timetable.ActivityIndex,
+) string {
+	ailist := []string{}
+	for _, a := range alist {
+		ailist = append(ailist, strconv.Itoa(int(a)))
+	}
+	return param_constraint(ctype, id, strings.Join(ailist, ","))
 }
