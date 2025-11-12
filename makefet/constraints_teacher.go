@@ -26,49 +26,25 @@ thus created by adjusting the max-gaps constraints.
 
 // ------------------------------------------------------------------------
 
-func add_teacher_constraints(tt_data *timetable.TtData) {
+func add_teacher_constraints(
+	tt_data *timetable.TtData, namap map[db.NodeRef][]db.TimeSlot,
+) {
 	db0 := tt_data.Db
 	ndays := tt_data.NDays
 	nhours := tt_data.NHours
 	tclist := tt_data.BackendData.(*FetData).time_constraints_list
-
-	tnamap := map[db.NodeRef][]db.TimeSlot{} // needed for lunch-break constraints
-
-	for _, c0 := range db0.Constraints[db.C_TeacherNotAvailable] {
-		// The weight is assumed to be 100%.
-		data := c0.Data.(db.ResourceNotAvailable)
-		tref := data.Resource
-		tnamap[tref] = data.NotAvailable
-		// `NotAvailable` is an ordered list of time-slots in which the
-		// teacher is to be regarded as not available for the timetable.
-		if len(data.NotAvailable) != 0 {
-			cna := tclist.CreateElement("ConstraintTeacherNotAvailableTimes")
-			cna.CreateElement("Weight_Percentage").SetText("100")
-			cna.CreateElement("Teacher").SetText(db0.Ref2Tag(tref))
-			cna.CreateElement("Number_of_Not_Available_Times").
-				SetText(strconv.Itoa(len(data.NotAvailable)))
-			for _, slot := range data.NotAvailable {
-				nat := cna.CreateElement("Not_Available_Time")
-				nat.CreateElement("Day").SetText(db0.Days[slot.Day].GetTag())
-				nat.CreateElement("Hour").SetText(db0.Hours[slot.Hour].GetTag())
-			}
-			cna.CreateElement("Active").SetText("true")
-			cna.CreateElement("Comments").SetText(resource_constraint(
-				db.C_TeacherNotAvailable, c0.Id, tref))
-		}
-	}
 
 	for _, c0 := range db0.Constraints[db.C_TeacherMaxDays] {
 		data := c0.Data.(db.ResourceN)
 		n := data.N
 		if n >= 0 && n < ndays {
 			tref := data.Resource
-			cna := tclist.CreateElement("ConstraintTeacherMaxDaysPerWeek")
-			cna.CreateElement("Weight_Percentage").SetText("100")
-			cna.CreateElement("Teacher").SetText(db0.Ref2Tag(tref))
-			cna.CreateElement("Max_Days_Per_Week").SetText(strconv.Itoa(n))
-			cna.CreateElement("Active").SetText("true")
-			cna.CreateElement("Comments").SetText(resource_constraint(
+			c := tclist.CreateElement("ConstraintTeacherMaxDaysPerWeek")
+			c.CreateElement("Weight_Percentage").SetText("100")
+			c.CreateElement("Teacher").SetText(db0.Ref2Tag(tref))
+			c.CreateElement("Max_Days_Per_Week").SetText(strconv.Itoa(n))
+			c.CreateElement("Active").SetText("true")
+			c.CreateElement("Comments").SetText(resource_constraint(
 				db.C_TeacherMaxDays, c0.Id, tref))
 		}
 	}
@@ -139,7 +115,7 @@ func add_teacher_constraints(tt_data *timetable.TtData) {
 			// Generate the constraint unless all days have a blocked
 			// lesson at lunchtime.
 			lbdmap := make([]bool, ndays)
-			for _, ts := range tnamap[tref] {
+			for _, ts := range namap[tref] {
 				if slices.Contains(mbhours, ts.Hour) {
 					lbdmap[ts.Day] = true
 				}

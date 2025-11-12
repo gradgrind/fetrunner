@@ -28,37 +28,13 @@ for the gaps that are thus created by adjusting the max-gaps constraints.
 
 // ------------------------------------------------------------------------
 
-func add_class_constraints(tt_data *timetable.TtData) {
+func add_class_constraints(
+	tt_data *timetable.TtData, namap map[db.NodeRef][]db.TimeSlot,
+) {
 	db0 := tt_data.Db
 	ndays := tt_data.NDays
 	nhours := tt_data.NHours
 	tclist := tt_data.BackendData.(*FetData).time_constraints_list
-
-	cnamap := map[db.NodeRef][]db.TimeSlot{} // needed for lunch-break constraints
-
-	for _, c0 := range db0.Constraints[db.C_ClassNotAvailable] {
-		// The weight is assumed to be 100%.
-		data := c0.Data.(db.ResourceNotAvailable)
-		cref := data.Resource
-		cnamap[cref] = data.NotAvailable
-		// `NotAvailable` is an ordered list of time-slots in which the
-		// class is to be regarded as not available for the timetable.
-		if len(data.NotAvailable) != 0 {
-			cna := tclist.CreateElement("ConstraintStudentsSetNotAvailableTimes")
-			cna.CreateElement("Weight_Percentage").SetText("100")
-			cna.CreateElement("Students").SetText(db0.Ref2Tag(cref))
-			cna.CreateElement("Number_of_Not_Available_Times").
-				SetText(strconv.Itoa(len(data.NotAvailable)))
-			for _, slot := range data.NotAvailable {
-				nat := cna.CreateElement("Not_Available_Time")
-				nat.CreateElement("Day").SetText(db0.Days[slot.Day].GetTag())
-				nat.CreateElement("Hour").SetText(db0.Hours[slot.Hour].GetTag())
-			}
-			cna.CreateElement("Active").SetText("true")
-			cna.CreateElement("Comments").SetText(resource_constraint(
-				db.C_ClassNotAvailable, c0.Id, cref))
-		}
-	}
 
 	for _, c0 := range db0.Constraints[db.C_ClassMinActivitiesPerDay] {
 		data := c0.Data.(db.ResourceN)
@@ -137,7 +113,7 @@ func add_class_constraints(tt_data *timetable.TtData) {
 			// Generate the constraint unless all days have a blocked
 			// lesson at lunchtime.
 			lbdmap := make([]bool, ndays)
-			for _, ts := range cnamap[cref] {
+			for _, ts := range namap[cref] {
 				if slices.Contains(mbhours, ts.Hour) {
 					lbdmap[ts.Day] = true
 				}
