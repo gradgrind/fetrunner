@@ -28,11 +28,11 @@ func add_placement_constraints(
 		// Add the constraints.
 		for _, ai := range cinfo.Activities {
 			a := db0.Activities[ai]
-			aid := int(ai) + 1 // fet activities start at 1
+			aid := fet_activity_index((int(ai)))
 			if len(rooms) != 0 {
 				c := sclist.CreateElement("ConstraintActivityPreferredRooms")
 				c.CreateElement("Weight_Percentage").SetText("100")
-				c.CreateElement("Activity_Id").SetText(strconv.Itoa(aid))
+				c.CreateElement("Activity_Id").SetText(aid)
 				c.CreateElement("Number_of_Preferred_Rooms").
 					SetText(strconv.Itoa(len(rooms)))
 				for _, r := range rooms {
@@ -48,7 +48,7 @@ func add_placement_constraints(
 			if start != nil {
 				c := tclist.CreateElement("ConstraintActivityPreferredStartingTime")
 				c.CreateElement("Weight_Percentage").SetText("100")
-				c.CreateElement("Activity_Id").SetText(strconv.Itoa(aid))
+				c.CreateElement("Activity_Id").SetText(aid)
 				c.CreateElement("Preferred_Day").SetText(db0.Days[start.Day].GetTag())
 				c.CreateElement("Preferred_Hour").SetText(db0.Hours[start.Hour].GetTag())
 				c.CreateElement("Permanently_Locked").SetText("true")

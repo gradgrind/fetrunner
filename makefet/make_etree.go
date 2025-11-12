@@ -81,7 +81,7 @@ func FetTree(tt_data *timetable.TtData) *etree.Document {
 	//TODO: Handle WITHOUT_ROOM_CONSTRAINTS
 	add_placement_constraints(tt_data, false)
 
-	days_between(tt_data)
+	add_activity_constraints(tt_data)
 
 	add_class_constraints(tt_data, namap)
 	add_teacher_constraints(tt_data, namap)

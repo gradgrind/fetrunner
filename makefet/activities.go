@@ -8,6 +8,10 @@ import (
 	"github.com/beevik/etree"
 )
 
+func fet_activity_index(aix int) string {
+	return strconv.Itoa(aix + 1) // the FET activity Ids start at 1
+}
+
 // Generate the fet activities.
 func set_activities(fetroot *etree.Element, tt_data *timetable.TtData) {
 	db0 := tt_data.Db
@@ -16,7 +20,7 @@ func set_activities(fetroot *etree.Element, tt_data *timetable.TtData) {
 	for ai, tt_activity := range tt_data.Activities {
 		fetactivity := fetactivities.CreateElement("Activity")
 		// The fet activities start at Id = 1
-		fetactivity.CreateElement("Id").SetText(strconv.Itoa(ai + 1))
+		fetactivity.CreateElement("Id").SetText(fet_activity_index(ai))
 
 		cinfo := tt_data.CourseInfoList[tt_activity.CourseInfo]
 
@@ -56,15 +60,15 @@ func set_activities(fetroot *etree.Element, tt_data *timetable.TtData) {
 			SetText(strconv.Itoa(totalDuration))
 
 		// Start FET activity indexes at 1
-		agid := 0 // Activity_Group_Id
+		agid := "0" // Activity_Group_Id
 		if len(cinfo.Activities) > 1 {
-			agid = int(cinfo.Activities[0]) + 1
+			agid = fet_activity_index(int(cinfo.Activities[0]))
 		}
 		a := db0.Activities[ai]
 		fetactivity.CreateElement("Duration").
 			SetText(strconv.Itoa(a.Duration))
 		fetactivity.CreateElement("Activity_Group_Id").
-			SetText(strconv.Itoa(agid))
+			SetText(agid)
 		fetactivity.CreateElement("Comments").
 			SetText(string(a.GetRef()))
 	}
