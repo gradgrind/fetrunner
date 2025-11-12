@@ -30,20 +30,6 @@ type TimeSlot struct {
 	Hour int // index to [DbTopLevel.Hours]
 }
 
-// A Division specifies a particular splitting of a school "class" (the
-// students, not the activities) into a number of groups (say, "A" and "B").
-//
-// In principle, a class may have any number of divisions, each of which
-// may have any number of groups, though keeping them to a minimum is
-// generally advisable.
-//
-// Group names must be unique within a class and groups from different
-// divisions may not have activities at the same time.
-type Division struct {
-	Name   string
-	Groups []NodeRef
-}
-
 // An Info (of which there will only be one instance) collects general
 // information which doesn't have its own structure.
 type Info struct {
@@ -174,6 +160,20 @@ type Group struct {
 	ElementBase
 	// These fields do not belong in the JSON object:
 	Class *Class `json:"-"`
+}
+
+// A Division specifies a particular splitting of a school "class" (the
+// students, not the activities) into a number of groups (say, "A" and "B").
+//
+// In principle, a class may have any number of divisions, each of which
+// may have any number of groups, though keeping them to a minimum is
+// generally advisable.
+//
+// Group names must be unique within a class and groups from different
+// divisions may not have activities at the same time.
+type Division struct {
+	Name   string
+	Groups []NodeRef
 }
 
 // A Course specifies a collection of resources needed for a set of

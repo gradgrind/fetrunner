@@ -27,7 +27,7 @@ type ActivityPlacement struct {
 	Id    int
 	Day   int
 	Hour  int
-	Rooms []Ref
+	Rooms []NodeRef
 }
 
 func ReadPlacements(
@@ -51,14 +51,14 @@ func ReadPlacements(
 	}
 
 	// Need mapping for the Rooms
-	rmap := map[string]Ref{}
+	rmap := map[string]NodeRef{}
 	for _, r := range tt_data.Db.Rooms {
 		rmap[r.Tag] = r.Id
 	}
 
 	placements := []ActivityPlacement{}
 	for _, p := range v.Placements {
-		rlist := []Ref{}
+		rlist := []NodeRef{}
 		if len(p.Real_Room) == 0 {
 			if p.Room != "" {
 				rlist = append(rlist, rmap[p.Room])

@@ -28,7 +28,6 @@ import (
 	"fetrunner/autotimetable"
 	"fetrunner/base"
 	"fetrunner/db"
-	"fetrunner/fet"
 	"fetrunner/makefet"
 	"fetrunner/timetable"
 	"fetrunner/w365tt"
@@ -112,27 +111,32 @@ func main() {
 
 	//
 
-	fetdoc := makefet.FetTree(db0)
+	fetdoc := makefet.FetTree(tt_data)
 	fetdoc.Indent(2)
 	fetdoc.WriteToFile(filepath.Join(d1, f1+"_TEST.fet"))
 	return
 
-	//
+	//TODO--
+	_ = timeout
 
-	fetbytes := makefet.MakeFetFile(tt_data)
-	fetpath := filepath.Join(d1, f1+".fet")
-	if err := os.WriteFile(fetpath, fetbytes, 0644); err != nil {
-		base.Error.Println(err)
-		return
-	}
+	/*
 
-	// Process the FET file
-	bdata.Source, err = fet.FetRead(bdata, fetpath)
-	if err != nil {
-		log.Fatal(err)
-	}
+		fetbytes := makefet.MakeFetFile(tt_data)
+		fetpath := filepath.Join(d1, f1+".fet")
+		if err := os.WriteFile(fetpath, fetbytes, 0644); err != nil {
+			base.Error.Println(err)
+			return
+		}
 
-	bdata.BackendInterface = fet.SetFetBackend(bdata)
+		// Process the FET file
+		bdata.Source, err = fet.FetRead(bdata, fetpath)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	bdata.StartGeneration(*timeout)
+		bdata.BackendInterface = fet.SetFetBackend(bdata)
+
+		bdata.StartGeneration(*timeout)
+
+	*/
 }
