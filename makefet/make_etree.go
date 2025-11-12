@@ -12,14 +12,19 @@ import (
 type NodeRef = db.NodeRef
 
 const CLASS_GROUP_SEP = "."
-const ATOMIC_GROUP_SEP1 = "#"
-const ATOMIC_GROUP_SEP2 = "~"
 const VIRTUAL_ROOM_PREFIX = "!"
 
 // const LUNCH_BREAK_TAG = "-lb-"
 // const LUNCH_BREAK_NAME = "Lunch Break"
 
+type FetData struct {
+	room_list         *etree.Element // needed for adding virtual rooms
+	activity_tag_list *etree.Element // in case these are needed
+}
+
 func FetTree(tt_data *timetable.TtData) *etree.Document {
+	fetdata := &FetData{}
+	tt_data.BackendData = fetdata
 	db0 := tt_data.Db
 	institution := "The School"
 
@@ -38,10 +43,21 @@ func FetTree(tt_data *timetable.TtData) *etree.Document {
 	set_days_hours(fetroot, db0)
 	set_teachers(fetroot, db0)
 	set_subjects(fetroot, db0)
-	set_rooms(fetroot, db0)
+	set_rooms(fetroot, tt_data)
 	set_classes(fetroot, tt_data)
 
+	fetdata.activity_tag_list = fetroot.CreateElement("Activity_Tags_List")
+
+	set_activities(fetroot, tt_data)
+
 	return doc
+}
+
+func add_activity_tag(tt_data *timetable.TtData, tag string) {
+	atag := tt_data.BackendData.(*FetData).
+		activity_tag_list.CreateElement("Activity_Tag")
+	atag.CreateElement("Name").SetText(tag)
+	atag.CreateElement("Printable").SetText("false")
 }
 
 func set_days_hours(fetroot *etree.Element, db0 *db.DbTopLevel) {
@@ -63,34 +79,36 @@ func set_days_hours(fetroot *etree.Element, db0 *db.DbTopLevel) {
 }
 
 func set_teachers(fetroot *etree.Element, db0 *db.DbTopLevel) {
-	fetdays := fetroot.CreateElement("Teachers_List")
+	fetteachers := fetroot.CreateElement("Teachers_List")
 	for _, n := range db0.Teachers {
-		fetday := fetdays.CreateElement("Teacher")
-		fetday.CreateElement("Name").SetText(n.GetTag())
-		fetday.CreateElement("Long_Name").SetText(
+		fetteacher := fetteachers.CreateElement("Teacher")
+		fetteacher.CreateElement("Name").SetText(n.GetTag())
+		fetteacher.CreateElement("Long_Name").SetText(
 			fmt.Sprintf("%s %s", n.Firstname, n.Name))
-		fetday.CreateElement("Comments").SetText(string(n.GetRef()))
+		fetteacher.CreateElement("Comments").SetText(string(n.GetRef()))
 	}
 }
 
 func set_subjects(fetroot *etree.Element, db0 *db.DbTopLevel) {
-	fetdays := fetroot.CreateElement("Subjects_List")
+	fetsubjects := fetroot.CreateElement("Subjects_List")
 	for _, n := range db0.Subjects {
-		fetday := fetdays.CreateElement("Subject")
-		fetday.CreateElement("Name").SetText(n.GetTag())
-		fetday.CreateElement("Long_Name").SetText(n.Name)
-		fetday.CreateElement("Comments").SetText(string(n.GetRef()))
+		fetsubject := fetsubjects.CreateElement("Subject")
+		fetsubject.CreateElement("Name").SetText(n.GetTag())
+		fetsubject.CreateElement("Long_Name").SetText(n.Name)
+		fetsubject.CreateElement("Comments").SetText(string(n.GetRef()))
 	}
 }
 
-func set_rooms(fetroot *etree.Element, db0 *db.DbTopLevel) {
-	fetdays := fetroot.CreateElement("Rooms_List")
-	for _, n := range db0.Rooms {
-		fetday := fetdays.CreateElement("Room")
-		fetday.CreateElement("Name").SetText(n.GetTag())
-		fetday.CreateElement("Long_Name").SetText(n.Name)
-		fetday.CreateElement("Capacity").SetText("30000")
-		fetday.CreateElement("Virtual").SetText("false")
-		fetday.CreateElement("Comments").SetText(string(n.GetRef()))
+func set_rooms(fetroot *etree.Element, tt_data *timetable.TtData) {
+	fetrooms := fetroot.CreateElement("Rooms_List")
+	tt_data.BackendData.(*FetData).room_list = fetrooms
+	for _, n := range tt_data.Db.Rooms {
+		fetroom := fetrooms.CreateElement("Room")
+		fetroom.CreateElement("Name").SetText(n.GetTag())
+		fetroom.CreateElement("Long_Name").SetText(n.Name)
+		fetroom.CreateElement("Capacity").SetText("30000")
+		fetroom.CreateElement("Virtual").SetText("false")
+		fetroom.CreateElement("Comments").SetText(string(n.GetRef()))
 	}
+
 }
