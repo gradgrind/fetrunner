@@ -8,18 +8,17 @@ import (
 	"strings"
 )
 
-func add_placement_constraints(
-	tt_data *timetable.TtData, without_rooms bool,
-) {
+func (fetbuild *FetBuild) add_placement_constraints(without_rooms bool) {
+	tt_data := fetbuild.ttdata
 	db0 := tt_data.Db
-	tclist := tt_data.BackendData.(*FetData).time_constraints_list
-	sclist := tt_data.BackendData.(*FetData).space_constraints_list
+	tclist := fetbuild.time_constraints_list
+	sclist := fetbuild.space_constraints_list
 
 	for _, cinfo := range tt_data.CourseInfoList {
 		var rooms []string
 		// Set "preferred" rooms, if not blocked.
 		if !without_rooms {
-			rooms = get_fet_rooms(tt_data, cinfo)
+			rooms = fetbuild.get_fet_rooms(cinfo)
 		}
 
 		//--fmt.Printf("COURSE: %s\n", ttinfo.View(cinfo))
@@ -60,25 +59,23 @@ func add_placement_constraints(
 	}
 }
 
-func get_fet_rooms(
-	tt_data *timetable.TtData, cinfo *timetable.CourseInfo,
-) []string {
-	fetdata := tt_data.BackendData.(*FetData)
-	// The fet virtual rooms are cached at fetdata.fet_virtual_rooms.
+func (fetbuild *FetBuild) get_fet_rooms(cinfo *timetable.CourseInfo) []string {
+	// The fet virtual rooms are cached at fetbuild.fet_virtual_rooms.
 	var result []string
 
 	// First get the Element Tags used as ids by FET.
+	rooms := fetbuild.ttdata.Db.Rooms
 	rtags := []string{}
 	for _, rr := range cinfo.FixedRooms {
 		rtags = append(rtags,
-			tt_data.Db.Rooms[rr].GetResourceTag())
+			rooms[rr].GetResourceTag())
 	}
 	rctags := [][]string{}
 	for _, rc := range cinfo.RoomChoices {
 		rcl := []string{}
 		for _, rr := range rc {
 			rcl = append(rcl,
-				tt_data.Db.Rooms[rr].GetResourceTag())
+				rooms[rr].GetResourceTag())
 		}
 		rctags = append(rctags, rcl)
 	}
@@ -94,17 +91,17 @@ func get_fet_rooms(
 			srctags = append(srctags, strings.Join(rcl, ","))
 		}
 		key := strings.Join(rtags, ",") + "+" + strings.Join(srctags, "|")
-		vr, ok := fetdata.fet_virtual_rooms[key]
+		vr, ok := fetbuild.fet_virtual_rooms[key]
 		if !ok {
 			// Make virtual room, using rooms list from above.
 			vr = fmt.Sprintf(
-				"%s%03d", VIRTUAL_ROOM_PREFIX, len(fetdata.fet_virtual_rooms)+1)
+				"%s%03d", VIRTUAL_ROOM_PREFIX, len(fetbuild.fet_virtual_rooms)+1)
 			// Remember key/value
-			fetdata.fet_virtual_rooms[key] = vr
+			fetbuild.fet_virtual_rooms[key] = vr
 			nsets := len(rtags) + len(rctags)
-			fetdata.fet_virtual_room_n[vr] = nsets
+			fetbuild.fet_virtual_room_n[vr] = nsets
 
-			vroom := fetdata.room_list.CreateElement("Room")
+			vroom := fetbuild.room_list.CreateElement("Room")
 
 			vroom.CreateElement("Name").SetText(vr)
 			//vroom.CreateElement("Long_Name").SetText("")

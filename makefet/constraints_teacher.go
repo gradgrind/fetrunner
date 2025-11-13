@@ -32,7 +32,7 @@ func add_teacher_constraints(
 	db0 := tt_data.Db
 	ndays := tt_data.NDays
 	nhours := tt_data.NHours
-	tclist := tt_data.BackendData.(*FetData).time_constraints_list
+	tclist := tt_data.BackendData.(*FetBuild).time_constraints_list
 
 	for _, c0 := range db0.Constraints[db.C_TeacherMaxDays] {
 		data := c0.Data.(db.ResourceN)

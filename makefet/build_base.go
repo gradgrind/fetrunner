@@ -1,0 +1,26 @@
+package makefet
+
+import (
+	"fetrunner/autotimetable"
+	"fetrunner/fet"
+	"fetrunner/timetable"
+
+	"github.com/beevik/etree"
+)
+
+type IdPair = autotimetable.IdPair
+type Constraint = autotimetable.Constraint
+
+type FetBuild struct {
+	ttdata                 *timetable.TtData
+	rundata                *fet.TtRunDataFet // the structure to be built
+	fetroot                *etree.Element
+	room_list              *etree.Element // needed for adding virtual rooms
+	activity_tag_list      *etree.Element // in case these are needed
+	time_constraints_list  *etree.Element
+	space_constraints_list *etree.Element
+
+	// Cache for FET virtual rooms, "hash" -> FET-virtual-room tag
+	fet_virtual_rooms  map[string]string
+	fet_virtual_room_n map[string]int // FET-virtual-room tag -> number of room sets
+}

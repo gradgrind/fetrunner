@@ -3,7 +3,6 @@ package makefet
 import (
 	"fetrunner/base"
 	"fetrunner/db"
-	"fetrunner/timetable"
 	"fmt"
 	"strconv"
 	"strings"
@@ -14,16 +13,17 @@ type preferred_time struct {
 	Preferred_Hour string
 }
 
-func add_activity_constraints(tt_data *timetable.TtData) {
-	before_after_hour(tt_data)
-	double_no_break(tt_data)
-	days_between(tt_data)
-	ends_day(tt_data)
-	parallel_activities(tt_data)
+func (fetbuild *FetBuild) add_activity_constraints() {
+	fetbuild.before_after_hour()
+	fetbuild.double_no_break()
+	fetbuild.days_between()
+	fetbuild.ends_day()
+	fetbuild.parallel_activities()
 }
 
-func days_between(tt_data *timetable.TtData) {
-	tclist := tt_data.BackendData.(*FetData).time_constraints_list
+func (fetbuild *FetBuild) days_between() {
+	tt_data := fetbuild.ttdata
+	tclist := fetbuild.time_constraints_list
 	for _, c0 := range tt_data.MinDaysBetweenActivities {
 		w := weight2fet(c0.Weight)
 		for _, alist := range c0.ActivityLists {
@@ -46,9 +46,10 @@ func days_between(tt_data *timetable.TtData) {
 	}
 }
 
-func ends_day(tt_data *timetable.TtData) {
-	tclist := tt_data.BackendData.(*FetData).time_constraints_list
+func (fetbuild *FetBuild) ends_day() {
+	tt_data := fetbuild.ttdata
 	db0 := tt_data.Db
+	tclist := fetbuild.time_constraints_list
 	for _, c0 := range db0.Constraints[db.C_ActivitiesEndDay] {
 		w := weight2fet(c0.Weight)
 		course := c0.Data.(db.NodeRef)
@@ -64,8 +65,9 @@ func ends_day(tt_data *timetable.TtData) {
 	}
 }
 
-func parallel_activities(tt_data *timetable.TtData) {
-	tclist := tt_data.BackendData.(*FetData).time_constraints_list
+func (fetbuild *FetBuild) parallel_activities() {
+	tt_data := fetbuild.ttdata
+	tclist := fetbuild.time_constraints_list
 	for _, c0 := range tt_data.ParallelActivities {
 		w := weight2fet(c0.Weight)
 		for _, alist := range c0.ActivityLists {
@@ -82,9 +84,10 @@ func parallel_activities(tt_data *timetable.TtData) {
 	}
 }
 
-func before_after_hour(tt_data *timetable.TtData) {
+func (fetbuild *FetBuild) before_after_hour() {
+	tt_data := fetbuild.ttdata
 	db0 := tt_data.Db
-	tclist := tt_data.BackendData.(*FetData).time_constraints_list
+	tclist := fetbuild.time_constraints_list
 
 	for _, c0 := range db0.Constraints[db.C_BeforeAfterHour] {
 		w := weight2fet(c0.Weight)
@@ -141,9 +144,10 @@ func before_after_hour(tt_data *timetable.TtData) {
 	}
 }
 
-func double_no_break(tt_data *timetable.TtData) {
+func (fetbuild *FetBuild) double_no_break() {
+	tt_data := fetbuild.ttdata
 	db0 := tt_data.Db
-	tclist := tt_data.BackendData.(*FetData).time_constraints_list
+	tclist := fetbuild.time_constraints_list
 
 	var doubleBlocked []bool
 	for _, c0 := range db0.Constraints[db.C_DoubleActivityNotOverBreaks] {

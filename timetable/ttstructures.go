@@ -18,7 +18,7 @@ type TtData struct {
 	NDays        int
 	NHours       int
 	HoursPerWeek int
-	BackendData  any // available for the generator back-end
+	//BackendData  any // available for the generator back-end
 
 	//TODO??
 	AtomicGroups []*AtomicGroup

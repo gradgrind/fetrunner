@@ -2,7 +2,6 @@ package makefet
 
 import (
 	"fetrunner/db"
-	"fetrunner/timetable"
 	"slices"
 	"strconv"
 )
@@ -28,13 +27,14 @@ for the gaps that are thus created by adjusting the max-gaps constraints.
 
 // ------------------------------------------------------------------------
 
-func add_class_constraints(
-	tt_data *timetable.TtData, namap map[db.NodeRef][]db.TimeSlot,
+func (fetbuild *FetBuild) add_class_constraints(
+	namap map[db.NodeRef][]db.TimeSlot,
 ) {
+	tt_data := fetbuild.ttdata
 	db0 := tt_data.Db
 	ndays := tt_data.NDays
 	nhours := tt_data.NHours
-	tclist := tt_data.BackendData.(*FetData).time_constraints_list
+	tclist := fetbuild.time_constraints_list
 
 	for _, c0 := range db0.Constraints[db.C_ClassMinActivitiesPerDay] {
 		data := c0.Data.(db.ResourceN)
