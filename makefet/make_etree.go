@@ -25,15 +25,17 @@ func FetTree(tt_data *timetable.TtData) *etree.Document {
 		fet_virtual_rooms:  map[string]string{},
 		fet_virtual_room_n: map[string]int{},
 	}
-	db0 := tt_data.Db
+
+	//TODO
 	institution := "The School"
+	fet_version := "6.28.2"
 
 	doc := etree.NewDocument()
 	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
 
 	fetroot := doc.CreateElement("fet")
 	fetbuild.fetroot = fetroot
-	fetroot.CreateAttr("version", "6.28.2")
+	fetroot.CreateAttr("version", fet_version)
 	fetroot.CreateElement("Mode").SetText("Official")
 	fetroot.CreateElement("Institution_Name").SetText(institution)
 
@@ -44,7 +46,6 @@ func FetTree(tt_data *timetable.TtData) *etree.Document {
 	fetbuild.set_days_hours()
 	fetbuild.set_teachers()
 
-	//TODO: element lists?
 	fetbuild.set_subjects()
 	fetbuild.set_rooms()
 	fetbuild.set_classes()
@@ -125,7 +126,17 @@ func activities_constraint(
 }
 
 // TODO:
-func (fetbuild *FetBuild) add_time_constraint(*etree.Element) {}
+func (fetbuild *FetBuild) add_time_constraint(e *etree.Element) {
+	rundata := fetbuild.rundata
+	i := len(rundata.ConstraintElements)
+	rundata.ConstraintElements = append(rundata.ConstraintElements, e)
+	rundata.TimeConstraints = append(rundata.TimeConstraints, i)
+}
 
 // TODO:
-func (fetbuild *FetBuild) add_space_constraint(*etree.Element) {}
+func (fetbuild *FetBuild) add_space_constraint(e *etree.Element) {
+	rundata := fetbuild.rundata
+	i := len(rundata.ConstraintElements)
+	rundata.ConstraintElements = append(rundata.ConstraintElements, e)
+	rundata.SpaceConstraints = append(rundata.SpaceConstraints, i)
+}

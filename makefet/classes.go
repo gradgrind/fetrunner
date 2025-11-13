@@ -2,15 +2,14 @@ package makefet
 
 import (
 	"fetrunner/db"
-	"fetrunner/timetable"
 	"strconv"
-
-	"github.com/beevik/etree"
 )
 
-func set_classes(fetroot *etree.Element, tt_data *timetable.TtData) {
+func (fetbuild *FetBuild) set_classes() {
+	ids := []IdPair{}
+	tt_data := fetbuild.ttdata
 	db0 := tt_data.Db
-	fetyears := fetroot.CreateElement("Students_List")
+	fetyears := fetbuild.fetroot.CreateElement("Students_List")
 	for _, cdiv := range tt_data.ClassDivisions {
 		cl := cdiv.Class
 		cname := cl.GetTag()
@@ -22,7 +21,8 @@ func set_classes(fetroot *etree.Element, tt_data *timetable.TtData) {
 		fetyear := fetyears.CreateElement("Year")
 		fetyear.CreateElement("Name").SetText(cname)
 		fetyear.CreateElement("Long_Name").SetText(cl.Name)
-		fetyear.CreateElement("Comments").SetText(string(cl.GetRef()))
+
+		ids = append(ids, IdPair{Source: string(cl.GetRef()), Backend: cname})
 
 		// Construct the "Categories" (divisions)
 		divs := cdiv.Divisions
@@ -54,6 +54,7 @@ func set_classes(fetroot *etree.Element, tt_data *timetable.TtData) {
 		}
 
 	}
+	fetbuild.rundata.ClassIds = ids
 }
 
 // In FET the group identifier is constructed from the class tag,

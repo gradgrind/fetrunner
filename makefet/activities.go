@@ -1,11 +1,8 @@
 package makefet
 
 import (
-	"fetrunner/timetable"
 	"slices"
 	"strconv"
-
-	"github.com/beevik/etree"
 )
 
 func fet_activity_index(aix int) string {
@@ -13,10 +10,11 @@ func fet_activity_index(aix int) string {
 }
 
 // Generate the fet activities.
-func set_activities(fetroot *etree.Element, tt_data *timetable.TtData) {
+func (fetbuild *FetBuild) set_activities() {
+	tt_data := fetbuild.ttdata
 	db0 := tt_data.Db
 
-	fetactivities := fetroot.CreateElement("Activities_List")
+	fetactivities := fetbuild.fetroot.CreateElement("Activities_List")
 	for ai, tt_activity := range tt_data.Activities {
 		fetactivity := fetactivities.CreateElement("Activity")
 		// The fet activities start at Id = 1
