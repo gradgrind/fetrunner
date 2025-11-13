@@ -60,7 +60,7 @@ func (fetbuild *FetBuild) set_activities() {
 		// Start FET activity indexes at 1
 		agid := "0" // Activity_Group_Id
 		if len(cinfo.Activities) > 1 {
-			agid = fet_activity_index(int(cinfo.Activities[0]))
+			agid = fet_activity_index(cinfo.Activities[0])
 		}
 		a := db0.Activities[ai]
 		fetactivity.CreateElement("Duration").

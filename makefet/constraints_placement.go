@@ -27,7 +27,7 @@ func (fetbuild *FetBuild) add_placement_constraints(without_rooms bool) {
 		// Add the constraints.
 		for _, ai := range cinfo.Activities {
 			a := db0.Activities[ai]
-			aid := fet_activity_index((int(ai)))
+			aid := fet_activity_index(ai)
 			if len(rooms) != 0 {
 				c := sclist.CreateElement("ConstraintActivityPreferredRooms")
 				c.CreateElement("Weight_Percentage").SetText("100")

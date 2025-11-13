@@ -23,7 +23,7 @@ type IdPair struct {
 }
 
 type Constraint struct {
+	IdPair
 	Ctype      string
-	SourceRef  string
 	Parameters []int
 }

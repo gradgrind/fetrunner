@@ -8,10 +8,11 @@ import (
 
 type NodeRef = db.NodeRef // node reference (UUID)
 
-type ActivityIndex int
-type TeacherIndex int
-type RoomIndex int
-type AtomicIndex int
+type ActivityIndex = int
+type TeacherIndex = int
+type RoomIndex = int
+type ClassIndex = int
+type AtomicIndex = int
 
 type TtData struct {
 	Db           *db.DbTopLevel
@@ -25,6 +26,7 @@ type TtData struct {
 
 	TeacherIndex map[NodeRef]TeacherIndex
 	RoomIndex    map[NodeRef]RoomIndex
+	ClassIndex   map[NodeRef]ClassIndex
 
 	// `AtomicGroupIndex` maps a class or group NodeRef to its list of atomic
 	// group indexes.
@@ -110,14 +112,14 @@ func BasicSetup(db *db.DbTopLevel) *TtData {
 func (tt_data *TtData) TeacherResources() {
 	tt_data.TeacherIndex = map[NodeRef]TeacherIndex{}
 	for i, t := range tt_data.Db.Teachers {
-		tt_data.TeacherIndex[t.Id] = TeacherIndex(i)
+		tt_data.TeacherIndex[t.Id] = i
 	}
 }
 
 func (tt_data *TtData) RoomResources() {
 	tt_data.RoomIndex = map[NodeRef]RoomIndex{}
 	for i, r := range tt_data.Db.Rooms {
-		tt_data.RoomIndex[r.Id] = RoomIndex(i)
+		tt_data.RoomIndex[r.Id] = i
 	}
 }
 

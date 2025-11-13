@@ -104,9 +104,12 @@ func (fetbuild *FetBuild) add_activity_tag(tag string) {
 }
 
 func resource_constraint(
-	ctype string, id db.NodeRef, resource db.NodeRef,
-) string {
-	return fmt.Sprintf("%s.%s:%s", ctype, id, resource)
+	ctype string, id db.NodeRef, resource int,
+) Constraint {
+	return Constraint{
+		IdPair:     IdPair{Source: string(id)},
+		Ctype:      ctype,
+		Parameters: []int{resource}}
 }
 
 func param_constraint(
@@ -120,23 +123,35 @@ func activities_constraint(
 ) string {
 	ailist := []string{}
 	for _, a := range alist {
-		ailist = append(ailist, strconv.Itoa(int(a)))
+		ailist = append(ailist, strconv.Itoa(a))
 	}
 	return param_constraint(ctype, id, strings.Join(ailist, ","))
 }
 
-// TODO:
-func (fetbuild *FetBuild) add_time_constraint(e *etree.Element) {
+func (fetbuild *FetBuild) add_time_constraint(e *etree.Element, c Constraint) {
 	rundata := fetbuild.rundata
 	i := len(rundata.ConstraintElements)
 	rundata.ConstraintElements = append(rundata.ConstraintElements, e)
 	rundata.TimeConstraints = append(rundata.TimeConstraints, i)
+
+	// Make a tag for the constraint
+	fetbuild.constraint_counter++
+	c.Backend = fmt.Sprintf("[%d]", fetbuild.constraint_counter)
+	//e.CreateElement("Comments").SetText(c.Backend)
+
+	rundata.Constraints = append(rundata.Constraints, c)
 }
 
-// TODO:
-func (fetbuild *FetBuild) add_space_constraint(e *etree.Element) {
+func (fetbuild *FetBuild) add_space_constraint(e *etree.Element, c Constraint) {
 	rundata := fetbuild.rundata
 	i := len(rundata.ConstraintElements)
 	rundata.ConstraintElements = append(rundata.ConstraintElements, e)
 	rundata.SpaceConstraints = append(rundata.SpaceConstraints, i)
+
+	// Make a tag for the constraint
+	fetbuild.constraint_counter++
+	c.Backend = fmt.Sprintf("[%d]", fetbuild.constraint_counter)
+	//e.CreateElement("Comments").SetText(c.Backend)
+
+	rundata.Constraints = append(rundata.Constraints, c)
 }

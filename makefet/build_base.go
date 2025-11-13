@@ -20,6 +20,8 @@ type FetBuild struct {
 	time_constraints_list  *etree.Element
 	space_constraints_list *etree.Element
 
+	constraint_counter int // for tagging constraints
+
 	// Cache for FET virtual rooms, "hash" -> FET-virtual-room tag
 	fet_virtual_rooms  map[string]string
 	fet_virtual_room_n map[string]int // FET-virtual-room tag -> number of room sets

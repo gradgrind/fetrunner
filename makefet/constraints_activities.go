@@ -36,7 +36,7 @@ func (fetbuild *FetBuild) days_between() {
 			c.CreateElement("Consecutive_If_Same_Day").SetText(cifsd)
 			c.CreateElement("Number_of_Activities").SetText(strconv.Itoa(len(alist)))
 			for _, ai := range alist {
-				c.CreateElement("Activity_Id").SetText(fet_activity_index((int(ai))))
+				c.CreateElement("Activity_Id").SetText(fet_activity_index((ai)))
 			}
 			c.CreateElement("MinDays").SetText(strconv.Itoa(c0.DaysBetween))
 			c.CreateElement("Active").SetText("true")
@@ -57,10 +57,10 @@ func (fetbuild *FetBuild) ends_day() {
 		for _, ai := range cinfo.Activities {
 			c := tclist.CreateElement("ConstraintActivityEndsStudentsDay")
 			c.CreateElement("Weight_Percentage").SetText(w)
-			c.CreateElement("Activity_Id").SetText(fet_activity_index(int(ai)))
+			c.CreateElement("Activity_Id").SetText(fet_activity_index(ai))
 			c.CreateElement("Active").SetText("true")
 			c.CreateElement("Comments").SetText(param_constraint(
-				db.C_ActivitiesEndDay, c0.Id, strconv.Itoa(int(ai))))
+				db.C_ActivitiesEndDay, c0.Id, strconv.Itoa(ai)))
 		}
 	}
 }
@@ -75,7 +75,7 @@ func (fetbuild *FetBuild) parallel_activities() {
 			c.CreateElement("Weight_Percentage").SetText(w)
 			c.CreateElement("Number_of_Activities").SetText(strconv.Itoa(len(alist)))
 			for _, ai := range alist {
-				c.CreateElement("Activity_Id").SetText(fet_activity_index((int(ai))))
+				c.CreateElement("Activity_Id").SetText(fet_activity_index((ai)))
 			}
 			c.CreateElement("Active").SetText("true")
 			c.CreateElement("Comments").SetText(activities_constraint(
@@ -128,7 +128,7 @@ func (fetbuild *FetBuild) before_after_hour() {
 
 				c := tclist.CreateElement("ConstraintActivityPreferredTimeSlots")
 				c.CreateElement("Weight_Percentage").SetText(w)
-				c.CreateElement("Activity_Id").SetText(fet_activity_index(int(ai)))
+				c.CreateElement("Activity_Id").SetText(fet_activity_index(ai))
 				c.CreateElement("Number_of_Preferred_Time_Slots").
 					SetText(strconv.Itoa(len(timeslots)))
 				for _, t := range timeslots {

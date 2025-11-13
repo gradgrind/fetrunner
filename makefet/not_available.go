@@ -34,9 +34,9 @@ func (fetbuild *FetBuild) blocked_slots() map[db.NodeRef][]db.TimeSlot {
 				nat.CreateElement("Hour").SetText(db0.Hours[slot.Hour].GetTag())
 			}
 			cna.CreateElement("Active").SetText("true")
-			cna.CreateElement("Comments").SetText(resource_constraint(
-				db.C_RoomNotAvailable, c0.Id, rref))
-			fetbuild.add_space_constraint(cna)
+
+			fetbuild.add_space_constraint(cna, resource_constraint(
+				db.C_RoomNotAvailable, c0.Id, tt_data.RoomIndex[rref]))
 		}
 	}
 
@@ -60,9 +60,9 @@ func (fetbuild *FetBuild) blocked_slots() map[db.NodeRef][]db.TimeSlot {
 				nat.CreateElement("Hour").SetText(db0.Hours[slot.Hour].GetTag())
 			}
 			cna.CreateElement("Active").SetText("true")
-			cna.CreateElement("Comments").SetText(resource_constraint(
-				db.C_TeacherNotAvailable, c0.Id, tref))
-			fetbuild.add_time_constraint(cna)
+
+			fetbuild.add_time_constraint(cna, resource_constraint(
+				db.C_TeacherNotAvailable, c0.Id, tt_data.TeacherIndex[tref]))
 		}
 	}
 
@@ -86,9 +86,9 @@ func (fetbuild *FetBuild) blocked_slots() map[db.NodeRef][]db.TimeSlot {
 				nat.CreateElement("Hour").SetText(db0.Hours[slot.Hour].GetTag())
 			}
 			cna.CreateElement("Active").SetText("true")
-			cna.CreateElement("Comments").SetText(resource_constraint(
-				db.C_ClassNotAvailable, c0.Id, cref))
-			fetbuild.add_time_constraint(cna)
+
+			fetbuild.add_time_constraint(cna, resource_constraint(
+				db.C_ClassNotAvailable, c0.Id, tt_data.ClassIndex[cref]))
 		}
 	}
 

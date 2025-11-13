@@ -47,8 +47,9 @@ func (fetbuild *FetBuild) add_class_constraints(
 			c.CreateElement("Minimum_Hours_Daily").SetText(strconv.Itoa(n))
 			c.CreateElement("Allow_Empty_Days").SetText("true")
 			c.CreateElement("Active").SetText("true")
-			c.CreateElement("Comments").SetText(resource_constraint(
-				db.C_ClassMinActivitiesPerDay, c0.Id, cref))
+
+			fetbuild.add_time_constraint(c, resource_constraint(
+				db.C_ClassMinActivitiesPerDay, c0.Id, tt_data.ClassIndex[cref]))
 		}
 	}
 
@@ -62,8 +63,9 @@ func (fetbuild *FetBuild) add_class_constraints(
 			c.CreateElement("Students").SetText(db0.Ref2Tag(cref))
 			c.CreateElement("Maximum_Hours_Daily").SetText(strconv.Itoa(n))
 			c.CreateElement("Active").SetText("true")
-			c.CreateElement("Comments").SetText(resource_constraint(
-				db.C_ClassMaxActivitiesPerDay, c0.Id, cref))
+
+			fetbuild.add_time_constraint(c, resource_constraint(
+				db.C_ClassMaxActivitiesPerDay, c0.Id, tt_data.ClassIndex[cref]))
 		}
 	}
 
@@ -85,8 +87,9 @@ func (fetbuild *FetBuild) add_class_constraints(
 				c.CreateElement("Interval_End_Hour").SetText("")
 				c.CreateElement("Max_Days_Per_Week").SetText(strconv.Itoa(n))
 				c.CreateElement("Active").SetText("true")
-				c.CreateElement("Comments").SetText(resource_constraint(
-					db.C_ClassMaxAfternoons, c0.Id, cref))
+
+				fetbuild.add_time_constraint(c, resource_constraint(
+					db.C_ClassMaxAfternoons, c0.Id, tt_data.ClassIndex[cref]))
 				pmmap[data.Resource] = n
 			}
 		}
@@ -99,8 +102,9 @@ func (fetbuild *FetBuild) add_class_constraints(
 		c.CreateElement("Students").SetText(db0.Ref2Tag(cref))
 		c.CreateElement("Max_Beginnings_At_Second_Hour").SetText("0")
 		c.CreateElement("Active").SetText("true")
-		c.CreateElement("Comments").SetText(resource_constraint(
-			db.C_ClassForceFirstHour, c0.Id, cref))
+
+		fetbuild.add_time_constraint(c, resource_constraint(
+			db.C_ClassForceFirstHour, c0.Id, tt_data.ClassIndex[cref]))
 	}
 
 	// Gather the lunch-break constraints as they may influence the
@@ -136,8 +140,9 @@ func (fetbuild *FetBuild) add_class_constraints(
 				c.CreateElement("Maximum_Hours_Daily").
 					SetText(strconv.Itoa(len(mbhours) - 1))
 				c.CreateElement("Active").SetText("true")
-				c.CreateElement("Comments").SetText(resource_constraint(
-					db.C_ClassLunchBreak, c0.Id, cref))
+
+				fetbuild.add_time_constraint(c, resource_constraint(
+					db.C_ClassLunchBreak, c0.Id, tt_data.ClassIndex[cref]))
 				lbmap[cref] = lbdays
 			}
 		}
@@ -164,8 +169,9 @@ func (fetbuild *FetBuild) add_class_constraints(
 			c.CreateElement("Students").SetText(db0.Ref2Tag(cref))
 			c.CreateElement("Max_Gaps").SetText(strconv.Itoa(n))
 			c.CreateElement("Active").SetText("true")
-			c.CreateElement("Comments").SetText(resource_constraint(
-				db.C_ClassMaxGapsPerDay, c0.Id, cref))
+
+			fetbuild.add_time_constraint(c, resource_constraint(
+				db.C_ClassMaxGapsPerDay, c0.Id, tt_data.ClassIndex[cref]))
 		}
 	}
 
@@ -189,8 +195,9 @@ func (fetbuild *FetBuild) add_class_constraints(
 			c.CreateElement("Students").SetText(db0.Ref2Tag(cref))
 			c.CreateElement("Max_Gaps").SetText(strconv.Itoa(n))
 			c.CreateElement("Active").SetText("true")
-			c.CreateElement("Comments").SetText(resource_constraint(
-				db.C_ClassMaxGapsPerWeek, c0.Id, cref))
+
+			fetbuild.add_time_constraint(c, resource_constraint(
+				db.C_ClassMaxGapsPerWeek, c0.Id, tt_data.ClassIndex[cref]))
 		}
 	}
 }

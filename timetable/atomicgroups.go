@@ -57,6 +57,9 @@ func (a *AtomicGroup) GetResourceTag() string {
 }
 
 func (tt_data *TtData) MakeAtomicGroups() {
+	// Set up the class index map
+	tt_data.ClassIndex = map[NodeRef]ClassIndex{}
+
 	// An atomic group is an ordered list of single groups, one from each
 	// division.
 	tt_data.AtomicGroupIndex = map[NodeRef][]AtomicIndex{}
@@ -64,8 +67,9 @@ func (tt_data *TtData) MakeAtomicGroups() {
 
 	// Go through the classes inspecting their Divisions.
 	// Build a list-basis for the atomic groups based on the Cartesian product.
-	for _, cdivs := range tt_data.ClassDivisions {
+	for i, cdivs := range tt_data.ClassDivisions {
 		cl := cdivs.Class
+		tt_data.ClassIndex[cl.Id] = i
 		if len(cdivs.Divisions) == 0 {
 			// Make an atomic group for the class
 			agix := len(tt_data.AtomicGroups)

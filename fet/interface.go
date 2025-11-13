@@ -23,6 +23,7 @@ type TtRunDataFet struct {
 	// other lists?
 
 	Constraints []Constraint
+	ActivityIds []IdPair
 
 	DayIds     []IdPair
 	HourIds    []IdPair
@@ -32,9 +33,11 @@ type TtRunDataFet struct {
 	ClassIds   []IdPair
 }
 
-func (rundata *TtRunDataFet) GetDays() []IdPair     { return rundata.DayIds }
-func (rundata *TtRunDataFet) GetHours() []IdPair    { return rundata.HourIds }
-func (rundata *TtRunDataFet) GetTeachers() []IdPair { return rundata.TeacherIds }
-func (rundata *TtRunDataFet) GetSubjects() []IdPair { return rundata.SubjectIds }
-func (rundata *TtRunDataFet) GetRooms() []IdPair    { return rundata.RoomIds }
-func (rundata *TtRunDataFet) GetClasses() []IdPair  { return rundata.ClassIds }
+func (rundata *TtRunDataFet) GetDays() []IdPair            { return rundata.DayIds }
+func (rundata *TtRunDataFet) GetHours() []IdPair           { return rundata.HourIds }
+func (rundata *TtRunDataFet) GetTeachers() []IdPair        { return rundata.TeacherIds }
+func (rundata *TtRunDataFet) GetSubjects() []IdPair        { return rundata.SubjectIds }
+func (rundata *TtRunDataFet) GetRooms() []IdPair           { return rundata.RoomIds }
+func (rundata *TtRunDataFet) GetClasses() []IdPair         { return rundata.ClassIds }
+func (rundata *TtRunDataFet) GetActivities() []IdPair      { return rundata.ActivityIds }
+func (rundata *TtRunDataFet) GetConstraints() []Constraint { return rundata.Constraints }
