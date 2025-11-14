@@ -2,7 +2,6 @@ package makefet
 
 import (
 	"fetrunner/db"
-	"fetrunner/timetable"
 	"slices"
 	"strconv"
 )
@@ -26,13 +25,15 @@ thus created by adjusting the max-gaps constraints.
 
 // ------------------------------------------------------------------------
 
-func add_teacher_constraints(
-	tt_data *timetable.TtData, namap map[db.NodeRef][]db.TimeSlot,
+func (fetbuild *FetBuild) add_teacher_constraints(
+	namap map[db.NodeRef][]db.TimeSlot,
 ) {
+	tt_data := fetbuild.ttdata
 	db0 := tt_data.Db
+	rundata := fetbuild.rundata
 	ndays := tt_data.NDays
 	nhours := tt_data.NHours
-	tclist := tt_data.BackendData.(*FetBuild).time_constraints_list
+	tclist := fetbuild.time_constraints_list
 
 	for _, c0 := range db0.Constraints[db.C_TeacherMaxDays] {
 		data := c0.Data.(db.ResourceN)
@@ -44,8 +45,9 @@ func add_teacher_constraints(
 			c.CreateElement("Teacher").SetText(db0.Ref2Tag(tref))
 			c.CreateElement("Max_Days_Per_Week").SetText(strconv.Itoa(n))
 			c.CreateElement("Active").SetText("true")
-			c.CreateElement("Comments").SetText(resource_constraint(
-				db.C_TeacherMaxDays, c0.Id, tref))
+
+			fetbuild.add_time_constraint(c, param_constraint(
+				c0.CType, c0.Id, tt_data.TeacherIndex[tref]))
 		}
 	}
 
@@ -60,8 +62,9 @@ func add_teacher_constraints(
 			c.CreateElement("Minimum_Hours_Daily").SetText(strconv.Itoa(n))
 			c.CreateElement("Allow_Empty_Days").SetText("true")
 			c.CreateElement("Active").SetText("true")
-			c.CreateElement("Comments").SetText(resource_constraint(
-				db.C_TeacherMinActivitiesPerDay, c0.Id, tref))
+
+			fetbuild.add_time_constraint(c, param_constraint(
+				c0.CType, c0.Id, tt_data.TeacherIndex[tref]))
 		}
 	}
 
@@ -75,8 +78,9 @@ func add_teacher_constraints(
 			c.CreateElement("Teacher").SetText(db0.Ref2Tag(tref))
 			c.CreateElement("Maximum_Hours_Daily").SetText(strconv.Itoa(n))
 			c.CreateElement("Active").SetText("true")
-			c.CreateElement("Comments").SetText(resource_constraint(
-				db.C_TeacherMaxActivitiesPerDay, c0.Id, tref))
+
+			fetbuild.add_time_constraint(c, param_constraint(
+				c0.CType, c0.Id, tt_data.TeacherIndex[tref]))
 		}
 	}
 
@@ -94,12 +98,13 @@ func add_teacher_constraints(
 				c := tclist.CreateElement("ConstraintTeacherIntervalMaxDaysPerWeek")
 				c.CreateElement("Weight_Percentage").SetText("100")
 				c.CreateElement("Teacher").SetText(db0.Ref2Tag(tref))
-				c.CreateElement("Interval_Start_Hour").SetText(db0.Hours[h0].GetTag())
+				c.CreateElement("Interval_Start_Hour").SetText(rundata.HourIds[h0].Backend)
 				c.CreateElement("Interval_End_Hour").SetText("")
 				c.CreateElement("Max_Days_Per_Week").SetText(strconv.Itoa(n))
 				c.CreateElement("Active").SetText("true")
-				c.CreateElement("Comments").SetText(resource_constraint(
-					db.C_TeacherMaxAfternoons, c0.Id, tref))
+
+				fetbuild.add_time_constraint(c, param_constraint(
+					c0.CType, c0.Id, tt_data.TeacherIndex[tref]))
 				pmmap[data.Resource] = n
 			}
 		}
@@ -132,14 +137,15 @@ func add_teacher_constraints(
 				c.CreateElement("Weight_Percentage").SetText("100")
 				c.CreateElement("Teacher").SetText(db0.Ref2Tag(tref))
 				c.CreateElement("Interval_Start_Hour").
-					SetText(db0.Hours[mbhours[0]].GetTag())
+					SetText(rundata.HourIds[mbhours[0]].Backend)
 				c.CreateElement("Interval_End_Hour").
-					SetText(db0.Hours[mbhours[0]+len(mbhours)].GetTag())
+					SetText(rundata.HourIds[mbhours[0]+len(mbhours)].Backend)
 				c.CreateElement("Maximum_Hours_Daily").
 					SetText(strconv.Itoa(len(mbhours) - 1))
 				c.CreateElement("Active").SetText("true")
-				c.CreateElement("Comments").SetText(resource_constraint(
-					db.C_TeacherLunchBreak, c0.Id, tref))
+
+				fetbuild.add_time_constraint(c, param_constraint(
+					c0.CType, c0.Id, tt_data.TeacherIndex[tref]))
 				lbmap[tref] = lbdays
 			}
 		}
@@ -166,8 +172,9 @@ func add_teacher_constraints(
 			c.CreateElement("Teacher").SetText(db0.Ref2Tag(tref))
 			c.CreateElement("Max_Gaps").SetText(strconv.Itoa(n))
 			c.CreateElement("Active").SetText("true")
-			c.CreateElement("Comments").SetText(resource_constraint(
-				db.C_TeacherMaxGapsPerDay, c0.Id, tref))
+
+			fetbuild.add_time_constraint(c, param_constraint(
+				c0.CType, c0.Id, tt_data.TeacherIndex[tref]))
 		}
 	}
 
@@ -191,8 +198,9 @@ func add_teacher_constraints(
 			c.CreateElement("Teacher").SetText(db0.Ref2Tag(tref))
 			c.CreateElement("Max_Gaps").SetText(strconv.Itoa(n))
 			c.CreateElement("Active").SetText("true")
-			c.CreateElement("Comments").SetText(resource_constraint(
-				db.C_TeacherMaxGapsPerWeek, c0.Id, tref))
+
+			fetbuild.add_time_constraint(c, param_constraint(
+				c0.CType, c0.Id, tt_data.TeacherIndex[tref]))
 		}
 	}
 }

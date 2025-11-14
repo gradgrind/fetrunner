@@ -3,9 +3,7 @@ package makefet
 import (
 	"fetrunner/base"
 	"fetrunner/db"
-	"fmt"
 	"strconv"
-	"strings"
 )
 
 type preferred_time struct {
@@ -40,8 +38,9 @@ func (fetbuild *FetBuild) days_between() {
 			}
 			c.CreateElement("MinDays").SetText(strconv.Itoa(c0.DaysBetween))
 			c.CreateElement("Active").SetText("true")
-			c.CreateElement("Comments").SetText(activities_constraint(
-				c0.Constraint, c0.Id, alist))
+
+			fetbuild.add_time_constraint(c, params_constraint(
+				c0.CType, c0.Id, alist))
 		}
 	}
 }
@@ -59,8 +58,9 @@ func (fetbuild *FetBuild) ends_day() {
 			c.CreateElement("Weight_Percentage").SetText(w)
 			c.CreateElement("Activity_Id").SetText(fet_activity_index(ai))
 			c.CreateElement("Active").SetText("true")
-			c.CreateElement("Comments").SetText(param_constraint(
-				db.C_ActivitiesEndDay, c0.Id, strconv.Itoa(ai)))
+
+			fetbuild.add_time_constraint(c, param_constraint(
+				c0.CType, c0.Id, ai))
 		}
 	}
 }
@@ -78,8 +78,9 @@ func (fetbuild *FetBuild) parallel_activities() {
 				c.CreateElement("Activity_Id").SetText(fet_activity_index((ai)))
 			}
 			c.CreateElement("Active").SetText("true")
-			c.CreateElement("Comments").SetText(activities_constraint(
-				db.C_ParallelCourses, c0.Id, alist))
+
+			fetbuild.add_time_constraint(c, params_constraint(
+				c0.CType, c0.Id, alist))
 		}
 	}
 }
@@ -87,70 +88,75 @@ func (fetbuild *FetBuild) parallel_activities() {
 func (fetbuild *FetBuild) before_after_hour() {
 	tt_data := fetbuild.ttdata
 	db0 := tt_data.Db
-	tclist := fetbuild.time_constraints_list
+	rundata := fetbuild.rundata
 
-	for _, c0 := range db0.Constraints[db.C_BeforeAfterHour] {
-		w := weight2fet(c0.Weight)
+	for _, c0 := range db0.Constraints[db.C_AfterHour] {
 		data := c0.Data.(*db.BeforeAfterHour)
 		timeslots := []preferred_time{}
-		if data.After {
-			for d := 0; d < tt_data.NDays; d++ {
-				for h := data.Hour + 1; h < tt_data.NHours; h++ {
-					timeslots = append(timeslots, preferred_time{
-						Preferred_Day:  db0.Days[d].GetTag(),
-						Preferred_Hour: db0.Hours[h].GetTag(),
-					})
-				}
-			}
-		} else {
-			for d := 0; d < tt_data.NDays; d++ {
-				for h := 0; h < data.Hour; h++ {
-					timeslots = append(timeslots, preferred_time{
-						Preferred_Day:  db0.Days[d].GetTag(),
-						Preferred_Hour: db0.Hours[h].GetTag(),
-					})
-				}
+		for d := 0; d < tt_data.NDays; d++ {
+			for h := data.Hour + 1; h < tt_data.NHours; h++ {
+				timeslots = append(timeslots, preferred_time{
+					Preferred_Day:  rundata.DayIds[d].Backend,
+					Preferred_Hour: rundata.HourIds[h].Backend,
+				})
 			}
 		}
-		for _, course := range data.Courses {
-			cinfo, ok := tt_data.Ref2CourseInfo[course]
-			if !ok {
-				base.Bug.Fatalf("Invalid course: %s\n", course)
-			}
-			for _, ai := range cinfo.Activities {
-				var after string
-				if data.After {
-					after = "+"
-				} else {
-					after = "-"
-				}
-				arg := fmt.Sprintf("%d/%s/%d", ai, after, data.Hour)
+		fetbuild.make_before_after_hour(c0, timeslots)
+	}
 
-				c := tclist.CreateElement("ConstraintActivityPreferredTimeSlots")
-				c.CreateElement("Weight_Percentage").SetText(w)
-				c.CreateElement("Activity_Id").SetText(fet_activity_index(ai))
-				c.CreateElement("Number_of_Preferred_Time_Slots").
-					SetText(strconv.Itoa(len(timeslots)))
-				for _, t := range timeslots {
-					pts := c.CreateElement("Preferred_Time_Slot")
-					pts.CreateElement("Preferred_Day").SetText(t.Preferred_Day)
-					pts.CreateElement("Preferred_Hour").SetText(t.Preferred_Hour)
-				}
-				c.CreateElement("Active").SetText("true")
-				c.CreateElement("Comments").SetText(param_constraint(
-					db.C_BeforeAfterHour, c0.Id, arg))
+	for _, c0 := range db0.Constraints[db.C_BeforeHour] {
+		data := c0.Data.(*db.BeforeAfterHour)
+		timeslots := []preferred_time{}
+		for d := 0; d < tt_data.NDays; d++ {
+			for h := 0; h < data.Hour; h++ {
+				timeslots = append(timeslots, preferred_time{
+					Preferred_Day:  rundata.DayIds[d].Backend,
+					Preferred_Hour: rundata.HourIds[h].Backend,
+				})
 			}
+		}
+		fetbuild.make_before_after_hour(c0, timeslots)
+	}
+}
+
+func (fetbuild *FetBuild) make_before_after_hour(
+	c0 *db.Constraint, timeslots []preferred_time,
+) {
+	tt_data := fetbuild.ttdata
+	tclist := fetbuild.time_constraints_list
+	data := c0.Data.(*db.BeforeAfterHour)
+	w := weight2fet(c0.Weight)
+	for _, course := range data.Courses {
+		cinfo, ok := tt_data.Ref2CourseInfo[course]
+		if !ok {
+			base.Bug.Fatalf("Invalid course: %s\n", course)
+		}
+		for _, ai := range cinfo.Activities {
+			c := tclist.CreateElement("ConstraintActivityPreferredTimeSlots")
+			c.CreateElement("Weight_Percentage").SetText(w)
+			c.CreateElement("Activity_Id").SetText(fet_activity_index(ai))
+			c.CreateElement("Number_of_Preferred_Time_Slots").
+				SetText(strconv.Itoa(len(timeslots)))
+			for _, t := range timeslots {
+				pts := c.CreateElement("Preferred_Time_Slot")
+				pts.CreateElement("Preferred_Day").SetText(t.Preferred_Day)
+				pts.CreateElement("Preferred_Hour").SetText(t.Preferred_Hour)
+			}
+			c.CreateElement("Active").SetText("true")
+
+			fetbuild.add_time_constraint(c, params_constraint(
+				c0.CType, c0.Id, []int{ai, data.Hour}))
 		}
 	}
 }
 
 func (fetbuild *FetBuild) double_no_break() {
 	tt_data := fetbuild.ttdata
-	db0 := tt_data.Db
+	rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 
 	var doubleBlocked []bool
-	for _, c0 := range db0.Constraints[db.C_DoubleActivityNotOverBreaks] {
+	for _, c0 := range tt_data.Db.Constraints[db.C_DoubleActivityNotOverBreaks] {
 		if len(doubleBlocked) != 0 {
 			base.Error.Fatalln("Constraint DoubleActivityNotOverBreaks" +
 				" specified more than once")
@@ -160,17 +166,17 @@ func (fetbuild *FetBuild) double_no_break() {
 		// Note that a double lesson can't start in the last slot of
 		// the day.
 		doubleBlocked = make([]bool, tt_data.NHours-1)
-		hlist := []string{}
+		hlist := []int{}
 		for _, h := range c0.Data.([]int) {
 			doubleBlocked[h-1] = true
-			hlist = append(hlist, strconv.Itoa(h))
+			hlist = append(hlist, h)
 		}
 		for d := 0; d < tt_data.NDays; d++ {
 			for h, bl := range doubleBlocked {
 				if !bl {
 					timeslots = append(timeslots, preferred_time{
-						Preferred_Day:  db0.Days[d].GetTag(),
-						Preferred_Hour: db0.Hours[h].GetTag(),
+						Preferred_Day:  rundata.DayIds[d].Backend,
+						Preferred_Hour: rundata.HourIds[h].Backend,
 					})
 				}
 			}
@@ -187,8 +193,9 @@ func (fetbuild *FetBuild) double_no_break() {
 			pts.CreateElement("Preferred_Starting_Hour").SetText(t.Preferred_Hour)
 		}
 		c.CreateElement("Active").SetText("true")
-		c.CreateElement("Comments").SetText(param_constraint(
-			db.C_DoubleActivityNotOverBreaks, c0.Id, strings.Join(hlist, ",")))
+
+		fetbuild.add_time_constraint(c, params_constraint(
+			c0.CType, c0.Id, hlist))
 	}
 }
 

@@ -14,7 +14,8 @@ type DbW365Pair struct {
 // W365 constraint names:
 var ConstraintMap []DbW365Pair = []DbW365Pair{
 	{db.C_ActivitiesEndDay, "MARGIN_HOUR"},
-	{db.C_BeforeAfterHour, "BEFORE_AFTER_HOUR"},
+	{db.C_AfterHour, "AFTER_HOUR"},
+	{db.C_BeforeHour, "BEFORE_HOUR"},
 	{db.C_AutomaticDifferentDays, "AUTOMATIC_DIFFERENT_DAYS"},
 	{db.C_DaysBetween, "DAYS_BETWEEN"},
 	{db.C_DaysBetweenJoin, "DAYS_BETWEEN_JOIN"},
@@ -51,39 +52,44 @@ func a2ii(ii any) []int {
 
 // Read the constraints read from a W365 JSON file into the equivalent
 // internal constraints.
-func (db *W365TopLevel) readConstraints(newdb *db.DbTopLevel) {
+func (db0 *W365TopLevel) readConstraints(newdb *db.DbTopLevel) {
 	cmap := map[string]string{}
 	for _, pair := range ConstraintMap {
 		cmap[pair.W365] = pair.Db
 	}
-	for _, e := range db.Constraints {
+	for _, e := range db0.Constraints {
 		cw365 := e["Constraint"].(string)
 		switch cmap[cw365] {
-		case "ActivitiesEndDay":
+		case db.C_ActivitiesEndDay:
 			newdb.NewActivitiesEndDay(
 				a2r(e["Id"]),
 				a2i(e["Weight"]),
 				a2r(e["Course"]))
-		case "BeforeAfterHour":
-			newdb.NewBeforeAfterHour(
+		case db.C_AfterHour:
+			newdb.NewAfterHour(
 				a2r(e["Id"]),
 				a2i(e["Weight"]),
 				a2rr(e["Courses"]),
-				e["After"].(bool),
 				a2i(e["Hour"]))
-		case "AutomaticDifferentDays":
+		case db.C_BeforeHour:
+			newdb.NewBeforeHour(
+				a2r(e["Id"]),
+				a2i(e["Weight"]),
+				a2rr(e["Courses"]),
+				a2i(e["Hour"]))
+		case db.C_AutomaticDifferentDays:
 			newdb.NewAutomaticDifferentDays(
 				a2r(e["Id"]),
 				a2i(e["Weight"]),
 				e["ConsecutiveIfSameDay"].(bool))
-		case "DaysBetween":
+		case db.C_DaysBetween:
 			newdb.NewDaysBetween(
 				a2r(e["Id"]),
 				a2i(e["Weight"]),
 				a2rr(e["Courses"]),
 				a2i(e["DaysBetween"]),
 				e["ConsecutiveIfSameDay"].(bool))
-		case "DaysBetweenJoin":
+		case db.C_DaysBetweenJoin:
 			newdb.NewDaysBetweenJoin(
 				a2r(e["Id"]),
 				a2i(e["Weight"]),
@@ -91,19 +97,19 @@ func (db *W365TopLevel) readConstraints(newdb *db.DbTopLevel) {
 				a2r(e["Course2"]),
 				a2i(e["DaysBetween"]),
 				e["ConsecutiveIfSameDay"].(bool))
-		case "MinHoursFollowing":
+		case db.C_MinHoursFollowing:
 			newdb.NewMinHoursFollowing(
 				a2r(e["Id"]),
 				a2i(e["Weight"]),
 				a2r(e["Course1"]),
 				a2r(e["Course2"]),
 				a2i(e["Hours"]))
-		case "DoubleActivityNotOverBreaks":
+		case db.C_DoubleActivityNotOverBreaks:
 			newdb.NewDoubleActivityNotOverBreaks(
 				a2r(e["Id"]),
 				a2i(e["Weight"]),
 				a2ii(e["Hours"]))
-		case "ParallelCourses":
+		case db.C_ParallelCourses:
 			newdb.NewParallelCourses(
 				a2r(e["Id"]),
 				a2i(e["Weight"]),

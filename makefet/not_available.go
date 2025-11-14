@@ -10,6 +10,7 @@ import (
 func (fetbuild *FetBuild) blocked_slots() map[db.NodeRef][]db.TimeSlot {
 	tt_data := fetbuild.ttdata
 	db0 := tt_data.Db
+	rundata := fetbuild.rundata
 	sclist := fetbuild.space_constraints_list
 	tclist := fetbuild.time_constraints_list
 	namap := map[db.NodeRef][]db.TimeSlot{} // needed for lunch-break constraints
@@ -30,13 +31,13 @@ func (fetbuild *FetBuild) blocked_slots() map[db.NodeRef][]db.TimeSlot {
 				SetText(strconv.Itoa(len(data.NotAvailable)))
 			for _, slot := range data.NotAvailable {
 				nat := cna.CreateElement("Not_Available_Time")
-				nat.CreateElement("Day").SetText(db0.Days[slot.Day].GetTag())
-				nat.CreateElement("Hour").SetText(db0.Hours[slot.Hour].GetTag())
+				nat.CreateElement("Day").SetText(rundata.DayIds[slot.Day].Backend)
+				nat.CreateElement("Hour").SetText(rundata.HourIds[slot.Hour].Backend)
 			}
 			cna.CreateElement("Active").SetText("true")
 
-			fetbuild.add_space_constraint(cna, resource_constraint(
-				db.C_RoomNotAvailable, c0.Id, tt_data.RoomIndex[rref]))
+			fetbuild.add_space_constraint(cna, param_constraint(
+				c0.CType, c0.Id, tt_data.RoomIndex[rref]))
 		}
 	}
 
@@ -56,13 +57,13 @@ func (fetbuild *FetBuild) blocked_slots() map[db.NodeRef][]db.TimeSlot {
 				SetText(strconv.Itoa(len(data.NotAvailable)))
 			for _, slot := range data.NotAvailable {
 				nat := cna.CreateElement("Not_Available_Time")
-				nat.CreateElement("Day").SetText(db0.Days[slot.Day].GetTag())
-				nat.CreateElement("Hour").SetText(db0.Hours[slot.Hour].GetTag())
+				nat.CreateElement("Day").SetText(rundata.DayIds[slot.Day].Backend)
+				nat.CreateElement("Hour").SetText(rundata.HourIds[slot.Hour].Backend)
 			}
 			cna.CreateElement("Active").SetText("true")
 
-			fetbuild.add_time_constraint(cna, resource_constraint(
-				db.C_TeacherNotAvailable, c0.Id, tt_data.TeacherIndex[tref]))
+			fetbuild.add_time_constraint(cna, param_constraint(
+				c0.CType, c0.Id, tt_data.TeacherIndex[tref]))
 		}
 	}
 
@@ -82,13 +83,13 @@ func (fetbuild *FetBuild) blocked_slots() map[db.NodeRef][]db.TimeSlot {
 				SetText(strconv.Itoa(len(data.NotAvailable)))
 			for _, slot := range data.NotAvailable {
 				nat := cna.CreateElement("Not_Available_Time")
-				nat.CreateElement("Day").SetText(db0.Days[slot.Day].GetTag())
-				nat.CreateElement("Hour").SetText(db0.Hours[slot.Hour].GetTag())
+				nat.CreateElement("Day").SetText(rundata.DayIds[slot.Day].Backend)
+				nat.CreateElement("Hour").SetText(rundata.HourIds[slot.Hour].Backend)
 			}
 			cna.CreateElement("Active").SetText("true")
 
-			fetbuild.add_time_constraint(cna, resource_constraint(
-				db.C_ClassNotAvailable, c0.Id, tt_data.ClassIndex[cref]))
+			fetbuild.add_time_constraint(cna, param_constraint(
+				c0.CType, c0.Id, tt_data.ClassIndex[cref]))
 		}
 	}
 

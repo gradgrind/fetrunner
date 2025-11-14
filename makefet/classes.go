@@ -52,7 +52,6 @@ func (fetbuild *FetBuild) set_classes() {
 				}
 			}
 		}
-
 	}
 	fetbuild.rundata.ClassIds = ids
 }

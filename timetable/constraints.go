@@ -13,7 +13,7 @@ import (
 type TtDaysBetween struct {
 	Id                   NodeRef
 	Weight               int
-	Constraint           string
+	CType                string
 	DaysBetween          int
 	ConsecutiveIfSameDay bool
 	ActivityLists        [][]ActivityIndex
@@ -31,6 +31,7 @@ func (c *TtDaysBetween) IsHard() bool {
 type TtParallelActivities struct {
 	Id            NodeRef
 	Weight        int
+	CType         string
 	ActivityLists [][]ActivityIndex
 }
 
@@ -92,7 +93,7 @@ func (tt_data *TtData) preprocessConstraints() {
 				tt_data.MinDaysBetweenActivities, &TtDaysBetween{
 					Id:                   c.Id,
 					Weight:               c.Weight,
-					Constraint:           db.C_DaysBetween,
+					CType:                db.C_DaysBetween,
 					DaysBetween:          data.DaysBetween,
 					ConsecutiveIfSameDay: data.ConsecutiveIfSameDay,
 					ActivityLists: tt_data.days_between_activities(
@@ -112,7 +113,7 @@ func (tt_data *TtData) preprocessConstraints() {
 				tt_data.MinDaysBetweenActivities, &TtDaysBetween{
 					Id:                   auto_id,
 					Weight:               auto_weight,
-					Constraint:           db.C_AutomaticDifferentDays,
+					CType:                db.C_AutomaticDifferentDays,
 					DaysBetween:          1,
 					ConsecutiveIfSameDay: auto_consec,
 					ActivityLists: tt_data.days_between_activities(
@@ -126,7 +127,7 @@ func (tt_data *TtData) preprocessConstraints() {
 			tt_data.MinDaysBetweenActivities, &TtDaysBetween{
 				Id:                   c.Id,
 				Weight:               c.Weight,
-				Constraint:           db.C_DaysBetweenJoin,
+				CType:                db.C_DaysBetweenJoin,
 				DaysBetween:          data.DaysBetween,
 				ConsecutiveIfSameDay: data.ConsecutiveIfSameDay,
 				ActivityLists: tt_data.days_between_join_activities(
@@ -179,6 +180,7 @@ func (tt_data *TtData) preprocessConstraints() {
 			tt_data.ParallelActivities, &TtParallelActivities{
 				Id:            c.Id,
 				Weight:        c.Weight,
+				CType:         db.C_ParallelCourses,
 				ActivityLists: alists,
 			})
 	}

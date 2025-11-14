@@ -64,8 +64,8 @@ type CourseInfo struct {
 }
 
 type TtActivity struct {
-	CourseInfo     int // index to `TtData.CourseInfoList`
-	FixedStartTime *db.TimeSlot
+	CourseInfo     int          // index to `TtData.CourseInfoList`
+	FixedStartTime *db.TimeSlot // needed for days-between preparation
 }
 
 type ClassDivision struct {
@@ -124,8 +124,9 @@ func (tt_data *TtData) RoomResources() {
 }
 
 // This structure is used to return the placement results from the
-// timetable back-end.
-type ActivityPlacement struct {
+// timetable back-end. It differs from `db.ActivityPlacement` in that it
+// uses indexes rather than NodeRefs.
+type TtActivityPlacement struct {
 	Id    ActivityIndex
 	Day   int
 	Hour  int

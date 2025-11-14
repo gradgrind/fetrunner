@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math"
 	"strconv"
-	"strings"
 
 	"github.com/beevik/etree"
 )
@@ -103,29 +102,22 @@ func (fetbuild *FetBuild) add_activity_tag(tag string) {
 	atag.CreateElement("Printable").SetText("false")
 }
 
-func resource_constraint(
-	ctype string, id db.NodeRef, resource int,
+func param_constraint(
+	ctype string, id db.NodeRef, index int,
 ) Constraint {
 	return Constraint{
 		IdPair:     IdPair{Source: string(id)},
 		Ctype:      ctype,
-		Parameters: []int{resource}}
+		Parameters: []int{index}}
 }
 
-func param_constraint(
-	ctype string, id db.NodeRef, param string,
-) string {
-	return fmt.Sprintf("%s.%s:%s", ctype, id, param)
-}
-
-func activities_constraint(
-	ctype string, id db.NodeRef, alist []timetable.ActivityIndex,
-) string {
-	ailist := []string{}
-	for _, a := range alist {
-		ailist = append(ailist, strconv.Itoa(a))
-	}
-	return param_constraint(ctype, id, strings.Join(ailist, ","))
+func params_constraint(
+	ctype string, id db.NodeRef, indexlist []int,
+) Constraint {
+	return Constraint{
+		IdPair:     IdPair{Source: string(id)},
+		Ctype:      ctype,
+		Parameters: indexlist}
 }
 
 func (fetbuild *FetBuild) add_time_constraint(e *etree.Element, c Constraint) {

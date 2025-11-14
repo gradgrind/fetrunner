@@ -11,8 +11,26 @@ import (
 func (fetbuild *FetBuild) add_placement_constraints(without_rooms bool) {
 	tt_data := fetbuild.ttdata
 	db0 := tt_data.Db
+	rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 	sclist := fetbuild.space_constraints_list
+
+	// Get the time-placements – not that those available in the `TtActivity`
+	// items are only the hard constraints, so the list from `db0.Constraints`
+	// is used here.
+	type start_time struct {
+		weight string
+		day    int
+		hour   int
+	}
+	ai2start := map[int]start_time{}
+	for _, c0 := range db0.Constraints[db.C_ActivityStartTime] {
+		w := weight2fet(c0.Weight)
+		data := c0.Data.(db.ActivityStartTime)
+		ai := tt_data.Ref2ActivityIndex[data.Activity]
+		ai2start[ai] = start_time{
+			weight: w, day: data.Day, hour: data.Hour}
+	}
 
 	for _, cinfo := range tt_data.CourseInfoList {
 		var rooms []string
@@ -38,22 +56,23 @@ func (fetbuild *FetBuild) add_placement_constraints(without_rooms bool) {
 					c.CreateElement("Preferred_Room").SetText(r)
 				}
 				c.CreateElement("Active").SetText("true")
-				c.CreateElement("Comments").SetText(resource_constraint(
-					db.C_SetRooms, "", a.Id))
+
+				fetbuild.add_space_constraint(c, param_constraint(
+					db.C_SetRooms, a.Id, ai))
 			}
 
-			tta := tt_data.Activities[ai]
-			start := tta.FixedStartTime
-			if start != nil {
+			start, ok := ai2start[ai]
+			if ok {
 				c := tclist.CreateElement("ConstraintActivityPreferredStartingTime")
-				c.CreateElement("Weight_Percentage").SetText("100")
+				c.CreateElement("Weight_Percentage").SetText(start.weight)
 				c.CreateElement("Activity_Id").SetText(aid)
-				c.CreateElement("Preferred_Day").SetText(db0.Days[start.Day].GetTag())
-				c.CreateElement("Preferred_Hour").SetText(db0.Hours[start.Hour].GetTag())
+				c.CreateElement("Preferred_Day").SetText(rundata.DayIds[start.day].Backend)
+				c.CreateElement("Preferred_Hour").SetText(rundata.HourIds[start.hour].Backend)
 				c.CreateElement("Permanently_Locked").SetText("true")
 				c.CreateElement("Active").SetText("true")
-				c.CreateElement("Comments").SetText(resource_constraint(
-					db.C_SetStartingTime, "", a.Id))
+
+				fetbuild.add_time_constraint(c, param_constraint(
+					db.C_SetStartingTime, a.Id, ai))
 			}
 		}
 	}
