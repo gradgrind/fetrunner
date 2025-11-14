@@ -112,12 +112,10 @@ func main() {
 
 	//
 
-	rundata := makefet.FetTree(tt_data)
+	rundata := makefet.FetTree(bdata, tt_data)
 	fetdoc := rundata.Doc
 	fetdoc.Indent(2)
 	fetdoc.WriteToFile(filepath.Join(d1, f1+"_TEST.fet"))
-
-	bdata.Source = rundata
 
 	bdata.BackendInterface = fet.SetFetBackend(bdata)
 

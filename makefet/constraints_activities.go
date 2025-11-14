@@ -40,7 +40,7 @@ func (fetbuild *FetBuild) days_between() {
 			c.CreateElement("Active").SetText("true")
 
 			fetbuild.add_time_constraint(c, params_constraint(
-				c0.CType, c0.Id, alist))
+				c0.CType, c0.Id, alist, c0.Weight))
 		}
 	}
 }
@@ -60,7 +60,7 @@ func (fetbuild *FetBuild) ends_day() {
 			c.CreateElement("Active").SetText("true")
 
 			fetbuild.add_time_constraint(c, param_constraint(
-				c0.CType, c0.Id, ai))
+				c0.CType, c0.Id, ai, c0.Weight))
 		}
 	}
 }
@@ -80,7 +80,7 @@ func (fetbuild *FetBuild) parallel_activities() {
 			c.CreateElement("Active").SetText("true")
 
 			fetbuild.add_time_constraint(c, params_constraint(
-				c0.CType, c0.Id, alist))
+				c0.CType, c0.Id, alist, c0.Weight))
 		}
 	}
 }
@@ -145,7 +145,7 @@ func (fetbuild *FetBuild) make_before_after_hour(
 			c.CreateElement("Active").SetText("true")
 
 			fetbuild.add_time_constraint(c, params_constraint(
-				c0.CType, c0.Id, []int{ai, data.Hour}))
+				c0.CType, c0.Id, []int{ai, data.Hour}, c0.Weight))
 		}
 	}
 }
@@ -195,7 +195,7 @@ func (fetbuild *FetBuild) double_no_break() {
 		c.CreateElement("Active").SetText("true")
 
 		fetbuild.add_time_constraint(c, params_constraint(
-			c0.CType, c0.Id, hlist))
+			c0.CType, c0.Id, hlist, c0.Weight))
 	}
 }
 

@@ -31,4 +31,5 @@ type Constraint struct {
 	IdPair
 	Ctype      string
 	Parameters []int
+	Weight     int
 }

@@ -40,33 +40,35 @@ func (fetbuild *FetBuild) add_class_constraints(
 	for _, c0 := range db0.Constraints[db.C_ClassMinActivitiesPerDay] {
 		data := c0.Data.(db.ResourceN)
 		cref := data.Resource
+		w := weight2fet(c0.Weight)
 		n := data.N
 		if n >= 2 && n <= nhours {
 			c := tclist.CreateElement("ConstraintStudentsSetMinHoursDaily")
-			c.CreateElement("Weight_Percentage").SetText("100")
+			c.CreateElement("Weight_Percentage").SetText(w)
 			c.CreateElement("Students").SetText(db0.Ref2Tag(cref))
 			c.CreateElement("Minimum_Hours_Daily").SetText(strconv.Itoa(n))
 			c.CreateElement("Allow_Empty_Days").SetText("true")
 			c.CreateElement("Active").SetText("true")
 
 			fetbuild.add_time_constraint(c, param_constraint(
-				c0.CType, c0.Id, tt_data.ClassIndex[cref]))
+				c0.CType, c0.Id, tt_data.ClassIndex[cref], c0.Weight))
 		}
 	}
 
 	for _, c0 := range db0.Constraints[db.C_ClassMaxActivitiesPerDay] {
 		data := c0.Data.(db.ResourceN)
 		cref := data.Resource
+		w := weight2fet(c0.Weight)
 		n := data.N
 		if n >= 2 && n <= nhours {
 			c := tclist.CreateElement("ConstraintStudentsSetMaxHoursDaily")
-			c.CreateElement("Weight_Percentage").SetText("100")
+			c.CreateElement("Weight_Percentage").SetText(w)
 			c.CreateElement("Students").SetText(db0.Ref2Tag(cref))
 			c.CreateElement("Maximum_Hours_Daily").SetText(strconv.Itoa(n))
 			c.CreateElement("Active").SetText("true")
 
 			fetbuild.add_time_constraint(c, param_constraint(
-				c0.CType, c0.Id, tt_data.ClassIndex[cref]))
+				c0.CType, c0.Id, tt_data.ClassIndex[cref], c0.Weight))
 		}
 	}
 
@@ -79,10 +81,11 @@ func (fetbuild *FetBuild) add_class_constraints(
 		for _, c0 := range db0.Constraints[db.C_ClassMaxAfternoons] {
 			data := c0.Data.(db.ResourceN)
 			cref := data.Resource
+			w := weight2fet(c0.Weight)
 			n := data.N
 			if n < ndays {
 				c := tclist.CreateElement("ConstraintStudentsSetIntervalMaxDaysPerWeek")
-				c.CreateElement("Weight_Percentage").SetText("100")
+				c.CreateElement("Weight_Percentage").SetText(w)
 				c.CreateElement("Students").SetText(db0.Ref2Tag(cref))
 				c.CreateElement("Interval_Start_Hour").SetText(rundata.HourIds[h0].Backend)
 				c.CreateElement("Interval_End_Hour").SetText("")
@@ -90,7 +93,7 @@ func (fetbuild *FetBuild) add_class_constraints(
 				c.CreateElement("Active").SetText("true")
 
 				fetbuild.add_time_constraint(c, param_constraint(
-					c0.CType, c0.Id, tt_data.ClassIndex[cref]))
+					c0.CType, c0.Id, tt_data.ClassIndex[cref], c0.Weight))
 				pmmap[data.Resource] = n
 			}
 		}
@@ -98,14 +101,15 @@ func (fetbuild *FetBuild) add_class_constraints(
 
 	for _, c0 := range db0.Constraints[db.C_ClassForceFirstHour] {
 		cref := c0.Data.(db.NodeRef)
+		w := weight2fet(c0.Weight)
 		c := tclist.CreateElement("ConstraintStudentsSetEarlyMaxBeginningsAtSecondHour")
-		c.CreateElement("Weight_Percentage").SetText("100")
+		c.CreateElement("Weight_Percentage").SetText(w)
 		c.CreateElement("Students").SetText(db0.Ref2Tag(cref))
 		c.CreateElement("Max_Beginnings_At_Second_Hour").SetText("0")
 		c.CreateElement("Active").SetText("true")
 
 		fetbuild.add_time_constraint(c, param_constraint(
-			c0.CType, c0.Id, tt_data.ClassIndex[cref]))
+			c0.CType, c0.Id, tt_data.ClassIndex[cref], c0.Weight))
 	}
 
 	// Gather the lunch-break constraints as they may influence the
@@ -115,6 +119,7 @@ func (fetbuild *FetBuild) add_class_constraints(
 	if mbhours := db0.Info.MiddayBreak; len(mbhours) != 0 {
 		for _, c0 := range db0.Constraints[db.C_ClassLunchBreak] {
 			cref := c0.Data.(db.NodeRef)
+			w := weight2fet(c0.Weight)
 			// Generate the constraint unless all days have a blocked
 			// lesson at lunchtime.
 			lbdmap := make([]bool, ndays)
@@ -132,7 +137,7 @@ func (fetbuild *FetBuild) add_class_constraints(
 			if lbdays != 0 {
 				// Add a lunch-break constraint.
 				c := tclist.CreateElement("ConstraintStudentsSetMaxHoursDailyInInterval")
-				c.CreateElement("Weight_Percentage").SetText("100")
+				c.CreateElement("Weight_Percentage").SetText(w)
 				c.CreateElement("Students").SetText(db0.Ref2Tag(cref))
 				c.CreateElement("Interval_Start_Hour").
 					SetText(rundata.HourIds[mbhours[0]].Backend)
@@ -143,7 +148,7 @@ func (fetbuild *FetBuild) add_class_constraints(
 				c.CreateElement("Active").SetText("true")
 
 				fetbuild.add_time_constraint(c, param_constraint(
-					c0.CType, c0.Id, tt_data.ClassIndex[cref]))
+					c0.CType, c0.Id, tt_data.ClassIndex[cref], c0.Weight))
 				lbmap[cref] = lbdays
 			}
 		}
@@ -151,6 +156,7 @@ func (fetbuild *FetBuild) add_class_constraints(
 
 	for _, c0 := range db0.Constraints[db.C_ClassMaxGapsPerDay] {
 		data := c0.Data.(db.ResourceN)
+		w := weight2fet(c0.Weight)
 		n := data.N
 		cref := data.Resource
 		// Ensure that a gap is allowed if there are lunch breaks.
@@ -166,18 +172,19 @@ func (fetbuild *FetBuild) add_class_constraints(
 		}
 		if n >= 0 {
 			c := tclist.CreateElement("ConstraintStudentsSetMaxGapsPerDay")
-			c.CreateElement("Weight_Percentage").SetText("100")
+			c.CreateElement("Weight_Percentage").SetText(w)
 			c.CreateElement("Students").SetText(db0.Ref2Tag(cref))
 			c.CreateElement("Max_Gaps").SetText(strconv.Itoa(n))
 			c.CreateElement("Active").SetText("true")
 
 			fetbuild.add_time_constraint(c, param_constraint(
-				c0.CType, c0.Id, tt_data.ClassIndex[cref]))
+				c0.CType, c0.Id, tt_data.ClassIndex[cref], c0.Weight))
 		}
 	}
 
 	for _, c0 := range db0.Constraints[db.C_ClassMaxGapsPerWeek] {
 		data := c0.Data.(db.ResourceN)
+		w := weight2fet(c0.Weight)
 		n := data.N
 		cref := data.Resource
 		if n >= 0 {
@@ -192,13 +199,13 @@ func (fetbuild *FetBuild) add_class_constraints(
 				n += lbdays
 			}
 			c := tclist.CreateElement("ConstraintStudentsSetMaxGapsPerWeek")
-			c.CreateElement("Weight_Percentage").SetText("100")
+			c.CreateElement("Weight_Percentage").SetText(w)
 			c.CreateElement("Students").SetText(db0.Ref2Tag(cref))
 			c.CreateElement("Max_Gaps").SetText(strconv.Itoa(n))
 			c.CreateElement("Active").SetText("true")
 
 			fetbuild.add_time_constraint(c, param_constraint(
-				c0.CType, c0.Id, tt_data.ClassIndex[cref]))
+				c0.CType, c0.Id, tt_data.ClassIndex[cref], c0.Weight))
 		}
 	}
 }

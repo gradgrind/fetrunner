@@ -13,12 +13,14 @@ func fet_activity_index(aix int) string {
 func (fetbuild *FetBuild) set_activities() {
 	tt_data := fetbuild.ttdata
 	db0 := tt_data.Db
+	rundata := fetbuild.rundata
 
 	fetactivities := fetbuild.fetroot.CreateElement("Activities_List")
 	for ai, tt_activity := range tt_data.Activities {
 		fetactivity := fetactivities.CreateElement("Activity")
 		// The fet activities start at Id = 1
-		fetactivity.CreateElement("Id").SetText(fet_activity_index(ai))
+		aid := fet_activity_index(ai)
+		fetactivity.CreateElement("Id").SetText(aid)
 
 		cinfo := tt_data.CourseInfoList[tt_activity.CourseInfo]
 
@@ -67,7 +69,8 @@ func (fetbuild *FetBuild) set_activities() {
 			SetText(strconv.Itoa(a.Duration))
 		fetactivity.CreateElement("Activity_Group_Id").
 			SetText(agid)
-		fetactivity.CreateElement("Comments").
-			SetText(string(a.GetRef()))
+
+		rundata.ActivityIds = append(rundata.ActivityIds, IdPair{
+			Source: string(a.GetRef()), Backend: aid})
 	}
 }

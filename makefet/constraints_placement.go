@@ -19,9 +19,10 @@ func (fetbuild *FetBuild) add_placement_constraints(without_rooms bool) {
 	// items are only the hard constraints, so the list from `db0.Constraints`
 	// is used here.
 	type start_time struct {
-		weight string
-		day    int
-		hour   int
+		weight0 int
+		weight  string
+		day     int
+		hour    int
 	}
 	ai2start := map[int]start_time{}
 	for _, c0 := range db0.Constraints[db.C_ActivityStartTime] {
@@ -29,7 +30,7 @@ func (fetbuild *FetBuild) add_placement_constraints(without_rooms bool) {
 		data := c0.Data.(db.ActivityStartTime)
 		ai := tt_data.Ref2ActivityIndex[data.Activity]
 		ai2start[ai] = start_time{
-			weight: w, day: data.Day, hour: data.Hour}
+			weight0: c0.Weight, weight: w, day: data.Day, hour: data.Hour}
 	}
 
 	for _, cinfo := range tt_data.CourseInfoList {
@@ -58,7 +59,7 @@ func (fetbuild *FetBuild) add_placement_constraints(without_rooms bool) {
 				c.CreateElement("Active").SetText("true")
 
 				fetbuild.add_space_constraint(c, param_constraint(
-					db.C_SetRooms, a.Id, ai))
+					db.C_SetRooms, a.Id, ai, 100))
 			}
 
 			start, ok := ai2start[ai]
@@ -72,7 +73,7 @@ func (fetbuild *FetBuild) add_placement_constraints(without_rooms bool) {
 				c.CreateElement("Active").SetText("true")
 
 				fetbuild.add_time_constraint(c, param_constraint(
-					db.C_SetStartingTime, a.Id, ai))
+					db.C_SetStartingTime, a.Id, ai, start.weight0))
 			}
 		}
 	}
