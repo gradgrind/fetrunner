@@ -147,7 +147,8 @@ func param_constraint(
 	return Constraint{
 		IdPair:     IdPair{Source: string(id)},
 		Ctype:      ctype,
-		Parameters: []int{index}}
+		Parameters: []int{index},
+		Weight:     weight}
 }
 
 func params_constraint(
