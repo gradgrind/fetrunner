@@ -30,7 +30,7 @@ var ConstraintPriority = map[ConstraintType]int{
 	"ConstraintStudentsSetMaxGapsPerWeek": -100,
 }
 
-func sort_constraint_types(
+func SortConstraintTypes(
 	constraint_types []ConstraintType,
 ) []ConstraintType {
 	slices.Sort(constraint_types)

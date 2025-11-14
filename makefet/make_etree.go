@@ -2,13 +2,11 @@ package makefet
 
 import (
 	"fetrunner/autotimetable"
-	"fetrunner/base"
 	"fetrunner/db"
 	"fetrunner/fet"
 	"fetrunner/timetable"
 	"fmt"
 	"math"
-	"regexp"
 	"strconv"
 
 	"github.com/beevik/etree"
@@ -92,135 +90,32 @@ func FetTree(
 
 	//TODO: The remaining constraints
 
-	//TODO: integrate this somehow ...
-
 	// Number of activities
 	basic_data.NActivities = len(rundata.ActivityIds)
 
 	// Collect the constraints, dividing into soft and hard groups.
-	r_constraint_number := regexp.MustCompile(`^[0-9]+[)].*`)
-	constraint_counter := 0
+	hard_constraint_map := map[string][]int{}
+	soft_constraint_map := map[string][]int{}
+	constraint_types := []string{}
+	for i, c := range rundata.Constraints {
 
-	constraints := []*etree.Element{}
-	hard_constraint_map := map[ConstraintType][]ConstraintIndex{}
-	soft_constraint_map := map[ConstraintType][]ConstraintIndex{}
-	constraint_types := []ConstraintType{}
-	necessary := []ConstraintIndex{}
-	// Collect active time constraints
-	var n_time_constraints int
-	{
-		et := root.SelectElement("Time_Constraints_List")
-		inactive := 0
-		for _, e := range et.ChildElements() {
-			// Count and skip if inactive
-			if e.SelectElement("Active").Text() == "false" {
-				inactive++ // count inactive constraints
-				continue
-			}
-			i := len(constraints)
-			constraints = append(constraints, e)
-			ctype := ConstraintType(e.Tag)
-			w := e.SelectElement("Weight_Percentage").Text()
-			//fmt.Printf(" ++ %02d: %s (%s)\n", i, ctype, w)
-			if ctype == "ConstraintBasicCompulsoryTime" {
-				// Basic, non-negotiable constraint
-				necessary = append(necessary, ConstraintIndex(i))
-				continue
-			}
-			constraint_types = append(constraint_types, ctype)
-			// ... duplicates wil be removed in `sort_constraint_types`
+		constraint_types = append(constraint_types, c.Ctype)
+		// ... duplicates wil be removed in `sort_constraint_types`
 
-			// Ensure that the constraints are numbered in their Comments.
-			// This is to ease referencing in the results object.
-			comments := e.SelectElement("Comments")
-			comment := ""
-			if comments == nil {
-				comments = e.CreateElement("Comments")
-			} else {
-				comment = comments.Text()
-				if r_constraint_number.MatchString(comment) {
-					goto skip1
-				}
-			}
-			constraint_counter++
-			comments.SetText(
-				fmt.Sprintf("%d)%s", constraint_counter, comment))
-		skip1:
-
-			if w == "100" {
-				// Hard constraint
-				hard_constraint_map[ctype] = append(hard_constraint_map[ctype],
-					ConstraintIndex(i))
-			} else {
-				// Soft constraint
-				soft_constraint_map[ctype] = append(soft_constraint_map[ctype],
-					ConstraintIndex(i))
-			}
-		}
-		if inactive != 0 {
-			base.Message.Printf("-T- %d inactive time constraints", inactive)
-		}
-		n_time_constraints = len(constraints)
-	}
-	// Collect active space constraints
-	{
-		et := root.SelectElement("Space_Constraints_List")
-		inactive := 0
-		for _, e := range et.ChildElements() {
-			// Count and skip if inactive
-			if e.SelectElement("Active").Text() == "false" {
-				et.RemoveChild(e)
-				inactive++ // count removed constraints
-				continue
-			}
-			i := len(constraints)
-			constraints = append(constraints, e)
-			ctype := ConstraintType(e.Tag)
-			w := e.SelectElement("Weight_Percentage").Text()
-			//fmt.Printf(" ++ %02d: %s (%s)\n", i, ctype, w)
-			if ctype == "ConstraintBasicCompulsorySpace" {
-				// Basic, non-negotiable constraint
-				necessary = append(necessary, ConstraintIndex(i))
-				continue
-			}
-			constraint_types = append(constraint_types, ctype)
-			// ... duplicates wil be removed in `sort_constraint_types`
-
-			// Ensure that the constraints are numbered in their Comments.
-			// This is to ease referencing in the results object.
-			comments := e.SelectElement("Comments")
-			comment := ""
-			if comments == nil {
-				comments = e.CreateElement("Comments")
-			} else {
-				comment = comments.Text()
-				if r_constraint_number.MatchString(comment) {
-					goto skip2
-				}
-			}
-			constraint_counter++
-			comments.SetText(
-				fmt.Sprintf("%d)%s", constraint_counter, comment))
-		skip2:
-
-			if w == "100" {
-				// Hard constraint
-				hard_constraint_map[ctype] = append(hard_constraint_map[ctype],
-					ConstraintIndex(i))
-			} else {
-				// Soft constraint
-				soft_constraint_map[ctype] = append(soft_constraint_map[ctype],
-					ConstraintIndex(i))
-			}
-		}
-		if inactive != 0 {
-			base.Message.Printf("-S- %d inactive space constraints", inactive)
+		if c.Weight == db.MAXWEIGHT {
+			// Hard constraint
+			hard_constraint_map[c.Ctype] = append(
+				hard_constraint_map[c.Ctype], i)
+		} else {
+			// Soft constraint
+			soft_constraint_map[c.Ctype] = append(
+				soft_constraint_map[c.Ctype], i)
 		}
 	}
-
-	cdata.ConstraintTypes = sort_constraint_types(constraint_types)
-	cdata.HardConstraintMap = hard_constraint_map
-	cdata.SoftConstraintMap = soft_constraint_map
+	basic_data.NConstraints = len(rundata.Constraints)
+	basic_data.ConstraintTypes = fet.SortConstraintTypes(constraint_types)
+	basic_data.HardConstraintMap = hard_constraint_map
+	basic_data.SoftConstraintMap = soft_constraint_map
 
 	//
 

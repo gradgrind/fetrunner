@@ -5,8 +5,8 @@ import "fetrunner/timetable"
 // Structures and global variables used in connection with automation of the
 // timetable generation.
 
-type ConstraintType string
-type ConstraintIndex int
+type ConstraintType = string
+type ConstraintIndex = int
 
 // The `BasicData` structure is set up once for the handling of a set of
 // timetable data (based on a source file, for example).

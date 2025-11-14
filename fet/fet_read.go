@@ -207,7 +207,7 @@ func FetRead(cdata *BasicData, fetpath string) (*FetDoc, error) {
 	}
 
 	cdata.NConstraints = ConstraintIndex(len(constraints))
-	cdata.ConstraintTypes = sort_constraint_types(constraint_types)
+	cdata.ConstraintTypes = SortConstraintTypes(constraint_types)
 	cdata.HardConstraintMap = hard_constraint_map
 	cdata.SoftConstraintMap = soft_constraint_map
 

@@ -5,8 +5,6 @@ import (
 	"strconv"
 )
 
-//TODO: add to Constraints list
-
 func (fetbuild *FetBuild) blocked_slots() map[db.NodeRef][]db.TimeSlot {
 	tt_data := fetbuild.ttdata
 	db0 := tt_data.Db
@@ -17,7 +15,7 @@ func (fetbuild *FetBuild) blocked_slots() map[db.NodeRef][]db.TimeSlot {
 
 	// Rooms
 	for _, c0 := range db0.Constraints[db.C_RoomNotAvailable] {
-		// The weight is expected to be 100%.
+		// The weight is presumably 100% ...
 		w := weight2fet(c0.Weight)
 		data := c0.Data.(db.ResourceNotAvailable)
 		rref := data.Resource
@@ -44,7 +42,7 @@ func (fetbuild *FetBuild) blocked_slots() map[db.NodeRef][]db.TimeSlot {
 
 	// Teachers
 	for _, c0 := range db0.Constraints[db.C_TeacherNotAvailable] {
-		// The weight is expected to be 100%.
+		// The weight is presumably 100% ...
 		w := weight2fet(c0.Weight)
 		data := c0.Data.(db.ResourceNotAvailable)
 		tref := data.Resource
@@ -71,7 +69,7 @@ func (fetbuild *FetBuild) blocked_slots() map[db.NodeRef][]db.TimeSlot {
 
 	// Classes
 	for _, c0 := range db0.Constraints[db.C_ClassNotAvailable] {
-		// The weight is assumed to be 100%.
+		// The weight is presumably 100% ...
 		w := weight2fet(c0.Weight)
 		data := c0.Data.(db.ResourceNotAvailable)
 		cref := data.Resource
