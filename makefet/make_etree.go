@@ -2,6 +2,7 @@ package makefet
 
 import (
 	"fetrunner/db"
+	"fetrunner/fet"
 	"fetrunner/timetable"
 	"fmt"
 	"math"
@@ -19,8 +20,12 @@ const VIRTUAL_ROOM_PREFIX = "!"
 // const LUNCH_BREAK_NAME = "Lunch Break"
 
 func FetTree(tt_data *timetable.TtData) *etree.Document {
+	doc := etree.NewDocument()
+	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
+
 	fetbuild := &FetBuild{
 		ttdata:             tt_data,
+		rundata:            &fet.TtRunDataFet{Doc: doc},
 		fet_virtual_rooms:  map[string]string{},
 		fet_virtual_room_n: map[string]int{},
 	}
@@ -28,9 +33,6 @@ func FetTree(tt_data *timetable.TtData) *etree.Document {
 	//TODO
 	institution := "The School"
 	fet_version := "6.28.2"
-
-	doc := etree.NewDocument()
-	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
 
 	fetroot := doc.CreateElement("fet")
 	fetbuild.fetroot = fetroot
