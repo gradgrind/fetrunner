@@ -268,7 +268,7 @@ func (data *FetTtData) FinalizeResult(basic_data *autotimetable.BasicData) {
 func (data *FetTtData) Results(
 	basic_data *autotimetable.BasicData,
 	instance *autotimetable.TtInstance,
-) []autotimetable.ActivityPlacement {
+) []autotimetable.TtActivityPlacement {
 	// Get placements
 	xmlpath := filepath.Join(data.odir, "timetables", instance.Tag,
 		instance.Tag+"_activities.xml")
@@ -294,27 +294,27 @@ func (data *FetTtData) Results(
 	// ... room conversion
 	room2index := map[string]int{}
 	for i, r := range basic_data.Source.GetRooms() {
-		room2index[r.Id] = i
+		room2index[r.Backend] = i
 
 	}
 	// ... day conversion
 	day2index := map[string]int{}
-	for i, d := range basic_data.Source.GetDayTags() {
-		day2index[d.Id] = i
+	for i, d := range basic_data.Source.GetDays() {
+		day2index[d.Backend] = i
 	}
 	// ... hour conversion
 	hour2index := map[string]int{}
-	for i, h := range basic_data.Source.GetHourTags() {
-		hour2index[h.Id] = i
+	for i, h := range basic_data.Source.GetHours() {
+		hour2index[h.Backend] = i
 	}
 	// ... activity conversion
 	activity2index := map[string]int{}
-	for i, a := range basic_data.Source.GetActivityRefs() {
-		activity2index[a.Id] = i
+	for i, a := range basic_data.Source.GetActivities() {
+		activity2index[a.Backend] = i
 	}
 
 	// Gather the activities
-	activities := make([]autotimetable.ActivityPlacement, len(v.Activities))
+	activities := make([]autotimetable.TtActivityPlacement, len(v.Activities))
 	for i, a := range v.Activities {
 		rooms := []int{}
 		if len(a.Real_Room) != 0 {
@@ -332,7 +332,7 @@ func (data *FetTtData) Results(
 			}
 			rooms = append(rooms, ix)
 		}
-		activities[i] = autotimetable.ActivityPlacement{
+		activities[i] = autotimetable.TtActivityPlacement{
 			Activity: activity2index[a.Id],
 			Day:      day2index[a.Day],
 			Hour:     hour2index[a.Hour],

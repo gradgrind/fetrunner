@@ -19,7 +19,7 @@ const VIRTUAL_ROOM_PREFIX = "!"
 // const LUNCH_BREAK_TAG = "-lb-"
 // const LUNCH_BREAK_NAME = "Lunch Break"
 
-func FetTree(tt_data *timetable.TtData) *etree.Document {
+func FetTree(tt_data *timetable.TtData) *fet.TtRunDataFet {
 	doc := etree.NewDocument()
 	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
 
@@ -82,7 +82,7 @@ func FetTree(tt_data *timetable.TtData) *etree.Document {
 
 	//TODO: The remaining constraints
 
-	return doc
+	return fetbuild.rundata
 }
 
 func weight2fet(w int) string {

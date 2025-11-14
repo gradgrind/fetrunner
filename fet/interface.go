@@ -41,3 +41,41 @@ func (rundata *TtRunDataFet) GetRooms() []IdPair           { return rundata.Room
 func (rundata *TtRunDataFet) GetClasses() []IdPair         { return rundata.ClassIds }
 func (rundata *TtRunDataFet) GetActivities() []IdPair      { return rundata.ActivityIds }
 func (rundata *TtRunDataFet) GetConstraints() []Constraint { return rundata.Constraints }
+
+// Rebuild the FET file given an array detailing which constraints are enabled.
+
+//TODO: copy the etree doc?
+// Because it modifies the data in the shared `FetDoc`, this function
+// is not thread-safe!
+
+// The `xmlp` argument is a pointer to a byte slice, to receive the
+// XML FET-file.
+func (rundata *TtRunDataFet) PrepareRun(enabled []bool, xmlp any) {
+	//for _, i := range fetdoc.Necessary {
+	//	enabled[i] = true
+	//}
+	for i, c := range rundata.ConstraintElements {
+		active := c.SelectElement("Active")
+		if enabled[i] {
+			active.SetText("true")
+		} else {
+			active.SetText("false")
+		}
+	}
+	root := rundata.Doc.Root()
+	et := root.SelectElement("Time_Constraints_List")
+	active := 0
+	n := 0
+	for _, e := range et.ChildElements() {
+		// Count and skip if inactive
+		if e.SelectElement("Active").Text() == "true" {
+			active++ // count active constraints
+		}
+		n++
+	}
+	var err error
+	*(xmlp.(*[]byte)), err = rundata.Doc.WriteToBytes()
+	if err != nil {
+		panic(err)
+	}
+}

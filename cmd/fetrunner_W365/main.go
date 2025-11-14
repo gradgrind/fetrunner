@@ -28,6 +28,7 @@ import (
 	"fetrunner/autotimetable"
 	"fetrunner/base"
 	"fetrunner/db"
+	"fetrunner/fet"
 	"fetrunner/makefet"
 	"fetrunner/timetable"
 	"fetrunner/w365tt"
@@ -111,9 +112,17 @@ func main() {
 
 	//
 
-	fetdoc := makefet.FetTree(tt_data)
+	rundata := makefet.FetTree(tt_data)
+	fetdoc := rundata.Doc
 	fetdoc.Indent(2)
 	fetdoc.WriteToFile(filepath.Join(d1, f1+"_TEST.fet"))
+
+	bdata.Source = rundata
+
+	bdata.BackendInterface = fet.SetFetBackend(bdata)
+
+	bdata.StartGeneration(*timeout)
+
 	return
 
 	//TODO--

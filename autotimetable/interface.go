@@ -1,7 +1,8 @@
 package autotimetable
 
-type TtRunData interface {
-	GetConstraintTypeSets() map[string][]int // ctype -> []constraint-index
+type TtSource interface {
+	//TODO?
+	//GetConstraintTypeSets() map[string][]int // ctype -> []constraint-index
 
 	GetDays() []IdPair
 	GetHours() []IdPair
@@ -9,17 +10,21 @@ type TtRunData interface {
 
 	//TODO???
 	GetClasses() []IdPair
-	GetStudentGroups() []IdPair
+	//GetStudentGroups() []IdPair
 
 	GetRooms() []IdPair
 	GetActivities() []IdPair
 
-	GetConstraints() []*Constraint
+	GetConstraints() []Constraint
+
+	//TODO
+	// Prepare the "source" for a run with a set of enabled constraints:
+	PrepareRun([]bool, any)
 }
 
 type IdPair struct {
-	Source  string
-	Backend string
+	Source  string // source reference
+	Backend string // generator back-end id
 }
 
 type Constraint struct {

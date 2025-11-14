@@ -127,8 +127,8 @@ func (tt_data *TtData) RoomResources() {
 // timetable back-end. It differs from `db.ActivityPlacement` in that it
 // uses indexes rather than NodeRefs.
 type TtActivityPlacement struct {
-	Id    ActivityIndex
-	Day   int
-	Hour  int
-	Rooms []RoomIndex
+	Activity ActivityIndex
+	Day      int
+	Hour     int
+	Rooms    []RoomIndex
 }

@@ -9,13 +9,13 @@ import (
 
 type Result struct {
 	Time                       int
-	Days                       []TtItem
-	Hours                      []TtItem
-	Activities                 []TtItem
-	Constraints                []TtItem
+	Days                       []IdPair
+	Hours                      []IdPair
+	Activities                 []IdPair
+	Constraints                []Constraint
 	ConstraintErrors           map[ConstraintIndex]string
-	Rooms                      []TtItem
-	Placements                 []ActivityPlacement
+	Rooms                      []IdPair
+	Placements                 []TtActivityPlacement
 	UnfulfilledHardConstraints map[ConstraintType][]ConstraintIndex
 	TotalHardConstraints       int
 	UnfulfilledSoftConstraints map[ConstraintType][]ConstraintIndex
@@ -60,13 +60,13 @@ func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
 		sunfulfilled[ctype] = ulist
 		snall += len(clist)
 	}
-	clist := basic_data.Source.GetConstraintItems()
+	clist := basic_data.Source.GetConstraints()
 	rlist := basic_data.Source.GetRooms()
 	basic_data.lastResult = &Result{
 		Time:                       instance.Ticks,
-		Days:                       basic_data.Source.GetDayTags(),
-		Hours:                      basic_data.Source.GetHourTags(),
-		Activities:                 basic_data.Source.GetActivityRefs(),
+		Days:                       basic_data.Source.GetDays(),
+		Hours:                      basic_data.Source.GetHours(),
+		Activities:                 basic_data.Source.GetActivities(),
 		Constraints:                clist,
 		ConstraintErrors:           basic_data.ConstraintErrors, // updated later
 		Rooms:                      rlist,

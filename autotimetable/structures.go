@@ -1,5 +1,7 @@
 package autotimetable
 
+import "fetrunner/timetable"
+
 // Structures and global variables used in connection with automation of the
 // timetable generation.
 
@@ -68,32 +70,10 @@ type BasicData struct {
 	constraint_list []*TtInstance
 }
 
-type TtSource interface {
-	GetActivityRefs() []TtItem
-	GetRooms() []TtItem
-	GetDayTags() []TtItem
-	GetHourTags() []TtItem
-	// Return a string representation of the given constraint:
-	GetConstraintItems() []TtItem
-	// Prepare the "source" for a run with a set of enabled constraints:
-	PrepareRun([]bool, any)
-}
-
 type BackendInterface interface {
 	RunBackend(instance *TtInstance) TtBackend
 	Tidy()
 }
-
-type TtItem struct {
-	Id  string // generator back-end id
-	Ref string // source reference
-}
-
-//type ActivityId struct {
-//	Id  int    // (generator) back-end activity index
-//	Ref string // (input) source reference/identifier for activity, if
-//	// distinct from `Id`
-//}
 
 type TtInstance struct {
 	Tag     string
@@ -127,16 +107,8 @@ type TtBackend interface {
 	Tick(*BasicData, *TtInstance)
 	Clear()
 	//Tidy(string)
-	Results(*BasicData, *TtInstance) []ActivityPlacement
+	Results(*BasicData, *TtInstance) []TtActivityPlacement
 	FinalizeResult(*BasicData)
 }
 
-// This structure is used to return the placement results from the
-// timetable back-end.
-type ActivityPlacement struct {
-	// All indexes are zero-based.
-	Activity int   // activity index
-	Day      int   // day index
-	Hour     int   // hour index
-	Rooms    []int // room indexes
-}
+type TtActivityPlacement = timetable.TtActivityPlacement
