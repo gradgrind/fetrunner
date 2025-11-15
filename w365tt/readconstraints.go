@@ -27,25 +27,47 @@ var ConstraintMap []DbW365Pair = []DbW365Pair{
 // Parameter-reading functions for the constraints
 
 func a2r(r any) NodeRef {
-	return NodeRef(r.(string))
+	rr, ok := r.(string)
+	if ok {
+		return NodeRef(rr)
+	}
+	if r != nil {
+		base.Error.Printf("Invalid NodeRef in Constraint: %+v\n", r)
+	}
+	return ""
 }
 
 func a2i(i any) int {
-	return int(i.(float64))
+	ii, ok := i.(float64)
+	if !ok {
+		base.Error.Printf("Invalid number in Constraint: %+v\n", i)
+		return 0
+	}
+	return int(ii)
 }
 
 func a2rr(rr any) []NodeRef {
 	rlist := []NodeRef{}
-	for _, r := range rr.([]any) {
-		rlist = append(rlist, a2r(r))
+	rrr, ok := rr.([]any)
+	if ok {
+		for _, r := range rrr {
+			rlist = append(rlist, a2r(r))
+		}
+	} else if rr != nil {
+		base.Error.Printf("Invalid NodeRef list in Constraint: %+v\n", rr)
 	}
 	return rlist
 }
 
 func a2ii(ii any) []int {
 	ilist := []int{}
-	for _, i := range ii.([]any) {
-		ilist = append(ilist, a2i(i))
+	iii, ok := ii.([]any)
+	if ok {
+		for _, i := range iii {
+			ilist = append(ilist, a2i(i))
+		}
+	} else if ii != nil {
+		base.Error.Printf("Invalid number list in Constraint: %+v\n", ii)
 	}
 	return ilist
 }

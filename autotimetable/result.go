@@ -63,12 +63,16 @@ func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
 	clist := basic_data.Source.GetConstraints()
 	rlist := basic_data.Source.GetRooms()
 	basic_data.lastResult = &Result{
-		Time:                       instance.Ticks,
-		Days:                       basic_data.Source.GetDays(),
-		Hours:                      basic_data.Source.GetHours(),
-		Activities:                 basic_data.Source.GetActivities(),
-		Constraints:                clist,
-		ConstraintErrors:           basic_data.ConstraintErrors, // updated later
+		Time:        instance.Ticks,
+		Days:        basic_data.Source.GetDays(),
+		Hours:       basic_data.Source.GetHours(),
+		Activities:  basic_data.Source.GetActivities(),
+		Constraints: clist,
+		// ConstraintErrors can be updated after this Result is constructed.
+		// This allows constraint errors which are detected later to be
+		// included, but there may also be spurious timeout messages about
+		// constraints which are enabled.
+		ConstraintErrors:           basic_data.ConstraintErrors,
 		Rooms:                      rlist,
 		Placements:                 alist,
 		UnfulfilledHardConstraints: hunfulfilled,
