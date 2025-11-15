@@ -89,12 +89,9 @@ func main() {
 	logpath := filepath.Join(workingdir, "run.log")
 	base.OpenLog(logpath)
 
-	bdata.Source, err = fet.FetRead(bdata, abspath)
-	if err != nil {
-		log.Fatal(err)
-	}
+	fet.FetRead(bdata, abspath)
 
-	bdata.BackendInterface = fet.SetFetBackend(bdata)
-
+	// Set up FET back-end and start processing
+	fet.SetFetBackend(bdata)
 	bdata.StartGeneration(*timeout)
 }

@@ -2,7 +2,6 @@ package fet
 
 import (
 	"encoding/json"
-	"fetrunner/autotimetable"
 	"fetrunner/base"
 	"fmt"
 	"regexp"
@@ -13,14 +12,6 @@ import (
 // In FET there are "time" constraints and "space" constraints. They are
 // all lumped together in th `ConstraintElements` list, but their indexes
 // are also recorded in the `TimeConstraints` and `SpaceConstraints` lists.
-
-func readTextField(e *etree.Element, field string) string {
-	ef := e.SelectElement(field)
-	if ef == nil {
-		return ""
-	}
-	return ef.Text()
-}
 
 func FetRead(basic_data *BasicData, fetpath string) *TtRunDataFet {
 	base.Message.Printf("SOURCE: %s\n", fetpath)
@@ -64,6 +55,14 @@ func FetRead(basic_data *BasicData, fetpath string) *TtRunDataFet {
 		rundata.ActivityIds = aidlist
 	}
 
+	// Get resource lists, etc.
+	rundata.DayIds = get_days(fetroot)
+	rundata.HourIds = get_hours(fetroot)
+	rundata.RoomIds = get_rooms(fetroot)
+	rundata.TeacherIds = get_teachers(fetroot)
+	rundata.SubjectIds = get_subjects(fetroot)
+	rundata.ClassIds = get_classes(fetroot)
+
 	// Collect the constraints, dividing into soft and hard groups.
 	// Inactive constraints will be removed.
 	r_constraint_number := regexp.MustCompile(`^\[[0-9]+\](.*)$`)
@@ -73,21 +72,17 @@ func FetRead(basic_data *BasicData, fetpath string) *TtRunDataFet {
 	constraint_types := []ConstraintType{}
 
 	for timespace := range 2 {
-	// First (timespace == 0) collect active time constraints,
-	// then (timespace == 1) collect active space constraints.
+		// First (timespace == 0) collect active time constraints,
+		// then (timespace == 1) collect active space constraints.
 
-	
-	{
 		var et *etree.Element
 		var bc string
 		if timespace == 0 {
 			et = fetroot.SelectElement("Time_Constraints_List")
 			bc = "ConstraintBasicCompulsoryTime"
-
 		} else {
 			et = fetroot.SelectElement("Space_Constraints_List")
 			bc = "ConstraintBasicCompulsorySpace"
-
 		}
 		inactive := 0
 		for _, e := range et.ChildElements() {
@@ -103,6 +98,12 @@ func FetRead(basic_data *BasicData, fetpath string) *TtRunDataFet {
 			}
 			i := len(rundata.ConstraintElements)
 			rundata.ConstraintElements = append(rundata.ConstraintElements, e)
+			if timespace == 0 {
+				rundata.TimeConstraints = append(rundata.TimeConstraints, i)
+			} else {
+				rundata.SpaceConstraints = append(rundata.SpaceConstraints, i)
+			}
+
 			w := e.SelectElement("Weight_Percentage").Text()
 			//fmt.Printf(" ++ %02d: %s (%s)\n", i, ctype, w)
 			if w == "100" {
@@ -157,119 +158,78 @@ func FetRead(basic_data *BasicData, fetpath string) *TtRunDataFet {
 	return rundata
 }
 
-// TODO
-func (fetdoc *FetDoc) GetDayTags() []autotimetable.IdPair {
-	root := fetdoc.Doc.Root()
-	days := []autotimetable.IdPair{}
-	for _, e := range root.SelectElement("Days_List").SelectElements("Day") {
-		days = append(days, autotimetable.IdPair{
-			Backend: e.SelectElement("Name").Text(),
-			Source:  readTextField(e, "Long_Name"),
+func get_days(fetroot *etree.Element) []IdPair {
+	items := []IdPair{}
+	for _, e := range fetroot.SelectElement("Days_List").SelectElements("Day") {
+		id := e.SelectElement("Name").Text()
+		items = append(items, IdPair{
+			Backend: id,
+			Source:  id,
 		})
 	}
-	return days
+	return items
 }
 
-// TODO
-func (fetdoc *FetDoc) GetHourTags() []autotimetable.IdPair {
-	root := fetdoc.Doc.Root()
-	hours := []autotimetable.IdPair{}
-	for _, e := range root.SelectElement("Hours_List").SelectElements("Hour") {
-		hours = append(hours, autotimetable.IdPair{
-			Backend: e.SelectElement("Name").Text(),
-			Source:  readTextField(e, "Long_Name"),
+func get_hours(fetroot *etree.Element) []IdPair {
+	hours := []IdPair{}
+	for _, e := range fetroot.SelectElement("Hours_List").SelectElements("Hour") {
+		id := e.SelectElement("Name").Text()
+		hours = append(hours, IdPair{
+			Backend: id,
+			Source:  id,
 		})
 	}
 	return hours
 }
 
-func (fetdoc *FetDoc) GetRooms() []autotimetable.IdPair {
-	root := fetdoc.Doc.Root()
-	rooms := []autotimetable.IdPair{}
-	i := 0
-	for _, e := range root.SelectElement("Rooms_List").ChildElements() {
+func get_rooms(fetroot *etree.Element) []IdPair {
+	rooms := []IdPair{}
+	for _, e := range fetroot.SelectElement("Rooms_List").SelectElements("Room") {
 		if e.SelectElement("Virtual").Text() == "false" {
-			rooms = append(rooms, autotimetable.IdPair{
-				Backend: e.SelectElement("Name").Text(),
-				Source:  readTextField(e, "Comments"),
+			id := e.SelectElement("Name").Text()
+			rooms = append(rooms, IdPair{
+				Backend: id,
+				Source:  id,
 			})
-			i++
 		}
 	}
 	return rooms
 }
 
-// Get source and back-end representations of the constraints.
-func (fetdoc *FetDoc) GetConstraintItems() []autotimetable.IdPair {
-	clist := []autotimetable.IdPair{}
-	r_constraint_number := regexp.MustCompile(`^([0-9]+)[)](.*)$`)
-	for _, c := range fetdoc.Constraints {
-		var (
-			key string
-			s   string
-		)
-		ce := c.SelectElement("Comments")
-		if ce != nil {
-			comments := ce.Text()
-			sm := r_constraint_number.FindStringSubmatch(comments)
-			if len(sm) == 3 {
-				key = sm[1]
-				s = sm[2]
-			}
-		}
-		if len(key) == 0 {
-			// Make a JSON version of the constraint's XML
-			s = WriteElement(c)
-		}
-		clist = append(clist, autotimetable.IdPair{
-			Backend: key,
-			Source:  s,
+func get_teachers(fetroot *etree.Element) []IdPair {
+	items := []IdPair{}
+	for _, e := range fetroot.SelectElement("Teachers_List").SelectElements("Teacher") {
+		id := e.SelectElement("Name").Text()
+		items = append(items, IdPair{
+			Backend: id,
+			Source:  id,
 		})
 	}
-	return clist
+	return items
 }
 
-func (fetdoc *FetDoc) WriteFET(fetfile string) {
-	err := fetdoc.Doc.WriteToFile(fetfile)
-	if err != nil {
-		panic(err)
+func get_classes(fetroot *etree.Element) []IdPair {
+	items := []IdPair{}
+	for _, e := range fetroot.SelectElement("Students_List").SelectElements("Year") {
+		id := e.SelectElement("Name").Text()
+		items = append(items, IdPair{
+			Backend: id,
+			Source:  id,
+		})
 	}
+	return items
 }
 
-// Rebuild the FET file given an array detailing which constraints are
-// enabled.
-// Because it modifies the data in the shared `FetDoc`, this function
-// is not thread-safe!
-// The `xmlp` argument is a pointer to a byte slice, to receive the
-// XML FET-file.
-func (fetdoc *FetDoc) PrepareRun(enabled []bool, xmlp any) {
-	for _, i := range fetdoc.Necessary {
-		enabled[i] = true
+func get_subjects(fetroot *etree.Element) []IdPair {
+	items := []IdPair{}
+	for _, e := range fetroot.SelectElement("Subjects_List").SelectElements("Subject") {
+		id := e.SelectElement("Name").Text()
+		items = append(items, IdPair{
+			Backend: id,
+			Source:  id,
+		})
 	}
-	for i, c := range fetdoc.Constraints {
-		active := c.SelectElement("Active")
-		if enabled[i] {
-			active.SetText("true")
-		} else {
-			active.SetText("false")
-		}
-	}
-	root := fetdoc.Doc.Root()
-	et := root.SelectElement("Time_Constraints_List")
-	active := 0
-	n := 0
-	for _, e := range et.ChildElements() {
-		// Count and skip if inactive
-		if e.SelectElement("Active").Text() == "true" {
-			active++ // count active constraints
-		}
-		n++
-	}
-	var err error
-	*(xmlp.(*[]byte)), err = fetdoc.Doc.WriteToBytes()
-	if err != nil {
-		panic(err)
-	}
+	return items
 }
 
 // Generate a JSON version of the given element. Only a simple subset of
