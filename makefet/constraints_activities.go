@@ -21,9 +21,10 @@ func (fetbuild *FetBuild) add_activity_constraints() {
 
 func (fetbuild *FetBuild) days_between() {
 	tt_data := fetbuild.ttdata
+	rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 	for _, c0 := range tt_data.MinDaysBetweenActivities {
-		w := weight2fet(c0.Weight)
+		w := rundata.FetWeight(c0.Weight)
 		for _, alist := range c0.ActivityLists {
 			cifsd := "false"
 			if c0.ConsecutiveIfSameDay {
@@ -48,9 +49,10 @@ func (fetbuild *FetBuild) days_between() {
 func (fetbuild *FetBuild) ends_day() {
 	tt_data := fetbuild.ttdata
 	db0 := tt_data.Db
+	rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 	for _, c0 := range db0.Constraints[db.C_ActivitiesEndDay] {
-		w := weight2fet(c0.Weight)
+		w := rundata.FetWeight(c0.Weight)
 		course := c0.Data.(db.NodeRef)
 		cinfo := tt_data.Ref2CourseInfo[course]
 		for _, ai := range cinfo.Activities {
@@ -67,9 +69,10 @@ func (fetbuild *FetBuild) ends_day() {
 
 func (fetbuild *FetBuild) parallel_activities() {
 	tt_data := fetbuild.ttdata
+	rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 	for _, c0 := range tt_data.ParallelActivities {
-		w := weight2fet(c0.Weight)
+		w := rundata.FetWeight(c0.Weight)
 		for _, alist := range c0.ActivityLists {
 			c := tclist.CreateElement("ConstraintActivitiesSameStartingTime")
 			c.CreateElement("Weight_Percentage").SetText(w)
@@ -123,9 +126,10 @@ func (fetbuild *FetBuild) make_before_after_hour(
 	c0 *db.Constraint, timeslots []preferred_time,
 ) {
 	tt_data := fetbuild.ttdata
+	rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 	data := c0.Data.(*db.BeforeAfterHour)
-	w := weight2fet(c0.Weight)
+	w := rundata.FetWeight(c0.Weight)
 	for _, course := range data.Courses {
 		cinfo, ok := tt_data.Ref2CourseInfo[course]
 		if !ok {
@@ -161,7 +165,7 @@ func (fetbuild *FetBuild) double_no_break() {
 			base.Error.Fatalln("Constraint DoubleActivityNotOverBreaks" +
 				" specified more than once")
 		}
-		w := weight2fet(c0.Weight)
+		w := rundata.FetWeight(c0.Weight)
 		timeslots := []preferred_time{}
 		// Note that a double lesson can't start in the last slot of
 		// the day.

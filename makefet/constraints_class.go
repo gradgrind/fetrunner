@@ -40,7 +40,7 @@ func (fetbuild *FetBuild) add_class_constraints(
 	for _, c0 := range db0.Constraints[db.C_ClassMinActivitiesPerDay] {
 		data := c0.Data.(db.ResourceN)
 		cref := data.Resource
-		w := weight2fet(c0.Weight)
+		w := rundata.FetWeight(c0.Weight)
 		n := data.N
 		if n >= 2 && n <= nhours {
 			c := tclist.CreateElement("ConstraintStudentsSetMinHoursDaily")
@@ -58,7 +58,7 @@ func (fetbuild *FetBuild) add_class_constraints(
 	for _, c0 := range db0.Constraints[db.C_ClassMaxActivitiesPerDay] {
 		data := c0.Data.(db.ResourceN)
 		cref := data.Resource
-		w := weight2fet(c0.Weight)
+		w := rundata.FetWeight(c0.Weight)
 		n := data.N
 		if n >= 2 && n <= nhours {
 			c := tclist.CreateElement("ConstraintStudentsSetMaxHoursDaily")
@@ -81,7 +81,7 @@ func (fetbuild *FetBuild) add_class_constraints(
 		for _, c0 := range db0.Constraints[db.C_ClassMaxAfternoons] {
 			data := c0.Data.(db.ResourceN)
 			cref := data.Resource
-			w := weight2fet(c0.Weight)
+			w := rundata.FetWeight(c0.Weight)
 			n := data.N
 			if n < ndays {
 				c := tclist.CreateElement("ConstraintStudentsSetIntervalMaxDaysPerWeek")
@@ -101,7 +101,7 @@ func (fetbuild *FetBuild) add_class_constraints(
 
 	for _, c0 := range db0.Constraints[db.C_ClassForceFirstHour] {
 		cref := c0.Data.(db.NodeRef)
-		w := weight2fet(c0.Weight)
+		w := rundata.FetWeight(c0.Weight)
 		c := tclist.CreateElement("ConstraintStudentsSetEarlyMaxBeginningsAtSecondHour")
 		c.CreateElement("Weight_Percentage").SetText(w)
 		c.CreateElement("Students").SetText(db0.Ref2Tag(cref))
@@ -119,7 +119,7 @@ func (fetbuild *FetBuild) add_class_constraints(
 	if mbhours := db0.Info.MiddayBreak; len(mbhours) != 0 {
 		for _, c0 := range db0.Constraints[db.C_ClassLunchBreak] {
 			cref := c0.Data.(db.NodeRef)
-			w := weight2fet(c0.Weight)
+			w := rundata.FetWeight(c0.Weight)
 			// Generate the constraint unless all days have a blocked
 			// lesson at lunchtime.
 			lbdmap := make([]bool, ndays)
@@ -156,7 +156,7 @@ func (fetbuild *FetBuild) add_class_constraints(
 
 	for _, c0 := range db0.Constraints[db.C_ClassMaxGapsPerDay] {
 		data := c0.Data.(db.ResourceN)
-		w := weight2fet(c0.Weight)
+		w := rundata.FetWeight(c0.Weight)
 		n := data.N
 		cref := data.Resource
 		// Ensure that a gap is allowed if there are lunch breaks.
@@ -184,7 +184,7 @@ func (fetbuild *FetBuild) add_class_constraints(
 
 	for _, c0 := range db0.Constraints[db.C_ClassMaxGapsPerWeek] {
 		data := c0.Data.(db.ResourceN)
-		w := weight2fet(c0.Weight)
+		w := rundata.FetWeight(c0.Weight)
 		n := data.N
 		cref := data.Resource
 		if n >= 0 {

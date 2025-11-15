@@ -5,52 +5,14 @@ import (
 	"fetrunner/autotimetable"
 	"fetrunner/base"
 	"fmt"
-	"math"
 	"regexp"
-	"strconv"
 
 	"github.com/beevik/etree"
 )
 
-// TODO--
-// In FET there are "time" constraints and "space" constraints. The
-// `ConstraintData` structure lumps them all together, so there is just
-// one constraint list in `FetDoc`. However, the "time" constraints are
-// placed first in the list, so by recording the start index of the "space"
-// constraints (`NTimeConstraints`) they can be differentiated.
-type FetDoc struct {
-	Doc              *etree.Document
-	Activities       []*etree.Element // list of active activity elements
-	Constraints      []*etree.Element // list of active constraint elements
-	NTimeConstraints ConstraintIndex
-	// The "non-negotiable" constraints are not dealt with in the
-	// "autotimetable" package, but they are included in the `Constraints`
-	// list. The `Necessary` list can be used to ensure they are always
-	// enabled.
-	Necessary []ConstraintIndex
-}
-
-// TODO--
-func (fetdoc *FetDoc) GetActivities() []IdPair {
-	alist := []IdPair{}
-	for _, a := range fetdoc.Activities {
-		id := a.SelectElement("Id").Text()
-		alist = append(alist, IdPair{Source: id, Backend: id})
-	}
-	return alist
-}
-
-// TODO--
-func (fetdoc *FetDoc) GetClasses() []IdPair {
-	alist := []IdPair{}
-
-	//TODO
-	for _, a := range fetdoc.Activities {
-		id := a.SelectElement("Id").Text()
-		alist = append(alist, IdPair{Source: id, Backend: id})
-	}
-	return alist
-}
+// In FET there are "time" constraints and "space" constraints. They are
+// all lumped together in th `ConstraintElements` list, but their indexes
+// are also recorded in the `TimeConstraints` and `SpaceConstraints` lists.
 
 func readTextField(e *etree.Element, field string) string {
 	ef := e.SelectElement(field)
@@ -60,7 +22,7 @@ func readTextField(e *etree.Element, field string) string {
 	return ef.Text()
 }
 
-func FetRead(basic_data *BasicData, fetpath string) (*FetDoc, error) {
+func FetRead(basic_data *BasicData, fetpath string) *TtRunDataFet {
 	base.Message.Printf("SOURCE: %s\n", fetpath)
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(fetpath); err != nil {
@@ -104,15 +66,29 @@ func FetRead(basic_data *BasicData, fetpath string) (*FetDoc, error) {
 
 	// Collect the constraints, dividing into soft and hard groups.
 	// Inactive constraints will be removed.
-	r_constraint_number := regexp.MustCompile(`^\[[0-9]+\](.*)`)
+	r_constraint_number := regexp.MustCompile(`^\[[0-9]+\](.*)$`)
 	constraint_counter := 0
-	constraints := []*etree.Element{}
 	hard_constraint_map := map[ConstraintType][]ConstraintIndex{}
 	soft_constraint_map := map[ConstraintType][]ConstraintIndex{}
 	constraint_types := []ConstraintType{}
-	// Collect active time constraints
+
+	for timespace := range 2 {
+	// First (timespace == 0) collect active time constraints,
+	// then (timespace == 1) collect active space constraints.
+
+	
 	{
-		et := fetroot.SelectElement("Time_Constraints_List")
+		var et *etree.Element
+		var bc string
+		if timespace == 0 {
+			et = fetroot.SelectElement("Time_Constraints_List")
+			bc = "ConstraintBasicCompulsoryTime"
+
+		} else {
+			et = fetroot.SelectElement("Space_Constraints_List")
+			bc = "ConstraintBasicCompulsorySpace"
+
+		}
 		inactive := 0
 		for _, e := range et.ChildElements() {
 			// Count and skip if inactive
@@ -121,48 +97,14 @@ func FetRead(basic_data *BasicData, fetpath string) (*FetDoc, error) {
 				continue
 			}
 			ctype := ConstraintType(e.Tag)
-			if ctype == "ConstraintBasicCompulsoryTime" {
+			if ctype == bc {
 				// Basic, non-negotiable constraint
 				continue
 			}
-
-			//TODO
-
-			i := len(constraints)
-			constraints = append(constraints, e)
+			i := len(rundata.ConstraintElements)
+			rundata.ConstraintElements = append(rundata.ConstraintElements, e)
 			w := e.SelectElement("Weight_Percentage").Text()
 			//fmt.Printf(" ++ %02d: %s (%s)\n", i, ctype, w)
-
-			//TODO: convert weight to int (reverse of makefet function?)
-
-			/*
-			   Constraint struct {
-			       IdPair
-			       Ctype      string
-			       Parameters []int
-			       Weight     int
-			*/
-
-			constraint_types = append(constraint_types, ctype)
-			// ... duplicates wil be removed in `sort_constraint_types`
-
-			// Ensure that the constraints are numbered in their Comments.
-			// This is to ease referencing in the results object.
-			comments := e.SelectElement("Comments")
-			comment := ""
-			if comments == nil {
-				comments = e.CreateElement("Comments")
-			} else {
-				comment = comments.Text()
-				if r_constraint_number.MatchString(comment) {
-					goto skip1
-				}
-			}
-			constraint_counter++
-			comments.SetText(
-				fmt.Sprintf("%d)%s", constraint_counter, comment))
-		skip1:
-
 			if w == "100" {
 				// Hard constraint
 				hard_constraint_map[ctype] = append(hard_constraint_map[ctype],
@@ -171,33 +113,6 @@ func FetRead(basic_data *BasicData, fetpath string) (*FetDoc, error) {
 				// Soft constraint
 				soft_constraint_map[ctype] = append(soft_constraint_map[ctype],
 					ConstraintIndex(i))
-			}
-		}
-		if inactive != 0 {
-			base.Message.Printf("-T- %d inactive time constraints", inactive)
-		}
-		n_time_constraints = len(constraints)
-	}
-	// Collect active space constraints
-	{
-		et := fetroot.SelectElement("Space_Constraints_List")
-		inactive := 0
-		for _, e := range et.ChildElements() {
-			// Count and skip if inactive
-			if e.SelectElement("Active").Text() == "false" {
-				et.RemoveChild(e)
-				inactive++ // count removed constraints
-				continue
-			}
-			i := len(constraints)
-			constraints = append(constraints, e)
-			ctype := ConstraintType(e.Tag)
-			w := e.SelectElement("Weight_Percentage").Text()
-			//fmt.Printf(" ++ %02d: %s (%s)\n", i, ctype, w)
-			if ctype == "ConstraintBasicCompulsorySpace" {
-				// Basic, non-negotiable constraint
-				necessary = append(necessary, ConstraintIndex(i))
-				continue
 			}
 			constraint_types = append(constraint_types, ctype)
 			// ... duplicates wil be removed in `sort_constraint_types`
@@ -209,77 +124,40 @@ func FetRead(basic_data *BasicData, fetpath string) (*FetDoc, error) {
 			if comments == nil {
 				comments = e.CreateElement("Comments")
 			} else {
+				// Remove any existing comment id
 				comment = comments.Text()
-				if r_constraint_number.MatchString(comment) {
-					goto skip2
+				parts := r_constraint_number.FindStringSubmatch(comment)
+				if parts != nil {
+					comment = parts[1]
 				}
 			}
 			constraint_counter++
-			comments.SetText(
-				fmt.Sprintf("%d)%s", constraint_counter, comment))
-		skip2:
-
-			if w == "100" {
-				// Hard constraint
-				hard_constraint_map[ctype] = append(hard_constraint_map[ctype],
-					ConstraintIndex(i))
-			} else {
-				// Soft constraint
-				soft_constraint_map[ctype] = append(soft_constraint_map[ctype],
-					ConstraintIndex(i))
-			}
+			cid := fmt.Sprintf("[%d]", constraint_counter)
+			comments.SetText(cid + comment)
+			rundata.Constraints = append(rundata.Constraints, Constraint{
+				IdPair: IdPair{Backend: cid},
+				Ctype:  ctype,
+				Weight: rundata.DbWeight(w),
+			})
 		}
 		if inactive != 0 {
-			base.Message.Printf("-S- %d inactive space constraints", inactive)
+			if timespace == 0 {
+				base.Message.Printf("-T- %d inactive time constraints", inactive)
+			} else {
+				base.Message.Printf("-S- %d inactive space constraints", inactive)
+			}
 		}
 	}
 
-	fetdoc := &FetDoc{
-		Doc:              doc,
-		Activities:       activities,
-		Constraints:      constraints,
-		NTimeConstraints: ConstraintIndex(n_time_constraints),
-		Necessary:        necessary,
-	}
-
-	basic_data.NConstraints = ConstraintIndex(len(constraints))
+	basic_data.NConstraints = ConstraintIndex(constraint_counter)
 	basic_data.ConstraintTypes = SortConstraintTypes(constraint_types)
 	basic_data.HardConstraintMap = hard_constraint_map
 	basic_data.SoftConstraintMap = soft_constraint_map
 
-	//doc.Indent(2)
-	return fetdoc, nil
+	return rundata
 }
 
-func fet2weight(w string) int {
-	f, err := strconv.ParseFloat(w, 64)
-	if err != nil {
-		panic(err)
-	}
-	if f == 0.0 {
-		return 0
-	}
-	if f == 100.0 {
-		return 100
-	}
-	wf := float64(w)
-	n := wf + math.Pow(2, wf/12)
-	wfet := 100.0 - 100.0/n
-	return strconv.FormatFloat(wfet, 'f', 3, 64)
-}
-
-// Return the list of Activity Id and Ref ("Comments") fields.
-func (fetdoc *FetDoc) GetActivityRefs() []autotimetable.IdPair {
-	alist := []autotimetable.IdPair{}
-	for _, a := range fetdoc.Activities {
-		alist = append(alist, autotimetable.IdPair{
-			Backend: a.SelectElement("Id").Text(),
-			Source:  readTextField(a, "Comments"),
-		})
-	}
-	return alist
-}
-
+// TODO
 func (fetdoc *FetDoc) GetDayTags() []autotimetable.IdPair {
 	root := fetdoc.Doc.Root()
 	days := []autotimetable.IdPair{}
@@ -292,6 +170,7 @@ func (fetdoc *FetDoc) GetDayTags() []autotimetable.IdPair {
 	return days
 }
 
+// TODO
 func (fetdoc *FetDoc) GetHourTags() []autotimetable.IdPair {
 	root := fetdoc.Doc.Root()
 	hours := []autotimetable.IdPair{}

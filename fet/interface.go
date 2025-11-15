@@ -2,6 +2,9 @@ package fet
 
 import (
 	"fetrunner/autotimetable"
+	"math"
+	"slices"
+	"strconv"
 
 	"github.com/beevik/etree"
 )
@@ -33,6 +36,8 @@ type TtRunDataFet struct {
 	RoomIds    []IdPair
 	SubjectIds []IdPair
 	ClassIds   []IdPair
+
+	WeightTable []float64
 }
 
 func (rundata *TtRunDataFet) GetDays() []IdPair            { return rundata.DayIds }
@@ -72,4 +77,35 @@ func (rundata *TtRunDataFet) PrepareRun(enabled []bool, xmlp any) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func MakeFetWeights() []float64 {
+	wtable := make([]float64, 101)
+	wtable[0] = 0.0
+	wtable[100] = 100.0
+	for w := 1; w < 100; w++ {
+		wf := float64(w + 1)
+		denom := wf + math.Pow(2, (wf-50.0)*0.2)
+		wtable[w] = 100.0 - 100.0/denom
+	}
+	return wtable
+}
+
+func (rundata *TtRunDataFet) FetWeight(w int) string {
+	if w <= 0 {
+		return "0"
+	}
+	if w >= 100 {
+		return "100"
+	}
+	return strconv.FormatFloat(rundata.WeightTable[w], 'f', 3, 64)
+}
+
+func (rundata *TtRunDataFet) DbWeight(w string) int {
+	wf, err := strconv.ParseFloat(w, 64)
+	if err != nil {
+		panic(err)
+	}
+	wdb, _ := slices.BinarySearch(rundata.WeightTable, wf)
+	return wdb
 }

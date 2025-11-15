@@ -26,7 +26,7 @@ func (fetbuild *FetBuild) add_placement_constraints(without_rooms bool) {
 	}
 	ai2start := map[int]start_time{}
 	for _, c0 := range db0.Constraints[db.C_ActivityStartTime] {
-		w := weight2fet(c0.Weight)
+		w := rundata.FetWeight(c0.Weight)
 		data := c0.Data.(db.ActivityStartTime)
 		ai := tt_data.Ref2ActivityIndex[data.Activity]
 		ai2start[ai] = start_time{

@@ -16,7 +16,7 @@ func (fetbuild *FetBuild) blocked_slots() map[db.NodeRef][]db.TimeSlot {
 	// Rooms
 	for _, c0 := range db0.Constraints[db.C_RoomNotAvailable] {
 		// The weight is presumably 100% ...
-		w := weight2fet(c0.Weight)
+		w := rundata.FetWeight(c0.Weight)
 		data := c0.Data.(db.ResourceNotAvailable)
 		rref := data.Resource
 		// `NotAvailable` is an ordered list of time-slots in which the
@@ -43,7 +43,7 @@ func (fetbuild *FetBuild) blocked_slots() map[db.NodeRef][]db.TimeSlot {
 	// Teachers
 	for _, c0 := range db0.Constraints[db.C_TeacherNotAvailable] {
 		// The weight is presumably 100% ...
-		w := weight2fet(c0.Weight)
+		w := rundata.FetWeight(c0.Weight)
 		data := c0.Data.(db.ResourceNotAvailable)
 		tref := data.Resource
 		namap[tref] = data.NotAvailable
@@ -70,7 +70,7 @@ func (fetbuild *FetBuild) blocked_slots() map[db.NodeRef][]db.TimeSlot {
 	// Classes
 	for _, c0 := range db0.Constraints[db.C_ClassNotAvailable] {
 		// The weight is presumably 100% ...
-		w := weight2fet(c0.Weight)
+		w := rundata.FetWeight(c0.Weight)
 		data := c0.Data.(db.ResourceNotAvailable)
 		cref := data.Resource
 		namap[cref] = data.NotAvailable

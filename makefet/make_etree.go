@@ -28,7 +28,10 @@ func FetTree(
 ) *fet.TtRunDataFet {
 	doc := etree.NewDocument()
 	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
-	rundata := &fet.TtRunDataFet{Doc: doc}
+	rundata := &fet.TtRunDataFet{
+		Doc:         doc,
+		WeightTable: fet.MakeFetWeights(),
+	}
 	basic_data.Source = rundata
 
 	fetbuild := &FetBuild{
@@ -119,7 +122,7 @@ func FetTree(
 	return fetbuild.rundata
 }
 
-func weight2fet(w int) string {
+func oldweight2fet(w int) string {
 	if w <= 0 {
 		return "0"
 	}

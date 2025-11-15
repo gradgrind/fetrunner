@@ -37,7 +37,7 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 
 	for _, c0 := range db0.Constraints[db.C_TeacherMaxDays] {
 		data := c0.Data.(db.ResourceN)
-		w := weight2fet(c0.Weight)
+		w := rundata.FetWeight(c0.Weight)
 		n := data.N
 		if n >= 0 && n < ndays {
 			tref := data.Resource
@@ -54,7 +54,7 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 
 	for _, c0 := range db0.Constraints[db.C_TeacherMinActivitiesPerDay] {
 		data := c0.Data.(db.ResourceN)
-		w := weight2fet(c0.Weight)
+		w := rundata.FetWeight(c0.Weight)
 		n := data.N
 		if n >= 2 && n <= nhours {
 			tref := data.Resource
@@ -72,7 +72,7 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 
 	for _, c0 := range db0.Constraints[db.C_TeacherMaxActivitiesPerDay] {
 		data := c0.Data.(db.ResourceN)
-		w := weight2fet(c0.Weight)
+		w := rundata.FetWeight(c0.Weight)
 		n := data.N
 		if n >= 2 && n <= nhours {
 			tref := data.Resource
@@ -95,7 +95,7 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 	if h0 > 0 {
 		for _, c0 := range db0.Constraints[db.C_TeacherMaxAfternoons] {
 			data := c0.Data.(db.ResourceN)
-			w := weight2fet(c0.Weight)
+			w := rundata.FetWeight(c0.Weight)
 			n := data.N
 			if n < ndays {
 				tref := data.Resource
@@ -120,7 +120,7 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 	lbmap := map[db.NodeRef]int{}
 	if mbhours := db0.Info.MiddayBreak; len(mbhours) != 0 {
 		for _, c0 := range db0.Constraints[db.C_TeacherLunchBreak] {
-			w := weight2fet(c0.Weight)
+			w := rundata.FetWeight(c0.Weight)
 			tref := c0.Data.(db.NodeRef)
 			// Generate the constraint unless all days have a blocked
 			// lesson at lunchtime.
@@ -158,7 +158,7 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 
 	for _, c0 := range db0.Constraints[db.C_TeacherMaxGapsPerDay] {
 		data := c0.Data.(db.ResourceN)
-		w := weight2fet(c0.Weight)
+		w := rundata.FetWeight(c0.Weight)
 		n := data.N
 		tref := data.Resource
 		// Ensure that a gap is allowed if there are lunch breaks.
@@ -186,7 +186,7 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 
 	for _, c0 := range db0.Constraints[db.C_TeacherMaxGapsPerWeek] {
 		data := c0.Data.(db.ResourceN)
-		w := weight2fet(c0.Weight)
+		w := rundata.FetWeight(c0.Weight)
 		n := data.N
 		tref := data.Resource
 		if n >= 0 {
