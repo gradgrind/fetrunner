@@ -106,7 +106,6 @@ type TtBackend interface {
 	Abort()
 	Tick(*BasicData, *TtInstance)
 	Clear()
-	//Tidy(string)
 	Results(*BasicData, *TtInstance) []TtActivityPlacement
 	FinalizeResult(*BasicData)
 }

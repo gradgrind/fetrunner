@@ -22,14 +22,12 @@ type FetBackend struct {
 	basic_data *autotimetable.BasicData
 }
 
-func SetFetBackend(
-	basic_data *autotimetable.BasicData,
-) autotimetable.BackendInterface {
+func SetFetBackend(basic_data *autotimetable.BasicData) {
 	if len(TEMPORARY_FOLDER) != 0 {
 		os.RemoveAll(filepath.Join(TEMPORARY_FOLDER,
 			filepath.Base(basic_data.WorkingDir)))
 	}
-	return &FetBackend{basic_data}
+	basic_data.BackendInterface = &FetBackend{basic_data}
 }
 
 func (fbe *FetBackend) Tidy() {

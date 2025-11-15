@@ -18,10 +18,6 @@ type TtRunDataFet struct {
 	TimeConstraints  []int // indexes into `ConstraintElements`
 	SpaceConstraints []int // indexes into `ConstraintElements`
 
-	//TODO: Do I need a "necessary" list here for those "basic" constraints
-	// which must always be enabled? Or can they just be left out of the
-	// other lists?
-
 	Constraints []Constraint
 	ActivityIds []IdPair
 
@@ -43,17 +39,9 @@ func (rundata *TtRunDataFet) GetActivities() []IdPair      { return rundata.Acti
 func (rundata *TtRunDataFet) GetConstraints() []Constraint { return rundata.Constraints }
 
 // Rebuild the FET file given an array detailing which constraints are enabled.
-
-//TODO: copy the etree doc?
-// Because it modifies the data in the shared `FetDoc`, this function
-// is not thread-safe!
-
 // The `xmlp` argument is a pointer to a byte slice, to receive the
 // XML FET-file.
 func (rundata *TtRunDataFet) PrepareRun(enabled []bool, xmlp any) {
-	//for _, i := range fetdoc.Necessary {
-	//	enabled[i] = true
-	//}
 	for i, c := range rundata.ConstraintElements {
 		active := c.SelectElement("Active")
 		if enabled[i] {

@@ -170,7 +170,7 @@ func (fetbuild *FetBuild) add_time_constraint(e *etree.Element, c Constraint) {
 	// Make a tag for the constraint
 	fetbuild.constraint_counter++
 	c.Backend = fmt.Sprintf("[%d]", fetbuild.constraint_counter)
-	//e.CreateElement("Comments").SetText(c.Backend)
+	e.CreateElement("Comments").SetText(c.Backend)
 
 	rundata.Constraints = append(rundata.Constraints, c)
 }
@@ -184,7 +184,7 @@ func (fetbuild *FetBuild) add_space_constraint(e *etree.Element, c Constraint) {
 	// Make a tag for the constraint
 	fetbuild.constraint_counter++
 	c.Backend = fmt.Sprintf("[%d]", fetbuild.constraint_counter)
-	//e.CreateElement("Comments").SetText(c.Backend)
+	e.CreateElement("Comments").SetText(c.Backend)
 
 	rundata.Constraints = append(rundata.Constraints, c)
 }

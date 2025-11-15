@@ -109,41 +109,13 @@ func main() {
 		len(db0.Rooms)))
 	base.Report(fmt.Sprintf("Activities: %d\n",
 		len(tt_data.Activities)))
+	//rundata := makefet.FetTree(bdata, tt_data)
+	//fetdoc := rundata.Doc
+	//fetdoc.Indent(2)
+	//fetdoc.WriteToFile(filepath.Join(d1, f1+"_TEST.fet"))
+	makefet.FetTree(bdata, tt_data)
 
-	//
-
-	rundata := makefet.FetTree(bdata, tt_data)
-	fetdoc := rundata.Doc
-	fetdoc.Indent(2)
-	fetdoc.WriteToFile(filepath.Join(d1, f1+"_TEST.fet"))
-
-	bdata.BackendInterface = fet.SetFetBackend(bdata)
-
+	// Set up FET back-end and start processing
+	fet.SetFetBackend(bdata)
 	bdata.StartGeneration(*timeout)
-
-	return
-
-	//TODO--
-	_ = timeout
-
-	/*
-
-		fetbytes := makefet.MakeFetFile(tt_data)
-		fetpath := filepath.Join(d1, f1+".fet")
-		if err := os.WriteFile(fetpath, fetbytes, 0644); err != nil {
-			base.Error.Println(err)
-			return
-		}
-
-		// Process the FET file
-		bdata.Source, err = fet.FetRead(bdata, fetpath)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		bdata.BackendInterface = fet.SetFetBackend(bdata)
-
-		bdata.StartGeneration(*timeout)
-
-	*/
 }
