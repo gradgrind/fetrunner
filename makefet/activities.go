@@ -18,6 +18,7 @@ func (fetbuild *FetBuild) set_activities() {
 	fetactivities := fetbuild.fetroot.CreateElement("Activities_List")
 	for ai, tt_activity := range tt_data.Activities {
 		fetactivity := fetactivities.CreateElement("Activity")
+		rundata.ActivityElements = append(rundata.ActivityElements, fetactivity)
 		// The fet activities start at Id = 1
 		aid := fet_activity_index(ai)
 		fetactivity.CreateElement("Id").SetText(aid)

@@ -170,6 +170,7 @@ func run(fet_data *FetTtData, cmd *exec.Cmd) {
 	fet_data.finished = true
 }
 
+// Regexp for reading the progress of a run from the FET log file
 var pattern = "time (.*), FET reached ([0-9]+)"
 var re *regexp.Regexp = regexp.MustCompile(pattern)
 

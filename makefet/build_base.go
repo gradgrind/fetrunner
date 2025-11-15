@@ -8,6 +8,8 @@ import (
 	"github.com/beevik/etree"
 )
 
+const fet_version = "7.5.5"
+
 type IdPair = autotimetable.IdPair
 type Constraint = autotimetable.Constraint
 

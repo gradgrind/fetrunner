@@ -8,10 +8,16 @@ import (
 
 type IdPair = autotimetable.IdPair
 type Constraint = autotimetable.Constraint
+type ConstraintIndex = autotimetable.ConstraintIndex
+type BasicData = autotimetable.BasicData
+type ConstraintType = autotimetable.ConstraintType
 
 type TtRunDataFet struct {
 	Doc                *etree.Document
 	ConstraintElements []*etree.Element
+
+	// ActivityElements is currently not used
+	ActivityElements []*etree.Element
 
 	// FET has time and space constraints separate. It might be useful in
 	// some way to have that information here.

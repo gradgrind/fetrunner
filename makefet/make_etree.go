@@ -38,15 +38,12 @@ func FetTree(
 		fet_virtual_room_n: map[string]int{},
 	}
 
-	//TODO
-	institution := "The School"
-	fet_version := "6.28.2"
-
 	fetroot := doc.CreateElement("fet")
 	fetbuild.fetroot = fetroot
 	fetroot.CreateAttr("version", fet_version)
 	fetroot.CreateElement("Mode").SetText("Official")
-	fetroot.CreateElement("Institution_Name").SetText(institution)
+	fetroot.CreateElement("Institution_Name").SetText(
+		tt_data.Db.Info.Institution)
 
 	//TODO?
 	source_ref := ""
