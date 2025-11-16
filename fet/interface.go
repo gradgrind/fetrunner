@@ -72,6 +72,7 @@ func (rundata *TtRunDataFet) PrepareRun(enabled []bool, xmlp any) {
 		}
 		n++
 	}
+	rundata.Doc.Indent(2)
 	var err error
 	*(xmlp.(*[]byte)), err = rundata.Doc.WriteToBytes()
 	if err != nil {

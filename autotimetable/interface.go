@@ -17,7 +17,6 @@ type TtSource interface {
 
 	GetConstraints() []Constraint
 
-	//TODO
 	// Prepare the "source" for a run with a set of enabled constraints:
 	PrepareRun([]bool, any)
 }
