@@ -1,16 +1,34 @@
 /*
-	fetrunner runs multiple instances of FET with various sets of constraints enabled.
+fetrunner runs multiple instances of FET with various sets of constraints enabled.
 
-The files produced are saved in a (new) subdirectory of the directory of the
-input file. This name of this subdirectory is based on the name of the input
+The `autotimetable` package provides the main algorithm. Its basic data is in
+the structure `autotimetable.BasicData`, including the run-time parameters,
+among other things.
+
+After dealing with the parameters and file paths, the input file is read by
+calling `fet.FetRead`, which produces an `fet.TtRunDataFet` structure
+containing information specific to the FET back-end, including the XML
+structure of the input FET file, so that modified versions can be produced
+easily. Also, further information is added to the `autotimetable.BasicData`
+structure.
+
+The `fetrunner` back-end using FET to generate timetables is set up by the
+call to `fet.SetFetBackend` and the actual `fetrunner` algorithm is started
+by calling the method `StartGeneration`.
+
+The result-files are saved in a (new) subdirectory of the directory of the
+input file. The name of this subdirectory is based on the name of the input
 file.
 
   - Log file (run.log): Contains error messages and warnings as well as
-    information about the steps performed.
+    information about the steps performed. It can be read continueously
+	to monitor progress.
 
   - Initial FET file: The file to be fed to FET with all constraints active.
     Its name is based on that of the input file, the contents should be
-    effectovely the same, though there may be some formatting differences.
+    essentiallly the same, but the constraints are tagged with identifiers
+	in their "Comments" fields and there there may be some minor formatting
+	differences.
 
   - Successful FET file (Result.fet): The last FET file to run successfully
     before the process ended.
