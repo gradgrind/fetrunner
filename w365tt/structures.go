@@ -179,8 +179,7 @@ type EpochPlan struct {
 }
 
 type W365TopLevel struct {
-	Info Info `json:"W365TT"`
-	//PrintTables  []*ttprint.PrintTable
+	Info         Info `json:"W365TT"`
 	FetData      map[string]string
 	Days         []*Day
 	Hours        []*Hour
