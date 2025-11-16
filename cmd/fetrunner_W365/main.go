@@ -25,6 +25,7 @@ XML-structure of the FET file which is generated.
 package main
 
 import (
+	"errors"
 	"fetrunner/autotimetable"
 	"fetrunner/base"
 	"fetrunner/db"
@@ -78,6 +79,12 @@ func main() {
 	abspath, err := filepath.Abs(args[0])
 	if err != nil {
 		log.Fatalf("*ERROR* Couldn't resolve file path: %s\n", args[0])
+	}
+	if !strings.HasSuffix(strings.ToLower(abspath), ".json") {
+		log.Fatalf("*ERROR* Source file without '.json' ending: %s\n", abspath)
+	}
+	if _, err := os.Stat(abspath); errors.Is(err, os.ErrNotExist) {
+		log.Fatalf("*ERROR* Source file doesn't exist: %s\n", abspath)
 	}
 
 	f1 := filepath.Base(strings.TrimSuffix(abspath, filepath.Ext(abspath)))
