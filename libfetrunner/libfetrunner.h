@@ -21,7 +21,7 @@ extern const char *_GoStringPtr(_GoString_ s);
 /* Start of preamble from import "C" comments.  */
 
 
-#line 5 "fetrunner.go"
+#line 9 "libfetrunner.go"
  #include <stdlib.h>
 
 #line 1 "cgo-generated-wrapper"
@@ -86,7 +86,7 @@ typedef struct { void *data; GoInt len; GoInt cap; } GoSlice;
 extern "C" {
 #endif
 
-extern char* Test(char* cString);
+extern char* FetRunner(char* cString);
 
 #ifdef __cplusplus
 }

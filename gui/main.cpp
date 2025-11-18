@@ -1,3 +1,4 @@
+#include "backend.h"
 #include "mainwindow.h"
 
 #include <QApplication>
@@ -18,6 +19,9 @@ int main(
         }
     }
     MainWindow w;
+
+    qDebug() << test_backend("CONFIG_DIR");
+
     w.show();
     return a.exec();
 }
