@@ -1,0 +1,15 @@
+Linux:
+
+To build a static library:
+
+go build -buildmode=c-archive -o libfetrunner.a fetrunner.go
+
+To build a shared library:
+
+go build -buildmode=c-shared -o libfetrunner.so fetrunner.go
+
+
+What about other platforms?!
+
+On Windows, at least gcc/g++ may be OK with .a archives. For shared
+libraries, I guess it would have to be .dll.
