@@ -14,7 +14,8 @@ import (
 type LogType int
 
 const (
-	INFO LogType = iota
+	none LogType = iota
+	INFO
 	WARNING
 	ERROR
 	BUG
@@ -56,42 +57,70 @@ type LogInstance struct {
 // like the log file. However, the lines would be saved as a list (stripping
 // newline characters).
 
-type logdata struct {
+type LogCmd int
+
+const (
+	noop LogCmd = iota
+	NEW_ENTRY
+)
+
+type logcmd struct {
 	logger *LogInstance
-	entry  logEntry
+	cmd    LogCmd
+	data   any
 }
 
-var logchan chan logdata
+var logcmdchan chan logcmd
 
-func loginit() {
-	logchan = make(chan logdata)
+func init() {
+	logcmdchan = make(chan logcmd)
+	go logreceive()
+}
+
+func NewLog(logpath string) *LogInstance {
+	l := &LogInstance{}
+	if logpath != "" {
+		file, err := os.OpenFile(logpath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+		if err != nil {
+			panic(err)
+		}
+		l.logfile = file
+	}
+	return l
 }
 
 func logreceive() {
-	ld := <-logchan
-	l := ld.logger
-	l.logbuf = append(l.logbuf, ld.entry)
-	if l.logfile != nil {
-		lstring := ld.entry.logtype.String() + " " + ld.entry.text
-		l.logfile.WriteString(lstring + "\n")
+	for ld := range logcmdchan {
+		l := ld.logger
+		switch ld.cmd {
+
+		case NEW_ENTRY:
+			entry := ld.data.(logEntry)
+			l.logbuf = append(l.logbuf, entry)
+			if l.logfile != nil {
+				lstring := entry.logtype.String() + " " + entry.text
+				l.logfile.WriteString(lstring + "\n")
+			}
+		}
+
 	}
 }
 
 func (l *LogInstance) logEnter(ltype LogType, s string, a ...any) {
 	lstring := strings.TrimSpace(fmt.Sprintf(s, a...))
-	logchan <- logdata{l, logEntry{ltype, lstring}}
+	logcmdchan <- logcmd{l, NEW_ENTRY, logEntry{ltype, lstring}}
 }
 
 func (l *LogInstance) Message(s string, a ...any) {
-	l.logEnter(INFO, s, a)
+	l.logEnter(INFO, s, a...)
 }
 
 func (l *LogInstance) Warning(s string, a ...any) {
-	l.logEnter(WARNING, s, a)
+	l.logEnter(WARNING, s, a...)
 }
 
 func (l *LogInstance) Error(s string, a ...any) {
-	l.logEnter(ERROR, s, a)
+	l.logEnter(ERROR, s, a...)
 }
 
 func (l *LogInstance) Bug(s string, a ...any) {
