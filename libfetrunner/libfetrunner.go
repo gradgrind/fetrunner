@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fetrunner/base"
 	"os"
 	"strings"
 	"unsafe"
@@ -29,6 +30,9 @@ func FetRunner(cString *C.char) *C.char {
 		} else {
 			result = "! No config dir"
 		}
+
+	case "CONFIG_INIT":
+		base.InitConfig()
 
 	default:
 		result = "! Invalid command: " + gString
