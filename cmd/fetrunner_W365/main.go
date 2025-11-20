@@ -137,9 +137,9 @@ func main() {
 	bdata.WorkingDir = workingdir
 
 	logpath := filepath.Join(workingdir, "run.log")
-	base.OpenLog(logpath)
+	bdata.Logger = base.NewLog(logpath)
 
-	db0 := db.NewDb()
+	db0 := db.NewDb(bdata.Logger)
 	w365tt.LoadJSON(db0, abspath)
 	db0.PrepareDb()
 

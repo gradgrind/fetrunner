@@ -1,7 +1,6 @@
 package makefet
 
 import (
-	"fetrunner/base"
 	"fetrunner/db"
 	"strconv"
 )
@@ -133,7 +132,8 @@ func (fetbuild *FetBuild) make_before_after_hour(
 	for _, course := range data.Courses {
 		cinfo, ok := tt_data.Ref2CourseInfo[course]
 		if !ok {
-			base.Bug.Fatalf("Invalid course: %s\n", course)
+			tt_data.Db.Logger.Bug("Invalid course: %s", course)
+			continue
 		}
 		for _, ai := range cinfo.Activities {
 			c := tclist.CreateElement("ConstraintActivityPreferredTimeSlots")
@@ -162,8 +162,9 @@ func (fetbuild *FetBuild) double_no_break() {
 	var doubleBlocked []bool
 	for _, c0 := range tt_data.Db.Constraints[db.C_DoubleActivityNotOverBreaks] {
 		if len(doubleBlocked) != 0 {
-			base.Error.Fatalln("Constraint DoubleActivityNotOverBreaks" +
+			tt_data.Db.Logger.Bug("Constraint DoubleActivityNotOverBreaks" +
 				" specified more than once")
+			continue
 		}
 		w := rundata.FetWeight(c0.Weight)
 		timeslots := []preferred_time{}
@@ -205,7 +206,7 @@ func (fetbuild *FetBuild) double_no_break() {
 
 /* TODO
 for _, c0 := range db0.Constraints[db.C_MinHoursFollowing] {
-	base.Error.Printf("!!! Constraint not implemented:\n%+v\n", c0)
+	...Error("!!! Constraint not implemented:\n%+v\n", c0)
 	//w := weight2fet(c0.Weight)
 	//data := c0.Data.(*db.MinHoursFollowing)
 

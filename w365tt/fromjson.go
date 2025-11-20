@@ -11,27 +11,32 @@ import (
 )
 
 // Read to the local, tweaked DbTopLevel
-func ReadJSON(jsonpath string) *W365TopLevel {
+func ReadJSON(logger *base.LogInstance, jsonpath string) *W365TopLevel {
 	// Open the  JSON file
 	jsonFile, err := os.Open(jsonpath)
 	if err != nil {
-		base.Error.Fatal(err)
+		logger.Error("%v", err)
+		return nil
 	}
 	// Remember to close the file at the end of the function
 	defer jsonFile.Close()
 	// read the opened XML file as a byte array.
 	byteValue, _ := io.ReadAll(jsonFile)
-	base.Message.Printf("*+ Reading: %s\n", jsonpath)
+	logger.Info("*+ Reading: %s\n", jsonpath)
 	v := W365TopLevel{}
 	err = json.Unmarshal(byteValue, &v)
 	if err != nil {
-		base.Error.Fatalf("Could not unmarshal json: %s\n", err)
+		logger.Error("Could not unmarshal json: %s\n", err)
+		return nil
 	}
 	return &v
 }
 
-func LoadJSON(newdb *db.DbTopLevel, jsonpath string) {
-	dbi := ReadJSON(jsonpath)
+func LoadJSON(newdb *db.DbTopLevel, jsonpath string) bool {
+	dbi := ReadJSON(newdb.Logger, jsonpath)
+	if dbi == nil {
+		return false
+	}
 	newdb.Info = db.Info(dbi.Info)
 	newdb.ModuleData = map[string]any{
 		"FetData": dbi.FetData,
@@ -50,6 +55,7 @@ func LoadJSON(newdb *db.DbTopLevel, jsonpath string) {
 	dbi.readSuperCourses(newdb)
 	dbi.readLessons(newdb)
 	dbi.readConstraints(newdb)
+	return true
 }
 
 func (dbi *W365TopLevel) readDays(newdb *db.DbTopLevel) {
@@ -92,9 +98,10 @@ func (dbi *W365TopLevel) readTeachers(newdb *db.DbTopLevel) {
 		// Perform some checks and add to the tag map.
 		_, nok := tagmap[e.Tag]
 		if nok {
-			base.Error.Fatalf(
+			newdb.Logger.Error(
 				"Teacher Tag (Shortcut) defined twice: %s\n",
 				e.Tag)
+			continue
 		}
 		tagmap[e.Tag] = struct{}{}
 

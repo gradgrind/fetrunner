@@ -1,12 +1,12 @@
 package w365tt
 
 import (
-	"fetrunner/base"
 	"fetrunner/db"
 	"strconv"
 )
 
 func (dbi *W365TopLevel) readClasses(newdb *db.DbTopLevel) {
+	logger := newdb.Logger
 	// Every Class-Group must be within one – and only one – Class-Division.
 	// To handle that, the Group references are first gathered here. Then,
 	// when a Group is "used" it is flagged. At the end, any unused Groups
@@ -20,6 +20,7 @@ func (dbi *W365TopLevel) readClasses(newdb *db.DbTopLevel) {
 	for _, e := range dbi.Classes {
 		// Get the divisions and flag their Groups.
 		divs := []db.Division{}
+	dloop:
 		for i, wdiv := range e.Divisions {
 			dname := wdiv.Name
 			if dname == "" {
@@ -31,20 +32,21 @@ func (dbi *W365TopLevel) readClasses(newdb *db.DbTopLevel) {
 				flag, ok := pregroups[g]
 				if ok {
 					if flag {
-						base.Error.Fatalf("Group Defined in"+
+						logger.Error("Group Defined in"+
 							" multiple Divisions:\n  -- %s\n", g)
+						continue dloop
 					}
 					// Flag Group and add to division's group list
 					pregroups[g] = true
 					glist = append(glist, g)
 				} else {
-					base.Error.Printf("Unknown Group in Class %s,"+
+					logger.Error("Unknown Group in Class %s,"+
 						" Division %s:\n  %s\n", e.Tag, wdiv.Name, g)
 				}
 			}
 			// Accept Divisions which have too few Groups at this stage.
 			if len(glist) < 2 {
-				base.Warning.Printf("In Class %s,"+
+				logger.Warning("In Class %s,"+
 					" not enough valid Groups (>1) in Division %s\n",
 					e.Tag, wdiv.Name)
 			}
@@ -122,7 +124,7 @@ func (dbi *W365TopLevel) readClasses(newdb *db.DbTopLevel) {
 			g.Tag = n.Tag
 			dbi.GroupRefMap[n.Id] = n.Id // mapping to itself is correct!
 		} else {
-			base.Error.Printf("Group not in Division, removing:\n  %s,",
+			logger.Error("Group not in Division, removing:\n  %s,",
 				n.Id)
 		}
 	}

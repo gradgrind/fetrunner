@@ -26,48 +26,48 @@ var ConstraintMap []DbW365Pair = []DbW365Pair{
 
 // Parameter-reading functions for the constraints
 
-func a2r(r any) NodeRef {
+func a2r(logger *base.LogInstance, r any) NodeRef {
 	rr, ok := r.(string)
 	if ok {
 		return NodeRef(rr)
 	}
 	if r != nil {
-		base.Error.Printf("Invalid NodeRef in Constraint: %+v\n", r)
+		logger.Error("Invalid NodeRef in Constraint: %+v\n", r)
 	}
 	return ""
 }
 
-func a2i(i any) int {
+func a2i(logger *base.LogInstance, i any) int {
 	ii, ok := i.(float64)
 	if !ok {
-		base.Error.Printf("Invalid number in Constraint: %+v\n", i)
+		logger.Error("Invalid number in Constraint: %+v\n", i)
 		return 0
 	}
 	return int(ii)
 }
 
-func a2rr(rr any) []NodeRef {
+func a2rr(logger *base.LogInstance, rr any) []NodeRef {
 	rlist := []NodeRef{}
 	rrr, ok := rr.([]any)
 	if ok {
 		for _, r := range rrr {
-			rlist = append(rlist, a2r(r))
+			rlist = append(rlist, a2r(logger, r))
 		}
 	} else if rr != nil {
-		base.Error.Printf("Invalid NodeRef list in Constraint: %+v\n", rr)
+		logger.Error("Invalid NodeRef list in Constraint: %+v\n", rr)
 	}
 	return rlist
 }
 
-func a2ii(ii any) []int {
+func a2ii(logger *base.LogInstance, ii any) []int {
 	ilist := []int{}
 	iii, ok := ii.([]any)
 	if ok {
 		for _, i := range iii {
-			ilist = append(ilist, a2i(i))
+			ilist = append(ilist, a2i(logger, i))
 		}
 	} else if ii != nil {
-		base.Error.Printf("Invalid number list in Constraint: %+v\n", ii)
+		logger.Error("Invalid number list in Constraint: %+v\n", ii)
 	}
 	return ilist
 }
@@ -75,6 +75,7 @@ func a2ii(ii any) []int {
 // Read the constraints read from a W365 JSON file into the equivalent
 // internal constraints.
 func (db0 *W365TopLevel) readConstraints(newdb *db.DbTopLevel) {
+	logger := newdb.Logger
 	cmap := map[string]string{}
 	for _, pair := range ConstraintMap {
 		cmap[pair.W365] = pair.Db
@@ -84,60 +85,60 @@ func (db0 *W365TopLevel) readConstraints(newdb *db.DbTopLevel) {
 		switch cmap[cw365] {
 		case db.C_ActivitiesEndDay:
 			newdb.NewActivitiesEndDay(
-				a2r(e["Id"]),
-				a2i(e["Weight"]),
-				a2r(e["Course"]))
+				a2r(logger, e["Id"]),
+				a2i(logger, e["Weight"]),
+				a2r(logger, e["Course"]))
 		case db.C_AfterHour:
 			newdb.NewAfterHour(
-				a2r(e["Id"]),
-				a2i(e["Weight"]),
-				a2rr(e["Courses"]),
-				a2i(e["Hour"]))
+				a2r(logger, e["Id"]),
+				a2i(logger, e["Weight"]),
+				a2rr(logger, e["Courses"]),
+				a2i(logger, e["Hour"]))
 		case db.C_BeforeHour:
 			newdb.NewBeforeHour(
-				a2r(e["Id"]),
-				a2i(e["Weight"]),
-				a2rr(e["Courses"]),
-				a2i(e["Hour"]))
+				a2r(logger, e["Id"]),
+				a2i(logger, e["Weight"]),
+				a2rr(logger, e["Courses"]),
+				a2i(logger, e["Hour"]))
 		case db.C_AutomaticDifferentDays:
 			newdb.NewAutomaticDifferentDays(
-				a2r(e["Id"]),
-				a2i(e["Weight"]),
+				a2r(logger, e["Id"]),
+				a2i(logger, e["Weight"]),
 				e["ConsecutiveIfSameDay"].(bool))
 		case db.C_DaysBetween:
 			newdb.NewDaysBetween(
-				a2r(e["Id"]),
-				a2i(e["Weight"]),
-				a2rr(e["Courses"]),
-				a2i(e["DaysBetween"]),
+				a2r(logger, e["Id"]),
+				a2i(logger, e["Weight"]),
+				a2rr(logger, e["Courses"]),
+				a2i(logger, e["DaysBetween"]),
 				e["ConsecutiveIfSameDay"].(bool))
 		case db.C_DaysBetweenJoin:
 			newdb.NewDaysBetweenJoin(
-				a2r(e["Id"]),
-				a2i(e["Weight"]),
-				a2r(e["Course1"]),
-				a2r(e["Course2"]),
-				a2i(e["DaysBetween"]),
+				a2r(logger, e["Id"]),
+				a2i(logger, e["Weight"]),
+				a2r(logger, e["Course1"]),
+				a2r(logger, e["Course2"]),
+				a2i(logger, e["DaysBetween"]),
 				e["ConsecutiveIfSameDay"].(bool))
 		case db.C_MinHoursFollowing:
 			newdb.NewMinHoursFollowing(
-				a2r(e["Id"]),
-				a2i(e["Weight"]),
-				a2r(e["Course1"]),
-				a2r(e["Course2"]),
-				a2i(e["Hours"]))
+				a2r(logger, e["Id"]),
+				a2i(logger, e["Weight"]),
+				a2r(logger, e["Course1"]),
+				a2r(logger, e["Course2"]),
+				a2i(logger, e["Hours"]))
 		case db.C_DoubleActivityNotOverBreaks:
 			newdb.NewDoubleActivityNotOverBreaks(
-				a2r(e["Id"]),
-				a2i(e["Weight"]),
-				a2ii(e["Hours"]))
+				a2r(logger, e["Id"]),
+				a2i(logger, e["Weight"]),
+				a2ii(logger, e["Hours"]))
 		case db.C_ParallelCourses:
 			newdb.NewParallelCourses(
-				a2r(e["Id"]),
-				a2i(e["Weight"]),
-				a2rr(e["Courses"]))
+				a2r(logger, e["Id"]),
+				a2i(logger, e["Weight"]),
+				a2rr(logger, e["Courses"]))
 		default:
-			base.Error.Printf(" @W365 ConstraintInvalid: %s\n", cw365)
+			logger.Error(" @W365 ConstraintInvalid: %s\n", cw365)
 		}
 	}
 }

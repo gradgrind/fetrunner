@@ -1,18 +1,19 @@
 package w365tt
 
 import (
-	"fetrunner/base"
 	"fetrunner/db"
 )
 
 func (dbi *W365TopLevel) readLessons(newdb *db.DbTopLevel) {
+	logger := newdb.Logger
 	for _, e := range dbi.Lessons {
 		// The course must be Course or SuperCourse.
 		_, ok := dbi.CourseMap[e.Course]
 		if !ok {
-			base.Error.Fatalf(
+			logger.Error(
 				"Lesson %s:\n  Invalid course: %s\n",
 				e.Id, e.Course)
+			continue
 		}
 		// Check the Rooms.
 		reflist := []NodeRef{}
@@ -21,7 +22,7 @@ func (dbi *W365TopLevel) readLessons(newdb *db.DbTopLevel) {
 			if ok {
 				reflist = append(reflist, rref)
 			} else {
-				base.Error.Printf(
+				logger.Error(
 					"Invalid Room in Lesson %s:\n  %s\n",
 					e.Id, rref)
 			}

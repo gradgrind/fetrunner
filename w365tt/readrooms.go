@@ -1,7 +1,6 @@
 package w365tt
 
 import (
-	"fetrunner/base"
 	"fetrunner/db"
 	"fmt"
 	"strconv"
@@ -9,16 +8,20 @@ import (
 )
 
 func (dbi *W365TopLevel) readRooms(newdb *db.DbTopLevel) {
+	logger := newdb.Logger
 	dbi.RealRooms = map[NodeRef]*db.Room{}
 	dbi.RoomTags = map[string]NodeRef{}
 	dbi.RoomChoiceNames = map[string]NodeRef{}
 	for _, e := range dbi.Rooms {
 		// Perform some checks and add to the RoomTags map.
+	rloop:
 		_, nok := dbi.RoomTags[e.Tag]
 		if nok {
-			base.Error.Fatalf(
+			logger.Error(
 				"Room Tag (Shortcut) defined twice: %s\n",
 				e.Tag)
+			e.Tag += "$"
+			goto rloop
 		}
 		dbi.RoomTags[e.Tag] = e.Id
 		// Copy to base db.
@@ -36,14 +39,18 @@ func (dbi *W365TopLevel) readRooms(newdb *db.DbTopLevel) {
 
 // In the case of RoomGroups, cater for empty Tags (Shortcuts).
 func (dbi *W365TopLevel) readRoomGroups(newdb *db.DbTopLevel) {
+	logger := newdb.Logger
 	dbi.RoomGroupMap = map[NodeRef]*db.RoomGroup{}
 	for _, e := range dbi.RoomGroups {
 		if e.Tag != "" {
+		rloop:
 			_, nok := dbi.RoomTags[e.Tag]
 			if nok {
-				base.Error.Fatalf(
+				logger.Error(
 					"Room Tag (Shortcut) defined twice: %s\n",
 					e.Tag)
+				e.Tag += "$"
+				goto rloop
 			}
 			dbi.RoomTags[e.Tag] = e.Id
 		}
@@ -58,6 +65,7 @@ func (dbi *W365TopLevel) readRoomGroups(newdb *db.DbTopLevel) {
 
 // Call this after all room types have been "read".
 func (dbi *W365TopLevel) checkRoomGroups(newdb *db.DbTopLevel) {
+	logger := newdb.Logger
 	for _, e := range newdb.RoomGroups {
 		// Collect the Ids and Tags of the component rooms.
 		taglist := []string{}
@@ -70,7 +78,7 @@ func (dbi *W365TopLevel) checkRoomGroups(newdb *db.DbTopLevel) {
 				continue
 
 			}
-			base.Error.Printf(
+			logger.Error(
 				"Invalid Room in RoomGroup %s:\n  %s\n",
 				e.Tag, rref)
 		}

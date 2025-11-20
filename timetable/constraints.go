@@ -1,7 +1,6 @@
 package timetable
 
 import (
-	"fetrunner/base"
 	"fetrunner/db"
 	"strings"
 )
@@ -44,6 +43,7 @@ func (c *TtParallelActivities) IsHard() bool {
 // the `TtAcivity` items.
 func (tt_data *TtData) preprocessConstraints() {
 	db0 := tt_data.Db
+	logger := db0.Logger
 
 	// Deal with the fixed activity placements.
 	for _, c := range db0.Constraints[db.C_ActivityStartTime] {
@@ -73,7 +73,7 @@ func (tt_data *TtData) preprocessConstraints() {
 			auto_weight = cadd0.Weight
 			auto_consec = cadd0.Data.(bool)
 		} else {
-			base.Error.Printf("!!! %s * %d – only one is permitted\n",
+			logger.Error("!!! %s * %d – only one is permitted\n",
 				//TODO: use the source name instead?
 				db.C_AutomaticDifferentDays, len(cadd))
 		}
@@ -134,6 +134,7 @@ func (tt_data *TtData) preprocessConstraints() {
 					data.Course1, data.Course2)})
 	}
 
+cloop:
 	for _, c := range db0.Constraints[db.C_ParallelCourses] {
 		courses := c.Data.([]NodeRef)
 		// The courses must have the same number of activities and the
@@ -149,28 +150,30 @@ func (tt_data *TtData) preprocessConstraints() {
 				alen = len(cinfo.Activities)
 				alists = make([][]ActivityIndex, alen)
 			} else if len(cinfo.Activities) != alen {
-				//TODO: This is a data error
+				// This is a data error
 				clist := []string{}
 				for _, cr := range courses {
 					clist = append(clist, string(cr))
 				}
-				base.Error.Fatalf("Parallel courses have different"+
+				logger.Error("Parallel courses have different"+
 					" activities: %s\n",
 					strings.Join(clist, ","))
+				continue cloop
 			}
 			for j, ai := range cinfo.Activities {
 				a := db0.Activities[ai]
 				if i == 0 {
 					footprint = append(footprint, a.Duration)
 				} else if a.Duration != footprint[j] {
-					//TODO: This is a data error
+					// This is a data error
 					clist := []string{}
 					for _, cr := range courses {
 						clist = append(clist, string(cr))
 					}
-					base.Error.Fatalf("Parallel courses have activity"+
+					logger.Error("Parallel courses have activity"+
 						" mismatch: %s\n",
 						strings.Join(clist, ","))
+					continue cloop
 				}
 				alists[j] = append(alists[j], cinfo.Activities[j])
 			}
@@ -190,6 +193,7 @@ func (tt_data *TtData) preprocessConstraints() {
 func (tt_data *TtData) days_between_activities(
 	course NodeRef, weight int, consecutiveIfSameDay bool,
 ) [][]ActivityIndex {
+	logger := tt_data.Db.Logger
 	allist := [][]ActivityIndex{}
 	cinfo := tt_data.Ref2CourseInfo[course]
 	fixeds := []ActivityIndex{}
@@ -204,8 +208,8 @@ func (tt_data *TtData) days_between_activities(
 
 	if len(unfixeds) == 0 || (len(fixeds) == 0 && len(unfixeds) == 1) {
 		// No constraints necessary
-		//TODO
-		base.Warning.Printf("Ignoring superfluous DaysBetween constraint on"+
+		//TODO?
+		logger.Warning("Ignoring superfluous DaysBetween constraint on"+
 			" course:\n  -- %s", tt_data.View(cinfo))
 		return allist
 	}
@@ -230,8 +234,8 @@ func (tt_data *TtData) days_between_activities(
 		// Add constraint
 		for _, alist := range aidlists {
 			if len(alist) > tt_data.NDays {
-				//TODO
-				base.Warning.Printf("Course has too many activities for"+
+				//TODO?
+				logger.Warning("Course has too many activities for"+
 					"DifferentDays constraint:\n  -- %s\n",
 					tt_data.View(cinfo))
 				continue

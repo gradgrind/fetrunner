@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fetrunner/base"
 	"os"
 	"strings"
 	"unsafe"
@@ -32,7 +31,9 @@ func FetRunner(cString *C.char) *C.char {
 		}
 
 	case "CONFIG_INIT":
-		base.InitConfig()
+		//TODO: Needs adapting, the call is now
+		// logger.InitConfig()
+		//was base.InitConfig()
 
 	default:
 		result = "! Invalid command: " + gString

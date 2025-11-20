@@ -1,7 +1,6 @@
 package timetable
 
 import (
-	"fetrunner/base"
 	"slices"
 	"strings"
 )
@@ -139,6 +138,6 @@ func (tt_data *TtData) errorRCG(cinfo *CourseInfo, rooms []RoomIndex) {
 	for _, r := range rooms {
 		rlist = append(rlist, tt_data.Db.Rooms[r].GetTag())
 	}
-	base.Error.Printf("Course %s: Invalid room-choice-group with %s\n",
+	tt_data.Db.Logger.Error("Course %s: Invalid room-choice-group with %s",
 		tt_data.View(cinfo), strings.Join(rlist, ", "))
 }
