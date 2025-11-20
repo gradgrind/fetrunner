@@ -47,7 +47,6 @@ type LogEntry struct {
 
 type LogInstance struct {
 	logbuf     []LogEntry
-	logfile    *os.File
 	resultchan chan []LogEntry
 }
 
@@ -78,21 +77,15 @@ func init() {
 	go logreceive()
 }
 
-func NewLog(logpath string) *LogInstance {
-	l := &LogInstance{
+func NewLog() *LogInstance {
+	return &LogInstance{
 		resultchan: make(chan []LogEntry),
 	}
-	if logpath != "" {
-		file, err := os.OpenFile(logpath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
-		if err != nil {
-			panic(err)
-		}
-		l.logfile = file
-	}
-	return l
 }
 
 func logreceive() {
+	var waiting []*LogInstance
+	var waiting1 []*LogInstance
 	for ld := range logcmdchan {
 		l := ld.logger
 		switch ld.cmd {
@@ -100,15 +93,47 @@ func logreceive() {
 		case NEW_ENTRY:
 			entry := ld.data.(LogEntry)
 			l.logbuf = append(l.logbuf, entry)
-			if l.logfile != nil {
-				lstring := entry.Type.String() + " " + entry.Text
-				l.logfile.WriteString(lstring + "\n")
-			}
 
 		case GET_LOGS:
-			l.resultchan <- l.logbuf
-			l.logbuf = nil
+			waiting = append(waiting, l)
 
+		}
+
+		waiting1 = nil
+		// Read new log entries
+		for _, w := range waiting {
+			if len(w.logbuf) != 0 {
+				w.resultchan <- w.logbuf
+				w.logbuf = nil
+			} else {
+				waiting1 = append(waiting1, w)
+			}
+		}
+		waiting = waiting1
+
+	}
+}
+
+// LogToFile allows the log entries to be saved to a file, as they are
+// generated.
+// Run it as a goroutine.
+func LogToFile(logger *LogInstance, logpath string) {
+	file, err := os.OpenFile(logpath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	cmd := logcmd{logger, GET_LOGS, nil}
+	for {
+		logcmdchan <- cmd
+		logs, ok := <-logger.resultchan // waits for data to become available
+		if !ok {
+			// channel closed
+			break
+		}
+		for _, entry := range logs {
+			lstring := entry.Type.String() + " " + entry.Text
+			file.WriteString(lstring + "\n")
 		}
 	}
 }

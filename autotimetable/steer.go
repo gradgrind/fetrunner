@@ -453,7 +453,7 @@ tickloop:
 	report := fmt.Sprintf(
 		"::: ALL CONSTRAINTS: (hard) %d / %d  (soft) %d / %d\n",
 		hnn, hnall, snn, snall)
-	logger.Info(report)
+	logger.Info("%s", report)
 	base.Report(report)
 
 	if result != nil {
