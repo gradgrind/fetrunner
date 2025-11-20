@@ -119,6 +119,7 @@ been produced by the generator back-end).
 */
 
 func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
+	logger := basic_data.Logger
 	basic_data.lastResult = nil
 	basic_data.ConstraintErrors = map[ConstraintIndex]string{}
 	basic_data.BlockConstraint = map[ConstraintIndex]bool{}
@@ -177,7 +178,7 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 	if basic_data.Parameters.SKIP_HARD {
 		basic_data.phase = 2
 		if len(basic_data.SoftConstraintMap) == 0 {
-			base.Warning.Println("-h- Option -h: no soft constraints")
+			logger.Warning("-h- Option -h: no soft constraints")
 		}
 	} else {
 		enabled = make([]bool, basic_data.NConstraints)
@@ -190,7 +191,7 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 		runqueue.add(basic_data.null_instance)
 
 		// Start phase 0
-		base.Message.Printf(
+		logger.Info(
 			"[%d] Phase 0 ...\n",
 			basic_data.Ticks)
 		basic_data.phase = 0
@@ -209,7 +210,7 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 		// Tidy up
 		r := recover()
 		if r != nil {
-			base.Bug.Printf("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---\n",
+			logger.Bug("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---\n",
 				basic_data.Ticks, r, debug.Stack())
 			base.Report("!!! ERROR: see log\n")
 		}
@@ -261,7 +262,7 @@ tickloop:
 	// Start queued instances if there are free processors.
 	for {
 		if runqueue.update_queue() == 0 {
-			base.Message.Printf(
+			logger.Info(
 				"[%d] Run-queue empty\n",
 				basic_data.Ticks)
 		}
@@ -269,13 +270,13 @@ tickloop:
 		select {
 		case <-ticker.C:
 		case <-sigChan:
-			base.Message.Printf("[%d] !!! INTERRUPTED !!!\n",
+			logger.Info("[%d] !!! INTERRUPTED !!!\n",
 				basic_data.Ticks)
 			break tickloop
 		}
 
 		basic_data.Ticks++
-		base.Message.Printf(
+		logger.Info(
 			"[%d] +TICK\n",
 			basic_data.Ticks)
 
@@ -285,7 +286,7 @@ tickloop:
 			// Cancel all other runs and return this instance as result.
 			basic_data.current_instance = basic_data.full_instance
 			basic_data.new_current_instance(basic_data.current_instance)
-			base.Message.Printf("[%d] +A+ All constraints OK +++\n",
+			logger.Info("[%d] +A+ All constraints OK +++\n",
 				basic_data.Ticks)
 			break
 		} else {
@@ -293,7 +294,7 @@ tickloop:
 			if p > full_progress {
 				full_progress = p
 				full_progress_ticks = basic_data.Ticks
-				base.Message.Printf(
+				logger.Info(
 					"[%d] ? %s (%d @ %d)\n",
 					basic_data.Ticks,
 					basic_data.full_instance.Tag,
@@ -308,7 +309,7 @@ tickloop:
 				// Set as current and start processing soft constraints.
 				basic_data.current_instance = basic_data.hard_instance
 				basic_data.new_current_instance(basic_data.current_instance)
-				base.Message.Printf(
+				logger.Info(
 					"[%d] +H+ All hard constraints OK +++\n",
 					basic_data.Ticks)
 				// Cancel everything except full instance.
@@ -329,7 +330,7 @@ tickloop:
 				if p > hard_progress {
 					hard_progress = p
 					hard_progress_ticks = basic_data.Ticks
-					base.Message.Printf(
+					logger.Info(
 						"[%d] ? %s (%d @ %d)\n",
 						basic_data.Ticks,
 						basic_data.hard_instance.Tag,
@@ -356,7 +357,7 @@ tickloop:
 		}
 
 		if basic_data.Ticks == TIMEOUT {
-			base.Message.Printf(
+			logger.Info(
 				"[%d] !!! TIMEOUT !!!\n + %s: %d @ %d\n + %s: %d @ %d\n",
 				basic_data.Ticks,
 				basic_data.full_instance.Tag,
@@ -383,7 +384,7 @@ tickloop:
 				//TODO-- 	basic_data.Ticks)
 
 			case -1:
-				base.Error.Printf(
+				logger.Info(
 					"[%d] Couldn't process input data!\n",
 					basic_data.Ticks)
 				base.Report("!!! Couldn't process input data!\n")
@@ -398,7 +399,7 @@ tickloop:
 			break
 		}
 	} // tickloop: end
-	base.Message.Printf(
+	logger.Info(
 		"[%d] Phase 3 ... finalizing ...\n",
 		basic_data.Ticks)
 
@@ -446,17 +447,17 @@ tickloop:
 		return strings.Compare(a.c, b.c)
 	})
 	for _, info := range infolist {
-		base.Message.Printf("$ %s: %d / %d\n", info.c, info.n, info.N)
+		logger.Info("$ %s: %d / %d\n", info.c, info.n, info.N)
 	}
 
 	report := fmt.Sprintf(
 		"::: ALL CONSTRAINTS: (hard) %d / %d  (soft) %d / %d\n",
 		hnn, hnall, snn, snall)
-	base.Message.Print(report)
+	logger.Info(report)
 	base.Report(report)
 
 	if result != nil {
-		base.Message.Printf("Result: %s\n", result.Tag)
+		logger.Info("Result: %s\n", result.Tag)
 	}
 }
 

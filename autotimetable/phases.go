@@ -1,7 +1,6 @@
 package autotimetable
 
 import (
-	"fetrunner/base"
 	"fmt"
 	"slices"
 )
@@ -27,7 +26,7 @@ func (runqueue *RunQueue) phase0() int {
 
 	default:
 		// The null instance failed.
-		base.Error.Printf(
+		basic_data.Logger.Error(
 			"[%d] --- Unconstrained instance failed:\n+++\n%s\n---\n",
 			basic_data.Ticks, basic_data.null_instance.Message)
 		return -1
@@ -66,6 +65,7 @@ reached or the hard-only or full instance will have completed already), return
 */
 func (runqueue *RunQueue) mainphase() bool {
 	basic_data := runqueue.BasicData
+	logger := basic_data.Logger
 	next_timeout := 0 // non-zero => "restart with new base"
 	base_instance := basic_data.current_instance
 	if base_instance == nil {
@@ -108,24 +108,24 @@ func (runqueue *RunQueue) mainphase() bool {
 		switch basic_data.phase {
 
 		case 0:
-			base.Message.Printf(
+			logger.Info(
 				"[%d] Phase 1 ...\n",
 				basic_data.Ticks)
 			basic_data.phase = 1
 			basic_data.constraint_list, n = basic_data.get_basic_constraints(
 				base_instance, false)
 			if n == 0 {
-				base.Warning.Println("--HARD: No hard constraints")
+				logger.Warning("--HARD: No hard constraints")
 				goto rpt
 			}
 
 		case 1:
 			if basic_data.hard_instance.ProcessingState == 1 {
-				base.Message.Printf(
+				logger.Info(
 					"[%d] Phase 2 ... <- %s\n",
 					basic_data.Ticks, basic_data.hard_instance.Tag)
 			} else {
-				base.Message.Printf(
+				logger.Info(
 					"[%d] Phase 2 ... <- (accumulated instance)\n",
 					basic_data.Ticks)
 				// The hard-only instance is no longer needed.
@@ -137,7 +137,7 @@ func (runqueue *RunQueue) mainphase() bool {
 			basic_data.constraint_list, n = basic_data.get_basic_constraints(
 				base_instance, true)
 			if n == 0 {
-				base.Message.Println("--SOFT: No soft constraints")
+				logger.Info("--SOFT: No soft constraints")
 				goto rpt
 			}
 
@@ -173,7 +173,7 @@ func (runqueue *RunQueue) mainphase() bool {
 					split_instances = append(split_instances, si)
 					sit = append(sit, si.Tag)
 				}
-				base.Message.Printf("[%d] (SPLIT) %s -> %v\n",
+				logger.Info("[%d] (SPLIT) %s -> %v\n",
 					basic_data.Ticks, instance.Tag, sit)
 
 				//split_instances = append(split_instances,

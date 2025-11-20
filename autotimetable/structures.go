@@ -1,6 +1,9 @@
 package autotimetable
 
-import "fetrunner/timetable"
+import (
+	"fetrunner/base"
+	"fetrunner/timetable"
+)
 
 // Structures and global variables used in connection with automation of the
 // timetable generation.
@@ -36,6 +39,7 @@ type BasicData struct {
 		LAST_TIME_1 int
 	}
 
+	Logger           *base.LogInstance
 	Source           TtSource
 	BackendInterface BackendInterface
 

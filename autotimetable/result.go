@@ -2,7 +2,6 @@ package autotimetable
 
 import (
 	"encoding/json"
-	"fetrunner/base"
 	"os"
 	"path/filepath"
 )
@@ -25,7 +24,7 @@ type Result struct {
 // Get the result of the current instance as a `Result` structure.
 // Save as JSON if debugging.
 func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
-	base.Message.Printf("[%d] <<< %s @ %d, n: %d\n",
+	basic_data.Logger.Info("[%d] <<< %s @ %d, n: %d\n",
 		basic_data.Ticks, instance.Tag,
 		instance.Ticks, len(instance.Constraints))
 

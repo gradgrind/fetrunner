@@ -12,9 +12,7 @@
 // TODO: Currently dealing only with the elements needed for the timetable
 package db
 
-import (
-	"fetrunner/base"
-)
+import "fetrunner/base"
 
 var ErrorMessages = map[string]string{}
 
@@ -315,6 +313,8 @@ type DbTopLevel struct {
 	// of the `DbTopLevel`. It should not be saved with the rest of the
 	// structure.
 	Elements map[NodeRef]Element `json:"-"`
+	// The logger is made available here for convenience.
+	Logger *base.LogInstance `json:"-"`
 }
 
 func (db *DbTopLevel) GetElement(ref NodeRef) Element {
@@ -328,7 +328,7 @@ func (db *DbTopLevel) GetElement(ref NodeRef) Element {
 func (db *DbTopLevel) Ref2Tag(ref NodeRef) string {
 	e, ok := db.Elements[ref]
 	if !ok {
-		base.Bug.Fatalf("No Ref2Tag for %s\n", ref)
+		panic("No Ref2Tag for " + ref)
 	}
 	return e.GetTag()
 }

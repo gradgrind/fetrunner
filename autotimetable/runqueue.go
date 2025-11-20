@@ -1,7 +1,6 @@
 package autotimetable
 
 import (
-	"fetrunner/base"
 	"fmt"
 	"slices"
 )
@@ -29,6 +28,8 @@ func (rq *RunQueue) add(instance *TtInstance) {
 }
 
 func (rq *RunQueue) update_instances() {
+	basic_data := rq.BasicData
+	logger := basic_data.Logger
 	// First increment the ticks of active instances.
 	for instance := range rq.Active {
 		if instance.RunState != 0 && instance.ProcessingState < 2 {
@@ -39,7 +40,7 @@ func (rq *RunQueue) update_instances() {
 		if instance.RunState == 0 {
 			instance.Ticks++
 			// Among other things, update the state:
-			instance.Backend.Tick(rq.BasicData, instance)
+			instance.Backend.Tick(basic_data, instance)
 		} else if instance.ProcessingState < 2 {
 			// This should only be possible after the call to
 			// the back-end tick method.
@@ -59,19 +60,19 @@ func (rq *RunQueue) update_instances() {
 			t := instance.Timeout
 			if t == 0 {
 				// Check for lack of progress when there is no timeout
-				if instance.LastTime < rq.BasicData.Parameters.LAST_TIME_0 &&
-					instance.Ticks >= rq.BasicData.Parameters.LAST_TIME_1 {
+				if instance.LastTime < basic_data.Parameters.LAST_TIME_0 &&
+					instance.Ticks >= basic_data.Parameters.LAST_TIME_1 {
 					// Stop instance
-					base.Message.Printf(
+					logger.Info(
 						"[%d] Stop (too slow) %s @ %d, p: %d n: %d\n",
-						rq.BasicData.Ticks,
+						basic_data.Ticks,
 						instance.Tag,
 						instance.Ticks,
 						instance.Progress,
 						len(instance.Constraints))
-					rq.BasicData.abort_instance(instance)
+					basic_data.abort_instance(instance)
 					if len(instance.Constraints) == 1 {
-						rq.BasicData.BlockConstraint[instance.Constraints[0]] = true
+						basic_data.BlockConstraint[instance.Constraints[0]] = true
 					}
 				}
 				continue
@@ -84,31 +85,31 @@ func (rq *RunQueue) update_instances() {
 					// ... but stretch the rule a bit
 					continue
 				}
-				base.Message.Printf("[%d] Timeout %s @ %d, p: %d n: %d\n",
-					rq.BasicData.Ticks,
+				logger.Info("[%d] Timeout %s @ %d, p: %d n: %d\n",
+					basic_data.Ticks,
 					instance.Tag,
 					instance.Ticks,
 					instance.Progress,
 					len(instance.Constraints))
-				rq.BasicData.abort_instance(instance)
+				basic_data.abort_instance(instance)
 				continue
 			}
 
 		case 1: // completed successfully
-			//base.Message.Printf("[%d] <<+ %s @ %d (%d)\n + %v\n",
-			//	rq.BasicData.Ticks, instance.Tag, instance.Ticks,
+			//logger.Info("[%d] <<+ %s @ %d (%d)\n + %v\n",
+			//	basic_data.Ticks, instance.Tag, instance.Ticks,
 			//	len(instance.Constraints), instance.Constraints)
-			base.Message.Printf("[%d] <<+ %s @ %d (%d)\n",
-				rq.BasicData.Ticks, instance.Tag, instance.Ticks,
+			logger.Info("[%d] <<+ %s @ %d (%d)\n",
+				basic_data.Ticks, instance.Tag, instance.Ticks,
 				len(instance.Constraints))
 			instance.ProcessingState = 1
 
 		default: // completed unsuccessfully
-			//base.Message.Printf("[%d] <<- %s @ %d (%d)\n + %v\n",
-			//	rq.BasicData.Ticks, instance.Tag, instance.Ticks,
+			//logger.Info("[%d] <<- %s @ %d (%d)\n + %v\n",
+			//	basic_data.Ticks, instance.Tag, instance.Ticks,
 			//	len(instance.Constraints), instance.Constraints)
-			base.Message.Printf("[%d] <<- %s @ %d (%d)\n",
-				rq.BasicData.Ticks, instance.Tag, instance.Ticks,
+			logger.Info("[%d] <<- %s @ %d (%d)\n",
+				basic_data.Ticks, instance.Tag, instance.Ticks,
 				len(instance.Constraints))
 			instance.ProcessingState = 2
 		}
@@ -116,12 +117,14 @@ func (rq *RunQueue) update_instances() {
 }
 
 func (rq *RunQueue) update_queue() int {
+	basic_data := rq.BasicData
+	logger := basic_data.Logger
 	// Try to start queued instances
 	running := 0
 	for instance := range rq.Active {
 		if instance.RunState != 0 {
 			delete(rq.Active, instance)
-			if !rq.BasicData.Parameters.DEBUG {
+			if !basic_data.Parameters.DEBUG {
 				instance.Backend.Clear()
 			}
 			continue
@@ -137,19 +140,19 @@ func (rq *RunQueue) update_queue() int {
 		rq.Next++
 
 		if instance.ProcessingState < 0 {
-			//base.Message.Printf("[%d] >> %s n: %d t: %d\n + %v\n",
-			//	rq.BasicData.Ticks,
+			//logger.Info("[%d] >> %s n: %d t: %d\n + %v\n",
+			//	basic_data.Ticks,
 			//	instance.Tag,
 			//	len(instance.Constraints),
 			//	instance.Timeout,
 			//	instance.Constraints)
-			base.Message.Printf("[%d] >> %s n: %d t: %d\n",
-				rq.BasicData.Ticks,
+			logger.Info("[%d] >> %s n: %d t: %d\n",
+				basic_data.Ticks,
 				instance.Tag,
 				len(instance.Constraints),
 				instance.Timeout)
 			instance.Backend =
-				rq.BasicData.BackendInterface.RunBackend(instance)
+				basic_data.BackendInterface.RunBackend(instance)
 			instance.ProcessingState = 0 // indicate started/running
 			rq.Active[instance] = struct{}{}
 			running++
@@ -172,10 +175,10 @@ func (rq *RunQueue) update_queue() int {
 			if n <= 1 {
 				continue
 			}
-			rq.BasicData.abort_instance(instance)
+			basic_data.abort_instance(instance)
 			// Remove it from constraint list.
-			rq.BasicData.constraint_list = slices.DeleteFunc(
-				rq.BasicData.constraint_list, func(i *TtInstance) bool {
+			basic_data.constraint_list = slices.DeleteFunc(
+				basic_data.constraint_list, func(i *TtInstance) bool {
 					return i == instance
 				})
 
@@ -197,13 +200,13 @@ func (rq *RunQueue) update_queue() int {
 					n--
 					rem--
 				}
-				inew := rq.BasicData.new_instance(
+				inew := basic_data.new_instance(
 					instance.BaseInstance,
 					instance.ConstraintType,
 					instance.Constraints[n:nx],
 					instance.Timeout)
-				rq.BasicData.constraint_list = append(
-					rq.BasicData.constraint_list, inew)
+				basic_data.constraint_list = append(
+					basic_data.constraint_list, inew)
 				rq.add(inew)
 				tags = append(tags, inew.Tag)
 				running++
@@ -211,8 +214,8 @@ func (rq *RunQueue) update_queue() int {
 			if n != 0 {
 				panic("Bug: wrong constraint division ...")
 			}
-			base.Message.Printf("[%d] (NSPLIT) %s -> %v\n",
-				rq.BasicData.Ticks, instance.Tag, tags)
+			logger.Info("[%d] (NSPLIT) %s -> %v\n",
+				basic_data.Ticks, instance.Tag, tags)
 		}
 	}
 

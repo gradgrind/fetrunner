@@ -2,9 +2,9 @@ package fet
 
 import (
 	"encoding/json"
-	"fetrunner/base"
 	"fmt"
 	"regexp"
+	"strconv"
 
 	"github.com/beevik/etree"
 )
@@ -14,7 +14,8 @@ import (
 // are also recorded in the `TimeConstraints` and `SpaceConstraints` lists.
 
 func FetRead(basic_data *BasicData, fetpath string) *TtRunDataFet {
-	base.Message.Printf("SOURCE: %s\n", fetpath)
+	logger := basic_data.Logger
+	logger.Info("SOURCE: %s\n", fetpath)
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(fetpath); err != nil {
 		panic(err)
@@ -49,7 +50,7 @@ func FetRead(basic_data *BasicData, fetpath string) *TtRunDataFet {
 		}
 		basic_data.NActivities = len(activities)
 		if inactive != 0 {
-			base.Message.Printf("-A- %d inactive activities", inactive)
+			logger.Result("INACTIVE_ACTIVITIES", strconv.Itoa(inactive))
 		}
 		rundata.ActivityElements = activities
 		rundata.ActivityIds = aidlist
@@ -143,9 +144,9 @@ func FetRead(basic_data *BasicData, fetpath string) *TtRunDataFet {
 		}
 		if inactive != 0 {
 			if timespace == 0 {
-				base.Message.Printf("-T- %d inactive time constraints", inactive)
+				logger.Result("INACTIVE_TIME_CONSTRAINTS", strconv.Itoa(inactive))
 			} else {
-				base.Message.Printf("-S- %d inactive space constraints", inactive)
+				logger.Result("INACTIVE_SPACE_CONSTRAINTS", strconv.Itoa(inactive))
 			}
 		}
 	}

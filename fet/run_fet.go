@@ -268,24 +268,25 @@ func (data *FetTtData) Results(
 	basic_data *autotimetable.BasicData,
 	instance *autotimetable.TtInstance,
 ) []autotimetable.TtActivityPlacement {
+	logger := basic_data.Logger
 	// Get placements
 	xmlpath := filepath.Join(data.odir, "timetables", instance.Tag,
 		instance.Tag+"_activities.xml")
 	// Open the XML file
 	xmlFile, err := os.Open(xmlpath)
 	if err != nil {
-		base.Bug.Print(err)
+		logger.Bug("%v", err)
 		return nil
 	}
 	// Remember to close the file at the end of the function
 	defer xmlFile.Close()
 	// read the opened XML file as a byte array.
-	base.Message.Printf("Reading: %s\n", xmlpath)
+	logger.Info("Reading: %s\n", xmlpath)
 	byteValue, _ := io.ReadAll(xmlFile)
 	v := fetResultRoot{}
 	err = xml.Unmarshal(byteValue, &v)
 	if err != nil {
-		base.Bug.Printf("XML error in %s:\n %v\n", xmlpath, err)
+		logger.Bug("XML error in %s:\n %v\n", xmlpath, err)
 		return nil
 	}
 	// Need to prepare the `ActivityPlacment` fields: activities, days,

@@ -2,17 +2,19 @@ package db
 
 import (
 	"fetrunner/base"
+	"fmt"
 	"slices"
 	"strconv"
 
 	"github.com/gofrs/uuid/v5"
 )
 
-func NewDb() *DbTopLevel {
+func NewDb(logger *base.LogInstance) *DbTopLevel {
 	return &DbTopLevel{
 		Placements:  map[string][]*ActivityPlacement{},
 		Constraints: map[string][]*Constraint{},
 		Elements:    map[NodeRef]Element{},
+		Logger:      logger,
 	}
 }
 
@@ -20,7 +22,7 @@ func (db *DbTopLevel) newId() NodeRef {
 	// Create a Version 4 UUID.
 	u2, err := uuid.NewV4()
 	if err != nil {
-		base.Error.Fatalf("Failed to generate UUID: %v", err)
+		panic(err)
 	}
 	return NodeRef(u2.String())
 }
@@ -28,10 +30,12 @@ func (db *DbTopLevel) newId() NodeRef {
 func (db *DbTopLevel) addElement(ref NodeRef, element Element) NodeRef {
 	if ref == "" {
 		ref = db.newId()
-	}
-	_, nok := db.Elements[ref]
-	if nok {
-		base.Error.Fatalf("Element Id defined more than once:\n  %s\n", ref)
+	} else {
+		_, known := db.Elements[ref]
+		if known {
+			db.Logger.Error("Element Id defined more than once:  %s", ref)
+			ref = db.newId()
+		}
 	}
 	db.Elements[ref] = element
 	return ref
@@ -139,7 +143,8 @@ func (db *DbTopLevel) PrepareDb() {
 		slices.Sort(db.Info.MiddayBreak)
 		mb := db.Info.MiddayBreak
 		if mb[len(mb)-1]-mb[0] >= len(mb) {
-			base.Error.Fatalln("MiddayBreak hours not contiguous")
+			db.Logger.Error("MiddayBreak hours not contiguous")
+			db.Info.MiddayBreak = []int{}
 		}
 	}
 
@@ -185,14 +190,14 @@ func (db *DbTopLevel) PrepareDb() {
 	for _, g := range db.Groups {
 		if g.Class == nil {
 			// This is a loader failure, it should not be possible.
-			base.Bug.Fatalf("Group not in Class: %s\n", g.Id)
+			panic(fmt.Sprintf("Group not in Class: %s", g.Id))
 		}
 	}
 
 	// Check that element tags are unique
-	newtags("Subject", db.Subjects)
-	newtags("Room", db.Rooms)
-	newtags("Teacher", db.Teachers)
+	newtags(db.Logger, "Subject", db.Subjects)
+	newtags(db.Logger, "Room", db.Rooms)
+	newtags(db.Logger, "Teacher", db.Teachers)
 
 	// Check that the Rooms in RoomGroups and RoomChoiceGroups are valid.
 	for _, rg := range db.RoomGroups {
@@ -201,7 +206,8 @@ func (db *DbTopLevel) PrepareDb() {
 			if _, ok := db.Elements[r].(*Room); ok {
 				rlist = append(rlist, r)
 			} else {
-				base.Error.Printf("Invalid Room (%s) in RoomGroup %s", r, rg.Tag)
+				db.Logger.Error(
+					"Invalid Room (%s) in RoomGroup %s", r, rg.Tag)
 			}
 		}
 		rg.Rooms = rlist
@@ -212,14 +218,15 @@ func (db *DbTopLevel) PrepareDb() {
 			if _, ok := db.Elements[r].(*Room); ok {
 				rlist = append(rlist, r)
 			} else {
-				base.Error.Printf("Invalid Room (%s) in RoomChoiceGroup %s", r, rg.Tag)
+				db.Logger.Error(
+					"Invalid Room (%s) in RoomChoiceGroup %s", r, rg.Tag)
 			}
 		}
 		rg.Rooms = rlist
 	}
 }
 
-func newtags[T Element](etype string, elist []T) {
+func newtags[T Element](logger *base.LogInstance, etype string, elist []T) {
 	checktags := map[string]bool{}
 	errortags := []Element{}
 	for _, e0 := range elist {
@@ -243,32 +250,40 @@ func newtags[T Element](etype string, elist []T) {
 		}
 		checktags[tag] = true
 		e.setTag(tag)
-		base.Error.Printf("%s tag <%s> not unique: Element %s changed to <%s>\n",
+		logger.Error(
+			"%s tag <%s> not unique: Element %s changed to <%s>\n",
 			etype, tag0, e.GetRef(), tag)
 	}
 }
 
-func (db *DbTopLevel) CheckDbBasics() {
+func (db *DbTopLevel) CheckDbBasics() bool {
 	// This function is provided for use by code which needs the following
 	// Elements to be provided.
 	if len(db.Days) == 0 {
-		base.Error.Fatalln("No Days")
+		db.Logger.Error("No Days")
+		return false
 	}
 	if len(db.Hours) == 0 {
-		base.Error.Fatalln("No Hours")
+		db.Logger.Error("No Hours")
+		return false
 	}
 	if len(db.Teachers) == 0 {
-		base.Error.Fatalln("No Teachers")
+		db.Logger.Error("No Teachers")
+		return false
 	}
 	if len(db.Subjects) == 0 {
-		base.Error.Fatalln("No Subjects")
+		db.Logger.Error("No Subjects")
+		return false
 	}
 	if len(db.Rooms) == 0 {
-		base.Error.Fatalln("No Rooms")
+		db.Logger.Error("No Rooms")
+		return false
 	}
 	if len(db.Classes) == 0 {
-		base.Error.Fatalln("No Classes")
+		db.Logger.Error("No Classes")
+		return false
 	}
+	return true
 }
 
 // Interface for Course and SubCourse elements

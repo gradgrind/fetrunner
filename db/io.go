@@ -11,45 +11,48 @@ func (db *DbTopLevel) SaveDb(fpath string) bool {
 	// Save as JSON
 	j, err := json.MarshalIndent(db, "", "  ")
 	if err != nil {
-		base.Error.Println(err)
+		db.Logger.Error("%v", err)
 		return false
 	}
 	if err := os.WriteFile(fpath, j, 0644); err != nil {
-		base.Error.Println(err)
+		db.Logger.Error("%v", err)
 		return false
 	}
 	return true
 }
 
-func LoadDb(fpath string) *DbTopLevel {
+func LoadDb(logger *base.LogInstance, fpath string) (*DbTopLevel, error) {
 	// Open the  JSON file
 	jsonFile, err := os.Open(fpath)
 	if err != nil {
-		base.Error.Fatal(err)
+		return nil, err
 	}
 	// Remember to close the file at the end of the function
 	defer jsonFile.Close()
 	// read the opened XML file as a byte array.
 	byteValue, _ := io.ReadAll(jsonFile)
-	base.Message.Printf("*+ Reading: %s\n", fpath)
-	v := NewDb()
+	logger.Info("*+ Reading: %s\n", fpath)
+	v := NewDb(logger)
 	err = json.Unmarshal(byteValue, v)
 	if err != nil {
-		base.Error.Fatalf("Could not unmarshal json: %s\n", err)
+		return nil, err
 	}
 	v.initElements()
-	return v
+	return v, nil
 }
 
-func (db *DbTopLevel) testElement(ref NodeRef, element Element) {
+func (db *DbTopLevel) testElement(ref NodeRef, element Element) bool {
 	if ref == "" {
-		base.Error.Fatalf("Element has no Id:\n  -- %+v\n", element)
+		db.Logger.Error("Element has no Id:\n  -- %+v\n", element)
+		return false
 	}
 	_, nok := db.Elements[ref]
 	if nok {
-		base.Error.Fatalf("Element Id defined more than once:\n  %s\n", ref)
+		db.Logger.Error("Element Id defined more than once:\n  %s\n", ref)
+		return false
 	}
 	db.Elements[ref] = element
+	return true
 }
 
 func (db *DbTopLevel) initElements() {

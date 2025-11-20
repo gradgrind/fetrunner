@@ -86,19 +86,19 @@ func main() {
 	args := flag.Args()
 	if len(args) != 1 {
 		if len(args) == 0 {
-			log.Fatalln("ERROR* No input file")
+			log.Fatalln("ERROR: No input file")
 		}
-		log.Fatalf("*ERROR* Too many command-line arguments:\n  %+v\n", args)
+		log.Fatalf("ERROR: Too many command-line arguments:\n  %+v\n", args)
 	}
 	abspath, err := filepath.Abs(args[0])
 	if err != nil {
-		log.Fatalf("*ERROR* Couldn't resolve file path: %s\n", args[0])
+		log.Fatalf("ERROR: Couldn't resolve file path: %s\n", args[0])
 	}
 	if !strings.HasSuffix(strings.ToLower(abspath), ".fet") {
-		log.Fatalf("*ERROR* Source file without '.fet' ending: %s\n", abspath)
+		log.Fatalf("ERROR: Source file without '.fet' ending: %s\n", abspath)
 	}
 	if _, err := os.Stat(abspath); errors.Is(err, os.ErrNotExist) {
-		log.Fatalf("*ERROR* Source file doesn't exist: %s\n", abspath)
+		log.Fatalf("ERROR: Source file doesn't exist: %s\n", abspath)
 	}
 
 	f1 := filepath.Base(strings.TrimSuffix(abspath, filepath.Ext(abspath)))
@@ -112,7 +112,7 @@ func main() {
 	bdata.WorkingDir = workingdir
 
 	logpath := filepath.Join(workingdir, "run.log")
-	base.OpenLog(logpath)
+	bdata.Logger = base.NewLog(logpath)
 
 	fet.FetRead(bdata, abspath)
 

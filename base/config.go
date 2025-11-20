@@ -2,7 +2,6 @@ package base
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,7 +14,7 @@ var (
 	FetCl      string
 )
 
-func test_fet() {
+func (logger *LogInstance) test_fet() {
 	var fetpath string
 	fetpath0 := config["FET"]
 	if fetpath0 == nil {
@@ -35,27 +34,27 @@ func test_fet() {
 				goto get_version
 			}
 		}
-		Error.Println("FET not found")
-		SetConfig("FET", nil)
+		logger.Error("FET not found")
+		logger.SetConfig("FET", nil)
 		return
 	}
 get_version:
 	version := regexp.MustCompile(`(?m)version +([0-9.]+)`)
 	match := version.FindSubmatch(out)
 	if match == nil {
-		Result("FET_VERSION", "?")
+		logger.Result("FET_VERSION", "?")
 	} else {
-		Result("FET_VERSION", match[1])
+		logger.Result("FET_VERSION", string(match[1]))
 	}
-	SetConfig("FET", fetpath)
+	logger.SetConfig("FET", fetpath)
 	FetCl = fetpath
 }
 
-func InitConfig() {
+func (logger *LogInstance) InitConfig() {
 	config = map[string]any{} // an empty config
 	dir, dirErr := os.UserConfigDir()
 	if dirErr != nil {
-		Error.Println("No config location!")
+		logger.Error("No config location!")
 	} else {
 		cdir := filepath.Join(dir, "gradgrind")
 		err := os.MkdirAll(cdir, 0755)
@@ -66,40 +65,40 @@ func InitConfig() {
 				if !os.IsNotExist(err) {
 					// The user has a config file but we couldn't read it.
 					// Report the error and leave the file.
-					Error.Println("Config file not readable: ", err)
+					logger.Error("Config file not readable: %v", err)
 				} else {
 					configfile = cfile
-					saveconfig()
+					logger.saveconfig()
 				}
 			} else {
 				// Read as JSON
 				err = json.Unmarshal(origConfig, &config)
 				if err != nil {
-					Error.Println("Config file invalid JSON:", err)
+					logger.Error("Config file invalid JSON: %v", err)
 				} else {
 					configfile = cfile
 				}
 			}
 		} else {
-			Error.Println("Config location not accessible: " + cdir)
+			logger.Error("Config location not accessible: %s", cdir)
 		}
 	}
 	// Check path to `fet-cl`
-	test_fet()
+	logger.test_fet()
 }
 
-func SetConfig(key string, val any) {
+func (logger *LogInstance) SetConfig(key string, val any) {
 	val0 := config[key]
 	config[key] = val
-	Result("CONFIG", fmt.Sprintf("%s=%v", key, val))
+	logger.Info("CONFIG %s=%v", key, val)
 	if val0 != val {
-		saveconfig()
+		logger.saveconfig()
 	}
 }
 
-func saveconfig() {
+func (logger *LogInstance) saveconfig() {
 	if len(configfile) == 0 {
-		Error.Println("Write config failed: no config file")
+		logger.Error("Write config failed: no config file")
 		return
 	}
 	jsonBytes, err := json.MarshalIndent(config, "", "  ")
@@ -108,7 +107,7 @@ func saveconfig() {
 	}
 	err = os.WriteFile(configfile, jsonBytes, 0644)
 	if err != nil {
-		Error.Println("Write config failed:", err)
+		logger.Error("Write config failed: %v", err)
 		configfile = ""
 	}
 }

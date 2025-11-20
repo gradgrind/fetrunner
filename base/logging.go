@@ -2,7 +2,6 @@ package base
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -41,14 +40,15 @@ func (ltype LogType) String() string {
 	return s
 }
 
-type logEntry struct {
-	logtype LogType
-	text    string
+type LogEntry struct {
+	Type LogType
+	Text string
 }
 
 type LogInstance struct {
-	logbuf  []logEntry
-	logfile *os.File
+	logbuf     []LogEntry
+	logfile    *os.File
+	resultchan chan []LogEntry
 }
 
 //TODO: For the library version (at least) I need to have the log available
@@ -62,6 +62,7 @@ type LogCmd int
 const (
 	noop LogCmd = iota
 	NEW_ENTRY
+	GET_LOGS
 )
 
 type logcmd struct {
@@ -78,7 +79,9 @@ func init() {
 }
 
 func NewLog(logpath string) *LogInstance {
-	l := &LogInstance{}
+	l := &LogInstance{
+		resultchan: make(chan []LogEntry),
+	}
 	if logpath != "" {
 		file, err := os.OpenFile(logpath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 		if err != nil {
@@ -95,24 +98,32 @@ func logreceive() {
 		switch ld.cmd {
 
 		case NEW_ENTRY:
-			entry := ld.data.(logEntry)
+			entry := ld.data.(LogEntry)
 			l.logbuf = append(l.logbuf, entry)
 			if l.logfile != nil {
-				lstring := entry.logtype.String() + " " + entry.text
+				lstring := entry.Type.String() + " " + entry.Text
 				l.logfile.WriteString(lstring + "\n")
 			}
-		}
 
+		case GET_LOGS:
+			l.resultchan <- l.logbuf
+			l.logbuf = nil
+
+		}
 	}
 }
 
 func (l *LogInstance) logEnter(ltype LogType, s string, a ...any) {
 	lstring := strings.TrimSpace(fmt.Sprintf(s, a...))
-	logcmdchan <- logcmd{l, NEW_ENTRY, logEntry{ltype, lstring}}
+	logcmdchan <- logcmd{l, NEW_ENTRY, LogEntry{ltype, lstring}}
 }
 
-func (l *LogInstance) Message(s string, a ...any) {
+func (l *LogInstance) Info(s string, a ...any) {
 	l.logEnter(INFO, s, a...)
+}
+
+func (l *LogInstance) Result(key string, value string) {
+	l.logEnter(RESULT, "%s=%s", key, value)
 }
 
 func (l *LogInstance) Warning(s string, a ...any) {
@@ -136,8 +147,18 @@ func (l *LogInstance) Bug(s string, a ...any) {
 	l.logEnter(BUG, p+s, a)
 }
 
-//--------------------------------------------------
+// TODO?
+var CONSOLE bool
 
+func Report(msg string) {
+	if CONSOLE {
+		fmt.Print(msg)
+	}
+}
+
+//TODO--
+//--------------------------------------------------
+/*
 // TODO: These are globals, perhaps they should not be, but separate instances
 // for each input file?
 var (
@@ -150,12 +171,6 @@ var (
 
 	logbuf []string
 )
-
-func Report(msg string) {
-	if CONSOLE {
-		fmt.Print(msg)
-	}
-}
 
 func Result(key string, val any) {
 	result.Println(key, "=", val)
@@ -179,3 +194,4 @@ func OpenLog(logpath string) {
 	Bug = log.New(file, "*BUG* ", log.Lshortfile)
 	result = log.New(file, "+ ", 0)
 }
+*/
