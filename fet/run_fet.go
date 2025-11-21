@@ -82,7 +82,7 @@ func (fbe *FetBackend) RunBackend(
 	ctx, cancel := context.WithCancel(context.Background())
 	// Note that it should be safe to call `cancel` multiple times.
 	fet_data := &FetTtData{
-		finished: false,
+		finished: 0,
 		ifile:    fetfile,
 		fetxml:   fet_xml,
 		odir:     odir,
@@ -120,7 +120,7 @@ func (fbe *FetBackend) RunBackend(
 
 	runCmd := exec.CommandContext(ctx,
 		//runCmd := exec.Command(
-		"fet-cl", params...,
+		basic_data.Logger.GetConfig("FET"), params...,
 	)
 
 	go run(fet_data, runCmd)
@@ -136,7 +136,7 @@ type FetTtData struct {
 	reader      *bufio.Reader
 	cancel      func()
 	fet_timeout bool //
-	finished    bool
+	finished    int
 	count       int
 }
 
@@ -166,8 +166,17 @@ func (data *FetTtData) Clear() {
 // `run` is a goroutine. The last item to be changed must be `fet_data.state`,
 // to avoid potential race conditions.
 func run(fet_data *FetTtData, cmd *exec.Cmd) {
-	cmd.CombinedOutput()
-	fet_data.finished = true
+	_, err := cmd.CombinedOutput()
+	if err != nil {
+		e := err.Error()
+		if strings.HasPrefix(e, "signal") {
+			fet_data.finished = -1
+		} else {
+			fet_data.finished = -2 // program failed
+		}
+	} else {
+		fet_data.finished = 1
+	}
 }
 
 // Regexp for reading the progress of a run from the FET log file
@@ -227,7 +236,7 @@ func (data *FetTtData) Tick(
 		}
 	}
 exit:
-	if data.finished {
+	if data.finished != 0 {
 		if data.rdfile != nil {
 			data.rdfile.Close()
 		}
@@ -235,6 +244,10 @@ exit:
 			instance.RunState = 1
 		} else {
 			instance.RunState = 2
+		}
+		if data.finished == -2 {
+			basic_data.Logger.Error("FET_Failed: %s", basic_data.Logger.GetConfig("FET"))
+			return
 		}
 
 		efile, err := os.ReadFile(filepath.Join(data.odir, "logs", "errors.txt"))

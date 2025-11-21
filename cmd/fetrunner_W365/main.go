@@ -139,6 +139,8 @@ func main() {
 	logger := base.NewLogger()
 	logpath := filepath.Join(workingdir, "run.log")
 	go base.LogToFile(logger, logpath)
+	logger.InitConfig()
+	logger.TestFet()
 	bdata.Logger = logger
 
 	db0 := db.NewDb(logger)

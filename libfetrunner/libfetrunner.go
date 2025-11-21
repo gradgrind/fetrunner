@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os"
-	"strings"
 	"unsafe"
 )
 
@@ -17,28 +15,8 @@ var cmsg *C.char
 
 //export FetRunner
 func FetRunner(cString *C.char) *C.char {
-	var result string
 	gString := C.GoString(cString)
-	cmd := strings.Fields(gString)
-	switch cmd0 := cmd[0]; cmd0 {
-
-	case "CONFIG_DIR":
-		dir, dirErr := os.UserConfigDir()
-		if dirErr == nil {
-			result = "> config dir: " + dir
-		} else {
-			result = "! No config dir"
-		}
-
-	case "CONFIG_INIT":
-		//TODO: Needs adapting, the call is now
-		// logger.InitConfig()
-		//was base.InitConfig()
-
-	default:
-		result = "! Invalid command: " + gString
-
-	}
+	result := Dispatch(gString)
 	C.free(unsafe.Pointer(cmsg)) // cmsg == `nil` is OK
 	cmsg = C.CString(result)
 	return cmsg

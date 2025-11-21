@@ -1,26 +1,28 @@
 package base
 
 import (
-	"encoding/json"
+	"bufio"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
+	"strings"
 )
 
 var (
-	config     map[string]any
+	config     map[string]string
 	configfile string
-	FetCl      string
 )
 
-func (logger Logger) test_fet() {
+// Check path to `fet-cl`
+func (logger Logger) TestFet() {
 	var fetpath string
 	fetpath0 := config["FET"]
-	if fetpath0 == nil {
+	if fetpath0 == "" {
 		fetpath = "fet-cl"
 	} else {
-		fetpath = fetpath0.(string)
+		fetpath = fetpath0
 	}
 	cmd := exec.Command(fetpath, "--version")
 	out, err := cmd.CombinedOutput()
@@ -35,7 +37,7 @@ func (logger Logger) test_fet() {
 			}
 		}
 		logger.Error("FET not found")
-		logger.SetConfig("FET", nil)
+		logger.SetConfig("FET", "")
 		return
 	}
 get_version:
@@ -47,67 +49,84 @@ get_version:
 		logger.Result("FET_VERSION", string(match[1]))
 	}
 	logger.SetConfig("FET", fetpath)
-	FetCl = fetpath
 }
 
 func (logger Logger) InitConfig() {
-	config = map[string]any{} // an empty config
+	config = map[string]string{} // an empty config
 	dir, dirErr := os.UserConfigDir()
 	if dirErr != nil {
-		logger.Error("No config location!")
+		logger.Error("ConfigFile_NoConfigLocation")
 	} else {
 		cdir := filepath.Join(dir, "gradgrind")
 		err := os.MkdirAll(cdir, 0755)
 		if err == nil {
-			cfile := filepath.Join(cdir, "fetrunner.json")
-			origConfig, err := os.ReadFile(cfile)
-			if err != nil {
-				if !os.IsNotExist(err) {
-					// The user has a config file but we couldn't read it.
-					// Report the error and leave the file.
-					logger.Error("Config file not readable: %v", err)
-				} else {
-					configfile = cfile
-					logger.saveconfig()
+			configfile = filepath.Join(cdir, "fetrunner.conf")
+			// open file
+			f, err := os.Open(configfile)
+			if err == nil {
+				// remember to close the file at the end of the function
+				defer f.Close()
+				// read the file line by line using scanner
+				scanner := bufio.NewScanner(f)
+				for scanner.Scan() {
+					// do something with a line
+					t := scanner.Text()
+					kv := strings.SplitN(t, "=", 2)
+					if len(kv) != 2 {
+						logger.Error("ConfigFile_BadLine: %s", t)
+					} else {
+						config[strings.TrimSpace(kv[0])] = strings.TrimSpace(kv[1])
+					}
 				}
-			} else {
-				// Read as JSON
-				err = json.Unmarshal(origConfig, &config)
-				if err != nil {
-					logger.Error("Config file invalid JSON: %v", err)
-				} else {
-					configfile = cfile
+				if err := scanner.Err(); err != nil {
+					logger.Error("ConfigFile_ScanError: %s", err)
 				}
 			}
 		} else {
-			logger.Error("Config location not accessible: %s", cdir)
+			logger.Error("ConfigFile_LocationNotAccessible: %s", cdir)
 		}
 	}
-	// Check path to `fet-cl`
-	logger.test_fet()
 }
 
-func (logger Logger) SetConfig(key string, val any) {
+func (logger Logger) SetConfig(key string, val string) {
 	val0 := config[key]
-	config[key] = val
-	logger.Info("CONFIG %s=%v", key, val)
 	if val0 != val {
+		logger.Info("SET_CONFIG %s=%s", key, val)
+		config[key] = val
 		logger.saveconfig()
+	} else {
+		logger.Info("(SET_CONFIG %s=%s)", key, val)
 	}
+}
+
+func (logger Logger) GetConfig(key string) string {
+	return config[key]
 }
 
 func (logger Logger) saveconfig() {
-	if len(configfile) == 0 {
-		logger.Error("Write config failed: no config file")
+	if configfile == "" {
+		logger.Error("WriteConfigFailed_NoConfigFile")
 		return
 	}
-	jsonBytes, err := json.MarshalIndent(config, "", "  ")
-	if err != nil {
-		panic(err)
+	lines := [][]string{}
+	for k, v := range config {
+		lines = append(lines, []string{k, v})
 	}
-	err = os.WriteFile(configfile, jsonBytes, 0644)
+	slices.SortFunc(lines, func(a, b []string) int {
+		return strings.Compare(a[0], b[0])
+	})
+	// create file
+	f, err := os.OpenFile(configfile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
-		logger.Error("Write config failed: %v", err)
+		logger.Error("WriteConfigFailed: %s", err)
 		configfile = ""
+	}
+	// remember to close the file
+	defer f.Close()
+	for _, line := range lines {
+		_, err := f.WriteString(line[0] + "=" + line[1] + "\n")
+		if err != nil {
+			logger.Error("WriteConfigLine: %s", err)
+		}
 	}
 }
