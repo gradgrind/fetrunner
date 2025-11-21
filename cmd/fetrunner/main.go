@@ -111,9 +111,10 @@ func main() {
 	}
 	bdata.WorkingDir = workingdir
 
-	bdata.Logger = base.NewLog()
+	logger := base.NewLogger()
 	logpath := filepath.Join(workingdir, "run.log")
-	go base.LogToFile(bdata.Logger, logpath)
+	go base.LogToFile(logger, logpath)
+	bdata.Logger = logger
 
 	fet.FetRead(bdata, abspath)
 

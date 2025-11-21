@@ -14,7 +14,7 @@ var (
 	FetCl      string
 )
 
-func (logger *LogInstance) test_fet() {
+func (logger Logger) test_fet() {
 	var fetpath string
 	fetpath0 := config["FET"]
 	if fetpath0 == nil {
@@ -50,7 +50,7 @@ get_version:
 	FetCl = fetpath
 }
 
-func (logger *LogInstance) InitConfig() {
+func (logger Logger) InitConfig() {
 	config = map[string]any{} // an empty config
 	dir, dirErr := os.UserConfigDir()
 	if dirErr != nil {
@@ -87,7 +87,7 @@ func (logger *LogInstance) InitConfig() {
 	logger.test_fet()
 }
 
-func (logger *LogInstance) SetConfig(key string, val any) {
+func (logger Logger) SetConfig(key string, val any) {
 	val0 := config[key]
 	config[key] = val
 	logger.Info("CONFIG %s=%v", key, val)
@@ -96,7 +96,7 @@ func (logger *LogInstance) SetConfig(key string, val any) {
 	}
 }
 
-func (logger *LogInstance) saveconfig() {
+func (logger Logger) saveconfig() {
 	if len(configfile) == 0 {
 		logger.Error("Write config failed: no config file")
 		return
