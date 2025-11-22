@@ -2,59 +2,81 @@ package main
 
 import (
 	"fetrunner/base"
-	"os"
 	"strings"
+	"sync"
 )
 
-//TODO: The logger collects entries in a buffer. Should Logger rather be an
-// interface?
-
-type ALogger interface {
-	Enter()
+type BufferingLogger struct {
+	base.Logger
+	logbuf []base.LogEntry
+	mu     sync.Mutex
 }
 
-type ThisLogger struct {
-	logchan chan []base.LogEntry
-	logbuf  []base.LogEntry
-}
-
-func NewLogger() ThisLogger {
-	return ThisLogger{
-		logchan: make(chan []base.LogEntry),
+func NewBufferingLogger() *BufferingLogger {
+	return &BufferingLogger{
+		Logger: base.NewLogger(),
 	}
 }
 
-// The loggers must be made available somehow. This map makes them accessible
-// via a tag.
-// TODO: Would an integer key be better?
-var loggerMap map[string]ThisLogger
+var logger *BufferingLogger
 
 func init() {
 	// default logger
-	loggerMap = map[string]ThisLogger{"": NewLogger()}
+	logger = NewBufferingLogger()
+	go logToBuffer(logger)
+}
+
+// Log entry handler adding log entries to a buffer.
+func logToBuffer(logger *BufferingLogger) {
+	for entry := range logger.LogChan {
+		logger.mu.Lock()
+		logger.logbuf = append(logger.logbuf, entry)
+		logger.mu.Unlock()
+	}
+}
+
+// Read buffered log entries, clear buffer.
+// Note that a Go `string` can contain arbitrary bytes, it is essentially
+// a read-only slices of bytes. Thus the individual entries – which are
+// utf-8 strings – can be joind by an invalid utf-8 byte (0xFF) so that
+// they can be split again by the receiver.
+func (logger *BufferingLogger) readBuffer() string {
+	// Lock as briefly as possible, by copying buffer.
+	logger.mu.Lock()
+	buf := logger.logbuf
+	logger.logbuf = nil
+	logger.mu.Unlock()
+	entries := []string{}
+	for _, entry := range buf {
+		lstring := entry.Type.String() + " " + entry.Text
+		entries = append(entries, lstring)
+	}
+	return strings.Join(entries, "\xff")
 }
 
 func Dispatch(cmd0 string) string {
-	var result string
-	cmdsplit := strings.Fields(cmd0)
+	cmdsplit := strings.SplitN(cmd0, " ", 2)
 	switch cmd := cmdsplit[0]; cmd {
 
-	case "CONFIG_DIR":
-		dir, dirErr := os.UserConfigDir()
-		if dirErr == nil {
-			result = "> config dir: " + dir
-		} else {
-			result = "! No config dir"
-		}
-
 	case "CONFIG_INIT":
-		//TODO: Needs adapting, the call is now
-		// logger.InitConfig()
-		//was base.InitConfig()
+		logger.InitConfig()
+
+	case "GET_CONFIG":
+		cfg := logger.GetConfig(cmdsplit[1])
+		logger.Result("GET_CONFIG", cfg)
+
+	case "SET_CONFIG":
+		logger.SetConfig(cmdsplit[1], cmdsplit[2])
+
+	// FET handling
+	case "GET_FET":
+		logger.TestFet()
 
 	default:
-		result = "! Invalid command: " + cmd0
+		logger.Bug("Invalid command: %s", cmd0)
 
 	}
-	return result
+
+	// Collect the logs as result.
+	return logger.readBuffer()
 }

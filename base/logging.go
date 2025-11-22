@@ -43,57 +43,13 @@ type LogEntry struct {
 	Text string
 }
 
-type Logger chan LogEntry
+type Logger struct {
+	LogChan chan LogEntry
+}
 
 func NewLogger() Logger {
-	return make(Logger)
+	return Logger{make(chan LogEntry)}
 }
-
-//TODO: For the library version (at least) I need to have the log available
-// as JSON, perhaps in addition to the file version?
-// It would be cleared after each reading, otherwise it could be pretty much
-// like the log file. However, the lines would be saved as a list (stripping
-// newline characters).
-
-/*
-func init() {
-	logcmdchan = make(chan logcmd)
-	go logreceive()
-}
-*/
-
-/*
-func logreceive() {
-	var waiting []Logger
-	var waiting1 []Logger
-	for ld := range logcmdchan {
-		l := ld.logger
-		switch ld.cmd {
-
-		case NEW_ENTRY:
-			entry := ld.data.(LogEntry)
-			l.logbuf = append(l.logbuf, entry)
-
-		case GET_LOGS:
-			waiting = append(waiting, l)
-
-		}
-
-		waiting1 = nil
-		// Read new log entries
-		for _, w := range waiting {
-			if len(w.logbuf) != 0 {
-				w.resultchan <- w.logbuf
-				w.logbuf = nil
-			} else {
-				waiting1 = append(waiting1, w)
-			}
-		}
-		waiting = waiting1
-
-	}
-}
-*/
 
 // LogToFile allows the log entries to be saved to a file, as they are
 // generated.
@@ -104,7 +60,7 @@ func LogToFile(logger Logger, logpath string) {
 		panic(err)
 	}
 	defer file.Close()
-	for entry := range logger {
+	for entry := range logger.LogChan {
 		lstring := entry.Type.String() + " " + entry.Text
 		file.WriteString(lstring + "\n")
 	}
@@ -112,7 +68,7 @@ func LogToFile(logger Logger, logpath string) {
 
 func (l Logger) logEnter(ltype LogType, s string, a ...any) {
 	lstring := strings.TrimSpace(fmt.Sprintf(s, a...))
-	l <- LogEntry{ltype, lstring}
+	l.LogChan <- LogEntry{ltype, lstring}
 }
 
 func (l Logger) Info(s string, a ...any) {
