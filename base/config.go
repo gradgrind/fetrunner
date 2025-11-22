@@ -36,7 +36,7 @@ func (logger Logger) TestFet() {
 				goto get_version
 			}
 		}
-		logger.Error("FET not found")
+		logger.Error("FET_NOT_FOUND %s", out)
 		logger.SetConfig("FET", "")
 		return
 	}
@@ -61,6 +61,7 @@ func (logger Logger) InitConfig() {
 		err := os.MkdirAll(cdir, 0755)
 		if err == nil {
 			configfile = filepath.Join(cdir, "fetrunner.conf")
+			logger.Result("CONFIG_FILE", configfile)
 			// open file
 			f, err := os.Open(configfile)
 			if err == nil {
