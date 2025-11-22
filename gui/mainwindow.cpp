@@ -10,12 +10,14 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     ui->tableWidget->resizeColumnsToContents();
 
+    /*
     settings = new QSettings("gradgrind", "fetrunner");
     //const auto geometry = settings->value("MainWindow", QByteArray()).toByteArray();
     const auto geometry = settings->value("MainWindowSize").value<QSize>();
     if (!geometry.isEmpty())
         //restoreGeometry(geometry);
         resize(geometry);
+    */
 
     set_connections();
 
@@ -28,8 +30,8 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     //settings->setValue("MainWindow", saveGeometry());
-    settings->setValue("MainWindowSize", size());
-    delete settings;
+    //settings->setValue("MainWindowSize", size());
+    //delete settings;
 
     delete ui;
 }
@@ -46,9 +48,9 @@ void MainWindow::open_file()
     if (running)
         return;
 
-    QString opendir{settings->value("SourceDir").toString()};
-    if (opendir.isEmpty())
-        opendir = QDir::homePath();
+    //QString opendir{settings->value("SourceDir").toString()};
+    //if (opendir.isEmpty())
+    QString opendir = QDir::homePath();
     QString fileName = QFileDialog::getOpenFileName( //
         this,
         tr("Open Timetable Specifiation"),
@@ -61,8 +63,8 @@ void MainWindow::open_file()
     qDebug() << "Open:" << fileName;
 
     QDir dir(fileName);
-    if (dir.cdUp())
-        settings->setValue("SourceDir", dir.absolutePath());
+    //if (dir.cdUp())
+    //    settings->setValue("SourceDir", dir.absolutePath());
     qDebug() << "Dir:" << dir.absolutePath();
 
     qDebug() << "???" << test_backend(fileName);

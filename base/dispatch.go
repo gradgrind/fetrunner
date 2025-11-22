@@ -1,29 +1,28 @@
-package main
+package base
 
 import (
-	"fetrunner/base"
 	"strings"
 	"sync"
 )
 
 type BufferingLogger struct {
-	base.Logger
-	logbuf []base.LogEntry
+	Logger
+	logbuf []LogEntry
 	mu     sync.Mutex
 }
 
 func NewBufferingLogger() *BufferingLogger {
 	return &BufferingLogger{
-		Logger: base.NewLogger(),
+		Logger: NewLogger(),
 	}
 }
 
-var logger *BufferingLogger
+var bufferinglogger *BufferingLogger
 
 func init() {
 	// default logger
-	logger = NewBufferingLogger()
-	go logToBuffer(logger)
+	bufferinglogger = NewBufferingLogger()
+	go logToBuffer(bufferinglogger)
 }
 
 // Log entry handler adding log entries to a buffer.
@@ -59,24 +58,24 @@ func Dispatch(cmd0 string) string {
 	switch cmd := cmdsplit[0]; cmd {
 
 	case "CONFIG_INIT":
-		logger.InitConfig()
+		bufferinglogger.InitConfig()
 
 	case "GET_CONFIG":
-		cfg := logger.GetConfig(cmdsplit[1])
-		logger.Result("GET_CONFIG", cfg)
+		cfg := bufferinglogger.GetConfig(cmdsplit[1])
+		bufferinglogger.Result("GET_CONFIG", cfg)
 
 	case "SET_CONFIG":
-		logger.SetConfig(cmdsplit[1], cmdsplit[2])
+		bufferinglogger.SetConfig(cmdsplit[1], cmdsplit[2])
 
 	// FET handling
 	case "GET_FET":
-		logger.TestFet()
+		bufferinglogger.TestFet()
 
 	default:
-		logger.Bug("Invalid command: %s", cmd0)
+		bufferinglogger.Bug("Invalid command: %s", cmd0)
 
 	}
 
 	// Collect the logs as result.
-	return logger.readBuffer()
+	return bufferinglogger.readBuffer()
 }

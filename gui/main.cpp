@@ -20,7 +20,8 @@ int main(
     }
     MainWindow w;
 
-    qDebug() << test_backend("CONFIG_DIR");
+    qDebug() << test_backend("CONFIG_INIT");
+    qDebug() << test_backend("GET_FET");
 
     w.show();
     return a.exec();

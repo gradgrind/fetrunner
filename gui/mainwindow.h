@@ -1,7 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QSettings>
 #include <QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -22,7 +21,6 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    QSettings *settings;
     bool running{false};
 
     void set_connections();
