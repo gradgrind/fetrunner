@@ -1,7 +1,7 @@
 package base
 
 import (
-	"strings"
+	"encoding/json"
 	"sync"
 )
 
@@ -34,48 +34,112 @@ func logToBuffer(logger *BufferingLogger) {
 	}
 }
 
-// Read buffered log entries, clear buffer.
-// Note that a Go `string` can contain arbitrary bytes, it is essentially
-// a read-only slices of bytes. Thus the individual entries – which are
-// utf-8 strings – can be joind by an invalid utf-8 byte (0xFF) so that
-// they can be split again by the receiver.
+// Read buffered log entries to a JSON array, clear buffer.
 func (logger *BufferingLogger) readBuffer() string {
 	// Lock as briefly as possible, by copying buffer.
 	logger.mu.Lock()
 	buf := logger.logbuf
 	logger.logbuf = nil
 	logger.mu.Unlock()
-	entries := []string{}
-	for _, entry := range buf {
-		lstring := entry.Type.String() + " " + entry.Text
-		entries = append(entries, lstring)
+	bytes, err := json.Marshal(buf)
+	if err != nil {
+		panic(err)
+	} else {
+		return string(bytes)
 	}
-	return strings.Join(entries, "\xff")
+}
+
+func (e LogEntry) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Type string
+		Text string
+	}{
+		Type: e.Type.String(),
+		Text: e.Text,
+	})
+}
+
+var LoggerMap map[string]*BufferingLogger
+
+type DispatchOp struct {
+	Op   string
+	Id   string
+	Data []string
 }
 
 func Dispatch(cmd0 string) string {
-	cmdsplit := strings.SplitN(cmd0, " ", 2)
-	switch cmd := cmdsplit[0]; cmd {
 
-	case "CONFIG_INIT":
-		bufferinglogger.InitConfig()
+	var (
+		op     DispatchOp
+		logger *BufferingLogger
+		ok     bool
+	)
+	if err := json.Unmarshal([]byte(cmd0), &op); err != nil {
+		bufferinglogger.Error("!InvalidOp_JSON: %s // %s", err, cmd0)
+		goto done
+	}
+	if op.Op == "" {
+		bufferinglogger.Error("!InvalidOp_NoOp: %s", cmd0)
+		goto done
+	}
+	if op.Id == "" {
+		// Some ops are only valid using the base logger:
+		switch op.Op {
 
-	case "GET_CONFIG":
-		cfg := bufferinglogger.GetConfig(cmdsplit[1])
-		bufferinglogger.Result("GET_CONFIG", cfg)
+		case "CONFIG_INIT":
+			if checkargs(bufferinglogger, &op, 0) {
+				bufferinglogger.InitConfig()
+			}
+			goto done
 
-	case "SET_CONFIG":
-		bufferinglogger.SetConfig(cmdsplit[1], cmdsplit[2])
+		case "GET_CONFIG":
+			if checkargs(bufferinglogger, &op, 1) {
+				bufferinglogger.Result(
+					"GET_CONFIG", bufferinglogger.GetConfig(op.Data[0]))
+			}
+			goto done
 
-	// FET handling
-	case "GET_FET":
-		bufferinglogger.TestFet()
+		case "SET_CONFIG":
+			if checkargs(bufferinglogger, &op, 2) {
+				bufferinglogger.SetConfig(op.Data[0], op.Data[1])
+			}
+			goto done
+
+		// FET handling
+		case "GET_FET":
+			if checkargs(bufferinglogger, &op, 0) {
+				bufferinglogger.TestFet()
+			}
+			goto done
+
+		default:
+			logger = bufferinglogger
+
+		}
+	} else {
+		logger, ok = LoggerMap[op.Id]
+		if !ok {
+			bufferinglogger.Error("!InvalidOp_Logger: %s", cmd0)
+			goto done
+		}
+	}
+
+	switch op.Op {
 
 	default:
-		bufferinglogger.Bug("Invalid command: %s", cmd0)
+		logger.Error("!InvalidOp_Op: %s", cmd0)
 
 	}
 
+done:
 	// Collect the logs as result.
 	return bufferinglogger.readBuffer()
+}
+
+func checkargs(logger *BufferingLogger, op *DispatchOp, n int) bool {
+	if len(op.Data) != n {
+		logger.Error("!InvalidOp_Data: %s", op.Op)
+		return false
+	}
+	return true
 }

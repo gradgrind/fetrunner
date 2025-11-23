@@ -26,8 +26,8 @@ var logType = map[LogType]string{
 	WARNING: "*WARNING*",
 	ERROR:   "*ERROR*",
 	BUG:     "*BUG*",
-	COMMAND: "<",
-	RESULT:  ">",
+	COMMAND: "#",
+	RESULT:  "$",
 }
 
 func (ltype LogType) String() string {
