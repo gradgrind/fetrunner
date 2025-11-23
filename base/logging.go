@@ -19,6 +19,7 @@ const (
 
 	COMMAND
 	RESULT
+	ENDOP
 )
 
 var logType = map[LogType]string{
@@ -46,6 +47,9 @@ type LogEntry struct {
 type Logger struct {
 	LogChan chan LogEntry
 }
+
+// The file logger has no particular action at the end of an operation.
+func (l Logger) OpDone() string { return "" }
 
 func NewLogger() Logger {
 	return Logger{make(chan LogEntry)}

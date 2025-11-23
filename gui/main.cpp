@@ -20,8 +20,8 @@ int main(
     }
     MainWindow w;
 
-    qDebug() << test_backend(R"({"Op":"CONFIG_INIT"})");
-    qDebug() << test_backend(R"({"Op":"GET_FET"})");
+    qDebug() << backend("CONFIG_INIT");
+    qDebug() << backend("GET_FET");
 
     w.show();
     return a.exec();

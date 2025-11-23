@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include <QFileDialog>
+#include <QMessageBox>
 #include "backend.h"
+#include "support.h"
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -63,9 +65,14 @@ void MainWindow::open_file()
     qDebug() << "Open:" << fileName;
 
     QDir dir(fileName);
-    //if (dir.cdUp())
-    //    settings->setValue("SourceDir", dir.absolutePath());
-    qDebug() << "Dir:" << dir.absolutePath();
+    if (dir.cdUp())
+        //    settings->setValue("SourceDir", dir.absolutePath());
+        qDebug() << "Dir:" << dir.absolutePath();
 
-    qDebug() << "???" << test_backend(fileName);
+    qDebug() << "???" << backend("SET_FILE", {fileName});
+}
+
+void showError(QString emsg)
+{
+    QMessageBox::critical(nullptr, "", emsg);
 }

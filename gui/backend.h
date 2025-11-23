@@ -1,17 +1,11 @@
 #ifndef BACKEND_H
 #define BACKEND_H
 
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QObject>
 
-class Backend : public QObject
-{
-    Q_OBJECT
-public:
-    explicit Backend(QObject *parent = nullptr);
-
-signals:
-};
-
-QString test_backend(QString s);
+QJsonArray backend(QString op, QStringList data = {});
 
 #endif // BACKEND_H

@@ -1,20 +1,19 @@
 #include "backend.h"
 #include "../libfetrunner/libfetrunner.h"
+#include "support.h"
 
-Backend::Backend(QObject *parent)
-    : QObject{parent}
-{}
-
-QString test_backend(QString s)
+QJsonArray backend(
+    QString op, QStringList data)
 {
-    auto sbytes = s.toUtf8();
-    auto cs = const_cast<char *>(sbytes.constData());
-    auto rcs = FetRunner(cs);
-    const QByteArray bytes{rcs};
-    const QList<QByteArray> rsplit{bytes.split('\xff')};
-    QStringList ssplit;
-    for (const auto &b : rsplit) {
-        ssplit.append(QString::fromUtf8(b));
+    QJsonObject cmd{{"Op", op}, {"Data", QJsonArray::fromStringList(data)}};
+    QJsonDocument doc(cmd);
+    auto cs = doc.toJson(QJsonDocument::Compact);
+    auto result = FetRunner(cs.data());
+    qDebug() << "§" << cmd << "->" << result;
+    auto jsondoc = QJsonDocument::fromJson(result);
+    if (!jsondoc.isArray()) {
+        showError(QString{"BackendReturnError: "} + result);
+        return QJsonArray{};
     }
-    return ssplit.join("\n");
+    return jsondoc.array();
 }

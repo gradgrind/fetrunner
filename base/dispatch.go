@@ -2,50 +2,52 @@ package base
 
 import (
 	"encoding/json"
-	"sync"
+	"fmt"
 )
 
 type BufferingLogger struct {
 	Logger
-	logbuf []LogEntry
-	mu     sync.Mutex
+	logbuf     []LogEntry
+	resultchan chan string
 }
 
 func NewBufferingLogger() *BufferingLogger {
 	return &BufferingLogger{
-		Logger: NewLogger(),
+		Logger:     NewLogger(),
+		resultchan: make(chan string),
 	}
 }
 
-var bufferinglogger *BufferingLogger
+var defaultlogger *BufferingLogger
+
+// At the end of an operation the log entries must be collected.
+// To ensure that none are missed, the logger channels are used to
+// synchronize the accesses.
+func (l *BufferingLogger) OpDone() string {
+	l.LogChan <- LogEntry{Type: ENDOP}
+	return <-l.resultchan
+}
 
 func init() {
 	// default logger
-	bufferinglogger = NewBufferingLogger()
-	go logToBuffer(bufferinglogger)
+	defaultlogger = NewBufferingLogger()
+	go logToBuffer(defaultlogger)
 }
 
 // Log entry handler adding log entries to a buffer.
 func logToBuffer(logger *BufferingLogger) {
 	for entry := range logger.LogChan {
-		logger.mu.Lock()
-		logger.logbuf = append(logger.logbuf, entry)
-		logger.mu.Unlock()
-	}
-}
-
-// Read buffered log entries to a JSON array, clear buffer.
-func (logger *BufferingLogger) readBuffer() string {
-	// Lock as briefly as possible, by copying buffer.
-	logger.mu.Lock()
-	buf := logger.logbuf
-	logger.logbuf = nil
-	logger.mu.Unlock()
-	bytes, err := json.Marshal(buf)
-	if err != nil {
-		panic(err)
-	} else {
-		return string(bytes)
+		if entry.Type == ENDOP {
+			bytes, err := json.Marshal(logger.logbuf)
+			logger.logbuf = nil
+			if err != nil {
+				panic(err)
+			} else {
+				logger.resultchan <- string(bytes)
+			}
+		} else {
+			logger.logbuf = append(logger.logbuf, entry)
+		}
 	}
 }
 
@@ -75,11 +77,11 @@ func Dispatch(cmd0 string) string {
 		ok     bool
 	)
 	if err := json.Unmarshal([]byte(cmd0), &op); err != nil {
-		bufferinglogger.Error("!InvalidOp_JSON: %s // %s", err, cmd0)
+		defaultlogger.Error("!InvalidOp_JSON: %s // %s", err, cmd0)
 		goto done
 	}
 	if op.Op == "" {
-		bufferinglogger.Error("!InvalidOp_NoOp: %s", cmd0)
+		defaultlogger.Error("!InvalidOp_NoOp: %s", cmd0)
 		goto done
 	}
 	if op.Id == "" {
@@ -87,39 +89,38 @@ func Dispatch(cmd0 string) string {
 		switch op.Op {
 
 		case "CONFIG_INIT":
-			if checkargs(bufferinglogger, &op, 0) {
-				bufferinglogger.InitConfig()
+			if checkargs(defaultlogger, &op, 0) {
+				defaultlogger.InitConfig()
 			}
 			goto done
 
 		case "GET_CONFIG":
-			if checkargs(bufferinglogger, &op, 1) {
-				bufferinglogger.Result(
-					"GET_CONFIG", bufferinglogger.GetConfig(op.Data[0]))
+			if checkargs(defaultlogger, &op, 1) {
+				defaultlogger.Result(
+					"GET_CONFIG", defaultlogger.GetConfig(op.Data[0]))
 			}
 			goto done
 
 		case "SET_CONFIG":
-			if checkargs(bufferinglogger, &op, 2) {
-				bufferinglogger.SetConfig(op.Data[0], op.Data[1])
+			if checkargs(defaultlogger, &op, 2) {
+				defaultlogger.SetConfig(op.Data[0], op.Data[1])
 			}
 			goto done
 
 		// FET handling
 		case "GET_FET":
-			if checkargs(bufferinglogger, &op, 0) {
-				bufferinglogger.TestFet()
+			if checkargs(defaultlogger, &op, 0) {
+				defaultlogger.TestFet()
 			}
 			goto done
 
 		default:
-			logger = bufferinglogger
 
 		}
 	} else {
 		logger, ok = LoggerMap[op.Id]
 		if !ok {
-			bufferinglogger.Error("!InvalidOp_Logger: %s", cmd0)
+			defaultlogger.Error("!InvalidOp_Logger: %s", cmd0)
 			goto done
 		}
 	}
@@ -132,8 +133,8 @@ func Dispatch(cmd0 string) string {
 	}
 
 done:
-	// Collect the logs as result.
-	return bufferinglogger.readBuffer()
+	fmt.Printf("??? %s\n", cmd0)
+	return logger.OpDone() // if appropriate, collect the logs as result
 }
 
 func checkargs(logger *BufferingLogger, op *DispatchOp, n int) bool {
