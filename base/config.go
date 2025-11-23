@@ -101,6 +101,7 @@ func (logger Logger) SetConfig(key string, val string) {
 }
 
 func (logger Logger) GetConfig(key string) string {
+	//fmt.Printf("??? %s :: %s\n", key, config[key])
 	return config[key]
 }
 

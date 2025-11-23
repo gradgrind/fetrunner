@@ -22,9 +22,15 @@ MainWindow::MainWindow(QWidget *parent)
     */
 
     set_connections();
+    auto s = getConfig("gui/MainWindowSize");
+    if (!s.isEmpty()) {
+        auto wh = s.split("x");
+        resize(wh[0].toInt(), wh[1].toInt());
+    }
 
-    QString s{tr("Hello")};
-    ui->lineEdit_3->setText(s);
+    //TODO--
+    QString s1{tr("Hello")};
+    ui->lineEdit_3->setText(s1);
     QString s2{tr("Something")};
     ui->lineEdit_4->setText(s2);
 }
@@ -34,7 +40,10 @@ MainWindow::~MainWindow()
     //settings->setValue("MainWindow", saveGeometry());
     //settings->setValue("MainWindowSize", size());
     //delete settings;
-
+    auto s = QString("%1x%2").arg( //
+        QString::number(width()),
+        QString::number(height()));
+    backend("SET_CONFIG", {"gui/MainWindowSize", s});
     delete ui;
 }
 
@@ -50,7 +59,7 @@ void MainWindow::open_file()
     if (running)
         return;
 
-    QString opendir = backend("GET_CONFIG", {"gui/SourceDir"});
+    QString opendir = getConfig("gui/SourceDir");
     //QString opendir{settings->value("SourceDir").toString()};
     if (opendir.isEmpty())
         opendir = QDir::homePath();
@@ -67,10 +76,10 @@ void MainWindow::open_file()
 
     QDir dir(fileName);
     if (dir.cdUp())
-        //    settings->setValue("SourceDir", dir.absolutePath());
+        setConfig("gui/SourceDir", dir.absolutePath());
         qDebug() << "Dir:" << dir.absolutePath();
 
-    qDebug() << "???" << backend("SET_FILE", {fileName});
+        backend("SET_FILE", {fileName});
 }
 
 void showError(QString emsg)

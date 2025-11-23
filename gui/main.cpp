@@ -18,10 +18,11 @@ int main(
             break;
         }
     }
+    backend("CONFIG_INIT");
+
     MainWindow w;
 
-    qDebug() << backend("CONFIG_INIT");
-    qDebug() << backend("GET_FET");
+    backend("GET_FET");
 
     w.show();
     return a.exec();

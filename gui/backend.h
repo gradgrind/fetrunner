@@ -6,6 +6,14 @@
 #include <QJsonObject>
 #include <QObject>
 
-QString backend(QString op, QStringList data = {});
+struct KeyVal
+{
+    QString key;
+    QString val;
+};
+
+QList<KeyVal> backend(QString op, QStringList data = {});
+QString getConfig(QString key);
+void setConfig(QString key, QString val);
 
 #endif // BACKEND_H
