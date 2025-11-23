@@ -28,6 +28,7 @@ QString jresult(QJsonArray jarr)
                 results.append({key, val});
                 qDebug() << "$$$" << key << "=" << val;
             }
+        } else if (key == "+++") {
         } else {
             //messages.append(key + " " + val);
             qDebug() << key << val;
@@ -38,15 +39,17 @@ QString jresult(QJsonArray jarr)
 
 QString backend(QString op, QStringList data)
 {
-    QJsonObject cmd{{"Op", op}, {"Data", QJsonArray::fromStringList(data)}};
+    auto darray = QJsonArray::fromStringList(data);
+    qDebug() << QString{"+++ "} + op << darray;
+    QJsonObject cmd{{"Op", op}, {"Data", darray}};
     QJsonDocument doc(cmd);
     auto cs = doc.toJson(QJsonDocument::Compact);
     auto result = FetRunner(cs.data());
-    qDebug() << "§" << cmd << "->" << result;
+    //qDebug() << "§" << cmd << "->" << result;
     auto jsondoc = QJsonDocument::fromJson(result);
     if (!jsondoc.isArray()) {
         showError(QString{"BackendReturnError: "} + result);
     } else
         jresult(jsondoc.array());
-    return QString{"--"} + op;
+    return QString{"--- "} + op;
 }

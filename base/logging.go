@@ -19,6 +19,8 @@ const (
 
 	COMMAND
 	RESULT
+
+	STARTOP
 	ENDOP
 )
 
@@ -29,6 +31,8 @@ var logType = map[LogType]string{
 	BUG:     "*BUG*",
 	COMMAND: "#",
 	RESULT:  "$",
+	STARTOP: "+++",
+	ENDOP:   "---",
 }
 
 func (ltype LogType) String() string {

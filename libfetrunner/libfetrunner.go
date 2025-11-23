@@ -17,10 +17,18 @@ var cmsg *C.char
 //export FetRunner
 func FetRunner(cString *C.char) *C.char {
 	gString := C.GoString(cString)
-	result := base.Dispatch(gString)
+	result := base.Dispatch(logger, gString)
 	C.free(unsafe.Pointer(cmsg)) // cmsg == `nil` is OK
 	cmsg = C.CString(result)
 	return cmsg
+}
+
+var logger *base.Logger
+
+func init() {
+	// Set up logger.
+	logger = base.NewLogger()
+	go base.LogToBuffer(logger)
 }
 
 func main() {}
