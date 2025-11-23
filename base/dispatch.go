@@ -2,41 +2,27 @@ package base
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
-type BufferingLogger struct {
-	BasicLogger
-	logbuf     []LogEntry
-	resultchan chan string
-}
-
-func NewBufferingLogger() *BufferingLogger {
-	return &BufferingLogger{
-		BasicLogger: NewBasicLogger(),
-		resultchan:  make(chan string),
-	}
-}
-
-var defaultlogger *BufferingLogger
+var defaultlogger *Logger
 
 // At the end of an operation the log entries must be collected.
 // To ensure that none are missed, the logger channels are used to
 // synchronize the accesses.
-func (l *BufferingLogger) OpDone() string {
-	l.LogChan <- LogEntry{Type: ENDOP}
+func (l *Logger) OpDone() string {
+	l.logchan <- LogEntry{Type: ENDOP}
 	return <-l.resultchan
 }
 
 func init() {
 	// default logger
-	defaultlogger = NewBufferingLogger()
+	defaultlogger = NewLogger()
 	go logToBuffer(defaultlogger)
 }
 
 // Log entry handler adding log entries to a buffer.
-func logToBuffer(logger *BufferingLogger) {
-	for entry := range logger.LogChan {
+func logToBuffer(logger *Logger) {
+	for entry := range logger.logchan {
 		if entry.Type == ENDOP {
 			bytes, err := json.Marshal(logger.logbuf)
 			logger.logbuf = nil
@@ -61,7 +47,7 @@ func (e LogEntry) MarshalJSON() ([]byte, error) {
 	})
 }
 
-var LoggerMap map[string]*BufferingLogger
+var LoggerMap map[string]*Logger
 
 type DispatchOp struct {
 	Op   string
@@ -73,7 +59,7 @@ func Dispatch(cmd0 string) string {
 
 	var (
 		op     DispatchOp
-		logger Logger
+		logger *Logger
 		ok     bool
 	)
 	logger = defaultlogger
@@ -88,7 +74,7 @@ func Dispatch(cmd0 string) string {
 
 		case "CONFIG_INIT":
 			if logger.checkargs(&op, 0) {
-				logger.(BasicLogger).InitConfig()
+				logger.InitConfig()
 			}
 			goto done
 
@@ -131,11 +117,10 @@ func Dispatch(cmd0 string) string {
 	}
 
 done:
-	fmt.Printf("??? %s\n", cmd0)
-	return logger.OpDone() // if appropriate, collect the logs as result
+	return logger.OpDone() // collect the logs as result
 }
 
-func (l BasicLogger) checkargs(op *DispatchOp, n int) bool {
+func (l *Logger) checkargs(op *DispatchOp, n int) bool {
 	if len(op.Data) != n {
 		l.Error("!InvalidOp_Data: %s", op.Op)
 		return false

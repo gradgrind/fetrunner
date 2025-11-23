@@ -26,7 +26,7 @@ var ConstraintMap []DbW365Pair = []DbW365Pair{
 
 // Parameter-reading functions for the constraints
 
-func a2r(logger base.BasicLogger, r any) NodeRef {
+func a2r(logger base.Logger, r any) NodeRef {
 	rr, ok := r.(string)
 	if ok {
 		return NodeRef(rr)
@@ -37,7 +37,7 @@ func a2r(logger base.BasicLogger, r any) NodeRef {
 	return ""
 }
 
-func a2i(logger base.BasicLogger, i any) int {
+func a2i(logger base.Logger, i any) int {
 	ii, ok := i.(float64)
 	if !ok {
 		logger.Error("Invalid number in Constraint: %+v\n", i)
@@ -46,7 +46,7 @@ func a2i(logger base.BasicLogger, i any) int {
 	return int(ii)
 }
 
-func a2rr(logger base.BasicLogger, rr any) []NodeRef {
+func a2rr(logger base.Logger, rr any) []NodeRef {
 	rlist := []NodeRef{}
 	rrr, ok := rr.([]any)
 	if ok {
@@ -59,7 +59,7 @@ func a2rr(logger base.BasicLogger, rr any) []NodeRef {
 	return rlist
 }
 
-func a2ii(logger base.BasicLogger, ii any) []int {
+func a2ii(logger base.Logger, ii any) []int {
 	ilist := []int{}
 	iii, ok := ii.([]any)
 	if ok {

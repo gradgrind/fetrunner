@@ -9,7 +9,7 @@ import (
 	"github.com/gofrs/uuid/v5"
 )
 
-func NewDb(logger base.BasicLogger) *DbTopLevel {
+func NewDb(logger *base.Logger) *DbTopLevel {
 	return &DbTopLevel{
 		Placements:  map[string][]*ActivityPlacement{},
 		Constraints: map[string][]*Constraint{},
@@ -226,7 +226,7 @@ func (db *DbTopLevel) PrepareDb() {
 	}
 }
 
-func newtags[T Element](logger base.BasicLogger, etype string, elist []T) {
+func newtags[T Element](logger *base.Logger, etype string, elist []T) {
 	checktags := map[string]bool{}
 	errortags := []Element{}
 	for _, e0 := range elist {
