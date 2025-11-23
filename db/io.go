@@ -21,7 +21,7 @@ func (db *DbTopLevel) SaveDb(fpath string) bool {
 	return true
 }
 
-func LoadDb(logger base.Logger, fpath string) (*DbTopLevel, error) {
+func LoadDb(logger base.FileLogger, fpath string) (*DbTopLevel, error) {
 	// Open the  JSON file
 	jsonFile, err := os.Open(fpath)
 	if err != nil {

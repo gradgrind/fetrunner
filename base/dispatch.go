@@ -6,14 +6,14 @@ import (
 )
 
 type BufferingLogger struct {
-	Logger
+	FileLogger
 	logbuf     []LogEntry
 	resultchan chan string
 }
 
 func NewBufferingLogger() *BufferingLogger {
 	return &BufferingLogger{
-		Logger:     NewLogger(),
+		FileLogger: NewFileLogger(),
 		resultchan: make(chan string),
 	}
 }

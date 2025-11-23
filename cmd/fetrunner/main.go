@@ -111,7 +111,7 @@ func main() {
 	}
 	bdata.WorkingDir = workingdir
 
-	logger := base.NewLogger()
+	logger := base.NewFileLogger()
 	logpath := filepath.Join(workingdir, "run.log")
 	go base.LogToFile(logger, logpath)
 	logger.InitConfig()

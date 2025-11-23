@@ -16,7 +16,7 @@ var (
 )
 
 // Check path to `fet-cl`
-func (logger Logger) TestFet() {
+func (logger FileLogger) TestFet() {
 	var fetpath string
 	fetpath0 := config["FET"]
 	if fetpath0 == "" {
@@ -51,7 +51,7 @@ get_version:
 	logger.SetConfig("FET", fetpath)
 }
 
-func (logger Logger) InitConfig() {
+func (logger FileLogger) InitConfig() {
 	config = map[string]string{} // an empty config
 	dir, dirErr := os.UserConfigDir()
 	if dirErr != nil {
@@ -89,7 +89,7 @@ func (logger Logger) InitConfig() {
 	}
 }
 
-func (logger Logger) SetConfig(key string, val string) {
+func (logger FileLogger) SetConfig(key string, val string) {
 	val0 := config[key]
 	if val0 != val {
 		logger.Info("SET_CONFIG %s=%s", key, val)
@@ -100,11 +100,11 @@ func (logger Logger) SetConfig(key string, val string) {
 	}
 }
 
-func (logger Logger) GetConfig(key string) string {
+func (logger FileLogger) GetConfig(key string) string {
 	return config[key]
 }
 
-func (logger Logger) saveconfig() {
+func (logger FileLogger) saveconfig() {
 	if configfile == "" {
 		logger.Error("WriteConfigFailed_NoConfigFile")
 		return

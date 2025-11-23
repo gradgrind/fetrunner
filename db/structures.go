@@ -314,7 +314,7 @@ type DbTopLevel struct {
 	// structure.
 	Elements map[NodeRef]Element `json:"-"`
 	// The logger is made available here for convenience.
-	Logger base.Logger `json:"-"`
+	Logger base.FileLogger `json:"-"`
 }
 
 func (db *DbTopLevel) GetElement(ref NodeRef) Element {

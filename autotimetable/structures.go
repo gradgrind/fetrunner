@@ -39,7 +39,7 @@ type BasicData struct {
 		LAST_TIME_1 int
 	}
 
-	Logger           base.Logger
+	Logger           base.FileLogger
 	Source           TtSource
 	BackendInterface BackendInterface
 
