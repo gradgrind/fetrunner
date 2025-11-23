@@ -44,21 +44,32 @@ type LogEntry struct {
 	Text string
 }
 
-type FileLogger struct {
+type Logger interface {
+	logEnter(LogType, string, ...any)
+	checkargs(*DispatchOp, int) bool
+	Info(string, ...any)
+	Result(string, string)
+	Warning(string, ...any)
+	Error(string, ...any)
+	Bug(string, ...any)
+	OpDone() string
+}
+
+type BasicLogger struct {
 	LogChan chan LogEntry
 }
 
-// The file logger has no particular action at the end of an operation.
-func (l FileLogger) OpDone() string { return "" }
+// The basic logger has no particular action at the end of an operation.
+func (l BasicLogger) OpDone() string { return "" }
 
-func NewFileLogger() FileLogger {
-	return FileLogger{make(chan LogEntry)}
+func NewBasicLogger() BasicLogger {
+	return BasicLogger{make(chan LogEntry)}
 }
 
 // LogToFile allows the log entries to be saved to a file, as they are
 // generated.
 // Run it as a goroutine.
-func LogToFile(logger FileLogger, logpath string) {
+func LogToFile(logger BasicLogger, logpath string) {
 	file, err := os.OpenFile(logpath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		panic(err)
@@ -70,28 +81,28 @@ func LogToFile(logger FileLogger, logpath string) {
 	}
 }
 
-func (l FileLogger) logEnter(ltype LogType, s string, a ...any) {
+func (l BasicLogger) logEnter(ltype LogType, s string, a ...any) {
 	lstring := strings.TrimSpace(fmt.Sprintf(s, a...))
 	l.LogChan <- LogEntry{ltype, lstring}
 }
 
-func (l FileLogger) Info(s string, a ...any) {
+func (l BasicLogger) Info(s string, a ...any) {
 	l.logEnter(INFO, s, a...)
 }
 
-func (l FileLogger) Result(key string, value string) {
+func (l BasicLogger) Result(key string, value string) {
 	l.logEnter(RESULT, "%s=%s", key, value)
 }
 
-func (l FileLogger) Warning(s string, a ...any) {
+func (l BasicLogger) Warning(s string, a ...any) {
 	l.logEnter(WARNING, s, a...)
 }
 
-func (l FileLogger) Error(s string, a ...any) {
+func (l BasicLogger) Error(s string, a ...any) {
 	l.logEnter(ERROR, s, a...)
 }
 
-func (l FileLogger) Bug(s string, a ...any) {
+func (l BasicLogger) Bug(s string, a ...any) {
 	var p string
 	_, f, ln, ok := runtime.Caller(1)
 	if ok {

@@ -209,7 +209,7 @@ func (dbi *W365TopLevel) getCourseRoom(
 }
 
 func (dbi *W365TopLevel) getCourseGroups(
-	logger base.FileLogger,
+	logger base.BasicLogger,
 	grefs []NodeRef,
 	courseId NodeRef,
 ) []NodeRef {
@@ -231,7 +231,7 @@ func (dbi *W365TopLevel) getCourseGroups(
 }
 
 func (dbi *W365TopLevel) getCourseTeachers(
-	logger base.FileLogger,
+	logger base.BasicLogger,
 	trefs []NodeRef,
 	courseId NodeRef,
 ) []NodeRef {

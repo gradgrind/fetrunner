@@ -6,15 +6,15 @@ import (
 )
 
 type BufferingLogger struct {
-	FileLogger
+	BasicLogger
 	logbuf     []LogEntry
 	resultchan chan string
 }
 
 func NewBufferingLogger() *BufferingLogger {
 	return &BufferingLogger{
-		FileLogger: NewFileLogger(),
-		resultchan: make(chan string),
+		BasicLogger: NewBasicLogger(),
+		resultchan:  make(chan string),
 	}
 }
 
@@ -73,43 +73,41 @@ func Dispatch(cmd0 string) string {
 
 	var (
 		op     DispatchOp
-		logger *BufferingLogger
+		logger Logger
 		ok     bool
 	)
+	logger = defaultlogger
 	if err := json.Unmarshal([]byte(cmd0), &op); err != nil {
-		defaultlogger.Error("!InvalidOp_JSON: %s // %s", err, cmd0)
+		logger.Error("!InvalidOp_JSON: %s // %s", err, cmd0)
 		goto done
 	}
-	if op.Op == "" {
-		defaultlogger.Error("!InvalidOp_NoOp: %s", cmd0)
-		goto done
-	}
+
 	if op.Id == "" {
-		// Some ops are only valid using the base logger:
+		// Some ops are only valid using the default logger:
 		switch op.Op {
 
 		case "CONFIG_INIT":
-			if checkargs(defaultlogger, &op, 0) {
-				defaultlogger.InitConfig()
+			if logger.checkargs(&op, 0) {
+				logger.(BasicLogger).InitConfig()
 			}
 			goto done
 
 		case "GET_CONFIG":
-			if checkargs(defaultlogger, &op, 1) {
+			if logger.checkargs(&op, 1) {
 				defaultlogger.Result(
 					"GET_CONFIG", defaultlogger.GetConfig(op.Data[0]))
 			}
 			goto done
 
 		case "SET_CONFIG":
-			if checkargs(defaultlogger, &op, 2) {
+			if logger.checkargs(&op, 2) {
 				defaultlogger.SetConfig(op.Data[0], op.Data[1])
 			}
 			goto done
 
 		// FET handling
 		case "GET_FET":
-			if checkargs(defaultlogger, &op, 0) {
+			if logger.checkargs(&op, 0) {
 				defaultlogger.TestFet()
 			}
 			goto done
@@ -120,7 +118,7 @@ func Dispatch(cmd0 string) string {
 	} else {
 		logger, ok = LoggerMap[op.Id]
 		if !ok {
-			defaultlogger.Error("!InvalidOp_Logger: %s", cmd0)
+			logger.Error("!InvalidOp_Logger: %s", cmd0)
 			goto done
 		}
 	}
@@ -137,9 +135,9 @@ done:
 	return logger.OpDone() // if appropriate, collect the logs as result
 }
 
-func checkargs(logger *BufferingLogger, op *DispatchOp, n int) bool {
+func (l BasicLogger) checkargs(op *DispatchOp, n int) bool {
 	if len(op.Data) != n {
-		logger.Error("!InvalidOp_Data: %s", op.Op)
+		l.Error("!InvalidOp_Data: %s", op.Op)
 		return false
 	}
 	return true
