@@ -45,14 +45,15 @@ void MainWindow::set_connections()
 
 void MainWindow::open_file()
 {
-    qDebug() << "Open File";
+    //qDebug() << "Open File";
 
     if (running)
         return;
 
+    QString opendir = backend("GET_CONFIG", {"gui/SourceDir"});
     //QString opendir{settings->value("SourceDir").toString()};
-    //if (opendir.isEmpty())
-    QString opendir = QDir::homePath();
+    if (opendir.isEmpty())
+        opendir = QDir::homePath();
     QString fileName = QFileDialog::getOpenFileName( //
         this,
         tr("Open Timetable Specifiation"),

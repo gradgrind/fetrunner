@@ -6,6 +6,6 @@
 #include <QJsonObject>
 #include <QObject>
 
-QJsonArray backend(QString op, QStringList data = {});
+QString backend(QString op, QStringList data = {});
 
 #endif // BACKEND_H
