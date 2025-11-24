@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QWidget>
+#include "backend.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -23,7 +24,8 @@ private:
     Ui::MainWindow *ui;
     bool running{false};
 
-    void set_connections();
+public slots:
+    void error_popup(QString msg);
 
 private slots:
     void open_file();

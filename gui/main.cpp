@@ -18,11 +18,10 @@ int main(
             break;
         }
     }
-    backend("CONFIG_INIT");
 
     MainWindow w;
 
-    backend("GET_FET");
+    backend->op("GET_FET");
 
     w.show();
     return a.exec();

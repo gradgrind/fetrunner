@@ -21,7 +21,7 @@ qt_add_executable(fetrunner-gui
     mainwindow.h
     mainwindow.ui
     backend.h backend.cpp
-    support.h
+
 )
 
 qt_add_translations(fetrunner-gui MERGE_QT_TRANSLATIONS)

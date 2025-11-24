@@ -92,7 +92,7 @@ func dispatchOp(logger *Logger, op *DispatchOp) {
 	switch op.Op {
 
 	default:
-		logger.Error("!InvalidOp_Op: %s", op)
+		logger.Error("!InvalidOp_Op: %s", op.Op)
 
 	}
 }

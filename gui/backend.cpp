@@ -1,87 +1,100 @@
 #include "backend.h"
+#include <QMap>
 #include "../libfetrunner/libfetrunner.h"
-#include "support.h"
+//#include <iostream>
 
-QList<KeyVal> jresult(QJsonArray jarr)
-{
-    QList<KeyVal> results;
-    //QStringList messages;
-    for (auto &&c : jarr) {
-        auto e = c.toObject();
-        auto key = e["Type"].toString();
-        auto val = e["Text"].toString();
-        if (key == "$") {
-            // a result
-            auto n = val.indexOf('=');
-            if (n < 0) {
-                //TODO: error
-                qDebug() << "BUG:" << key << val;
-            } else {
-                key = val.first(n);
-                val = val.sliced(n + 1);
-                results.append({key, val});
-                qDebug() << "$$$" << key << "=" << val;
-            }
-        } else if (key == "+++") {
-        } else {
-            //messages.append(key + " " + val);
-            qDebug() << key << val;
-        }
-    }
-    return results;
-}
+QMap<QString, QString> colours{
+    // display colours for the log
+    {"*INFO*", "#009000"},
+    {"*WARNING*", "#eb8900"},
+    {"*ERROR*", "#d00000"},
+    {"+++", "#000000"},
+    {"$", "#53a0ff"},
+};
 
-QList<KeyVal> backend(QString op, QStringList data)
+Backend::Backend()
+    : QObject()
+{}
+
+QList<KeyVal> Backend::op(
+    QString cmd, QStringList data)
 {
     QList<KeyVal> results;
     auto darray = QJsonArray::fromStringList(data);
-    qDebug() << QString{"+++ "} + op << darray;
-    QJsonObject cmd{{"Op", op}, {"Data", darray}};
-    QJsonDocument doc(cmd);
+    //qDebug() << QString{"+++ "} + op << darray;
+    QJsonObject cmdobj{{"Op", cmd}, {"Data", darray}};
+    QJsonDocument doc(cmdobj);
     auto cs = doc.toJson(QJsonDocument::Compact);
     auto result = FetRunner(cs.data());
-    //qDebug() << "§" << cmd << "->" << result;
+    //std::cout << "<<<" << cs.data() << std::endl;
+    //std::cout << ">>>" << result << std::endl;
     auto jsondoc = QJsonDocument::fromJson(result);
     if (!jsondoc.isArray()) {
-        showError(QString{"BackendReturnError: "} + result);
+        // This needs to be thread-safe, so use a signal.
+        emit error(QString{"BackendReturnError: "} + result);
     } else {
-        //QStringList messages;
+        QStringList errors;
         for (auto &&c : jsondoc.array()) {
             auto e = c.toObject();
             auto key = e["Type"].toString();
             auto val = e["Text"].toString();
+            auto t0 = key + " " + val;
+            auto t = QString(R"(<span style="color:%1;">%2</span>)")
+                         .arg( //
+                             colours.value(key, "#765eff"),
+                             t0);
+            emit log(t);
+            if (key == "*ERROR*") {
+                errors.append(val);
+            }
             if (key == "$") {
                 // a result
                 auto n = val.indexOf('=');
                 if (n < 0) {
-                    //TODO: error
-                    qDebug() << "BUG:" << key << val;
+                    errors.append(QString{"BUG in backend result: "} + t0);
                 } else {
                     key = val.first(n);
                     val = val.sliced(n + 1);
                     results.append({key, val});
-                    qDebug() << "$$$" << key << "=" << val;
+                    //qDebug() << "$$$" << key << "=" << val;
                 }
             } else if (key == "+++") {
+                //std::cout << "+++ " << qUtf8Printable(val) << std::endl;
             } else {
                 //messages.append(key + " " + val);
-                qDebug() << key << val;
+                //std::cout << ">>> " << qUtf8Printable(key) << " " << qUtf8Printable(val) << std::endl;
             }
+        }
+        if (!errors.empty()) {
+            emit error(errors.join("\n"));
         }
     }
     return results;
 }
 
-QString getConfig(QString key)
+// Run an op, expect a single result whose key may be specified.
+KeyVal Backend::op1(
+    QString cmd, QStringList data, QString key)
 {
-    for (const auto &kv : backend("GET_CONFIG", {key})) {
-        if (kv.key == key)
-            return kv.val;
+    auto results = op(cmd, data);
+    if (results.length() == 1) {
+        auto kv = results[0];
+        if (key.isEmpty() || key == kv.key)
+            return kv;
     }
-    return "";
+    return {};
 }
 
-void setConfig(QString key, QString val)
+QString Backend::getConfig(
+    QString key, QString fallback)
 {
-    backend("SET_CONFIG", {key, val});
+    auto kv = op1("GET_CONFIG", {key}, key);
+    if (kv.key.isEmpty())
+        return fallback;
+    return kv.val;
+}
+
+void Backend::setConfig(QString key, QString val)
+{
+    op("SET_CONFIG", {key, val});
 }

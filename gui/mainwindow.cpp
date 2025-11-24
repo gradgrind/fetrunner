@@ -2,8 +2,9 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include "backend.h"
-#include "support.h"
 #include "ui_mainwindow.h"
+
+Backend *backend;
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
@@ -11,6 +12,12 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->tableWidget->resizeColumnsToContents();
+
+    backend = new Backend();
+    connect(backend, &Backend::log, ui->logview, &QTextEdit::append);
+    connect(backend, &Backend::error, this, &MainWindow::error_popup);
+    connect(ui->pb_open_new, &QPushButton::clicked, this, &MainWindow::open_file);
+    backend->op("CONFIG_INIT");
 
     /*
     settings = new QSettings("gradgrind", "fetrunner");
@@ -21,8 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
         resize(geometry);
     */
 
-    set_connections();
-    auto s = getConfig("gui/MainWindowSize");
+    auto s = backend->getConfig("gui/MainWindowSize");
     if (!s.isEmpty()) {
         auto wh = s.split("x");
         resize(wh[0].toInt(), wh[1].toInt());
@@ -43,13 +49,9 @@ MainWindow::~MainWindow()
     auto s = QString("%1x%2").arg( //
         QString::number(width()),
         QString::number(height()));
-    backend("SET_CONFIG", {"gui/MainWindowSize", s});
+    backend->setConfig("gui/MainWindowSize", s);
+    delete backend;
     delete ui;
-}
-
-void MainWindow::set_connections()
-{
-    QObject::connect(ui->pb_open_new, &QPushButton::clicked, this, &MainWindow::open_file);
 }
 
 void MainWindow::open_file()
@@ -59,7 +61,7 @@ void MainWindow::open_file()
     if (running)
         return;
 
-    QString opendir = getConfig("gui/SourceDir");
+    QString opendir = backend->getConfig("gui/SourceDir");
     //QString opendir{settings->value("SourceDir").toString()};
     if (opendir.isEmpty())
         opendir = QDir::homePath();
@@ -72,17 +74,17 @@ void MainWindow::open_file()
     if (fileName.isEmpty())
         return;
 
-    qDebug() << "Open:" << fileName;
+    //qDebug() << "Open:" << fileName;
 
     QDir dir(fileName);
     if (dir.cdUp())
-        setConfig("gui/SourceDir", dir.absolutePath());
-        qDebug() << "Dir:" << dir.absolutePath();
+        backend->setConfig("gui/SourceDir", dir.absolutePath());
+    //qDebug() << "Dir:" << dir.absolutePath();
 
-        backend("SET_FILE", {fileName});
+    backend->op("SET_FILE", {fileName});
 }
 
-void showError(QString emsg)
+void MainWindow::error_popup(QString msg)
 {
-    QMessageBox::critical(nullptr, "", emsg);
+    QMessageBox::critical(this, "", msg);
 }
