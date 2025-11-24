@@ -77,11 +77,17 @@ void MainWindow::open_file()
     //qDebug() << "Open:" << fileName;
 
     QDir dir(fileName);
-    if (dir.cdUp())
-        backend->setConfig("gui/SourceDir", dir.absolutePath());
+    if (dir.cdUp()) {
+        auto dpath = dir.absolutePath();
+        if (dpath != opendir)
+            backend->setConfig("gui/SourceDir", dpath);
+    }
     //qDebug() << "Dir:" << dir.absolutePath();
 
-    backend->op("SET_FILE", {fileName});
+    auto kv = backend->op1("SET_FILE", {fileName}, "SET_FILE");
+    if (!kv.key.isEmpty()) {
+        ui->input_file->setText(kv.val);
+    }
 }
 
 void MainWindow::error_popup(QString msg)

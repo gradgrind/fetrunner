@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 )
 
+var OpHandlerMap map[string]func(*Logger, *DispatchOp) = map[string]func(*Logger, *DispatchOp){}
+
 // Log entry handler adding log entries to a buffer.
 func LogToBuffer(logger *Logger) {
 	for entry := range logger.logchan {
@@ -58,27 +60,27 @@ func dispatchOp(logger *Logger, op *DispatchOp) {
 		switch op.Op {
 
 		case "CONFIG_INIT":
-			if logger.checkargs(op, 0) {
+			if logger.CheckArgs(op, 0) {
 				logger.InitConfig()
 			}
 			return
 
 		case "GET_CONFIG":
-			if logger.checkargs(op, 1) {
+			if logger.CheckArgs(op, 1) {
 				key := op.Data[0]
 				logger.Result(key, logger.GetConfig(key))
 			}
 			return
 
 		case "SET_CONFIG":
-			if logger.checkargs(op, 2) {
+			if logger.CheckArgs(op, 2) {
 				logger.SetConfig(op.Data[0], op.Data[1])
 			}
 			return
 
 		// FET handling
 		case "GET_FET":
-			if logger.checkargs(op, 0) {
+			if logger.CheckArgs(op, 0) {
 				logger.TestFet()
 			}
 			return
@@ -88,19 +90,35 @@ func dispatchOp(logger *Logger, op *DispatchOp) {
 		}
 	}
 
-	// Now deal with ops which can be used with any Id.
-	switch op.Op {
-
-	default:
+	// Now deal with the other ops, which can (in principle) be used with any Id.
+	f, ok := OpHandlerMap[op.Op]
+	if ok {
+		f(logger, op)
+	} else {
 		logger.Error("!InvalidOp_Op: %s", op.Op)
-
 	}
 }
 
-func (l *Logger) checkargs(op *DispatchOp, n int) bool {
+func (l *Logger) CheckArgs(op *DispatchOp, n int) bool {
 	if len(op.Data) != n {
 		l.Error("!InvalidOp_Data: %s", op.Op)
 		return false
 	}
 	return true
+}
+
+func set_file(logger *Logger, op *DispatchOp) {
+	if !logger.CheckArgs(op, 1) {
+		return
+	}
+	fpath := op.Data[0]
+
+	//TODO: Check loading and setting state ...
+
+	logger.Result(op.Op, fpath)
+
+}
+
+func init() {
+	OpHandlerMap["SET_FILE"] = set_file
 }

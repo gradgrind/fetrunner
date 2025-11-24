@@ -30,7 +30,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit">
+      <widget class="QLineEdit" name="input_file">
        <property name="text">
         <string>/long/path/to/MyFile_w365.json</string>
        </property>
