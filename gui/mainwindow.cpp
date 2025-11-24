@@ -78,15 +78,21 @@ void MainWindow::open_file()
 
     QDir dir(fileName);
     if (dir.cdUp()) {
-        auto dpath = dir.absolutePath();
-        if (dpath != opendir)
-            backend->setConfig("gui/SourceDir", dpath);
+        workingdir = dir.absolutePath();
+        if (workingdir != opendir)
+            backend->setConfig("gui/SourceDir", workingdir);
     }
-    //qDebug() << "Dir:" << dir.absolutePath();
+    //qDebug() << "Dir:" << workingdir;
 
-    auto kv = backend->op1("SET_FILE", {fileName}, "SET_FILE");
-    if (!kv.key.isEmpty()) {
-        ui->input_file->setText(kv.val);
+    datatype.clear();
+    filepath.clear();
+    for (const auto &kv : backend->op("SET_FILE", {fileName})) {
+        if (kv.key == "SET_FILE") {
+            filepath = kv.val;
+            ui->input_file->setText(filepath);
+        } else if (kv.key == "DATA_TYPE") {
+            datatype = kv.val;
+        }
     }
 }
 

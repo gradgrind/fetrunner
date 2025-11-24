@@ -11,7 +11,7 @@ import (
 )
 
 // Read to the local, tweaked DbTopLevel
-func ReadJSON(logger base.Logger, jsonpath string) *W365TopLevel {
+func ReadJSON(logger *base.Logger, jsonpath string) *W365TopLevel {
 	// Open the  JSON file
 	jsonFile, err := os.Open(jsonpath)
 	if err != nil {

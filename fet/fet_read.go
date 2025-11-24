@@ -13,12 +13,13 @@ import (
 // all lumped together in th `ConstraintElements` list, but their indexes
 // are also recorded in the `TimeConstraints` and `SpaceConstraints` lists.
 
-func FetRead(basic_data *BasicData, fetpath string) *TtRunDataFet {
+func FetRead(basic_data *BasicData, fetpath string) bool {
 	logger := basic_data.Logger
 	logger.Info("SOURCE: %s\n", fetpath)
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(fetpath); err != nil {
-		panic(err)
+		logger.Error("%s", err)
+		return false
 	}
 	rundata := &TtRunDataFet{Doc: doc}
 	basic_data.Source = rundata
@@ -156,7 +157,7 @@ func FetRead(basic_data *BasicData, fetpath string) *TtRunDataFet {
 	basic_data.HardConstraintMap = hard_constraint_map
 	basic_data.SoftConstraintMap = soft_constraint_map
 
-	return rundata
+	return true
 }
 
 func get_days(fetroot *etree.Element) []IdPair {

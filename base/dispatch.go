@@ -106,19 +106,3 @@ func (l *Logger) CheckArgs(op *DispatchOp, n int) bool {
 	}
 	return true
 }
-
-func set_file(logger *Logger, op *DispatchOp) {
-	if !logger.CheckArgs(op, 1) {
-		return
-	}
-	fpath := op.Data[0]
-
-	//TODO: Check loading and setting state ...
-
-	logger.Result(op.Op, fpath)
-
-}
-
-func init() {
-	OpHandlerMap["SET_FILE"] = set_file
-}
