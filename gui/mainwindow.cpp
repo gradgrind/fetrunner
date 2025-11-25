@@ -58,40 +58,39 @@ void MainWindow::open_file()
 {
     //qDebug() << "Open File";
 
+    //TODO?
     if (running)
         return;
 
-    QString opendir = backend->getConfig("gui/SourceDir");
-    //QString opendir{settings->value("SourceDir").toString()};
-    if (opendir.isEmpty())
-        opendir = QDir::homePath();
-    QString fileName = QFileDialog::getOpenFileName( //
+    QString fdir = filedir;
+    if (fdir.isEmpty()) {
+        fdir = backend->getConfig("gui/SourceDir");
+        if (fdir.isEmpty()) {
+            fdir = QDir::homePath();
+        }
+    }
+    QString filepath = QFileDialog::getOpenFileName( //
         this,
         tr("Open Timetable Specifiation"),
-        opendir,
+        fdir,
         tr("FET / W365 Files (*.fet *_w365.json)"));
 
-    if (fileName.isEmpty())
-        return;
-
-    //qDebug() << "Open:" << fileName;
-
-    QDir dir(fileName);
-    if (dir.cdUp()) {
-        workingdir = dir.absolutePath();
-        if (workingdir != opendir)
-            backend->setConfig("gui/SourceDir", workingdir);
-    }
-    //qDebug() << "Dir:" << workingdir;
-
-    datatype.clear();
-    filepath.clear();
-    for (const auto &kv : backend->op("SET_FILE", {fileName})) {
-        if (kv.key == "SET_FILE") {
-            filepath = kv.val;
-            ui->input_file->setText(filepath);
-        } else if (kv.key == "DATA_TYPE") {
-            datatype = kv.val;
+    if (!filepath.isEmpty()) {
+        for (const auto &kv : backend->op("SET_FILE", {filepath})) {
+            if (kv.key == "SET_FILE") {
+                QDir dir{kv.val};
+                filename = dir.dirName();
+                dir.cdUp();
+                fdir = dir.absolutePath();
+                ui->currentDir->setText(fdir);
+                ui->currentFile->setText(filename);
+                if (fdir != filedir) {
+                    filedir = fdir;
+                    backend->setConfig("gui/SourceDir", fdir);
+                }
+            } else if (kv.key == "DATA_TYPE") {
+                datatype = kv.val;
+            }
         }
     }
 }

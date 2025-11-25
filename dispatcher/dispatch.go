@@ -6,8 +6,8 @@ import (
 	"fetrunner/base"
 	"fetrunner/db"
 	"fetrunner/fet"
-	"fetrunner/timetable"
 	"fetrunner/w365tt"
+	"path/filepath"
 	"strings"
 )
 
@@ -21,9 +21,10 @@ type FrInstance struct {
 	Id     string
 	Logger *base.Logger
 
-	//TODO: Which of these are really necessary? Something else?
+	Name       string // stem of source file name (i.e. without ending)
+	WorkingDir string // directory of source file
+
 	Db        *db.DbTopLevel
-	TtData    *timetable.TtData
 	BasicData *autotimetable.BasicData
 }
 
@@ -34,46 +35,46 @@ var OpHandlerMap map[string]func(*FrInstance, *DispatchOp) = map[string]func(
 func Dispatch(cmd0 string) string {
 	var op DispatchOp
 	if err := json.Unmarshal([]byte(cmd0), &op); err != nil {
-		logger.Error("!InvalidOp_JSON: %s", err)
+		logger0.Error("!InvalidOp_JSON: %s", err)
 	} else {
 		dispatchOp(&op)
 	}
 	// At the end of an operation the log entries must be collected.
 	// To ensure that none are missed, the logger channels are used to
 	// synchronize the accesses.
-	logger.LogChan <- base.LogEntry{Type: base.ENDOP}
-	return <-logger.ResultChan
+	logger0.LogChan <- base.LogEntry{Type: base.ENDOP}
+	return <-logger0.ResultChan
 }
 
 func dispatchOp(op *DispatchOp) {
 	if op.Id == "" {
 		// Some ops are only valid using the null Id.
-		startOp(logger, op)
+		startOp(logger0, op)
 		switch op.Op {
 
 		case "CONFIG_INIT":
-			if CheckArgs(logger, op, 0) {
-				logger.InitConfig()
+			if CheckArgs(logger0, op, 0) {
+				logger0.InitConfig()
 			}
 			return
 
 		case "GET_CONFIG":
-			if CheckArgs(logger, op, 1) {
+			if CheckArgs(logger0, op, 1) {
 				key := op.Data[0]
-				logger.Result(key, logger.GetConfig(key))
+				logger0.Result(key, logger0.GetConfig(key))
 			}
 			return
 
 		case "SET_CONFIG":
-			if CheckArgs(logger, op, 2) {
-				logger.SetConfig(op.Data[0], op.Data[1])
+			if CheckArgs(logger0, op, 2) {
+				logger0.SetConfig(op.Data[0], op.Data[1])
 			}
 			return
 
 		// FET handling
 		case "GET_FET":
-			if CheckArgs(logger, op, 0) {
-				logger.TestFet()
+			if CheckArgs(logger0, op, 0) {
+				logger0.TestFet()
 			}
 			return
 
@@ -120,15 +121,15 @@ func startOp(logger *base.Logger, op *DispatchOp) {
 		Type: base.STARTOP, Text: text}
 }
 
-var logger *base.Logger
+var logger0 *base.Logger
 
 func init() {
 	// Set up logger.
-	logger = base.NewLogger()
-	go base.LogToBuffer(logger)
+	logger0 = base.NewLogger()
+	go base.LogToBuffer(logger0)
 	// Set up default FrInstance
 	frInstanceMap[""] = &FrInstance{
-		Logger: logger,
+		Logger: logger0,
 	}
 }
 
@@ -140,25 +141,31 @@ func file_loader(fr *FrInstance, op *DispatchOp) {
 	}
 	fpath := op.Data[0]
 
-	//TODO: what to do with the data structures produced here?
-	// Should they be attached to the logger? That might require an
-	// "any" field, not least because the Logger struct is defined in
-	// package "base".
 	if strings.HasSuffix(fpath, ".fet") {
 		bdata := &autotimetable.BasicData{}
 		bdata.SetParameterDefault()
 		bdata.Logger = logger
 		if fet.FetRead(bdata, fpath) {
+			fr.WorkingDir = filepath.Dir(fpath)
+			n := filepath.Base(fpath)
+			fr.Name = n[:len(n)-4]
 			logger.Result(op.Op, fpath)
 			logger.Result("DATA_TYPE", "FET")
+			fr.BasicData = bdata
+			fr.Db = nil
 			return
 		}
 	} else if strings.HasSuffix(fpath, "_w365.json") {
 		db0 := db.NewDb(logger)
 		if w365tt.LoadJSON(db0, fpath) {
+			fr.WorkingDir = filepath.Dir(fpath)
+			n := filepath.Base(fpath)
+			fr.Name = n[:len(n)-10]
 			db0.PrepareDb()
 			logger.Result(op.Op, fpath)
 			logger.Result("DATA_TYPE", "DB")
+			fr.Db = db0
+			fr.BasicData = nil
 			return
 		}
 	} else {

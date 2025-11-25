@@ -21,18 +21,21 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0,3,0,0">
+     <item>
+      <widget class="QLineEdit" name="currentFile"/>
+     </item>
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Input File:</string>
+        <string>in</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="input_file">
+      <widget class="QLineEdit" name="currentDir">
        <property name="text">
-        <string>/long/path/to/MyFile_w365.json</string>
+        <string>/long/path/to/</string>
        </property>
        <property name="readOnly">
         <bool>true</bool>

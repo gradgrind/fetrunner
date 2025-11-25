@@ -22,8 +22,8 @@ public:
 private:
     Ui::MainWindow *ui;
 
-    QString filepath{};
-    QString workingdir{};
+    QString filename{};
+    QString filedir{};
     QString datatype{};
     bool running{false};
 
