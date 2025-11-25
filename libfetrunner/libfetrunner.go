@@ -4,6 +4,7 @@ import (
 	"fetrunner/autotimetable"
 	"fetrunner/base"
 	"fetrunner/db"
+	"fetrunner/dispatcher"
 	"fetrunner/fet"
 	"fetrunner/w365tt"
 	"strings"
@@ -22,7 +23,7 @@ var cmsg *C.char
 //export FetRunner
 func FetRunner(cString *C.char) *C.char {
 	gString := C.GoString(cString)
-	result := base.Dispatch(logger, gString)
+	result := dispatcher.Dispatch(logger, gString)
 	C.free(unsafe.Pointer(cmsg)) // cmsg == `nil` is OK
 	cmsg = C.CString(result)
 	return cmsg
@@ -33,14 +34,14 @@ var logger *base.Logger
 func init() {
 	// Set up logger.
 	logger = base.NewLogger()
-	go base.LogToBuffer(logger)
+	go dispatcher.LogToBuffer(logger)
 }
 
 func main() {}
 
 // Handle (currently) ".fet" and "_w365.json" input files.
-func file_loader(logger *base.Logger, op *base.DispatchOp) {
-	if !logger.CheckArgs(op, 1) {
+func file_loader(logger *base.Logger, op *dispatcher.DispatchOp) {
+	if !dispatcher.CheckArgs(logger, op, 1) {
 		return
 	}
 	fpath := op.Data[0]
@@ -74,5 +75,5 @@ func file_loader(logger *base.Logger, op *base.DispatchOp) {
 }
 
 func init() {
-	base.OpHandlerMap["SET_FILE"] = file_loader
+	dispatcher.OpHandlerMap["SET_FILE"] = file_loader
 }

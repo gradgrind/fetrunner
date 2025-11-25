@@ -1,36 +1,28 @@
-package base
+package dispatcher
 
 import (
 	"encoding/json"
+	"fetrunner/base"
 )
 
-var OpHandlerMap map[string]func(*Logger, *DispatchOp) = map[string]func(*Logger, *DispatchOp){}
+var OpHandlerMap map[string]func(*base.Logger, *DispatchOp) = map[string]func(
+	*base.Logger, *DispatchOp){}
 
 // Log entry handler adding log entries to a buffer.
-func LogToBuffer(logger *Logger) {
-	for entry := range logger.logchan {
-		if entry.Type == ENDOP {
-			bytes, err := json.Marshal(logger.logbuf)
-			logger.logbuf = nil
+func LogToBuffer(logger *base.Logger) {
+	for entry := range logger.LogChan {
+		if entry.Type == base.ENDOP {
+			bytes, err := json.Marshal(logger.LogBuf)
+			logger.LogBuf = nil
 			if err != nil {
 				panic(err)
 			} else {
-				logger.resultchan <- string(bytes)
+				logger.ResultChan <- string(bytes)
 			}
 		} else {
-			logger.logbuf = append(logger.logbuf, entry)
+			logger.LogBuf = append(logger.LogBuf, entry)
 		}
 	}
-}
-
-func (e LogEntry) MarshalJSON() ([]byte, error) {
-	return json.Marshal(struct {
-		Type string
-		Text string
-	}{
-		Type: e.Type.String(),
-		Text: e.Text,
-	})
 }
 
 type DispatchOp struct {
@@ -39,8 +31,8 @@ type DispatchOp struct {
 	Data []string
 }
 
-func Dispatch(logger *Logger, cmd0 string) string {
-	logger.logchan <- LogEntry{Type: STARTOP, Text: cmd0}
+func Dispatch(logger *base.Logger, cmd0 string) string {
+	logger.LogChan <- base.LogEntry{Type: base.STARTOP, Text: cmd0}
 	var op DispatchOp
 	if err := json.Unmarshal([]byte(cmd0), &op); err != nil {
 		logger.Error("!InvalidOp_JSON: %s", err)
@@ -50,37 +42,37 @@ func Dispatch(logger *Logger, cmd0 string) string {
 	// At the end of an operation the log entries must be collected.
 	// To ensure that none are missed, the logger channels are used to
 	// synchronize the accesses.
-	logger.logchan <- LogEntry{Type: ENDOP}
-	return <-logger.resultchan
+	logger.LogChan <- base.LogEntry{Type: base.ENDOP}
+	return <-logger.ResultChan
 }
 
-func dispatchOp(logger *Logger, op *DispatchOp) {
+func dispatchOp(logger *base.Logger, op *DispatchOp) {
 	if op.Id == "" {
 		// Some ops are only valid using the null Id.
 		switch op.Op {
 
 		case "CONFIG_INIT":
-			if logger.CheckArgs(op, 0) {
+			if CheckArgs(logger, op, 0) {
 				logger.InitConfig()
 			}
 			return
 
 		case "GET_CONFIG":
-			if logger.CheckArgs(op, 1) {
+			if CheckArgs(logger, op, 1) {
 				key := op.Data[0]
 				logger.Result(key, logger.GetConfig(key))
 			}
 			return
 
 		case "SET_CONFIG":
-			if logger.CheckArgs(op, 2) {
+			if CheckArgs(logger, op, 2) {
 				logger.SetConfig(op.Data[0], op.Data[1])
 			}
 			return
 
 		// FET handling
 		case "GET_FET":
-			if logger.CheckArgs(op, 0) {
+			if CheckArgs(logger, op, 0) {
 				logger.TestFet()
 			}
 			return
@@ -99,7 +91,7 @@ func dispatchOp(logger *Logger, op *DispatchOp) {
 	}
 }
 
-func (l *Logger) CheckArgs(op *DispatchOp, n int) bool {
+func CheckArgs(l *base.Logger, op *DispatchOp, n int) bool {
 	if len(op.Data) != n {
 		l.Error("!InvalidOp_Data: %s", op.Op)
 		return false

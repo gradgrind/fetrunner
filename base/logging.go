@@ -1,6 +1,7 @@
 package base
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -48,16 +49,26 @@ type LogEntry struct {
 	Text string
 }
 
+func (e LogEntry) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Type string
+		Text string
+	}{
+		Type: e.Type.String(),
+		Text: e.Text,
+	})
+}
+
 type Logger struct {
-	logchan    chan LogEntry
-	logbuf     []LogEntry
-	resultchan chan string
+	LogChan    chan LogEntry
+	LogBuf     []LogEntry
+	ResultChan chan string
 }
 
 func NewLogger() *Logger {
 	return &Logger{
-		logchan:    make(chan LogEntry),
-		resultchan: make(chan string),
+		LogChan:    make(chan LogEntry),
+		ResultChan: make(chan string),
 	}
 }
 
@@ -70,7 +81,7 @@ func LogToFile(logger *Logger, logpath string) {
 		panic(err)
 	}
 	defer file.Close()
-	for entry := range logger.logchan {
+	for entry := range logger.LogChan {
 		lstring := entry.Type.String() + " " + entry.Text
 		file.WriteString(lstring + "\n")
 	}
@@ -78,7 +89,7 @@ func LogToFile(logger *Logger, logpath string) {
 
 func (l *Logger) logEnter(ltype LogType, s string, a ...any) {
 	lstring := strings.TrimSpace(fmt.Sprintf(s, a...))
-	l.logchan <- LogEntry{ltype, lstring}
+	l.LogChan <- LogEntry{ltype, lstring}
 }
 
 func (l *Logger) Info(s string, a ...any) {
