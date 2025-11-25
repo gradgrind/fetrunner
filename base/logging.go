@@ -72,6 +72,23 @@ func NewLogger() *Logger {
 	}
 }
 
+// Log entry handler adding log entries to a buffer.
+func LogToBuffer(logger *Logger) {
+	for entry := range logger.LogChan {
+		if entry.Type == ENDOP {
+			bytes, err := json.Marshal(logger.LogBuf)
+			logger.LogBuf = nil
+			if err != nil {
+				panic(err)
+			} else {
+				logger.ResultChan <- string(bytes)
+			}
+		} else {
+			logger.LogBuf = append(logger.LogBuf, entry)
+		}
+	}
+}
+
 // LogToFile allows the log entries to be saved to a file, as they are
 // generated.
 // Run it as a goroutine.

@@ -8,23 +8,6 @@ import (
 var OpHandlerMap map[string]func(*base.Logger, *DispatchOp) = map[string]func(
 	*base.Logger, *DispatchOp){}
 
-// Log entry handler adding log entries to a buffer.
-func LogToBuffer(logger *base.Logger) {
-	for entry := range logger.LogChan {
-		if entry.Type == base.ENDOP {
-			bytes, err := json.Marshal(logger.LogBuf)
-			logger.LogBuf = nil
-			if err != nil {
-				panic(err)
-			} else {
-				logger.ResultChan <- string(bytes)
-			}
-		} else {
-			logger.LogBuf = append(logger.LogBuf, entry)
-		}
-	}
-}
-
 type DispatchOp struct {
 	Op   string
 	Id   string

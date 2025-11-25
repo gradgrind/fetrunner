@@ -34,7 +34,7 @@ var logger *base.Logger
 func init() {
 	// Set up logger.
 	logger = base.NewLogger()
-	go dispatcher.LogToBuffer(logger)
+	go base.LogToBuffer(logger)
 }
 
 func main() {}
