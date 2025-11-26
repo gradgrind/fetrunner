@@ -29,6 +29,7 @@ private:
 
 public slots:
     void error_popup(QString msg);
+    void push_go();
 
 private slots:
     void open_file();

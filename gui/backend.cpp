@@ -16,8 +16,7 @@ Backend::Backend()
     : QObject()
 {}
 
-QList<KeyVal> Backend::op(
-    QString cmd, QStringList data)
+QList<KeyVal> Backend::op(QString cmd, QStringList data)
 {
     QList<KeyVal> results;
     auto darray = QJsonArray::fromStringList(data);
@@ -66,6 +65,10 @@ QList<KeyVal> Backend::op(
             }
         }
         if (!errors.empty()) {
+            if (errors.length() > 5) {
+                errors = errors.first(5);
+                errors << "...";
+            }
             emit error(errors.join("\n"));
         }
     }

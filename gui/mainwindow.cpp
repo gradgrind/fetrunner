@@ -17,6 +17,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(backend, &Backend::log, ui->logview, &QTextEdit::append);
     connect(backend, &Backend::error, this, &MainWindow::error_popup);
     connect(ui->pb_open_new, &QPushButton::clicked, this, &MainWindow::open_file);
+    connect(ui->pb_go, &QPushButton::clicked, this, &MainWindow::push_go);
+
     backend->op("CONFIG_INIT");
 
     /*
@@ -98,4 +100,16 @@ void MainWindow::open_file()
 void MainWindow::error_popup(QString msg)
 {
     QMessageBox::critical(this, "", msg);
+}
+
+void MainWindow::push_go()
+{
+    //qDebug() << "Run fetrunner";
+
+    //TODO?
+    if (running)
+        return;
+
+    //TODO
+    backend->op("TT_GO", {ui->tt_timeout->text()});
 }

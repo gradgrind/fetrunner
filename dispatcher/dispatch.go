@@ -7,7 +7,9 @@ import (
 	"fetrunner/db"
 	"fetrunner/fet"
 	"fetrunner/w365tt"
+	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
@@ -31,6 +33,7 @@ type FrInstance struct {
 var frInstanceMap map[string]*FrInstance = map[string]*FrInstance{}
 var OpHandlerMap map[string]func(*FrInstance, *DispatchOp) = map[string]func(
 	*FrInstance, *DispatchOp){}
+var frRunning []string
 
 func Dispatch(cmd0 string) string {
 	var op DispatchOp
@@ -91,6 +94,18 @@ func dispatchOp(op *DispatchOp) {
 	}
 	f, ok := OpHandlerMap[op.Op]
 	if ok {
+		// The valid commands are dependent on the run-state of the timetable
+		// generation. Those valid when running have a "_" prefix.
+		if slices.Contains(frRunning, op.Id) {
+			if op.Op[0] != '_' {
+				fr.Logger.Error("!InvalidOp_RunningOp: %s", op.Op)
+				return
+			}
+		} else if op.Op[0] == '_' {
+			fr.Logger.Error("!InvalidOp_NotRunningOp: %s", op.Op)
+			return
+		}
+
 		if fr.Id != "" {
 			startOp(fr.Logger, op)
 		}
@@ -131,6 +146,11 @@ func init() {
 	frInstanceMap[""] = &FrInstance{
 		Logger: logger0,
 	}
+}
+
+func init() {
+	OpHandlerMap["SET_FILE"] = file_loader
+	OpHandlerMap["TT_GO"] = runtt
 }
 
 // Handle (currently) ".fet" and "_w365.json" input files.
@@ -175,6 +195,29 @@ func file_loader(fr *FrInstance, op *DispatchOp) {
 	logger.Error("LoadFile_InvalidContent: %s", fpath)
 }
 
-func init() {
-	OpHandlerMap["SET_FILE"] = file_loader
+func runtt(fr *FrInstance, op *DispatchOp) {
+
+	//TODO: Handle parameters, if any. Persumably timeout could be
+	// one of them.
+
+	ttoutdir := filepath.Join(fr.WorkingDir, "_"+fr.Name)
+	os.RemoveAll(ttoutdir)
+	logger := fr.Logger
+	err := os.MkdirAll(ttoutdir, 0755)
+	if err != nil {
+		logger.Error("!FetOutputDir: %s", err)
+		return
+	}
+
+	bdata := fr.BasicData
+	if bdata != nil {
+		bdata.WorkingDir = ttoutdir
+		// Set up FET back-end and start processing
+		fet.SetFetBackend(bdata)
+
+		//TODO: Need an extra goroutine so that this can return immediately.
+		// Also a blocking poll command from the front end to read progress.
+		//TODO: timeout
+		bdata.StartGeneration(300)
+	}
 }

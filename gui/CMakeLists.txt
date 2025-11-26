@@ -4,6 +4,7 @@ project(fetrunner-gui LANGUAGES CXX)
 find_package(Qt6 6.9 REQUIRED COMPONENTS Core Widgets)
 find_package(Qt6 REQUIRED COMPONENTS LinguistTools)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 qt_standard_project_setup(I18N_TRANSLATED_LANGUAGES de)
 
@@ -21,6 +22,7 @@ qt_add_executable(fetrunner-gui
     mainwindow.h
     mainwindow.ui
     backend.h backend.cpp
+    ttrun.h ttrun.cpp
 
 )
 
@@ -32,6 +34,7 @@ target_link_libraries(fetrunner-gui
         Qt::Widgets
         libfetrunner
 )
+target_link_libraries(fetrunner-gui PRIVATE Qt6::Core)
 target_link_libraries(fetrunner-gui PRIVATE Qt6::Core)
 
 include(GNUInstallDirs)
