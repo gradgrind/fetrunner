@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fetrunner/autotimetable"
 	"fetrunner/base"
-	"fetrunner/db"
 	"fetrunner/fet"
 	"fetrunner/w365tt"
 	"fmt"
@@ -148,8 +147,8 @@ func init() {
 }
 
 // Handle (currently) ".fet" and "_w365.json" input files.
-func file_loader(fr *FrInstance, op *DispatchOp) {
-	logger := fr.Logger
+func file_loader(bd *base.BaseData, op *DispatchOp) {
+	logger := bd.Logger
 	if !CheckArgs(logger, op, 1) {
 		return
 	}
@@ -158,28 +157,28 @@ func file_loader(fr *FrInstance, op *DispatchOp) {
 	if strings.HasSuffix(fpath, ".fet") {
 		bdata := &autotimetable.BasicData{}
 		bdata.SetParameterDefault()
-		bdata.Logger = logger
+		//bdata.Logger = logger
 		if fet.FetRead(bdata, fpath) {
-			fr.SourceDir = filepath.Dir(fpath)
+			bd.SourceDir = filepath.Dir(fpath)
 			n := filepath.Base(fpath)
-			fr.Name = n[:len(n)-4]
+			bd.Name = n[:len(n)-4]
 			logger.Result(op.Op, fpath)
 			logger.Result("DATA_TYPE", "FET")
 			fr.BasicData = bdata
-			fr.Db = nil
+			bd.Db = nil
 			return
 		}
 	} else if strings.HasSuffix(fpath, "_w365.json") {
-		db0 := db.NewDb(logger)
+		db0 := base.NewDb()
 		if w365tt.LoadJSON(db0, fpath) {
-			fr.SourceDir = filepath.Dir(fpath)
+			bd.SourceDir = filepath.Dir(fpath)
 			n := filepath.Base(fpath)
-			fr.Name = n[:len(n)-10]
+			bd.Name = n[:len(n)-10]
 			db0.PrepareDb()
 			logger.Result(op.Op, fpath)
 			logger.Result("DATA_TYPE", "DB")
-			fr.Db = db0
-			fr.BasicData = nil
+			bd.Db = db0
+			//fr.BasicData = nil
 			return
 		}
 	} else {
