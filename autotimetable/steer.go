@@ -459,6 +459,7 @@ tickloop:
 	if result != nil {
 		logger.Info("Result: %s\n", result.Tag)
 	}
+	logger.Result("TT_DONE", "")
 }
 
 func (basic_data *BasicData) abort_instance(instance *TtInstance) {

@@ -7,6 +7,7 @@ import (
 	"fetrunner/db"
 	"fetrunner/fet"
 	"fetrunner/w365tt"
+	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -123,7 +124,12 @@ func CheckArgs(l *base.Logger, op *DispatchOp, n int) bool {
 	return true
 }
 
+// TODO: Always sending this line stops the return from blocking, which
+// might be a problem ...
+// Well, actually, there seems to be another problem too ...
 func startOp(logger *base.Logger, op *DispatchOp) {
+	return
+
 	var text string
 	if op.Id != "" {
 		text = "[" + op.Id + "] "
@@ -150,7 +156,9 @@ func init() {
 
 func init() {
 	OpHandlerMap["SET_FILE"] = file_loader
-	OpHandlerMap["TT_GO"] = runtt
+	OpHandlerMap["RUN_TT"] = runtt
+	OpHandlerMap["_POLL_TT"] = polltt
+	OpHandlerMap["_STOP_TT"] = stoptt
 }
 
 // Handle (currently) ".fet" and "_w365.json" input files.
@@ -215,9 +223,21 @@ func runtt(fr *FrInstance, op *DispatchOp) {
 		// Set up FET back-end and start processing
 		fet.SetFetBackend(bdata)
 
-		//TODO: Need an extra goroutine so that this can return immediately.
+		logger.Result("OK", "")
+
+		// Need an extra goroutine so that this can return immediately.
 		// Also a blocking poll command from the front end to read progress.
+		frRunning = append(frRunning, op.Id)
 		//TODO: timeout
-		bdata.StartGeneration(300)
+		go bdata.StartGeneration(10)
 	}
+}
+
+// TODO
+func polltt(fr *FrInstance, op *DispatchOp) {
+	fmt.Println("Poll")
+}
+
+// TODO
+func stoptt(fr *FrInstance, op *DispatchOp) {
 }

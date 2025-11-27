@@ -20,7 +20,8 @@ QList<KeyVal> Backend::op(QString cmd, QStringList data)
 {
     QList<KeyVal> results;
     auto darray = QJsonArray::fromStringList(data);
-    //qDebug() << QString{"+++ "} + op << darray;
+    emit log("+++ " + cmd + " [" + data.join(", ") + "]");
+    //qDebug() << QString{"+++ "} + cmd << darray;
     QJsonObject cmdobj{{"Op", cmd}, {"Data", darray}};
     QJsonDocument doc(cmdobj);
     auto cs = doc.toJson(QJsonDocument::Compact);

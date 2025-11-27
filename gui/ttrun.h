@@ -34,7 +34,7 @@ public:
     }
 
 public slots:
-    //void handleResults(const QString &);
+    void handleResults(const QString &);
 
 signals:
     void operate(const QString &);

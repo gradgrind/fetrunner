@@ -111,5 +111,6 @@ void MainWindow::push_go()
         return;
 
     //TODO
-    backend->op("TT_GO", {ui->tt_timeout->text()});
+    //backend->op("TT_GO", {ui->tt_timeout->text()});
+    ttrun = new TtRun();
 }
