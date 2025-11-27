@@ -8,9 +8,7 @@ import (
 	"fetrunner/fet"
 	"fetrunner/w365tt"
 	"fmt"
-	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 )
 
@@ -20,21 +18,9 @@ type DispatchOp struct {
 	Data []string
 }
 
-type FrInstance struct {
-	Id     string
-	Logger *base.Logger
-
-	Name       string // stem of source file name (i.e. without ending)
-	WorkingDir string // directory of source file
-
-	Db        *db.DbTopLevel
-	BasicData *autotimetable.BasicData
-}
-
 var frInstanceMap map[string]*FrInstance = map[string]*FrInstance{}
 var OpHandlerMap map[string]func(*FrInstance, *DispatchOp) = map[string]func(
 	*FrInstance, *DispatchOp){}
-var frRunning []string
 
 func Dispatch(cmd0 string) string {
 	var op DispatchOp
@@ -97,7 +83,7 @@ func dispatchOp(op *DispatchOp) {
 	if ok {
 		// The valid commands are dependent on the run-state of the timetable
 		// generation. Those valid when running have a "_" prefix.
-		if slices.Contains(frRunning, op.Id) {
+		if fr.BasicData != nil && fr.BasicData.Running {
 			if op.Op[0] != '_' {
 				fr.Logger.Error("!InvalidOp_RunningOp: %s", op.Op)
 				return
@@ -174,7 +160,7 @@ func file_loader(fr *FrInstance, op *DispatchOp) {
 		bdata.SetParameterDefault()
 		bdata.Logger = logger
 		if fet.FetRead(bdata, fpath) {
-			fr.WorkingDir = filepath.Dir(fpath)
+			fr.SourceDir = filepath.Dir(fpath)
 			n := filepath.Base(fpath)
 			fr.Name = n[:len(n)-4]
 			logger.Result(op.Op, fpath)
@@ -186,7 +172,7 @@ func file_loader(fr *FrInstance, op *DispatchOp) {
 	} else if strings.HasSuffix(fpath, "_w365.json") {
 		db0 := db.NewDb(logger)
 		if w365tt.LoadJSON(db0, fpath) {
-			fr.WorkingDir = filepath.Dir(fpath)
+			fr.SourceDir = filepath.Dir(fpath)
 			n := filepath.Base(fpath)
 			fr.Name = n[:len(n)-10]
 			db0.PrepareDb()
@@ -208,26 +194,20 @@ func runtt(fr *FrInstance, op *DispatchOp) {
 	//TODO: Handle parameters, if any. Persumably timeout could be
 	// one of them.
 
-	ttoutdir := filepath.Join(fr.WorkingDir, "_"+fr.Name)
-	os.RemoveAll(ttoutdir)
-	logger := fr.Logger
-	err := os.MkdirAll(ttoutdir, 0755)
-	if err != nil {
-		logger.Error("!FetOutputDir: %s", err)
-		return
-	}
-
 	bdata := fr.BasicData
 	if bdata != nil {
-		bdata.WorkingDir = ttoutdir
+
+		//TODO???
+
+		bdata.SourceDir = fr.SourceDir
+		bdata.Name = fr.Name
 		// Set up FET back-end and start processing
 		fet.SetFetBackend(bdata)
 
-		logger.Result("OK", "")
+		fr.Logger.Result("OK", "")
 
 		// Need an extra goroutine so that this can return immediately.
 		// Also a blocking poll command from the front end to read progress.
-		frRunning = append(frRunning, op.Id)
 		//TODO: timeout
 		go bdata.StartGeneration(10)
 	}

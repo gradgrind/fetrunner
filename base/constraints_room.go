@@ -1,4 +1,4 @@
-package db
+package base
 
 var (
 	C_RoomNotAvailable = "RoomNotAvailable"

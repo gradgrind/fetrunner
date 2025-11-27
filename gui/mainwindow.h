@@ -27,7 +27,7 @@ private:
     QString filedir{};
     QString datatype{};
     bool running{false};
-    TtRun *ttrun;
+    TtRun ttrun;
 
 public slots:
     void error_popup(QString msg);

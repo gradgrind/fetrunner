@@ -25,17 +25,17 @@ type FetBackend struct {
 func SetFetBackend(basic_data *autotimetable.BasicData) {
 	if len(TEMPORARY_FOLDER) != 0 {
 		os.RemoveAll(filepath.Join(TEMPORARY_FOLDER,
-			filepath.Base(basic_data.WorkingDir)))
+			filepath.Base(basic_data.SourceDir)))
 	}
 	basic_data.BackendInterface = &FetBackend{basic_data}
 }
 
 func (fbe *FetBackend) Tidy() {
 	if len(TEMPORARY_FOLDER) == 0 {
-		os.RemoveAll(filepath.Join(fbe.basic_data.WorkingDir, "tmp"))
+		os.RemoveAll(filepath.Join(fbe.basic_data.SourceDir, "tmp"))
 	} else {
 		os.RemoveAll(filepath.Join(TEMPORARY_FOLDER,
-			filepath.Base(fbe.basic_data.WorkingDir)))
+			filepath.Base(fbe.basic_data.SourceDir)))
 	}
 }
 
@@ -43,17 +43,29 @@ func (fbe *FetBackend) RunBackend(
 	instance *autotimetable.TtInstance,
 ) autotimetable.TtBackend {
 	basic_data := fbe.basic_data
+
+	ttoutdir := filepath.Join(basic_data.SourceDir, "_"+basic_data.Name)
+	os.RemoveAll(ttoutdir)
+	logger := basic_data.Logger
+	err := os.MkdirAll(ttoutdir, 0755)
+	if err != nil {
+		//TODO?
+		logger.Error("!FetOutputDir: %s", err)
+		return nil
+	}
+
 	fname := instance.Tag
 	var odir string
 	if len(TEMPORARY_FOLDER) == 0 {
-		odir = filepath.Join(basic_data.WorkingDir, "tmp", fname)
+		odir = filepath.Join(basic_data.SourceDir, "tmp", fname)
 	} else {
 		odir = filepath.Join(TEMPORARY_FOLDER,
-			filepath.Base(fbe.basic_data.WorkingDir),
+			filepath.Base(fbe.basic_data.SourceDir),
 			fname)
 	}
-	err := os.MkdirAll(odir, 0755)
+	err = os.MkdirAll(odir, 0755)
 	if err != nil {
+		//TODO?
 		panic(err)
 	}
 	stemfile := filepath.Join(odir, fname)
@@ -65,13 +77,14 @@ func (fbe *FetBackend) RunBackend(
 	// Write FET file
 	err = os.WriteFile(fetfile, fet_xml, 0644)
 	if err != nil {
+		//TODO?
 		panic("Couldn't write fet file to: " + fetfile)
 	}
 	if instance.Tag == "COMPLETE" {
 		// Save fet file at top level of working directory.
-		cfile := filepath.Join(basic_data.WorkingDir,
+		cfile := filepath.Join(basic_data.SourceDir,
 			filepath.Base(strings.TrimSuffix(
-				basic_data.WorkingDir, "_fet")+".fet"))
+				basic_data.SourceDir, "_fet")+".fet"))
 		err = os.WriteFile(cfile, fet_xml, 0644)
 		if err != nil {
 			panic("Couldn't write fet file to: " + cfile)
@@ -269,7 +282,7 @@ exit:
 // corresponding result from the source.
 func (data *FetTtData) FinalizeResult(basic_data *autotimetable.BasicData) {
 	// Write FET file at top level of working directory.
-	fetfile := filepath.Join(basic_data.WorkingDir, "Result.fet")
+	fetfile := filepath.Join(basic_data.SourceDir, "Result.fet")
 	err := os.WriteFile(fetfile, data.fetxml, 0644)
 	if err != nil {
 		panic("Couldn't write fet file to: " + fetfile)

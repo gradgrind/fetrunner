@@ -119,10 +119,13 @@ been produced by the generator back-end).
 */
 
 func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
+	basic_data.Running = true
 	logger := basic_data.Logger
 	basic_data.lastResult = nil
 	basic_data.ConstraintErrors = map[ConstraintIndex]string{}
 	basic_data.BlockConstraint = map[ConstraintIndex]bool{}
+	basic_data.instanceCounter = 0
+	basic_data.current_instance = nil
 
 	// Catch termination signal
 	sigChan := make(chan os.Signal, 1)
@@ -244,7 +247,7 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 			if err != nil {
 				panic(err)
 			}
-			fpath := filepath.Join(basic_data.WorkingDir, "Result.json")
+			fpath := filepath.Join(basic_data.SourceDir, "Result.json")
 			f, err := os.Create(fpath)
 			if err != nil {
 				panic("Couldn't open output file: " + fpath)
@@ -460,6 +463,7 @@ tickloop:
 		logger.Info("Result: %s\n", result.Tag)
 	}
 	logger.Result("TT_DONE", "")
+	basic_data.Running = false
 }
 
 func (basic_data *BasicData) abort_instance(instance *TtInstance) {

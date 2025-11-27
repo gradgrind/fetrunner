@@ -1,4 +1,4 @@
-// Package db provides data structures for management of a school's data,
+// Package base provides data structures for management of a school's data,
 // together with some supporting functions and methods.
 //
 // Initially designed around the data connected with timetabling, it is
@@ -10,10 +10,20 @@
 // However, there is basic in-built support for reading from and saving to
 // JSON.
 // TODO: Currently dealing only with the elements needed for the timetable
-package db
+package base
 
-import "fetrunner/base"
+type BaseData struct {
+	Id     string // empty for single-data-set usage
+	Logger *Logger
 
+	SourceDir string // the directory containing the source file
+	Name      string // the name of this data set, derived from the source
+	// file name
+
+	Db *DbTopLevel
+}
+
+// TODO?
 var ErrorMessages = map[string]string{}
 
 // A NodeRef is used to identify the constituent elements of the database.
@@ -309,12 +319,11 @@ type DbTopLevel struct {
 	Placements       map[string][]*ActivityPlacement `json:",omitempty"`
 	Constraints      map[string][]*Constraint        `json:",omitempty"`
 
-	// This field is a convenience structure built from other elements
-	// of the `DbTopLevel`. It should not be saved with the rest of the
-	// structure.
-	Elements map[NodeRef]Element `json:"-"`
-	// The logger is made available here for convenience.
-	Logger *base.Logger `json:"-"`
+	// The following fields are not persistent, they are created when a data
+	// set is loaded and the are not saved when the data set is saved.
+
+	Elements map[NodeRef]Element `json:"-"` // a convenience structure
+	// built from other elements of the `DbTopLevel`
 }
 
 func (db *DbTopLevel) GetElement(ref NodeRef) Element {

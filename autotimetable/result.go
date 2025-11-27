@@ -85,7 +85,7 @@ func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
 		if err != nil {
 			panic(err)
 		}
-		fpath := filepath.Join(basic_data.WorkingDir, instance.Tag+".json")
+		fpath := filepath.Join(basic_data.SourceDir, instance.Tag+".json")
 		f, err := os.Create(fpath)
 		if err != nil {
 			panic("Couldn't open output file: " + fpath)

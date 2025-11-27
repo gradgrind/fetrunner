@@ -1,7 +1,6 @@
 package autotimetable
 
 import (
-	"fetrunner/base"
 	"fetrunner/timetable"
 )
 
@@ -39,7 +38,6 @@ type BasicData struct {
 		LAST_TIME_1 int
 	}
 
-	Logger           *base.Logger
 	Source           TtSource
 	BackendInterface BackendInterface
 
@@ -51,12 +49,10 @@ type BasicData struct {
 	ConstraintErrors  map[ConstraintIndex]string // collect error messages
 	BlockConstraint   map[ConstraintIndex]bool   // if true, don't enable the constraint
 
-	// `WorkingDir` provides the path to a working directory which can be used
-	// freely during processing. It is set up before entering `StartGeneration`.
-	WorkingDir string
-	Ticks      int // "global" time ticker
+	Ticks int // "global" time ticker
 	// The instance tick counter is in `TtInstance` because it may be needed
 	// by the run-time back-end.
+	Running bool
 
 	// Local variables
 	instanceCounter int

@@ -1,8 +1,13 @@
 #include "ttrun.h"
+#include <QTimer>
 #include "backend.h"
 
 void TtRunWorker::doWork(const QString &parameter)
 {
+    QTimer *timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &TtRunWorker::tick);
+    timer->start(1000);
+
     QString result{"Done ..."};
 
     /* ... here is the expensive or blocking operation ... */
@@ -41,8 +46,23 @@ void TtRunWorker::doWork(const QString &parameter)
             break;
         QThread::msleep(500);
     }
+}
 
-    emit resultReady(result);
+//TODO
+void TtRunWorker::tick()
+{
+    bool done = false;
+    for (const auto &kv : backend->op("_POLL_TT")) {
+        qDebug() << kv.key << kv.val;
+        if (kv.key == "TT_DONE") {
+            // result = kv.val;
+            done = true;
+        }
+    }
+    if (done) {
+        //emit resultReady(result);
+        thread()->quit();
+    }
 }
 
 void TtRunWorker::stop()
@@ -52,8 +72,8 @@ void TtRunWorker::stop()
     }
 }
 
-TtRun::TtRun()
-    : QObject()
+//TODO
+void TtRun::run()
 {
     auto kv = backend->op("RUN_TT");
     if (kv.length() == 0)

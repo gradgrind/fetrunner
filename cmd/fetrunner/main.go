@@ -109,7 +109,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	bdata.WorkingDir = workingdir
+	bdata.SourceDir = workingdir
 
 	logger := base.NewLogger()
 	logpath := filepath.Join(workingdir, "run.log")
