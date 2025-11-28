@@ -19,34 +19,35 @@ import (
 var TEMPORARY_FOLDER string
 
 type FetBackend struct {
-	basic_data *autotimetable.BasicData
+	attdata *autotimetable.AutoTtData
 }
 
-func SetFetBackend(basic_data *autotimetable.BasicData) {
+func SetFetBackend(attdata *autotimetable.AutoTtData) {
 	if len(TEMPORARY_FOLDER) != 0 {
 		os.RemoveAll(filepath.Join(TEMPORARY_FOLDER,
-			filepath.Base(basic_data.SourceDir)))
+			filepath.Base(attdata.BaseData.SourceDir)))
 	}
-	basic_data.BackendInterface = &FetBackend{basic_data}
+	attdata.BackendInterface = &FetBackend{attdata}
 }
 
 func (fbe *FetBackend) Tidy() {
 	if len(TEMPORARY_FOLDER) == 0 {
-		os.RemoveAll(filepath.Join(fbe.basic_data.SourceDir, "tmp"))
+		os.RemoveAll(filepath.Join(fbe.attdata.BaseData.SourceDir, "tmp"))
 	} else {
 		os.RemoveAll(filepath.Join(TEMPORARY_FOLDER,
-			filepath.Base(fbe.basic_data.SourceDir)))
+			filepath.Base(fbe.attdata.BaseData.SourceDir)))
 	}
 }
 
 func (fbe *FetBackend) RunBackend(
 	instance *autotimetable.TtInstance,
 ) autotimetable.TtBackend {
-	basic_data := fbe.basic_data
+	attdata := fbe.attdata
+	bdata := attdata.BaseData
 
-	ttoutdir := filepath.Join(basic_data.SourceDir, "_"+basic_data.Name)
+	ttoutdir := filepath.Join(bdata.SourceDir, "_"+bdata.Name)
 	os.RemoveAll(ttoutdir)
-	logger := basic_data.Logger
+	logger := bdata.Logger
 	err := os.MkdirAll(ttoutdir, 0755)
 	if err != nil {
 		//TODO?
@@ -57,10 +58,10 @@ func (fbe *FetBackend) RunBackend(
 	fname := instance.Tag
 	var odir string
 	if len(TEMPORARY_FOLDER) == 0 {
-		odir = filepath.Join(basic_data.SourceDir, "tmp", fname)
+		odir = filepath.Join(bdata.SourceDir, "tmp", fname)
 	} else {
 		odir = filepath.Join(TEMPORARY_FOLDER,
-			filepath.Base(fbe.basic_data.SourceDir),
+			filepath.Base(bdata.SourceDir),
 			fname)
 	}
 	err = os.MkdirAll(odir, 0755)
@@ -73,7 +74,7 @@ func (fbe *FetBackend) RunBackend(
 
 	// Construct the FET-file
 	var fet_xml []byte
-	basic_data.Source.PrepareRun(instance.ConstraintEnabled, &fet_xml)
+	attdata.Source.PrepareRun(instance.ConstraintEnabled, &fet_xml)
 	// Write FET file
 	err = os.WriteFile(fetfile, fet_xml, 0644)
 	if err != nil {
@@ -82,9 +83,9 @@ func (fbe *FetBackend) RunBackend(
 	}
 	if instance.Tag == "COMPLETE" {
 		// Save fet file at top level of working directory.
-		cfile := filepath.Join(basic_data.SourceDir,
+		cfile := filepath.Join(bdata.SourceDir,
 			filepath.Base(strings.TrimSuffix(
-				basic_data.SourceDir, "_fet")+".fet"))
+				bdata.SourceDir, "_fet")+".fet"))
 		err = os.WriteFile(cfile, fet_xml, 0644)
 		if err != nil {
 			panic("Couldn't write fet file to: " + cfile)
@@ -121,7 +122,7 @@ func (fbe *FetBackend) RunBackend(
 		"--outputdir=" + odir,
 	}
 
-	if basic_data.Parameters.TESTING {
+	if attdata.Parameters.TESTING {
 		params = append(params,
 			"--randomseeds10=10",
 			"--randomseeds11=11",
@@ -133,7 +134,7 @@ func (fbe *FetBackend) RunBackend(
 
 	runCmd := exec.CommandContext(ctx,
 		//runCmd := exec.Command(
-		basic_data.Logger.GetConfig("FET"), params...,
+		bdata.Logger.GetConfig("FET"), params...,
 	)
 
 	go run(fet_data, runCmd)
@@ -199,9 +200,10 @@ var re *regexp.Regexp = regexp.MustCompile(pattern)
 // `Tick` runs in the "tick" loop. Rather like a "tail" function it reads
 // the FET progress from its log file, by simply polling for new lines.
 func (data *FetTtData) Tick(
-	basic_data *autotimetable.BasicData,
+	attdata *autotimetable.AutoTtData,
 	instance *autotimetable.TtInstance,
 ) {
+	bdata := attdata.BaseData
 	if data.reader == nil {
 		// Await the existence of the log file
 		file, err := os.Open(data.logfile)
@@ -225,7 +227,7 @@ func (data *FetTtData) Tick(
 					if err == nil {
 						if count > data.count {
 							instance.LastTime = instance.Ticks
-							percent := (count * 100) / int(basic_data.NActivities)
+							percent := (count * 100) / int(attdata.NActivities)
 							if percent > instance.Progress {
 								instance.Progress = percent
 								base.Report(fmt.Sprintf("%s: %d @ %d\n",
@@ -259,7 +261,7 @@ exit:
 			instance.RunState = 2
 		}
 		if data.finished == -2 {
-			basic_data.Logger.Error("FET_Failed: %s", basic_data.Logger.GetConfig("FET"))
+			bdata.Logger.Error("FET_Failed: %s", bdata.Logger.GetConfig("FET"))
 			return
 		}
 
@@ -273,16 +275,16 @@ exit:
 			return
 		}
 		if len(instance.Constraints) == 1 {
-			basic_data.BlockConstraint[instance.Constraints[0]] = true
+			attdata.BlockConstraint[instance.Constraints[0]] = true
 		}
 	}
 }
 
 // If there is a result from the main process, there may be a
 // corresponding result from the source.
-func (data *FetTtData) FinalizeResult(basic_data *autotimetable.BasicData) {
+func (data *FetTtData) FinalizeResult(attdata *autotimetable.AutoTtData) {
 	// Write FET file at top level of working directory.
-	fetfile := filepath.Join(basic_data.SourceDir, "Result.fet")
+	fetfile := filepath.Join(attdata.BaseData.SourceDir, "Result.fet")
 	err := os.WriteFile(fetfile, data.fetxml, 0644)
 	if err != nil {
 		panic("Couldn't write fet file to: " + fetfile)
@@ -291,10 +293,10 @@ func (data *FetTtData) FinalizeResult(basic_data *autotimetable.BasicData) {
 
 // Gather the results of the given run.
 func (data *FetTtData) Results(
-	basic_data *autotimetable.BasicData,
+	attdata *autotimetable.AutoTtData,
 	instance *autotimetable.TtInstance,
 ) []autotimetable.TtActivityPlacement {
-	logger := basic_data.Logger
+	logger := attdata.BaseData.Logger
 	// Get placements
 	xmlpath := filepath.Join(data.odir, "timetables", instance.Tag,
 		instance.Tag+"_activities.xml")
@@ -319,23 +321,23 @@ func (data *FetTtData) Results(
 	// hours and rooms ...
 	// ... room conversion
 	room2index := map[string]int{}
-	for i, r := range basic_data.Source.GetRooms() {
+	for i, r := range attdata.Source.GetRooms() {
 		room2index[r.Backend] = i
 
 	}
 	// ... day conversion
 	day2index := map[string]int{}
-	for i, d := range basic_data.Source.GetDays() {
+	for i, d := range attdata.Source.GetDays() {
 		day2index[d.Backend] = i
 	}
 	// ... hour conversion
 	hour2index := map[string]int{}
-	for i, h := range basic_data.Source.GetHours() {
+	for i, h := range attdata.Source.GetHours() {
 		hour2index[h.Backend] = i
 	}
 	// ... activity conversion
 	activity2index := map[string]int{}
-	for i, a := range basic_data.Source.GetActivities() {
+	for i, a := range attdata.Source.GetActivities() {
 		activity2index[a.Backend] = i
 	}
 

@@ -23,7 +23,7 @@ const VIRTUAL_ROOM_PREFIX = "!"
 // Use a `FetBuild` as basis for constructing a `fet.TtRunDataFet`. In addition,
 // some fields of the `autotimetable.BasicData` are initialized.
 func FetTree(
-	basic_data *autotimetable.BasicData,
+	basic_data *autotimetable.AutoTtData,
 	tt_data *timetable.TtData,
 ) *fet.TtRunDataFet {
 	doc := etree.NewDocument()

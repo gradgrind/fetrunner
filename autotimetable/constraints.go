@@ -2,23 +2,23 @@ package autotimetable
 
 // Collect the individual constraints by type in the order given by the
 // `ConstraintTypes` list, inclkuding only those which are disabled.
-func (basic_data *BasicData) get_basic_constraints(
+func (attdata *AutoTtData) get_basic_constraints(
 	instance0 *TtInstance, soft bool,
 ) ([]*TtInstance, int) {
 	instances := []*TtInstance{} // one instance per constraint type
 	nconstraints := 0            // count constraints
 	var emap map[ConstraintType][]ConstraintIndex
 	if soft {
-		emap = basic_data.SoftConstraintMap
+		emap = attdata.SoftConstraintMap
 	} else {
-		emap = basic_data.HardConstraintMap
+		emap = attdata.HardConstraintMap
 	}
-	for _, ctype := range basic_data.ConstraintTypes {
+	for _, ctype := range attdata.ConstraintTypes {
 		blist := emap[ctype]
 		cixlist := []ConstraintIndex{}
 		for _, i := range blist {
 			if !instance0.ConstraintEnabled[i] &&
-				!basic_data.BlockConstraint[i] {
+				!attdata.BlockConstraint[i] {
 				cixlist = append(cixlist, i)
 			}
 		}
@@ -26,11 +26,11 @@ func (basic_data *BasicData) get_basic_constraints(
 			continue
 		}
 		nconstraints += len(cixlist)
-		instance := basic_data.new_instance(
+		instance := attdata.new_instance(
 			instance0,
 			ctype,
 			cixlist,
-			basic_data.cycle_timeout)
+			attdata.cycle_timeout)
 		instances = append(instances, instance)
 	}
 	return instances, nconstraints

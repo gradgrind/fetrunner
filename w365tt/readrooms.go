@@ -1,15 +1,16 @@
 package w365tt
 
 import (
-	"fetrunner/db"
+	"fetrunner/base"
 	"fmt"
 	"strconv"
 	"strings"
 )
 
-func (dbi *W365TopLevel) readRooms(newdb *db.DbTopLevel) {
+func (dbi *W365TopLevel) readRooms(newdb *base.BaseData) {
 	logger := newdb.Logger
-	dbi.RealRooms = map[NodeRef]*db.Room{}
+	ndb := newdb.Db
+	dbi.RealRooms = map[NodeRef]*base.Room{}
 	dbi.RoomTags = map[string]NodeRef{}
 	dbi.RoomChoiceNames = map[string]NodeRef{}
 	for _, e := range dbi.Rooms {
@@ -31,16 +32,16 @@ func (dbi *W365TopLevel) readRooms(newdb *db.DbTopLevel) {
 		r.Name = e.Name
 		if len(tsl) != 0 {
 			// Add a constraint
-			newdb.NewRoomNotAvailable("", db.MAXWEIGHT, r.Id, tsl)
+			ndb.NewRoomNotAvailable("", base.MAXWEIGHT, r.Id, tsl)
 		}
 		dbi.RealRooms[e.Id] = r
 	}
 }
 
 // In the case of RoomGroups, cater for empty Tags (Shortcuts).
-func (dbi *W365TopLevel) readRoomGroups(newdb *db.DbTopLevel) {
+func (dbi *W365TopLevel) readRoomGroups(newdb *base.BaseData) {
 	logger := newdb.Logger
-	dbi.RoomGroupMap = map[NodeRef]*db.RoomGroup{}
+	dbi.RoomGroupMap = map[NodeRef]*base.RoomGroup{}
 	for _, e := range dbi.RoomGroups {
 		if e.Tag != "" {
 		rloop:
@@ -64,9 +65,9 @@ func (dbi *W365TopLevel) readRoomGroups(newdb *db.DbTopLevel) {
 }
 
 // Call this after all room types have been "read".
-func (dbi *W365TopLevel) checkRoomGroups(newdb *db.DbTopLevel) {
+func (dbi *W365TopLevel) checkRoomGroups(newdb *base.BaseData) {
 	logger := newdb.Logger
-	for _, e := range newdb.RoomGroups {
+	for _, e := range newdb.Db.RoomGroups {
 		// Collect the Ids and Tags of the component rooms.
 		taglist := []string{}
 		reflist := []NodeRef{}
@@ -110,7 +111,7 @@ func (dbi *W365TopLevel) checkRoomGroups(newdb *db.DbTopLevel) {
 }
 
 func (dbi *W365TopLevel) makeRoomChoiceGroup(
-	newdb *db.DbTopLevel,
+	newdb *base.BaseData,
 	rooms []NodeRef,
 ) (NodeRef, string) {
 	erlist := []string{} // Error messages

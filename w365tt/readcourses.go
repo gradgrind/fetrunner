@@ -2,13 +2,12 @@ package w365tt
 
 import (
 	"fetrunner/base"
-	"fetrunner/db"
 	"strings"
 )
 
-func (dbi *W365TopLevel) readSubjects(newdb *db.DbTopLevel) {
+func (dbi *W365TopLevel) readSubjects(newdb *base.BaseData) {
 	logger := newdb.Logger
-	dbi.SubjectMap = map[NodeRef]*db.Subject{}
+	dbi.SubjectMap = map[NodeRef]*base.Subject{}
 	dbi.SubjectTags = map[string]NodeRef{}
 	for _, e := range dbi.Subjects {
 		// Perform some checks and add to the SubjectTags map.
@@ -30,7 +29,7 @@ func (dbi *W365TopLevel) readSubjects(newdb *db.DbTopLevel) {
 }
 
 func (dbi *W365TopLevel) makeNewSubject(
-	newdb *db.DbTopLevel,
+	newdb *base.BaseData,
 	tag string,
 	name string,
 ) NodeRef {
@@ -41,7 +40,7 @@ func (dbi *W365TopLevel) makeNewSubject(
 	return s.Id
 }
 
-func (dbi *W365TopLevel) readCourses(newdb *db.DbTopLevel) {
+func (dbi *W365TopLevel) readCourses(newdb *base.BaseData) {
 	logger := newdb.Logger
 	dbi.CourseMap = map[NodeRef]struct{}{}
 	for _, e := range dbi.Courses {
@@ -58,7 +57,7 @@ func (dbi *W365TopLevel) readCourses(newdb *db.DbTopLevel) {
 	}
 }
 
-func (dbi *W365TopLevel) readSuperCourses(newdb *db.DbTopLevel) {
+func (dbi *W365TopLevel) readSuperCourses(newdb *base.BaseData) {
 	logger := newdb.Logger
 	// In the input from W365 the subjects for the SuperCourses must be
 	// taken from the linked EpochPlan.
@@ -74,7 +73,7 @@ func (dbi *W365TopLevel) readSuperCourses(newdb *db.DbTopLevel) {
 		}
 	}
 
-	sbcMap := map[NodeRef]*db.SubCourse{}
+	sbcMap := map[NodeRef]*base.SubCourse{}
 	for _, spc := range dbi.SuperCourses {
 		// Read the SubCourses.
 		for _, e := range spc.SubCourses {
@@ -113,7 +112,7 @@ func (dbi *W365TopLevel) readSuperCourses(newdb *db.DbTopLevel) {
 }
 
 func (dbi *W365TopLevel) getCourseSubject(
-	newdb *db.DbTopLevel,
+	newdb *base.BaseData,
 	srefs []NodeRef,
 	courseId NodeRef,
 ) NodeRef {
@@ -176,7 +175,7 @@ func (dbi *W365TopLevel) getCourseSubject(
 // in the "Room" field.
 // If a list of rooms recurs, the same RoomChoiceGroup is used.
 func (dbi *W365TopLevel) getCourseRoom(
-	newdb *db.DbTopLevel,
+	newdb *base.BaseData,
 	rrefs []NodeRef,
 	courseId NodeRef,
 ) NodeRef {

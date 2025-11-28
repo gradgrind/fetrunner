@@ -1,6 +1,7 @@
 package autotimetable
 
 import (
+	"fetrunner/base"
 	"fetrunner/timetable"
 )
 
@@ -10,9 +11,9 @@ import (
 type ConstraintType = string
 type ConstraintIndex = int
 
-// The `BasicData` structure is set up once for the handling of a set of
+// The `AutoTtData` structure is set up once for the handling of a set of
 // timetable data (based on a source file, for example).
-type BasicData struct {
+type AutoTtData struct {
 	Parameters struct {
 		// The behaviour of the TESTING flag depends on the back-end. It
 		// might, for example, use fixed seeds for random number generators
@@ -38,6 +39,7 @@ type BasicData struct {
 		LAST_TIME_1 int
 	}
 
+	BaseData         *base.BaseData
 	Source           TtSource
 	BackendInterface BackendInterface
 
@@ -104,10 +106,10 @@ type TtInstance struct {
 
 type TtBackend interface {
 	Abort()
-	Tick(*BasicData, *TtInstance)
+	Tick(*AutoTtData, *TtInstance)
 	Clear()
-	Results(*BasicData, *TtInstance) []TtActivityPlacement
-	FinalizeResult(*BasicData)
+	Results(*AutoTtData, *TtInstance) []TtActivityPlacement
+	FinalizeResult(*AutoTtData)
 }
 
 type TtActivityPlacement = timetable.TtActivityPlacement

@@ -1,7 +1,7 @@
 package timetable
 
 import (
-	"fetrunner/db"
+	"fetrunner/base"
 	"strings"
 )
 
@@ -21,7 +21,7 @@ type TtDaysBetween struct {
 func (c *TtDaysBetween) IsHard() bool {
 	// Note that "ConsecutiveIfSameDay" is hard regardless of
 	// the weight.
-	return c.Weight == db.MAXWEIGHT || c.ConsecutiveIfSameDay
+	return c.Weight == base.MAXWEIGHT || c.ConsecutiveIfSameDay
 }
 
 /* The ParallelCourses constraints are transformed to TtParallelActivities
@@ -35,29 +35,30 @@ type TtParallelActivities struct {
 }
 
 func (c *TtParallelActivities) IsHard() bool {
-	return c.Weight == db.MAXWEIGHT
+	return c.Weight == base.MAXWEIGHT
 }
 
 // `preprocessConstraints` produces the new constraints, which are then
 // accessible in `TtData`. It also adds the fixed activity placements to
 // the `TtAcivity` items.
 func (tt_data *TtData) preprocessConstraints() {
-	db0 := tt_data.Db
-	logger := db0.Logger
+	bdata := tt_data.BaseData
+	db := bdata.Db
+	logger := bdata.Logger
 
 	// Deal with the fixed activity placements.
-	for _, c := range db0.Constraints[db.C_ActivityStartTime] {
+	for _, c := range db.Constraints[base.C_ActivityStartTime] {
 		if c.IsHard() {
-			data := c.Data.(db.ActivityStartTime)
+			data := c.Data.(base.ActivityStartTime)
 			aix := tt_data.Ref2ActivityIndex[data.Activity]
-			tt_data.Activities[aix].FixedStartTime = &db.TimeSlot{
+			tt_data.Activities[aix].FixedStartTime = &base.TimeSlot{
 				Day: data.Day, Hour: data.Hour}
 		}
 	}
 
 	// If an "AutomaticDifferentDays" constraint is present (at most one is
 	// permitted), the `auto_weight` and `auto_consec` variables will be set
-	// accordingly, otherwise the default weight (`db.MAXWEIGHT`, i.e.
+	// accordingly, otherwise the default weight (`base.MAXWEIGHT`, i.e.
 	// a hard constraint) will be used.
 
 	var auto_id NodeRef = ""
@@ -65,7 +66,7 @@ func (tt_data *TtData) preprocessConstraints() {
 	auto_consec := false
 	noauto_ddays := map[NodeRef]struct{}{} // collect default overrides
 
-	cadd := db0.Constraints[db.C_AutomaticDifferentDays]
+	cadd := db.Constraints[base.C_AutomaticDifferentDays]
 	if len(cadd) != 0 {
 		if len(cadd) == 1 {
 			cadd0 := cadd[0]
@@ -75,17 +76,17 @@ func (tt_data *TtData) preprocessConstraints() {
 		} else {
 			logger.Error("!!! %s * %d – only one is permitted\n",
 				//TODO: use the source name instead?
-				db.C_AutomaticDifferentDays, len(cadd))
+				base.C_AutomaticDifferentDays, len(cadd))
 		}
 	}
 
 	//TODO ... ??? Need "fixed" status for activities ... which is probably
 	// loaded from the placements when the TtData is built?
 
-	for _, c := range db0.Constraints[db.C_DaysBetween] {
-		data := c.Data.(db.DaysBetween)
+	for _, c := range db.Constraints[base.C_DaysBetween] {
+		data := c.Data.(base.DaysBetween)
 		for _, course := range data.Courses {
-			if data.DaysBetween == 1 || c.Weight == db.MAXWEIGHT {
+			if data.DaysBetween == 1 || c.Weight == base.MAXWEIGHT {
 				// Override default constraint
 				noauto_ddays[course] = struct{}{}
 			}
@@ -93,7 +94,7 @@ func (tt_data *TtData) preprocessConstraints() {
 				tt_data.MinDaysBetweenActivities, &TtDaysBetween{
 					Id:                   c.Id,
 					Weight:               c.Weight,
-					CType:                db.C_DaysBetween,
+					CType:                base.C_DaysBetween,
 					DaysBetween:          data.DaysBetween,
 					ConsecutiveIfSameDay: data.ConsecutiveIfSameDay,
 					ActivityLists: tt_data.days_between_activities(
@@ -103,7 +104,7 @@ func (tt_data *TtData) preprocessConstraints() {
 
 	// Add automatic min-days-between constraints, where not overridden.
 	if auto_weight < 0 {
-		auto_weight = db.MAXWEIGHT
+		auto_weight = base.MAXWEIGHT
 	}
 	for _, cinfo := range tt_data.CourseInfoList {
 		cref := cinfo.Id
@@ -113,7 +114,7 @@ func (tt_data *TtData) preprocessConstraints() {
 				tt_data.MinDaysBetweenActivities, &TtDaysBetween{
 					Id:                   auto_id,
 					Weight:               auto_weight,
-					CType:                db.C_AutomaticDifferentDays,
+					CType:                base.C_AutomaticDifferentDays,
 					DaysBetween:          1,
 					ConsecutiveIfSameDay: auto_consec,
 					ActivityLists: tt_data.days_between_activities(
@@ -121,13 +122,13 @@ func (tt_data *TtData) preprocessConstraints() {
 		}
 	}
 
-	for _, c := range db0.Constraints[db.C_DaysBetweenJoin] {
-		data := c.Data.(db.DaysBetweenJoin)
+	for _, c := range db.Constraints[base.C_DaysBetweenJoin] {
+		data := c.Data.(base.DaysBetweenJoin)
 		tt_data.MinDaysBetweenActivities = append(
 			tt_data.MinDaysBetweenActivities, &TtDaysBetween{
 				Id:                   c.Id,
 				Weight:               c.Weight,
-				CType:                db.C_DaysBetweenJoin,
+				CType:                base.C_DaysBetweenJoin,
 				DaysBetween:          data.DaysBetween,
 				ConsecutiveIfSameDay: data.ConsecutiveIfSameDay,
 				ActivityLists: tt_data.days_between_join_activities(
@@ -135,7 +136,7 @@ func (tt_data *TtData) preprocessConstraints() {
 	}
 
 cloop:
-	for _, c := range db0.Constraints[db.C_ParallelCourses] {
+	for _, c := range db.Constraints[base.C_ParallelCourses] {
 		courses := c.Data.([]NodeRef)
 		// The courses must have the same number of activities and the
 		// lengths of the corresponding activities must also be the same.
@@ -161,7 +162,7 @@ cloop:
 				continue cloop
 			}
 			for j, ai := range cinfo.Activities {
-				a := db0.Activities[ai]
+				a := db.Activities[ai]
 				if i == 0 {
 					footprint = append(footprint, a.Duration)
 				} else if a.Duration != footprint[j] {
@@ -183,7 +184,7 @@ cloop:
 			tt_data.ParallelActivities, &TtParallelActivities{
 				Id:            c.Id,
 				Weight:        c.Weight,
-				CType:         db.C_ParallelCourses,
+				CType:         base.C_ParallelCourses,
 				ActivityLists: alists,
 			})
 	}
@@ -193,7 +194,7 @@ cloop:
 func (tt_data *TtData) days_between_activities(
 	course NodeRef, weight int, consecutiveIfSameDay bool,
 ) [][]ActivityIndex {
-	logger := tt_data.Db.Logger
+	logger := tt_data.BaseData.Logger
 	allist := [][]ActivityIndex{}
 	cinfo := tt_data.Ref2CourseInfo[course]
 	fixeds := []ActivityIndex{}

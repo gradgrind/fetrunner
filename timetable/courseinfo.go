@@ -1,7 +1,7 @@
 package timetable
 
 import (
-	"fetrunner/db"
+	"fetrunner/base"
 	"fmt"
 	"slices"
 	"strings"
@@ -9,13 +9,14 @@ import (
 
 // Make a shortish string view of a CourseInfo – can be useful in tests
 func (tt_data *TtData) View(cinfo *CourseInfo) string {
+	db := tt_data.BaseData.Db
 	tlist := []string{}
 	for _, t := range cinfo.Teachers {
-		tlist = append(tlist, tt_data.Db.Teachers[t].GetTag())
+		tlist = append(tlist, db.Teachers[t].GetTag())
 	}
 	glist := []string{}
 	for _, g := range cinfo.Groups {
-		glist = append(glist, db.GroupTag(g))
+		glist = append(glist, base.GroupTag(g))
 	}
 	return fmt.Sprintf("<Course %s/%s:%s>",
 		strings.Join(glist, ","),
@@ -27,20 +28,20 @@ func (tt_data *TtData) View(cinfo *CourseInfo) string {
 // Collect courses (Course and SuperCourse) and their activities.
 // Build a list of CourseInfo structures.
 func (tt_data *TtData) CollectCourses() {
-	db0 := tt_data.Db
+	db := tt_data.BaseData.Db
 	tt_data.Ref2CourseInfo = map[NodeRef]*CourseInfo{}
 
 	// The list of `TtActivity` items shadows the list of `Activity` items.
-	tt_data.Activities = make([]*TtActivity, len(db0.Activities))
+	tt_data.Activities = make([]*TtActivity, len(db.Activities))
 	tt_data.Ref2ActivityIndex = map[NodeRef]ActivityIndex{}
-	for i, a := range db0.Activities {
+	for i, a := range db.Activities {
 		tt_data.Ref2ActivityIndex[a.Id] = ActivityIndex(i)
 	}
 
 	// *** Gather the SuperCourses. ***
-	for _, spc := range db0.SuperCourses {
+	for _, spc := range db.SuperCourses {
 		cref := spc.Id
-		groups := []*db.Group{}
+		groups := []*base.Group{}
 		agroups := []AtomicIndex{}
 		teachers := []TeacherIndex{}
 		rooms := []RoomIndex{}
@@ -48,7 +49,7 @@ func (tt_data *TtData) CollectCourses() {
 		for _, sbc := range spc.SubCourses {
 			// Add groups
 			for _, gref := range sbc.Groups {
-				g, ok := db0.GetElement(gref).(*db.Group)
+				g, ok := db.GetElement(gref).(*base.Group)
 				if !ok {
 					panic("Invalid Group ref: " + gref)
 				}
@@ -76,8 +77,8 @@ func (tt_data *TtData) CollectCourses() {
 
 				// Not a `Room` – it can be a RoomGroup or RoomChoiceGroup
 
-				gr := db0.GetElement(sbc.Room)
-				rg, ok := gr.(*db.RoomGroup)
+				gr := db.GetElement(sbc.Room)
+				rg, ok := gr.(*base.RoomGroup)
 				if ok {
 					for _, rr := range rg.Rooms {
 						r, ok = tt_data.RoomIndex[rr]
@@ -91,7 +92,7 @@ func (tt_data *TtData) CollectCourses() {
 					continue
 				}
 
-				rcg, ok := gr.(*db.RoomChoiceGroup)
+				rcg, ok := gr.(*base.RoomChoiceGroup)
 				if ok {
 					roomlist := []RoomIndex{}
 					for _, rr := range rcg.Rooms {
@@ -124,7 +125,7 @@ func (tt_data *TtData) CollectCourses() {
 		slices.Sort(teachers)
 		slices.Sort(rooms)
 
-		sbj, ok := db0.GetElement(spc.Subject).(*db.Subject)
+		sbj, ok := db.GetElement(spc.Subject).(*base.Subject)
 		if !ok {
 			panic("Invalid Subject ref: " + spc.Subject)
 		}
@@ -160,14 +161,14 @@ func (tt_data *TtData) CollectCourses() {
 	}
 
 	// *** Gather the plain Courses. ***
-	for _, c := range db0.Courses {
+	for _, c := range db.Courses {
 		cref := c.Id
 
 		// Get groups
-		groups := []*db.Group{}
+		groups := []*base.Group{}
 		agroups := []AtomicIndex{}
 		for _, gref := range c.Groups {
-			g, ok := db0.GetElement(gref).(*db.Group)
+			g, ok := db.GetElement(gref).(*base.Group)
 			if !ok {
 				panic("Invalid Group ref: " + gref)
 			}
@@ -194,8 +195,8 @@ func (tt_data *TtData) CollectCourses() {
 				rooms = append(rooms, r)
 			} else {
 				// Not a `Room` – it can be a RoomGroup or RoomChoiceGroup
-				gr := db0.GetElement(c.Room)
-				rg, ok := gr.(*db.RoomGroup)
+				gr := db.GetElement(c.Room)
+				rg, ok := gr.(*base.RoomGroup)
 				if ok {
 					for _, rr := range rg.Rooms {
 						r, ok = tt_data.RoomIndex[rr]
@@ -207,7 +208,7 @@ func (tt_data *TtData) CollectCourses() {
 						rooms = append(rooms, r)
 					}
 				} else {
-					rcg, ok := gr.(*db.RoomChoiceGroup)
+					rcg, ok := gr.(*base.RoomChoiceGroup)
 					if ok {
 						roomlist := []RoomIndex{}
 						for _, rr := range rcg.Rooms {
@@ -227,7 +228,7 @@ func (tt_data *TtData) CollectCourses() {
 			}
 		}
 
-		sbj, ok := db0.GetElement(c.Subject).(*db.Subject)
+		sbj, ok := db.GetElement(c.Subject).(*base.Subject)
 		if !ok {
 			panic("Invalid Subject ref: " + c.Subject)
 		}

@@ -2,7 +2,6 @@ package w365tt
 
 import (
 	"fetrunner/base"
-	"fetrunner/db"
 )
 
 type DbW365Pair struct {
@@ -13,15 +12,15 @@ type DbW365Pair struct {
 // List providing a mapping between Db constraint names and
 // W365 constraint names:
 var ConstraintMap []DbW365Pair = []DbW365Pair{
-	{db.C_ActivitiesEndDay, "MARGIN_HOUR"},
-	{db.C_AfterHour, "AFTER_HOUR"},
-	{db.C_BeforeHour, "BEFORE_HOUR"},
-	{db.C_AutomaticDifferentDays, "AUTOMATIC_DIFFERENT_DAYS"},
-	{db.C_DaysBetween, "DAYS_BETWEEN"},
-	{db.C_DaysBetweenJoin, "DAYS_BETWEEN_JOIN"},
-	{db.C_MinHoursFollowing, "MIN_HOURS_FOLLOWING"},
-	{db.C_DoubleActivityNotOverBreaks, "DOUBLE_LESSON_NOT_OVER_BREAKS"},
-	{db.C_ParallelCourses, "PARALLEL_COURSES"},
+	{base.C_ActivitiesEndDay, "MARGIN_HOUR"},
+	{base.C_AfterHour, "AFTER_HOUR"},
+	{base.C_BeforeHour, "BEFORE_HOUR"},
+	{base.C_AutomaticDifferentDays, "AUTOMATIC_DIFFERENT_DAYS"},
+	{base.C_DaysBetween, "DAYS_BETWEEN"},
+	{base.C_DaysBetweenJoin, "DAYS_BETWEEN_JOIN"},
+	{base.C_MinHoursFollowing, "MIN_HOURS_FOLLOWING"},
+	{base.C_DoubleActivityNotOverBreaks, "DOUBLE_LESSON_NOT_OVER_BREAKS"},
+	{base.C_ParallelCourses, "PARALLEL_COURSES"},
 }
 
 // Parameter-reading functions for the constraints
@@ -74,8 +73,9 @@ func a2ii(logger *base.Logger, ii any) []int {
 
 // Read the constraints read from a W365 JSON file into the equivalent
 // internal constraints.
-func (db0 *W365TopLevel) readConstraints(newdb *db.DbTopLevel) {
+func (db0 *W365TopLevel) readConstraints(newdb *base.BaseData) {
 	logger := newdb.Logger
+	ndb := newdb.Db
 	cmap := map[string]string{}
 	for _, pair := range ConstraintMap {
 		cmap[pair.W365] = pair.Db
@@ -83,57 +83,57 @@ func (db0 *W365TopLevel) readConstraints(newdb *db.DbTopLevel) {
 	for _, e := range db0.Constraints {
 		cw365 := e["Constraint"].(string)
 		switch cmap[cw365] {
-		case db.C_ActivitiesEndDay:
-			newdb.NewActivitiesEndDay(
+		case base.C_ActivitiesEndDay:
+			ndb.NewActivitiesEndDay(
 				a2r(logger, e["Id"]),
 				a2i(logger, e["Weight"]),
 				a2r(logger, e["Course"]))
-		case db.C_AfterHour:
-			newdb.NewAfterHour(
+		case base.C_AfterHour:
+			ndb.NewAfterHour(
 				a2r(logger, e["Id"]),
 				a2i(logger, e["Weight"]),
 				a2rr(logger, e["Courses"]),
 				a2i(logger, e["Hour"]))
-		case db.C_BeforeHour:
-			newdb.NewBeforeHour(
+		case base.C_BeforeHour:
+			ndb.NewBeforeHour(
 				a2r(logger, e["Id"]),
 				a2i(logger, e["Weight"]),
 				a2rr(logger, e["Courses"]),
 				a2i(logger, e["Hour"]))
-		case db.C_AutomaticDifferentDays:
-			newdb.NewAutomaticDifferentDays(
+		case base.C_AutomaticDifferentDays:
+			ndb.NewAutomaticDifferentDays(
 				a2r(logger, e["Id"]),
 				a2i(logger, e["Weight"]),
 				e["ConsecutiveIfSameDay"].(bool))
-		case db.C_DaysBetween:
-			newdb.NewDaysBetween(
+		case base.C_DaysBetween:
+			ndb.NewDaysBetween(
 				a2r(logger, e["Id"]),
 				a2i(logger, e["Weight"]),
 				a2rr(logger, e["Courses"]),
 				a2i(logger, e["DaysBetween"]),
 				e["ConsecutiveIfSameDay"].(bool))
-		case db.C_DaysBetweenJoin:
-			newdb.NewDaysBetweenJoin(
+		case base.C_DaysBetweenJoin:
+			ndb.NewDaysBetweenJoin(
 				a2r(logger, e["Id"]),
 				a2i(logger, e["Weight"]),
 				a2r(logger, e["Course1"]),
 				a2r(logger, e["Course2"]),
 				a2i(logger, e["DaysBetween"]),
 				e["ConsecutiveIfSameDay"].(bool))
-		case db.C_MinHoursFollowing:
-			newdb.NewMinHoursFollowing(
+		case base.C_MinHoursFollowing:
+			ndb.NewMinHoursFollowing(
 				a2r(logger, e["Id"]),
 				a2i(logger, e["Weight"]),
 				a2r(logger, e["Course1"]),
 				a2r(logger, e["Course2"]),
 				a2i(logger, e["Hours"]))
-		case db.C_DoubleActivityNotOverBreaks:
-			newdb.NewDoubleActivityNotOverBreaks(
+		case base.C_DoubleActivityNotOverBreaks:
+			ndb.NewDoubleActivityNotOverBreaks(
 				a2r(logger, e["Id"]),
 				a2i(logger, e["Weight"]),
 				a2ii(logger, e["Hours"]))
-		case db.C_ParallelCourses:
-			newdb.NewParallelCourses(
+		case base.C_ParallelCourses:
+			ndb.NewParallelCourses(
 				a2r(logger, e["Id"]),
 				a2i(logger, e["Weight"]),
 				a2rr(logger, e["Courses"]))

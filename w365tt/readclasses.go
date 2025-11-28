@@ -1,11 +1,11 @@
 package w365tt
 
 import (
-	"fetrunner/db"
+	"fetrunner/base"
 	"strconv"
 )
 
-func (dbi *W365TopLevel) readClasses(newdb *db.DbTopLevel) {
+func (dbi *W365TopLevel) readClasses(newdb *base.BaseData) {
 	logger := newdb.Logger
 	// Every Class-Group must be within one – and only one – Class-Division.
 	// To handle that, the Group references are first gathered here. Then,
@@ -19,7 +19,7 @@ func (dbi *W365TopLevel) readClasses(newdb *db.DbTopLevel) {
 	dbi.GroupRefMap = map[NodeRef]NodeRef{}
 	for _, e := range dbi.Classes {
 		// Get the divisions and flag their Groups.
-		divs := []db.Division{}
+		divs := []base.Division{}
 	dloop:
 		for i, wdiv := range e.Divisions {
 			dname := wdiv.Name
@@ -50,7 +50,7 @@ func (dbi *W365TopLevel) readClasses(newdb *db.DbTopLevel) {
 					" not enough valid Groups (>1) in Division %s\n",
 					e.Tag, wdiv.Name)
 			}
-			divs = append(divs, db.Division{
+			divs = append(divs, base.Division{
 				Name:   dname,
 				Groups: glist,
 			})
@@ -70,50 +70,51 @@ func (dbi *W365TopLevel) readClasses(newdb *db.DbTopLevel) {
 		n.ClassGroup = classGroup.Id
 
 		// +++ Add constraints ...
+		ndb := newdb.Db
 
 		// MaxAfternoons = 0 has a special meaning (all blocked), so the
 		// corresponding constraint is not needed, see `handleZeroAfternoons`.
 		amax := e.MaxAfternoons
 		if amax > 0 {
-			newdb.NewClassMaxAfternoons(
-				"", db.MAXWEIGHT, n.Id, amax)
+			ndb.NewClassMaxAfternoons(
+				"", base.MAXWEIGHT, n.Id, amax)
 		}
 		// Not available times – add all afternoons if amax == 0
 		tsl := dbi.handleZeroAfternoons(e.NotAvailable, amax)
 		if len(tsl) != 0 {
 			// Add a constraint
-			newdb.NewClassNotAvailable("", db.MAXWEIGHT, n.Id, tsl)
+			ndb.NewClassNotAvailable("", base.MAXWEIGHT, n.Id, tsl)
 		}
 
 		// MinActivitiesPerDay
 		if e.MinLessonsPerDay > 0 {
-			newdb.NewClassMinActivitiesPerDay(
-				"", db.MAXWEIGHT, n.Id, e.MinLessonsPerDay)
+			ndb.NewClassMinActivitiesPerDay(
+				"", base.MAXWEIGHT, n.Id, e.MinLessonsPerDay)
 		}
 		// MaxActivitiesPerDay
 		if e.MaxLessonsPerDay > 0 {
-			newdb.NewClassMaxActivitiesPerDay(
-				"", db.MAXWEIGHT, n.Id, e.MaxLessonsPerDay)
+			ndb.NewClassMaxActivitiesPerDay(
+				"", base.MAXWEIGHT, n.Id, e.MaxLessonsPerDay)
 		}
 		// MaxGapsPerDay
 		if e.MaxGapsPerDay >= 0 {
-			newdb.NewClassMaxGapsPerDay(
-				"", db.MAXWEIGHT, n.Id, e.MaxGapsPerDay)
+			ndb.NewClassMaxGapsPerDay(
+				"", base.MAXWEIGHT, n.Id, e.MaxGapsPerDay)
 		}
 		// MaxGapsPerWeek
 		if e.MaxGapsPerWeek >= 0 {
-			newdb.NewClassMaxGapsPerWeek(
-				"", db.MAXWEIGHT, n.Id, e.MaxGapsPerWeek)
+			ndb.NewClassMaxGapsPerWeek(
+				"", base.MAXWEIGHT, n.Id, e.MaxGapsPerWeek)
 		}
 		// LunchBreak
 		if e.LunchBreak {
-			newdb.NewClassLunchBreak(
-				"", db.MAXWEIGHT, n.Id)
+			ndb.NewClassLunchBreak(
+				"", base.MAXWEIGHT, n.Id)
 		}
 		// ForceFirstHour
 		if e.ForceFirstHour {
-			newdb.NewClassForceFirstHour(
-				"", db.MAXWEIGHT, n.Id)
+			ndb.NewClassForceFirstHour(
+				"", base.MAXWEIGHT, n.Id)
 		}
 	}
 

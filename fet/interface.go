@@ -12,7 +12,7 @@ import (
 type IdPair = autotimetable.IdPair
 type Constraint = autotimetable.Constraint
 type ConstraintIndex = autotimetable.ConstraintIndex
-type BasicData = autotimetable.BasicData
+type AutoTtData = autotimetable.AutoTtData
 type ConstraintType = autotimetable.ConstraintType
 
 type TtRunDataFet struct {

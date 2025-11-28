@@ -1,7 +1,7 @@
 package makefet
 
 import (
-	"fetrunner/db"
+	"fetrunner/base"
 	"strconv"
 )
 
@@ -41,7 +41,7 @@ func (fetbuild *FetBuild) set_classes() {
 			for _, gref := range div {
 				// Need to construct group name with class, group
 				// and CLASS_GROUP_SEP
-				g := fetGroupTag(db0.Elements[gref].(*db.Group))
+				g := fetGroupTag(db0.Elements[gref].(*base.Group))
 				fetgroup := fetyear.CreateElement("Group")
 				fetgroup.CreateElement("Name").SetText(g)
 
@@ -59,7 +59,7 @@ func (fetbuild *FetBuild) set_classes() {
 // In FET the group identifier is constructed from the class tag,
 // CLASS_GROUP_SEP and the group tag. However, if the group is the
 // whole class, just the class tag is used.
-func fetGroupTag(g *db.Group) string {
+func fetGroupTag(g *base.Group) string {
 	gt := g.Class.Tag
 	if g.Tag != "" {
 		gt += CLASS_GROUP_SEP + g.Tag

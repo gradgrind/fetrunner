@@ -134,10 +134,12 @@ stage1:
 }
 
 func (tt_data *TtData) errorRCG(cinfo *CourseInfo, rooms []RoomIndex) {
+	bdata := tt_data.BaseData
+	db := bdata.Db
 	rlist := []string{}
 	for _, r := range rooms {
-		rlist = append(rlist, tt_data.Db.Rooms[r].GetTag())
+		rlist = append(rlist, db.Rooms[r].GetTag())
 	}
-	tt_data.Db.Logger.Error("Course %s: Invalid room-choice-group with %s",
+	bdata.Logger.Error("Course %s: Invalid room-choice-group with %s",
 		tt_data.View(cinfo), strings.Join(rlist, ", "))
 }

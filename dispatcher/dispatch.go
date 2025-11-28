@@ -155,7 +155,7 @@ func file_loader(bd *base.BaseData, op *DispatchOp) {
 	fpath := op.Data[0]
 
 	if strings.HasSuffix(fpath, ".fet") {
-		bdata := &autotimetable.BasicData{}
+		bdata := &autotimetable.AutoTtData{}
 		bdata.SetParameterDefault()
 		//bdata.Logger = logger
 		if fet.FetRead(bdata, fpath) {

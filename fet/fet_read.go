@@ -13,8 +13,8 @@ import (
 // all lumped together in th `ConstraintElements` list, but their indexes
 // are also recorded in the `TimeConstraints` and `SpaceConstraints` lists.
 
-func FetRead(basic_data *BasicData, fetpath string) bool {
-	logger := basic_data.Logger
+func FetRead(attdata *AutoTtData, fetpath string) bool {
+	logger := attdata.BaseData.Logger
 	logger.Info("SOURCE: %s\n", fetpath)
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(fetpath); err != nil {
@@ -22,7 +22,7 @@ func FetRead(basic_data *BasicData, fetpath string) bool {
 		return false
 	}
 	rundata := &TtRunDataFet{Doc: doc}
-	basic_data.Source = rundata
+	attdata.Source = rundata
 	fetroot := doc.Root()
 
 	/*
@@ -49,7 +49,7 @@ func FetRead(basic_data *BasicData, fetpath string) bool {
 				inactive++
 			}
 		}
-		basic_data.NActivities = len(activities)
+		attdata.NActivities = len(activities)
 		if inactive != 0 {
 			logger.Result("INACTIVE_ACTIVITIES", strconv.Itoa(inactive))
 		}
@@ -152,10 +152,10 @@ func FetRead(basic_data *BasicData, fetpath string) bool {
 		}
 	}
 
-	basic_data.NConstraints = ConstraintIndex(constraint_counter)
-	basic_data.ConstraintTypes = SortConstraintTypes(constraint_types)
-	basic_data.HardConstraintMap = hard_constraint_map
-	basic_data.SoftConstraintMap = soft_constraint_map
+	attdata.NConstraints = ConstraintIndex(constraint_counter)
+	attdata.ConstraintTypes = SortConstraintTypes(constraint_types)
+	attdata.HardConstraintMap = hard_constraint_map
+	attdata.SoftConstraintMap = soft_constraint_map
 
 	return true
 }

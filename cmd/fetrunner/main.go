@@ -57,7 +57,7 @@ import (
 
 func main() {
 
-	bdata := &autotimetable.BasicData{}
+	bdata := &autotimetable.AutoTtData{}
 	bdata.SetParameterDefault()
 
 	v := flag.Bool("v", false, "print version and exit")

@@ -3,10 +3,10 @@
 package timetable
 
 import (
-	"fetrunner/db"
+	"fetrunner/base"
 )
 
-type NodeRef = db.NodeRef // node reference (UUID)
+type NodeRef = base.NodeRef // node reference (UUID)
 
 type ActivityIndex = int
 type TeacherIndex = int
@@ -15,7 +15,7 @@ type ClassIndex = int
 type AtomicIndex = int
 
 type TtData struct {
-	Db           *db.DbTopLevel
+	BaseData     *base.BaseData
 	NDays        int
 	NHours       int
 	HoursPerWeek int
@@ -55,7 +55,7 @@ type TtData struct {
 type CourseInfo struct {
 	Id           NodeRef // Course or SuperCourse
 	Subject      string
-	Groups       []*db.Group // a `Class` is represented by its ClassGroup
+	Groups       []*base.Group // a `Class` is represented by its ClassGroup
 	AtomicGroups []AtomicIndex
 	Teachers     []TeacherIndex
 	FixedRooms   []RoomIndex
@@ -64,22 +64,22 @@ type CourseInfo struct {
 }
 
 type TtActivity struct {
-	CourseInfo     int          // index to `TtData.CourseInfoList`
-	FixedStartTime *db.TimeSlot // needed for days-between preparation
+	CourseInfo     int            // index to `TtData.CourseInfoList`
+	FixedStartTime *base.TimeSlot // needed for days-between preparation
 }
 
 type ClassDivision struct {
-	Class     *db.Class
+	Class     *base.Class
 	Divisions [][]NodeRef
 }
 
 // BasicSetup performs the initialization of a TtData structure, collecting
 // "resources" (atomic student groups, teachers and rooms) and "activities".
-func BasicSetup(db *db.DbTopLevel) *TtData {
-	days := len(db.Days)
-	hours := len(db.Hours)
+func BasicSetup(bd *base.BaseData) *TtData {
+	days := len(bd.Db.Days)
+	hours := len(bd.Db.Hours)
 	tt_data := &TtData{
-		Db:           db,
+		BaseData:     bd,
 		NDays:        days,
 		NHours:       hours,
 		HoursPerWeek: days * hours,
@@ -111,20 +111,20 @@ func BasicSetup(db *db.DbTopLevel) *TtData {
 
 func (tt_data *TtData) TeacherResources() {
 	tt_data.TeacherIndex = map[NodeRef]TeacherIndex{}
-	for i, t := range tt_data.Db.Teachers {
+	for i, t := range tt_data.BaseData.Db.Teachers {
 		tt_data.TeacherIndex[t.Id] = i
 	}
 }
 
 func (tt_data *TtData) RoomResources() {
 	tt_data.RoomIndex = map[NodeRef]RoomIndex{}
-	for i, r := range tt_data.Db.Rooms {
+	for i, r := range tt_data.BaseData.Db.Rooms {
 		tt_data.RoomIndex[r.Id] = i
 	}
 }
 
 // This structure is used to return the placement results from the
-// timetable back-end. It differs from `db.ActivityPlacement` in that it
+// timetable back-end. It differs from `base.ActivityPlacement` in that it
 // uses indexes rather than NodeRefs.
 type TtActivityPlacement struct {
 	Activity ActivityIndex

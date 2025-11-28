@@ -1,10 +1,10 @@
 package w365tt
 
 import (
-	"fetrunner/db"
+	"fetrunner/base"
 )
 
-func (dbi *W365TopLevel) readLessons(newdb *db.DbTopLevel) {
+func (dbi *W365TopLevel) readLessons(newdb *base.BaseData) {
 	logger := newdb.Logger
 	for _, e := range dbi.Lessons {
 		// The course must be Course or SuperCourse.
@@ -32,13 +32,14 @@ func (dbi *W365TopLevel) readLessons(newdb *db.DbTopLevel) {
 		n.Duration = e.Duration
 
 		// +++ Add constraints ...
+		ndb := newdb.Db
 
 		if e.Day >= 0 && e.Hour >= 0 {
 			if e.Fixed {
-				newdb.NewActivityStartTime(
-					"", db.MAXWEIGHT, e.Id, e.Day, e.Hour)
+				ndb.NewActivityStartTime(
+					"", base.MAXWEIGHT, e.Id, e.Day, e.Hour)
 			}
-			newdb.AddActivityPlacement("", e.Id, e.Day, e.Hour, reflist)
+			ndb.AddActivityPlacement("", e.Id, e.Day, e.Hour, reflist)
 		}
 	}
 }

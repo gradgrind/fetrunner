@@ -23,19 +23,19 @@ type Result struct {
 
 // Get the result of the current instance as a `Result` structure.
 // Save as JSON if debugging.
-func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
-	basic_data.Logger.Info("[%d] <<< %s @ %d, n: %d\n",
-		basic_data.Ticks, instance.Tag,
+func (attdata *AutoTtData) new_current_instance(instance *TtInstance) {
+	attdata.BaseData.Logger.Info("[%d] <<< %s @ %d, n: %d\n",
+		attdata.Ticks, instance.Tag,
 		instance.Ticks, len(instance.Constraints))
 
 	// Read placements
-	alist := instance.Backend.Results(basic_data, instance)
+	alist := instance.Backend.Results(attdata, instance)
 
 	// The discarded hard constraints ...
 	hnall := 0 // count all hard constraints
 	// Gather constraint indexes:
 	hunfulfilled := map[ConstraintType][]ConstraintIndex{}
-	for ctype, clist := range basic_data.HardConstraintMap {
+	for ctype, clist := range attdata.HardConstraintMap {
 		ulist := []ConstraintIndex{}
 		for _, i := range clist {
 			if !instance.ConstraintEnabled[i] {
@@ -49,7 +49,7 @@ func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
 	snall := 0 // count all soft constraints
 	// Gather constraint indexes:
 	sunfulfilled := map[ConstraintType][]ConstraintIndex{}
-	for ctype, clist := range basic_data.SoftConstraintMap {
+	for ctype, clist := range attdata.SoftConstraintMap {
 		ulist := []ConstraintIndex{}
 		for _, i := range clist {
 			if !instance.ConstraintEnabled[i] {
@@ -59,19 +59,19 @@ func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
 		sunfulfilled[ctype] = ulist
 		snall += len(clist)
 	}
-	clist := basic_data.Source.GetConstraints()
-	rlist := basic_data.Source.GetRooms()
-	basic_data.lastResult = &Result{
+	clist := attdata.Source.GetConstraints()
+	rlist := attdata.Source.GetRooms()
+	attdata.lastResult = &Result{
 		Time:        instance.Ticks,
-		Days:        basic_data.Source.GetDays(),
-		Hours:       basic_data.Source.GetHours(),
-		Activities:  basic_data.Source.GetActivities(),
+		Days:        attdata.Source.GetDays(),
+		Hours:       attdata.Source.GetHours(),
+		Activities:  attdata.Source.GetActivities(),
 		Constraints: clist,
 		// ConstraintErrors can be updated after this Result is constructed.
 		// This allows constraint errors which are detected later to be
 		// included, but there may also be spurious timeout messages about
 		// constraints which are enabled.
-		ConstraintErrors:           basic_data.ConstraintErrors,
+		ConstraintErrors:           attdata.ConstraintErrors,
 		Rooms:                      rlist,
 		Placements:                 alist,
 		UnfulfilledHardConstraints: hunfulfilled,
@@ -79,13 +79,13 @@ func (basic_data *BasicData) new_current_instance(instance *TtInstance) {
 		UnfulfilledSoftConstraints: sunfulfilled,
 		TotalSoftConstraints:       snall,
 	}
-	if basic_data.Parameters.DEBUG {
+	if attdata.Parameters.DEBUG {
 		//b, err := json.Marshal(LastResult)
-		b, err := json.MarshalIndent(basic_data.lastResult, "", "  ")
+		b, err := json.MarshalIndent(attdata.lastResult, "", "  ")
 		if err != nil {
 			panic(err)
 		}
-		fpath := filepath.Join(basic_data.SourceDir, instance.Tag+".json")
+		fpath := filepath.Join(attdata.BaseData.SourceDir, instance.Tag+".json")
 		f, err := os.Create(fpath)
 		if err != nil {
 			panic("Couldn't open output file: " + fpath)
