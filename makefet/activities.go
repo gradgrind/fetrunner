@@ -12,7 +12,7 @@ func fet_activity_index(aix int) string {
 // Generate the fet activities.
 func (fetbuild *FetBuild) set_activities() {
 	tt_data := fetbuild.ttdata
-	db0 := tt_data.Db
+	db := tt_data.BaseData.Db
 	rundata := fetbuild.rundata
 
 	fetactivities := fetbuild.fetroot.CreateElement("Activities_List")
@@ -28,7 +28,7 @@ func (fetbuild *FetBuild) set_activities() {
 		// Teachers
 		tlist := []string{}
 		for _, ti := range cinfo.Teachers {
-			tlist = append(tlist, tt_data.Db.Teachers[ti].GetTag())
+			tlist = append(tlist, db.Teachers[ti].GetTag())
 		}
 		slices.Sort(tlist)
 		for _, t := range tlist {
@@ -55,7 +55,7 @@ func (fetbuild *FetBuild) set_activities() {
 		// Get the total duration for this course.
 		totalDuration := 0
 		for _, aix := range cinfo.Activities {
-			totalDuration += db0.Activities[aix].Duration
+			totalDuration += db.Activities[aix].Duration
 		}
 		fetactivity.CreateElement("Total_Duration").
 			SetText(strconv.Itoa(totalDuration))
@@ -65,7 +65,7 @@ func (fetbuild *FetBuild) set_activities() {
 		if len(cinfo.Activities) > 1 {
 			agid = fet_activity_index(cinfo.Activities[0])
 		}
-		a := db0.Activities[ai]
+		a := db.Activities[ai]
 		fetactivity.CreateElement("Duration").
 			SetText(strconv.Itoa(a.Duration))
 		fetactivity.CreateElement("Activity_Group_Id").

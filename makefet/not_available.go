@@ -1,23 +1,23 @@
 package makefet
 
 import (
-	"fetrunner/db"
+	"fetrunner/base"
 	"strconv"
 )
 
-func (fetbuild *FetBuild) blocked_slots() map[db.NodeRef][]db.TimeSlot {
+func (fetbuild *FetBuild) blocked_slots() map[NodeRef][]base.TimeSlot {
 	tt_data := fetbuild.ttdata
-	db0 := tt_data.Db
+	db0 := tt_data.BaseData.Db
 	rundata := fetbuild.rundata
 	sclist := fetbuild.space_constraints_list
 	tclist := fetbuild.time_constraints_list
-	namap := map[db.NodeRef][]db.TimeSlot{} // needed for lunch-break constraints
+	namap := map[NodeRef][]base.TimeSlot{} // needed for lunch-break constraints
 
 	// Rooms
-	for _, c0 := range db0.Constraints[db.C_RoomNotAvailable] {
+	for _, c0 := range db0.Constraints[base.C_RoomNotAvailable] {
 		// The weight is presumably 100% ...
 		w := rundata.FetWeight(c0.Weight)
-		data := c0.Data.(db.ResourceNotAvailable)
+		data := c0.Data.(base.ResourceNotAvailable)
 		rref := data.Resource
 		// `NotAvailable` is an ordered list of time-slots in which the
 		// room is to be regarded as not available for the timetable.
@@ -41,10 +41,10 @@ func (fetbuild *FetBuild) blocked_slots() map[db.NodeRef][]db.TimeSlot {
 	}
 
 	// Teachers
-	for _, c0 := range db0.Constraints[db.C_TeacherNotAvailable] {
+	for _, c0 := range db0.Constraints[base.C_TeacherNotAvailable] {
 		// The weight is presumably 100% ...
 		w := rundata.FetWeight(c0.Weight)
-		data := c0.Data.(db.ResourceNotAvailable)
+		data := c0.Data.(base.ResourceNotAvailable)
 		tref := data.Resource
 		namap[tref] = data.NotAvailable
 		// `NotAvailable` is an ordered list of time-slots in which the
@@ -68,10 +68,10 @@ func (fetbuild *FetBuild) blocked_slots() map[db.NodeRef][]db.TimeSlot {
 	}
 
 	// Classes
-	for _, c0 := range db0.Constraints[db.C_ClassNotAvailable] {
+	for _, c0 := range db0.Constraints[base.C_ClassNotAvailable] {
 		// The weight is presumably 100% ...
 		w := rundata.FetWeight(c0.Weight)
-		data := c0.Data.(db.ResourceNotAvailable)
+		data := c0.Data.(base.ResourceNotAvailable)
 		cref := data.Resource
 		namap[cref] = data.NotAvailable
 		// `NotAvailable` is an ordered list of time-slots in which the

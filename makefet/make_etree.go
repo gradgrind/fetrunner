@@ -2,7 +2,7 @@ package makefet
 
 import (
 	"fetrunner/autotimetable"
-	"fetrunner/db"
+	"fetrunner/base"
 	"fetrunner/fet"
 	"fetrunner/timetable"
 	"fmt"
@@ -12,7 +12,7 @@ import (
 	"github.com/beevik/etree"
 )
 
-type NodeRef = db.NodeRef
+type NodeRef = base.NodeRef
 
 const CLASS_GROUP_SEP = "."
 const VIRTUAL_ROOM_PREFIX = "!"
@@ -46,7 +46,7 @@ func FetTree(
 	fetroot.CreateAttr("version", fet_version)
 	fetroot.CreateElement("Mode").SetText("Official")
 	fetroot.CreateElement("Institution_Name").SetText(
-		tt_data.Db.Info.Institution)
+		tt_data.BaseData.Db.Info.Institution)
 
 	//TODO?
 	source_ref := ""
@@ -77,7 +77,7 @@ func FetTree(
 
 	// Add "NotAvailable" constraints for all resources, returning a map
 	// linking a resource to its blocked slot list:
-	//   db.NodeRef -> []db.TimeSlot
+	//   NodeRef -> []db.TimeSlot
 	namap := fetbuild.blocked_slots()
 
 	//TODO: Handle WITHOUT_ROOM_CONSTRAINTS
@@ -102,7 +102,7 @@ func FetTree(
 		constraint_types = append(constraint_types, c.Ctype)
 		// ... duplicates wil be removed in `sort_constraint_types`
 
-		if c.Weight == db.MAXWEIGHT {
+		if c.Weight == base.MAXWEIGHT {
 			// Hard constraint
 			hard_constraint_map[c.Ctype] = append(
 				hard_constraint_map[c.Ctype], i)
@@ -142,7 +142,7 @@ func (fetbuild *FetBuild) add_activity_tag(tag string) {
 }
 
 func param_constraint(
-	ctype string, id db.NodeRef, index int, weight int,
+	ctype string, id NodeRef, index int, weight int,
 ) Constraint {
 	return Constraint{
 		IdPair:     IdPair{Source: string(id)},
@@ -152,7 +152,7 @@ func param_constraint(
 }
 
 func params_constraint(
-	ctype string, id db.NodeRef, indexlist []int, weight int,
+	ctype string, id NodeRef, indexlist []int, weight int,
 ) Constraint {
 	return Constraint{
 		IdPair:     IdPair{Source: string(id)},

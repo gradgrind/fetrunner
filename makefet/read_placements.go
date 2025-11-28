@@ -33,7 +33,7 @@ func ReadPlacements(
 	tt_data *timetable.TtData,
 	xmlpath string,
 ) []ActivityPlacement {
-	logger := tt_data.Db.Logger
+	logger := tt_data.BaseData.Logger
 	// Open the  XML activities file
 	xmlFile, err := os.Open(xmlpath)
 	if err != nil {
@@ -54,7 +54,7 @@ func ReadPlacements(
 
 	// Need mapping for the Rooms
 	rmap := map[string]NodeRef{}
-	for _, r := range tt_data.Db.Rooms {
+	for _, r := range tt_data.BaseData.Db.Rooms {
 		rmap[r.Tag] = r.Id
 	}
 

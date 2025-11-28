@@ -47,12 +47,12 @@ func (fetbuild *FetBuild) days_between() {
 
 func (fetbuild *FetBuild) ends_day() {
 	tt_data := fetbuild.ttdata
-	db0 := tt_data.Db
+	db0 := tt_data.BaseData.Db
 	rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 	for _, c0 := range db0.Constraints[base.C_ActivitiesEndDay] {
 		w := rundata.FetWeight(c0.Weight)
-		course := c0.Data.(base.NodeRef)
+		course := c0.Data.(NodeRef)
 		cinfo := tt_data.Ref2CourseInfo[course]
 		for _, ai := range cinfo.Activities {
 			c := tclist.CreateElement("ConstraintActivityEndsStudentsDay")
@@ -89,7 +89,7 @@ func (fetbuild *FetBuild) parallel_activities() {
 
 func (fetbuild *FetBuild) before_after_hour() {
 	tt_data := fetbuild.ttdata
-	db0 := tt_data.Db
+	db0 := tt_data.BaseData.Db
 	rundata := fetbuild.rundata
 
 	for _, c0 := range db0.Constraints[base.C_AfterHour] {
@@ -125,6 +125,7 @@ func (fetbuild *FetBuild) make_before_after_hour(
 	c0 *base.Constraint, timeslots []preferred_time,
 ) {
 	tt_data := fetbuild.ttdata
+	logger := tt_data.BaseData.Logger
 	rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 	data := c0.Data.(*base.BeforeAfterHour)
@@ -132,7 +133,7 @@ func (fetbuild *FetBuild) make_before_after_hour(
 	for _, course := range data.Courses {
 		cinfo, ok := tt_data.Ref2CourseInfo[course]
 		if !ok {
-			tt_data.base.Logger.Bug("Invalid course: %s", course)
+			logger.Bug("Invalid course: %s", course)
 			continue
 		}
 		for _, ai := range cinfo.Activities {
@@ -156,14 +157,16 @@ func (fetbuild *FetBuild) make_before_after_hour(
 
 func (fetbuild *FetBuild) double_no_break() {
 	tt_data := fetbuild.ttdata
+	db := tt_data.BaseData.Db
 	rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 
 	var doubleBlocked []bool
-	for _, c0 := range tt_data.Db.Constraints[base.C_DoubleActivityNotOverBreaks] {
+	for _, c0 := range db.Constraints[base.C_DoubleActivityNotOverBreaks] {
 		if len(doubleBlocked) != 0 {
-			tt_data.Db.Logger.Bug("Constraint DoubleActivityNotOverBreaks" +
-				" specified more than once")
+			tt_data.BaseData.Logger.Bug(
+				"Constraint DoubleActivityNotOverBreaks" +
+					" specified more than once")
 			continue
 		}
 		w := rundata.FetWeight(c0.Weight)

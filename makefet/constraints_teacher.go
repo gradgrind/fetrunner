@@ -1,7 +1,7 @@
 package makefet
 
 import (
-	"fetrunner/db"
+	"fetrunner/base"
 	"slices"
 	"strconv"
 )
@@ -26,17 +26,17 @@ thus created by adjusting the max-gaps constraints.
 // ------------------------------------------------------------------------
 
 func (fetbuild *FetBuild) add_teacher_constraints(
-	namap map[db.NodeRef][]db.TimeSlot,
+	namap map[NodeRef][]base.TimeSlot,
 ) {
 	tt_data := fetbuild.ttdata
-	db0 := tt_data.Db
+	db0 := tt_data.BaseData.Db
 	rundata := fetbuild.rundata
 	ndays := tt_data.NDays
 	nhours := tt_data.NHours
 	tclist := fetbuild.time_constraints_list
 
-	for _, c0 := range db0.Constraints[db.C_TeacherMaxDays] {
-		data := c0.Data.(db.ResourceN)
+	for _, c0 := range db0.Constraints[base.C_TeacherMaxDays] {
+		data := c0.Data.(base.ResourceN)
 		w := rundata.FetWeight(c0.Weight)
 		n := data.N
 		if n >= 0 && n < ndays {
@@ -52,8 +52,8 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 		}
 	}
 
-	for _, c0 := range db0.Constraints[db.C_TeacherMinActivitiesPerDay] {
-		data := c0.Data.(db.ResourceN)
+	for _, c0 := range db0.Constraints[base.C_TeacherMinActivitiesPerDay] {
+		data := c0.Data.(base.ResourceN)
 		w := rundata.FetWeight(c0.Weight)
 		n := data.N
 		if n >= 2 && n <= nhours {
@@ -70,8 +70,8 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 		}
 	}
 
-	for _, c0 := range db0.Constraints[db.C_TeacherMaxActivitiesPerDay] {
-		data := c0.Data.(db.ResourceN)
+	for _, c0 := range db0.Constraints[base.C_TeacherMaxActivitiesPerDay] {
+		data := c0.Data.(base.ResourceN)
 		w := rundata.FetWeight(c0.Weight)
 		n := data.N
 		if n >= 2 && n <= nhours {
@@ -90,11 +90,11 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 	// Gather the max afternoons constraints as they may influence the
 	// max-gaps constraints.
 	//    teacher ref -> max number of afternoons
-	pmmap := map[db.NodeRef]int{}
+	pmmap := map[NodeRef]int{}
 	h0 := db0.Info.FirstAfternoonHour
 	if h0 > 0 {
-		for _, c0 := range db0.Constraints[db.C_TeacherMaxAfternoons] {
-			data := c0.Data.(db.ResourceN)
+		for _, c0 := range db0.Constraints[base.C_TeacherMaxAfternoons] {
+			data := c0.Data.(base.ResourceN)
 			w := rundata.FetWeight(c0.Weight)
 			n := data.N
 			if n < ndays {
@@ -117,11 +117,11 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 	// Gather the lunch-break constraints as they may influence the
 	// max-gaps constraints.
 	//    teacher ref -> number of days with lunch break
-	lbmap := map[db.NodeRef]int{}
+	lbmap := map[NodeRef]int{}
 	if mbhours := db0.Info.MiddayBreak; len(mbhours) != 0 {
-		for _, c0 := range db0.Constraints[db.C_TeacherLunchBreak] {
+		for _, c0 := range db0.Constraints[base.C_TeacherLunchBreak] {
 			w := rundata.FetWeight(c0.Weight)
-			tref := c0.Data.(db.NodeRef)
+			tref := c0.Data.(NodeRef)
 			// Generate the constraint unless all days have a blocked
 			// lesson at lunchtime.
 			lbdmap := make([]bool, ndays)
@@ -156,8 +156,8 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 		}
 	}
 
-	for _, c0 := range db0.Constraints[db.C_TeacherMaxGapsPerDay] {
-		data := c0.Data.(db.ResourceN)
+	for _, c0 := range db0.Constraints[base.C_TeacherMaxGapsPerDay] {
+		data := c0.Data.(base.ResourceN)
 		w := rundata.FetWeight(c0.Weight)
 		n := data.N
 		tref := data.Resource
@@ -184,8 +184,8 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 		}
 	}
 
-	for _, c0 := range db0.Constraints[db.C_TeacherMaxGapsPerWeek] {
-		data := c0.Data.(db.ResourceN)
+	for _, c0 := range db0.Constraints[base.C_TeacherMaxGapsPerWeek] {
+		data := c0.Data.(base.ResourceN)
 		w := rundata.FetWeight(c0.Weight)
 		n := data.N
 		tref := data.Resource

@@ -8,7 +8,7 @@ import (
 func (fetbuild *FetBuild) set_classes() {
 	ids := []IdPair{}
 	tt_data := fetbuild.ttdata
-	db0 := tt_data.Db
+	db0 := tt_data.BaseData.Db
 	fetyears := fetbuild.fetroot.CreateElement("Students_List")
 	for _, cdiv := range tt_data.ClassDivisions {
 		cl := cdiv.Class
