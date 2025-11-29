@@ -11,15 +11,34 @@ import (
 	"strings"
 )
 
+var logger0 *base.Logger
+
+func init() {
+	// Set up logger.
+	logger0 = base.NewLogger()
+	go base.LogToBuffer(logger0)
+	// Set up default Dispatcher
+	DispatcherMap[""] = &Dispatcher{
+		BaseData: &base.BaseData{
+			Logger: logger0,
+		},
+	}
+}
+
+type Dispatcher struct {
+	BaseData   *base.BaseData
+	AutoTtData *autotimetable.AutoTtData
+}
+
 type DispatchOp struct {
 	Op   string
 	Id   string
 	Data []string
 }
 
-var frInstanceMap map[string]*FrInstance = map[string]*FrInstance{}
-var OpHandlerMap map[string]func(*FrInstance, *DispatchOp) = map[string]func(
-	*FrInstance, *DispatchOp){}
+var DispatcherMap map[string]*Dispatcher = map[string]*Dispatcher{}
+var OpHandlerMap map[string]func(*Dispatcher, *DispatchOp) = map[string]func(
+	*Dispatcher, *DispatchOp){}
 
 func Dispatch(cmd0 string) string {
 	var op DispatchOp
@@ -73,7 +92,7 @@ func dispatchOp(op *DispatchOp) {
 	}
 
 	// Now deal with the other ops, which can (in principle) be used with any Id.
-	fr, ok := frInstanceMap[op.Id]
+	dmap, ok := DispatcherMap[op.Id]
 	if !ok {
 		//TODO
 		panic("No instance with Id = " + op.Id)
@@ -82,22 +101,22 @@ func dispatchOp(op *DispatchOp) {
 	if ok {
 		// The valid commands are dependent on the run-state of the timetable
 		// generation. Those valid when running have a "_" prefix.
-		if fr.BasicData != nil && fr.BasicData.Running {
+		if dmap.AutoTtData != nil && dmap.AutoTtData.Running {
 			if op.Op[0] != '_' {
-				fr.Logger.Error("!InvalidOp_RunningOp: %s", op.Op)
+				dmap.BaseData.Logger.Error("!InvalidOp_RunningOp: %s", op.Op)
 				return
 			}
 		} else if op.Op[0] == '_' {
-			fr.Logger.Error("!InvalidOp_NotRunningOp: %s", op.Op)
+			dmap.BaseData.Logger.Error("!InvalidOp_NotRunningOp: %s", op.Op)
 			return
 		}
 
-		if fr.Id != "" {
-			startOp(fr.Logger, op)
+		if dmap.BaseData.Id != "" {
+			startOp(dmap.BaseData.Logger, op)
 		}
-		f(fr, op)
+		f(dmap, op)
 	} else {
-		fr.Logger.Error("!InvalidOp_Op: %s", op.Op)
+		dmap.BaseData.Logger.Error("!InvalidOp_Op: %s", op.Op)
 	}
 }
 
@@ -127,18 +146,6 @@ func startOp(logger *base.Logger, op *DispatchOp) {
 		Type: base.STARTOP, Text: text}
 }
 
-var logger0 *base.Logger
-
-func init() {
-	// Set up logger.
-	logger0 = base.NewLogger()
-	go base.LogToBuffer(logger0)
-	// Set up default FrInstance
-	frInstanceMap[""] = &FrInstance{
-		Logger: logger0,
-	}
-}
-
 func init() {
 	OpHandlerMap["SET_FILE"] = file_loader
 	OpHandlerMap["RUN_TT"] = runtt
@@ -147,7 +154,8 @@ func init() {
 }
 
 // Handle (currently) ".fet" and "_w365.json" input files.
-func file_loader(bd *base.BaseData, op *DispatchOp) {
+func file_loader(dsp *Dispatcher, op *DispatchOp) {
+	bd := dsp.BaseData
 	logger := bd.Logger
 	if !CheckArgs(logger, op, 1) {
 		return
@@ -155,29 +163,28 @@ func file_loader(bd *base.BaseData, op *DispatchOp) {
 	fpath := op.Data[0]
 
 	if strings.HasSuffix(fpath, ".fet") {
-		bdata := &autotimetable.AutoTtData{}
-		bdata.SetParameterDefault()
+		attdata := &autotimetable.AutoTtData{}
+		attdata.SetParameterDefault()
 		//bdata.Logger = logger
-		if fet.FetRead(bdata, fpath) {
+		if fet.FetRead(attdata, fpath) {
 			bd.SourceDir = filepath.Dir(fpath)
 			n := filepath.Base(fpath)
 			bd.Name = n[:len(n)-4]
 			logger.Result(op.Op, fpath)
 			logger.Result("DATA_TYPE", "FET")
-			fr.BasicData = bdata
+			dsp.AutoTtData = attdata
 			bd.Db = nil
 			return
 		}
 	} else if strings.HasSuffix(fpath, "_w365.json") {
-		db0 := base.NewDb()
-		if w365tt.LoadJSON(db0, fpath) {
+		bd.Db = base.NewDb()
+		if w365tt.LoadJSON(bd, fpath) {
 			bd.SourceDir = filepath.Dir(fpath)
 			n := filepath.Base(fpath)
 			bd.Name = n[:len(n)-10]
-			db0.PrepareDb()
+			bd.PrepareDb()
 			logger.Result(op.Op, fpath)
 			logger.Result("DATA_TYPE", "DB")
-			bd.Db = db0
 			//fr.BasicData = nil
 			return
 		}
@@ -188,35 +195,33 @@ func file_loader(bd *base.BaseData, op *DispatchOp) {
 	logger.Error("LoadFile_InvalidContent: %s", fpath)
 }
 
-func runtt(fr *FrInstance, op *DispatchOp) {
+func runtt(dsp *Dispatcher, op *DispatchOp) {
 
 	//TODO: Handle parameters, if any. Persumably timeout could be
 	// one of them.
 
-	bdata := fr.BasicData
-	if bdata != nil {
+	attdata := dsp.AutoTtData
+	if attdata != nil {
 
 		//TODO???
 
-		bdata.SourceDir = fr.SourceDir
-		bdata.Name = fr.Name
 		// Set up FET back-end and start processing
-		fet.SetFetBackend(bdata)
+		fet.SetFetBackend(attdata)
 
-		fr.Logger.Result("OK", "")
+		dsp.BaseData.Logger.Result("OK", "")
 
 		// Need an extra goroutine so that this can return immediately.
 		// Also a blocking poll command from the front end to read progress.
 		//TODO: timeout
-		go bdata.StartGeneration(10)
+		go dsp.AutoTtData.StartGeneration(10)
 	}
 }
 
 // TODO
-func polltt(fr *FrInstance, op *DispatchOp) {
+func polltt(fr *Dispatcher, op *DispatchOp) {
 	fmt.Println("Poll")
 }
 
 // TODO
-func stoptt(fr *FrInstance, op *DispatchOp) {
+func stoptt(fr *Dispatcher, op *DispatchOp) {
 }
