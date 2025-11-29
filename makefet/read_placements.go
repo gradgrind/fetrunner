@@ -2,6 +2,7 @@ package makefet
 
 import (
 	"encoding/xml"
+	"fetrunner/base"
 	"fetrunner/timetable"
 	"io"
 	"os"
@@ -31,9 +32,10 @@ type ActivityPlacement struct {
 
 func ReadPlacements(
 	tt_data *timetable.TtData,
+	db *base.DbTopLevel,
+	logger *base.Logger,
 	xmlpath string,
 ) []ActivityPlacement {
-	logger := tt_data.BaseData.Logger
 	// Open the  XML activities file
 	xmlFile, err := os.Open(xmlpath)
 	if err != nil {
@@ -54,7 +56,7 @@ func ReadPlacements(
 
 	// Need mapping for the Rooms
 	rmap := map[string]NodeRef{}
-	for _, r := range tt_data.BaseData.Db.Rooms {
+	for _, r := range db.Rooms {
 		rmap[r.Tag] = r.Id
 	}
 

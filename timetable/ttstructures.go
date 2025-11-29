@@ -15,7 +15,6 @@ type ClassIndex = int
 type AtomicIndex = int
 
 type TtData struct {
-	BaseData     *base.BaseData
 	NDays        int
 	NHours       int
 	HoursPerWeek int
@@ -76,49 +75,49 @@ type ClassDivision struct {
 // BasicSetup performs the initialization of a TtData structure, collecting
 // "resources" (atomic student groups, teachers and rooms) and "activities".
 func BasicSetup(bd *base.BaseData) *TtData {
-	days := len(bd.Db.Days)
-	hours := len(bd.Db.Hours)
+	db := bd.Db
+	days := len(db.Days)
+	hours := len(db.Hours)
 	tt_data := &TtData{
-		BaseData:     bd,
 		NDays:        days,
 		NHours:       hours,
 		HoursPerWeek: days * hours,
 	}
 
 	// Collect ClassDivisions
-	tt_data.FilterDivisions()
+	tt_data.FilterDivisions(db)
 
 	// Atomic groups: an atomic group is a "resource", it is an ordered list
 	// of single groups, one from each division.
 	// The atomic groups take the lowest resource indexes (starting at 0).
 	// `AtomicGroups` maps the classes and groups to a list of their resource
 	// indexes.
-	tt_data.MakeAtomicGroups()
+	tt_data.MakeAtomicGroups(db)
 
 	// Add teachers and rooms to resource array
-	tt_data.TeacherResources()
-	tt_data.RoomResources()
+	tt_data.TeacherResources(db)
+	tt_data.RoomResources(db)
 
 	// Get the courses (-> CourseInfo) and activities for the timetable
-	tt_data.CollectCourses()
+	tt_data.CollectCourses(bd)
 
 	//TODO: Perhaps this should be called from the back-end, in preparation
 	// for a generator run?
-	tt_data.preprocessConstraints()
+	tt_data.preprocessConstraints(bd)
 
 	return tt_data
 }
 
-func (tt_data *TtData) TeacherResources() {
+func (tt_data *TtData) TeacherResources(db *base.DbTopLevel) {
 	tt_data.TeacherIndex = map[NodeRef]TeacherIndex{}
-	for i, t := range tt_data.BaseData.Db.Teachers {
+	for i, t := range db.Teachers {
 		tt_data.TeacherIndex[t.Id] = i
 	}
 }
 
-func (tt_data *TtData) RoomResources() {
+func (tt_data *TtData) RoomResources(db *base.DbTopLevel) {
 	tt_data.RoomIndex = map[NodeRef]RoomIndex{}
-	for i, r := range tt_data.BaseData.Db.Rooms {
+	for i, r := range db.Rooms {
 		tt_data.RoomIndex[r.Id] = i
 	}
 }

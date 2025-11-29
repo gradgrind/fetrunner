@@ -8,7 +8,7 @@ import (
 func (fetbuild *FetBuild) set_classes() {
 	ids := []IdPair{}
 	tt_data := fetbuild.ttdata
-	db0 := tt_data.BaseData.Db
+	db := fetbuild.basedata.Db
 	fetyears := fetbuild.fetroot.CreateElement("Students_List")
 	for _, cdiv := range tt_data.ClassDivisions {
 		cl := cdiv.Class
@@ -32,7 +32,7 @@ func (fetbuild *FetBuild) set_classes() {
 			fetdiv := fetyear.CreateElement("Category")
 			fetdiv.CreateElement("Number_of_Divisions").SetText(strconv.Itoa(len(divl)))
 			for _, i := range divl {
-				fetdiv.CreateElement("Division").SetText(db0.Elements[i].GetTag())
+				fetdiv.CreateElement("Division").SetText(db.Elements[i].GetTag())
 			}
 		}
 
@@ -41,7 +41,7 @@ func (fetbuild *FetBuild) set_classes() {
 			for _, gref := range div {
 				// Need to construct group name with class, group
 				// and CLASS_GROUP_SEP
-				g := fetGroupTag(db0.Elements[gref].(*base.Group))
+				g := fetGroupTag(db.Elements[gref].(*base.Group))
 				fetgroup := fetyear.CreateElement("Group")
 				fetgroup.CreateElement("Name").SetText(g)
 

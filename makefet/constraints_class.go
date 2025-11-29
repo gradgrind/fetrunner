@@ -31,7 +31,7 @@ func (fetbuild *FetBuild) add_class_constraints(
 	namap map[NodeRef][]base.TimeSlot,
 ) {
 	tt_data := fetbuild.ttdata
-	db := tt_data.BaseData.Db
+	db := fetbuild.basedata.Db
 	rundata := fetbuild.rundata
 	ndays := tt_data.NDays
 	nhours := tt_data.NHours

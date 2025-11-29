@@ -8,8 +8,7 @@ import (
 )
 
 // Make a shortish string view of a CourseInfo – can be useful in tests
-func (tt_data *TtData) View(cinfo *CourseInfo) string {
-	db := tt_data.BaseData.Db
+func (tt_data *TtData) View(cinfo *CourseInfo, db *base.DbTopLevel) string {
 	tlist := []string{}
 	for _, t := range cinfo.Teachers {
 		tlist = append(tlist, db.Teachers[t].GetTag())
@@ -27,8 +26,8 @@ func (tt_data *TtData) View(cinfo *CourseInfo) string {
 
 // Collect courses (Course and SuperCourse) and their activities.
 // Build a list of CourseInfo structures.
-func (tt_data *TtData) CollectCourses() {
-	db := tt_data.BaseData.Db
+func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
+	db := bdata.Db
 	tt_data.Ref2CourseInfo = map[NodeRef]*CourseInfo{}
 
 	// The list of `TtActivity` items shadows the list of `Activity` items.
@@ -153,7 +152,7 @@ func (tt_data *TtData) CollectCourses() {
 		}
 
 		// Filter out any "necessary" rooms from the choices
-		tt_data.roomChoiceFilter(cinfo)
+		tt_data.roomChoiceFilter(cinfo, bdata)
 
 		tt_data.CourseInfoList = append(
 			tt_data.CourseInfoList, cinfo)

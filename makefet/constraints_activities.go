@@ -47,10 +47,10 @@ func (fetbuild *FetBuild) days_between() {
 
 func (fetbuild *FetBuild) ends_day() {
 	tt_data := fetbuild.ttdata
-	db0 := tt_data.BaseData.Db
+	db := fetbuild.basedata.Db
 	rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
-	for _, c0 := range db0.Constraints[base.C_ActivitiesEndDay] {
+	for _, c0 := range db.Constraints[base.C_ActivitiesEndDay] {
 		w := rundata.FetWeight(c0.Weight)
 		course := c0.Data.(NodeRef)
 		cinfo := tt_data.Ref2CourseInfo[course]
@@ -89,10 +89,10 @@ func (fetbuild *FetBuild) parallel_activities() {
 
 func (fetbuild *FetBuild) before_after_hour() {
 	tt_data := fetbuild.ttdata
-	db0 := tt_data.BaseData.Db
+	db := fetbuild.basedata.Db
 	rundata := fetbuild.rundata
 
-	for _, c0 := range db0.Constraints[base.C_AfterHour] {
+	for _, c0 := range db.Constraints[base.C_AfterHour] {
 		data := c0.Data.(*base.BeforeAfterHour)
 		timeslots := []preferred_time{}
 		for d := 0; d < tt_data.NDays; d++ {
@@ -106,7 +106,7 @@ func (fetbuild *FetBuild) before_after_hour() {
 		fetbuild.make_before_after_hour(c0, timeslots)
 	}
 
-	for _, c0 := range db0.Constraints[base.C_BeforeHour] {
+	for _, c0 := range db.Constraints[base.C_BeforeHour] {
 		data := c0.Data.(*base.BeforeAfterHour)
 		timeslots := []preferred_time{}
 		for d := 0; d < tt_data.NDays; d++ {
@@ -125,7 +125,7 @@ func (fetbuild *FetBuild) make_before_after_hour(
 	c0 *base.Constraint, timeslots []preferred_time,
 ) {
 	tt_data := fetbuild.ttdata
-	logger := tt_data.BaseData.Logger
+	logger := fetbuild.basedata.Logger
 	rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 	data := c0.Data.(*base.BeforeAfterHour)
@@ -157,14 +157,14 @@ func (fetbuild *FetBuild) make_before_after_hour(
 
 func (fetbuild *FetBuild) double_no_break() {
 	tt_data := fetbuild.ttdata
-	db := tt_data.BaseData.Db
+	db := fetbuild.basedata.Db
 	rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 
 	var doubleBlocked []bool
 	for _, c0 := range db.Constraints[base.C_DoubleActivityNotOverBreaks] {
 		if len(doubleBlocked) != 0 {
-			tt_data.BaseData.Logger.Bug(
+			fetbuild.basedata.Logger.Bug(
 				"Constraint DoubleActivityNotOverBreaks" +
 					" specified more than once")
 			continue

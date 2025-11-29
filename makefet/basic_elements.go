@@ -6,8 +6,8 @@ import (
 )
 
 func (fetbuild *FetBuild) set_days_hours() {
+	db := fetbuild.basedata.Db
 	ids := []IdPair{}
-	db := fetbuild.ttdata.BaseData.Db
 	fetdays := fetbuild.fetroot.CreateElement("Days_List")
 	fetdays.CreateElement("Number_of_Days").SetText(strconv.Itoa(len(db.Days)))
 	for _, n := range db.Days {
@@ -35,9 +35,10 @@ func (fetbuild *FetBuild) set_days_hours() {
 }
 
 func (fetbuild *FetBuild) set_teachers() {
+	db := fetbuild.basedata.Db
 	ids := []IdPair{}
 	fetteachers := fetbuild.fetroot.CreateElement("Teachers_List")
-	for _, n := range fetbuild.ttdata.BaseData.Db.Teachers {
+	for _, n := range db.Teachers {
 		id := n.GetTag()
 		fetteacher := fetteachers.CreateElement("Teacher")
 		fetteacher.CreateElement("Name").SetText(id)
@@ -50,9 +51,10 @@ func (fetbuild *FetBuild) set_teachers() {
 }
 
 func (fetbuild *FetBuild) set_subjects() {
+	db := fetbuild.basedata.Db
 	ids := []IdPair{}
 	fetsubjects := fetbuild.fetroot.CreateElement("Subjects_List")
-	for _, n := range fetbuild.ttdata.BaseData.Db.Subjects {
+	for _, n := range db.Subjects {
 		id := n.GetTag()
 		fetsubject := fetsubjects.CreateElement("Subject")
 		fetsubject.CreateElement("Name").SetText(id)
@@ -64,10 +66,11 @@ func (fetbuild *FetBuild) set_subjects() {
 }
 
 func (fetbuild *FetBuild) set_rooms() {
+	db := fetbuild.basedata.Db
 	ids := []IdPair{}
 	fetrooms := fetbuild.fetroot.CreateElement("Rooms_List")
 	fetbuild.room_list = fetrooms
-	for _, n := range fetbuild.ttdata.BaseData.Db.Rooms {
+	for _, n := range db.Rooms {
 		id := n.GetTag()
 		fetroom := fetrooms.CreateElement("Room")
 		fetroom.CreateElement("Name").SetText(id)

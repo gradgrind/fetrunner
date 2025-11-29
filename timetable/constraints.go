@@ -41,8 +41,7 @@ func (c *TtParallelActivities) IsHard() bool {
 // `preprocessConstraints` produces the new constraints, which are then
 // accessible in `TtData`. It also adds the fixed activity placements to
 // the `TtAcivity` items.
-func (tt_data *TtData) preprocessConstraints() {
-	bdata := tt_data.BaseData
+func (tt_data *TtData) preprocessConstraints(bdata *base.BaseData) {
 	db := bdata.Db
 	logger := bdata.Logger
 
@@ -98,7 +97,7 @@ func (tt_data *TtData) preprocessConstraints() {
 					DaysBetween:          data.DaysBetween,
 					ConsecutiveIfSameDay: data.ConsecutiveIfSameDay,
 					ActivityLists: tt_data.days_between_activities(
-						course, c.Weight, data.ConsecutiveIfSameDay)})
+						course, c.Weight, data.ConsecutiveIfSameDay, bdata)})
 		}
 	}
 
@@ -118,7 +117,7 @@ func (tt_data *TtData) preprocessConstraints() {
 					DaysBetween:          1,
 					ConsecutiveIfSameDay: auto_consec,
 					ActivityLists: tt_data.days_between_activities(
-						cref, auto_weight, auto_consec)})
+						cref, auto_weight, auto_consec, bdata)})
 		}
 	}
 
@@ -192,9 +191,9 @@ cloop:
 
 // Construct the activity relationships for a `DaysBetween` constraint.
 func (tt_data *TtData) days_between_activities(
-	course NodeRef, weight int, consecutiveIfSameDay bool,
+	course NodeRef, weight int, consecutiveIfSameDay bool, bdata *base.BaseData,
 ) [][]ActivityIndex {
-	logger := tt_data.BaseData.Logger
+	logger := bdata.Logger
 	allist := [][]ActivityIndex{}
 	cinfo := tt_data.Ref2CourseInfo[course]
 	fixeds := []ActivityIndex{}
@@ -211,7 +210,7 @@ func (tt_data *TtData) days_between_activities(
 		// No constraints necessary
 		//TODO?
 		logger.Warning("Ignoring superfluous DaysBetween constraint on"+
-			" course:\n  -- %s", tt_data.View(cinfo))
+			" course:\n  -- %s", tt_data.View(cinfo, bdata.Db))
 		return allist
 	}
 	// Collect the activity groups to which the constraint is to be applied
@@ -238,7 +237,7 @@ func (tt_data *TtData) days_between_activities(
 				//TODO?
 				logger.Warning("Course has too many activities for"+
 					"DifferentDays constraint:\n  -- %s\n",
-					tt_data.View(cinfo))
+					tt_data.View(cinfo, bdata.Db))
 				continue
 			}
 			allist = append(allist, alist)

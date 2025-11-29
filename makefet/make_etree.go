@@ -23,7 +23,8 @@ const VIRTUAL_ROOM_PREFIX = "!"
 // Use a `FetBuild` as basis for constructing a `fet.TtRunDataFet`. In addition,
 // some fields of the `autotimetable.BasicData` are initialized.
 func FetTree(
-	basic_data *autotimetable.AutoTtData,
+	attdata *autotimetable.AutoTtData,
+	bdata *base.BaseData,
 	tt_data *timetable.TtData,
 ) *fet.TtRunDataFet {
 	doc := etree.NewDocument()
@@ -32,9 +33,10 @@ func FetTree(
 		Doc:         doc,
 		WeightTable: fet.MakeFetWeights(),
 	}
-	basic_data.Source = rundata
+	attdata.Source = rundata
 
 	fetbuild := &FetBuild{
+		basedata:           bdata,
 		ttdata:             tt_data,
 		rundata:            rundata,
 		fet_virtual_rooms:  map[string]string{},
@@ -46,7 +48,7 @@ func FetTree(
 	fetroot.CreateAttr("version", fet_version)
 	fetroot.CreateElement("Mode").SetText("Official")
 	fetroot.CreateElement("Institution_Name").SetText(
-		tt_data.BaseData.Db.Info.Institution)
+		bdata.Db.Info.Institution)
 
 	//TODO?
 	source_ref := ""
@@ -91,7 +93,7 @@ func FetTree(
 	//TODO: The remaining constraints
 
 	// Number of activities
-	basic_data.NActivities = len(rundata.ActivityIds)
+	attdata.NActivities = len(rundata.ActivityIds)
 
 	// Collect the constraints, dividing into soft and hard groups.
 	hard_constraint_map := map[string][]int{}
@@ -112,10 +114,10 @@ func FetTree(
 				soft_constraint_map[c.Ctype], i)
 		}
 	}
-	basic_data.NConstraints = len(rundata.Constraints)
-	basic_data.ConstraintTypes = fet.SortConstraintTypes(constraint_types)
-	basic_data.HardConstraintMap = hard_constraint_map
-	basic_data.SoftConstraintMap = soft_constraint_map
+	attdata.NConstraints = len(rundata.Constraints)
+	attdata.ConstraintTypes = fet.SortConstraintTypes(constraint_types)
+	attdata.HardConstraintMap = hard_constraint_map
+	attdata.SoftConstraintMap = soft_constraint_map
 
 	//
 

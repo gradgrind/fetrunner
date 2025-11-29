@@ -11,8 +11,8 @@ func fet_activity_index(aix int) string {
 
 // Generate the fet activities.
 func (fetbuild *FetBuild) set_activities() {
+	db := fetbuild.basedata.Db
 	tt_data := fetbuild.ttdata
-	db := tt_data.BaseData.Db
 	rundata := fetbuild.rundata
 
 	fetactivities := fetbuild.fetroot.CreateElement("Activities_List")
