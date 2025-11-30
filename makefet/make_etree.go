@@ -1,7 +1,6 @@
 package makefet
 
 import (
-	"fetrunner/autotimetable"
 	"fetrunner/base"
 	"fetrunner/fet"
 	"fetrunner/timetable"
@@ -23,7 +22,6 @@ const VIRTUAL_ROOM_PREFIX = "!"
 // Use a `FetBuild` as basis for constructing a `fet.TtRunDataFet`. In addition,
 // some fields of the `autotimetable.BasicData` are initialized.
 func FetTree(
-	attdata *autotimetable.AutoTtData,
 	bdata *base.BaseData,
 	tt_data *timetable.TtData,
 ) *fet.TtRunDataFet {
@@ -33,12 +31,10 @@ func FetTree(
 		Doc:         doc,
 		WeightTable: fet.MakeFetWeights(),
 	}
-	attdata.Source = rundata
 
 	fetbuild := &FetBuild{
 		basedata:           bdata,
 		ttdata:             tt_data,
-		rundata:            rundata,
 		fet_virtual_rooms:  map[string]string{},
 		fet_virtual_room_n: map[string]int{},
 	}
@@ -92,9 +88,6 @@ func FetTree(
 
 	//TODO: The remaining constraints
 
-	// Number of activities
-	attdata.NActivities = len(rundata.ActivityIds)
-
 	// Collect the constraints, dividing into soft and hard groups.
 	hard_constraint_map := map[string][]int{}
 	soft_constraint_map := map[string][]int{}
@@ -114,14 +107,12 @@ func FetTree(
 				soft_constraint_map[c.Ctype], i)
 		}
 	}
-	attdata.NConstraints = len(rundata.Constraints)
-	attdata.ConstraintTypes = fet.SortConstraintTypes(constraint_types)
-	attdata.HardConstraintMap = hard_constraint_map
-	attdata.SoftConstraintMap = soft_constraint_map
+	rundata.NConstraints = len(rundata.Constraints)
+	rundata.ConstraintTypes = fet.SortConstraintTypes(constraint_types)
+	rundata.HardConstraintMap = hard_constraint_map
+	rundata.SoftConstraintMap = soft_constraint_map
 
-	//
-
-	return fetbuild.rundata
+	return rundata
 }
 
 func oldweight2fet(w int) string {

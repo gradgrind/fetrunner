@@ -38,6 +38,11 @@ type TtRunDataFet struct {
 	ClassIds   []IdPair
 
 	WeightTable []float64
+
+	NConstraints      ConstraintIndex
+	ConstraintTypes   []ConstraintType
+	HardConstraintMap map[ConstraintType][]ConstraintIndex
+	SoftConstraintMap map[ConstraintType][]ConstraintIndex
 }
 
 func (rundata *TtRunDataFet) GetDays() []IdPair            { return rundata.DayIds }
@@ -48,6 +53,16 @@ func (rundata *TtRunDataFet) GetRooms() []IdPair           { return rundata.Room
 func (rundata *TtRunDataFet) GetClasses() []IdPair         { return rundata.ClassIds }
 func (rundata *TtRunDataFet) GetActivities() []IdPair      { return rundata.ActivityIds }
 func (rundata *TtRunDataFet) GetConstraints() []Constraint { return rundata.Constraints }
+
+func (rundata *TtRunDataFet) GetNActivities() int                  { return len(rundata.ActivityIds) }
+func (rundata *TtRunDataFet) GetNConstraints() ConstraintIndex     { return rundata.NConstraints }
+func (rundata *TtRunDataFet) GetConstraintTypes() []ConstraintType { return rundata.ConstraintTypes }
+func (rundata *TtRunDataFet) GetHardConstraintMap() map[ConstraintType][]ConstraintIndex {
+	return rundata.HardConstraintMap
+}
+func (rundata *TtRunDataFet) GetSoftConstraintMap() map[ConstraintType][]ConstraintIndex {
+	return rundata.SoftConstraintMap
+}
 
 // Rebuild the FET file given an array detailing which constraints are enabled.
 // The `xmlp` argument is a pointer to a byte slice, to receive the

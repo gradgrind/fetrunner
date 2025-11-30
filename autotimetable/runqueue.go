@@ -1,11 +1,13 @@
 package autotimetable
 
 import (
+	"fetrunner/base"
 	"fmt"
 	"slices"
 )
 
 type RunQueue struct {
+	BData      *base.BaseData
 	AutoTtData *AutoTtData
 	Queue      []*TtInstance
 	Pending    []*TtInstance
@@ -29,7 +31,7 @@ func (rq *RunQueue) add(instance *TtInstance) {
 
 func (rq *RunQueue) update_instances() {
 	attdata := rq.AutoTtData
-	logger := attdata.BaseData.Logger
+	logger := rq.BData.Logger
 	// First increment the ticks of active instances.
 	for instance := range rq.Active {
 		if instance.RunState != 0 && instance.ProcessingState < 2 {
@@ -40,7 +42,7 @@ func (rq *RunQueue) update_instances() {
 		if instance.RunState == 0 {
 			instance.Ticks++
 			// Among other things, update the state:
-			instance.Backend.Tick(attdata, instance)
+			instance.Backend.Tick(rq.BData, attdata, instance)
 		} else if instance.ProcessingState < 2 {
 			// This should only be possible after the call to
 			// the back-end tick method.
@@ -118,7 +120,7 @@ func (rq *RunQueue) update_instances() {
 
 func (rq *RunQueue) update_queue() int {
 	attdata := rq.AutoTtData
-	logger := attdata.BaseData.Logger
+	logger := rq.BData.Logger
 	// Try to start queued instances
 	running := 0
 	for instance := range rq.Active {
@@ -152,7 +154,7 @@ func (rq *RunQueue) update_queue() int {
 				len(instance.Constraints),
 				instance.Timeout)
 			instance.Backend =
-				attdata.BackendInterface.RunBackend(instance)
+				attdata.BackendInterface.RunBackend(rq.BData, instance)
 			instance.ProcessingState = 0 // indicate started/running
 			rq.Active[instance] = struct{}{}
 			running++

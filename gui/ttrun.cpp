@@ -4,9 +4,9 @@
 
 void TtRunWorker::doWork(const QString &parameter)
 {
-    QTimer *timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &TtRunWorker::tick);
-    timer->start(1000);
+    //QTimer *timer = new QTimer(this);
+    //connect(timer, &QTimer::timeout, this, &TtRunWorker::tick);
+    //timer->start(1000);
 
     QString result{"Done ..."};
 
@@ -33,7 +33,8 @@ void TtRunWorker::doWork(const QString &parameter)
     */
 
     bool done = false;
-    for (int i = 0; i < 15; ++i) {
+    for (int i = 0; i < 25; ++i) {
+        qDebug() << "§poll" << i;
         const auto kvlist = backend->op("_POLL_TT");
         for (const auto &kv : kvlist) {
             qDebug() << kv.key << kv.val;
@@ -42,10 +43,12 @@ void TtRunWorker::doWork(const QString &parameter)
                 done = true;
             }
         }
+        qDebug() << "§loop-end" << done;
         if (done)
             break;
         QThread::msleep(500);
     }
+    thread()->quit();
 }
 
 //TODO

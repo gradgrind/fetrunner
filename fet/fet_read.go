@@ -2,6 +2,7 @@ package fet
 
 import (
 	"encoding/json"
+	"fetrunner/base"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -13,16 +14,15 @@ import (
 // all lumped together in th `ConstraintElements` list, but their indexes
 // are also recorded in the `TimeConstraints` and `SpaceConstraints` lists.
 
-func FetRead(attdata *AutoTtData, fetpath string) bool {
-	logger := attdata.BaseData.Logger
+func FetRead(bdata *base.BaseData, fetpath string) *TtRunDataFet {
+	logger := bdata.Logger
 	logger.Info("SOURCE: %s\n", fetpath)
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(fetpath); err != nil {
 		logger.Error("%s", err)
-		return false
+		return nil
 	}
 	rundata := &TtRunDataFet{Doc: doc}
-	attdata.Source = rundata
 	fetroot := doc.Root()
 
 	/*
@@ -49,7 +49,6 @@ func FetRead(attdata *AutoTtData, fetpath string) bool {
 				inactive++
 			}
 		}
-		attdata.NActivities = len(activities)
 		if inactive != 0 {
 			logger.Result("INACTIVE_ACTIVITIES", strconv.Itoa(inactive))
 		}
@@ -152,12 +151,12 @@ func FetRead(attdata *AutoTtData, fetpath string) bool {
 		}
 	}
 
-	attdata.NConstraints = ConstraintIndex(constraint_counter)
-	attdata.ConstraintTypes = SortConstraintTypes(constraint_types)
-	attdata.HardConstraintMap = hard_constraint_map
-	attdata.SoftConstraintMap = soft_constraint_map
+	rundata.NConstraints = ConstraintIndex(constraint_counter)
+	rundata.ConstraintTypes = SortConstraintTypes(constraint_types)
+	rundata.HardConstraintMap = hard_constraint_map
+	rundata.SoftConstraintMap = soft_constraint_map
 
-	return true
+	return rundata
 }
 
 func get_days(fetroot *etree.Element) []IdPair {

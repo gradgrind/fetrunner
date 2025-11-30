@@ -39,7 +39,6 @@ type AutoTtData struct {
 		LAST_TIME_1 int
 	}
 
-	BaseData         *base.BaseData
 	Source           TtSource
 	BackendInterface BackendInterface
 
@@ -54,7 +53,6 @@ type AutoTtData struct {
 	Ticks int // "global" time ticker
 	// The instance tick counter is in `TtInstance` because it may be needed
 	// by the run-time back-end.
-	Running bool
 
 	// Local variables
 	instanceCounter int
@@ -70,11 +68,6 @@ type AutoTtData struct {
 	current_instance *TtInstance
 	// List of instances adding a constraint type:
 	constraint_list []*TtInstance
-}
-
-type BackendInterface interface {
-	RunBackend(instance *TtInstance) TtBackend
-	Tidy()
 }
 
 type TtInstance struct {
@@ -106,10 +99,10 @@ type TtInstance struct {
 
 type TtBackend interface {
 	Abort()
-	Tick(*AutoTtData, *TtInstance)
+	Tick(*base.BaseData, *AutoTtData, *TtInstance)
 	Clear()
-	Results(*AutoTtData, *TtInstance) []TtActivityPlacement
-	FinalizeResult(*AutoTtData)
+	Results(*base.BaseData, *AutoTtData, *TtInstance) []TtActivityPlacement
+	FinalizeResult(*base.BaseData, *AutoTtData)
 }
 
 type TtActivityPlacement = timetable.TtActivityPlacement

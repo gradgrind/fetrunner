@@ -5,6 +5,8 @@ import (
 	"fetrunner/autotimetable"
 	"fetrunner/base"
 	"fetrunner/fet"
+	"fetrunner/makefet"
+	"fetrunner/timetable"
 	"fetrunner/w365tt"
 	"fmt"
 	"path/filepath"
@@ -26,8 +28,10 @@ func init() {
 }
 
 type Dispatcher struct {
-	BaseData   *base.BaseData
-	AutoTtData *autotimetable.AutoTtData
+	BaseData *base.BaseData
+	TtSource autotimetable.TtSource
+	//AutoTtData *autotimetable.AutoTtData
+	Running bool
 }
 
 type DispatchOp struct {
@@ -92,7 +96,7 @@ func dispatchOp(op *DispatchOp) {
 	}
 
 	// Now deal with the other ops, which can (in principle) be used with any Id.
-	dmap, ok := DispatcherMap[op.Id]
+	dsp, ok := DispatcherMap[op.Id]
 	if !ok {
 		//TODO
 		panic("No instance with Id = " + op.Id)
@@ -101,22 +105,22 @@ func dispatchOp(op *DispatchOp) {
 	if ok {
 		// The valid commands are dependent on the run-state of the timetable
 		// generation. Those valid when running have a "_" prefix.
-		if dmap.AutoTtData != nil && dmap.AutoTtData.Running {
+		if dsp.Running {
 			if op.Op[0] != '_' {
-				dmap.BaseData.Logger.Error("!InvalidOp_RunningOp: %s", op.Op)
+				dsp.BaseData.Logger.Error("!InvalidOp_RunningOp: %s", op.Op)
 				return
 			}
 		} else if op.Op[0] == '_' {
-			dmap.BaseData.Logger.Error("!InvalidOp_NotRunningOp: %s", op.Op)
+			dsp.BaseData.Logger.Error("!InvalidOp_NotRunningOp: %s", op.Op)
 			return
 		}
 
-		if dmap.BaseData.Id != "" {
-			startOp(dmap.BaseData.Logger, op)
+		if dsp.BaseData.Id != "" {
+			startOp(dsp.BaseData.Logger, op)
 		}
-		f(dmap, op)
+		f(dsp, op)
 	} else {
-		dmap.BaseData.Logger.Error("!InvalidOp_Op: %s", op.Op)
+		dsp.BaseData.Logger.Error("!InvalidOp_Op: %s", op.Op)
 	}
 }
 
@@ -163,31 +167,31 @@ func file_loader(dsp *Dispatcher, op *DispatchOp) {
 	fpath := op.Data[0]
 
 	if strings.HasSuffix(fpath, ".fet") {
-		attdata := &autotimetable.AutoTtData{}
-		attdata.SetParameterDefault()
-		//bdata.Logger = logger
-		if fet.FetRead(attdata, fpath) {
+		ttRunDataFet := fet.FetRead(bd, fpath)
+		if ttRunDataFet != nil {
+			dsp.TtSource = ttRunDataFet
 			bd.SourceDir = filepath.Dir(fpath)
 			n := filepath.Base(fpath)
 			bd.Name = n[:len(n)-4]
 			logger.Result(op.Op, fpath)
 			logger.Result("DATA_TYPE", "FET")
-			dsp.AutoTtData = attdata
 			bd.Db = nil
 			return
 		}
 	} else if strings.HasSuffix(fpath, "_w365.json") {
+		db0 := bd.Db
 		bd.Db = base.NewDb()
 		if w365tt.LoadJSON(bd, fpath) {
+			dsp.TtSource = nil
 			bd.SourceDir = filepath.Dir(fpath)
 			n := filepath.Base(fpath)
 			bd.Name = n[:len(n)-10]
 			bd.PrepareDb()
 			logger.Result(op.Op, fpath)
 			logger.Result("DATA_TYPE", "DB")
-			//fr.BasicData = nil
 			return
 		}
+		bd.Db = db0
 	} else {
 		logger.Error("LoadFile_InvalidSuffix: %s", fpath)
 		return
@@ -200,21 +204,39 @@ func runtt(dsp *Dispatcher, op *DispatchOp) {
 	//TODO: Handle parameters, if any. Persumably timeout could be
 	// one of them.
 
-	attdata := dsp.AutoTtData
-	if attdata != nil {
+	if dsp.TtSource == nil {
 
 		//TODO???
-
-		// Set up FET back-end and start processing
-		fet.SetFetBackend(attdata)
-
-		dsp.BaseData.Logger.Result("OK", "")
-
-		// Need an extra goroutine so that this can return immediately.
-		// Also a blocking poll command from the front end to read progress.
-		//TODO: timeout
-		go dsp.AutoTtData.StartGeneration(10)
+		if dsp.BaseData.Db != nil {
+			dsp.TtSource = makefet.FetTree(dsp.BaseData, timetable.BasicSetup(dsp.BaseData))
+		} else {
+			panic("No source")
+		}
 	}
+	// Set up FET back-end and start processing
+	attdata := &autotimetable.AutoTtData{
+		Source:            dsp.TtSource,
+		NActivities:       dsp.TtSource.GetNActivities(),
+		NConstraints:      dsp.TtSource.GetNConstraints(),
+		ConstraintTypes:   dsp.TtSource.GetConstraintTypes(),
+		HardConstraintMap: dsp.TtSource.GetHardConstraintMap(),
+		SoftConstraintMap: dsp.TtSource.GetSoftConstraintMap(),
+	}
+	attdata.SetParameterDefault()
+
+	fet.SetFetBackend(dsp.BaseData, attdata)
+
+	dsp.BaseData.Logger.Result("OK", "")
+
+	// Need an extra goroutine so that this can return immediately.
+	// Also a blocking poll command from the front end to read progress.
+	//TODO: timeout
+	go func() {
+		dsp.Running = true
+		attdata.StartGeneration(dsp.BaseData, 10)
+		dsp.BaseData.Logger.Info("Done? %v\n", dsp.Running)
+		dsp.Running = false
+	}()
 }
 
 // TODO

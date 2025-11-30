@@ -72,8 +72,7 @@ instance and handles the actions resulting from their completion, whether
 successful or not.
 
 Should the fully constrained instance complete successfully within the
-allotted time, all other instances are terminated and its result will be
-saved.
+allotted time, its result will be saved and all other instances are terminated.
 
 When the unconstrained instance completes successfully, a series of further
 instances is queued for running, each specifying the addition of a list of
@@ -118,9 +117,8 @@ which constraints were dropped and any error messages for them which may have
 been produced by the generator back-end).
 */
 
-func (attdata *AutoTtData) StartGeneration(TIMEOUT int) {
-	attdata.Running = true
-	logger := attdata.BaseData.Logger
+func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData, TIMEOUT int) {
+	logger := bdata.Logger
 	attdata.lastResult = nil
 	attdata.ConstraintErrors = map[ConstraintIndex]string{}
 	attdata.BlockConstraint = map[ConstraintIndex]bool{}
@@ -132,6 +130,7 @@ func (attdata *AutoTtData) StartGeneration(TIMEOUT int) {
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
 	runqueue := &RunQueue{
+		BData:      bdata,
 		AutoTtData: attdata,
 		Queue:      nil,
 		Active:     map[*TtInstance]struct{}{},
@@ -212,8 +211,11 @@ func (attdata *AutoTtData) StartGeneration(TIMEOUT int) {
 		// Tidy up
 		r := recover()
 		if r != nil {
-			logger.Bug("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---\n",
+			fmt.Printf("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---\n",
 				attdata.Ticks, r, debug.Stack())
+			fmt.Printf("??? logger: %v\n", logger)
+			//logger.Bug("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---\n",
+			//	attdata.Ticks, r, debug.Stack())
 			base.Report("!!! ERROR: see log\n")
 		}
 		for {
@@ -222,7 +224,7 @@ func (attdata *AutoTtData) StartGeneration(TIMEOUT int) {
 			count := 0
 			for instance := range runqueue.Active {
 				if instance.RunState == 0 {
-					instance.Backend.Tick(attdata, instance)
+					instance.Backend.Tick(bdata, attdata, instance)
 					count++
 					attdata.abort_instance(instance)
 				}
@@ -234,7 +236,7 @@ func (attdata *AutoTtData) StartGeneration(TIMEOUT int) {
 		}
 		if !attdata.Parameters.DEBUG {
 			// Remove all remaining temporary files
-			attdata.BackendInterface.Tidy()
+			attdata.BackendInterface.Tidy(bdata)
 		}
 		if attdata.lastResult != nil {
 
@@ -246,7 +248,7 @@ func (attdata *AutoTtData) StartGeneration(TIMEOUT int) {
 			if err != nil {
 				panic(err)
 			}
-			fpath := filepath.Join(attdata.BaseData.SourceDir, "Result.json")
+			fpath := filepath.Join(bdata.SourceDir, "Result.json")
 			f, err := os.Create(fpath)
 			if err != nil {
 				panic("Couldn't open output file: " + fpath)
@@ -256,7 +258,7 @@ func (attdata *AutoTtData) StartGeneration(TIMEOUT int) {
 			if err != nil {
 				panic("Couldn't write result to: " + fpath)
 			}
-			attdata.current_instance.Backend.FinalizeResult(attdata)
+			attdata.current_instance.Backend.FinalizeResult(bdata, attdata)
 		}
 	}()
 
@@ -287,7 +289,7 @@ tickloop:
 		if attdata.full_instance.ProcessingState == 1 {
 			// Cancel all other runs and return this instance as result.
 			attdata.current_instance = attdata.full_instance
-			attdata.new_current_instance(attdata.current_instance)
+			attdata.new_current_instance(bdata, attdata.current_instance)
 			logger.Info("[%d] +A+ All constraints OK +++\n",
 				attdata.Ticks)
 			break
@@ -310,7 +312,7 @@ tickloop:
 			if attdata.hard_instance.ProcessingState == 1 {
 				// Set as current and start processing soft constraints.
 				attdata.current_instance = attdata.hard_instance
-				attdata.new_current_instance(attdata.current_instance)
+				attdata.new_current_instance(bdata, attdata.current_instance)
 				logger.Info(
 					"[%d] +H+ All hard constraints OK +++\n",
 					attdata.Ticks)
@@ -462,7 +464,6 @@ tickloop:
 		logger.Info("Result: %s\n", result.Tag)
 	}
 	logger.Result("TT_DONE", "")
-	attdata.Running = false
 }
 
 func (attdata *AutoTtData) abort_instance(instance *TtInstance) {

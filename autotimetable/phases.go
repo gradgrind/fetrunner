@@ -7,8 +7,8 @@ import (
 
 // During phase 0 only `full_instance`, `hard_instance` and
 // `null_instance` are running.
-func (runqueue *RunQueue) phase0() int {
-	attdata := runqueue.AutoTtData
+func (rq *RunQueue) phase0() int {
+	attdata := rq.AutoTtData
 	switch attdata.null_instance.ProcessingState {
 	case 0:
 		if attdata.null_instance.Ticks ==
@@ -20,13 +20,13 @@ func (runqueue *RunQueue) phase0() int {
 	case 1:
 		// The null instance completed successfully.
 		attdata.current_instance = attdata.null_instance
-		attdata.new_current_instance(attdata.current_instance)
+		attdata.new_current_instance(rq.BData, attdata.current_instance)
 		// Start trials of single constraint types.
 		return 1
 
 	default:
 		// The null instance failed.
-		attdata.BaseData.Logger.Error(
+		rq.BData.Logger.Error(
 			"[%d] --- Unconstrained instance failed:\n+++\n%s\n---\n",
 			attdata.Ticks, attdata.null_instance.Message)
 		return -1
@@ -63,9 +63,9 @@ Should it come to pass that all the constraints have been added successfully
 reached or the hard-only or full instance will have completed already), return
 `true`, indicating that there are no more constraints to add.
 */
-func (runqueue *RunQueue) mainphase() bool {
-	attdata := runqueue.AutoTtData
-	logger := attdata.BaseData.Logger
+func (rq *RunQueue) mainphase() bool {
+	attdata := rq.AutoTtData
+	logger := rq.BData.Logger
 	next_timeout := 0 // non-zero => "restart with new base"
 	base_instance := attdata.current_instance
 	if base_instance == nil {
@@ -80,7 +80,7 @@ func (runqueue *RunQueue) mainphase() bool {
 			// Completed successfully, make this instance the new base.
 			attdata.current_instance = instance
 			base_instance = instance
-			attdata.new_current_instance(instance)
+			attdata.new_current_instance(rq.BData, instance)
 			next_timeout = max(
 				(instance.Ticks*attdata.Parameters.NEW_BASE_TIMEOUT_FACTOR)/10,
 				attdata.cycle_timeout)
@@ -149,7 +149,7 @@ func (runqueue *RunQueue) mainphase() bool {
 		}
 		// Queue instances for running
 		for _, bc := range attdata.constraint_list {
-			runqueue.add(bc)
+			rq.add(bc)
 		}
 	}
 
@@ -168,7 +168,7 @@ func (runqueue *RunQueue) mainphase() bool {
 				}
 
 				sit := []string{}
-				for _, si := range runqueue.split_instance(
+				for _, si := range rq.split_instance(
 					instance, base_instance, timeout) {
 					split_instances = append(split_instances, si)
 					sit = append(sit, si.Tag)
@@ -202,7 +202,7 @@ func (runqueue *RunQueue) mainphase() bool {
 					instance.ConstraintType,
 					instance.Constraints,
 					next_timeout)
-				runqueue.add(instance)
+				rq.add(instance)
 			}
 			new_constraint_list = append(
 				new_constraint_list, instance)
@@ -211,15 +211,15 @@ func (runqueue *RunQueue) mainphase() bool {
 	attdata.constraint_list = append(new_constraint_list,
 		split_instances...)
 	for _, instance := range split_instances {
-		runqueue.add(instance)
+		rq.add(instance)
 	}
 	return false // still processing
 }
 
-func (runqueue *RunQueue) split_instance(
+func (rq *RunQueue) split_instance(
 	instance *TtInstance, base_instance *TtInstance, timeout int,
 ) []*TtInstance {
-	attdata := runqueue.AutoTtData
+	attdata := rq.AutoTtData
 	nhalf := len(instance.Constraints) / 2
 	return []*TtInstance{
 		attdata.new_instance(

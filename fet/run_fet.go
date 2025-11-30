@@ -22,28 +22,28 @@ type FetBackend struct {
 	attdata *autotimetable.AutoTtData
 }
 
-func SetFetBackend(attdata *autotimetable.AutoTtData) {
+func SetFetBackend(bdata *base.BaseData, attdata *autotimetable.AutoTtData) {
 	if len(TEMPORARY_FOLDER) != 0 {
 		os.RemoveAll(filepath.Join(TEMPORARY_FOLDER,
-			filepath.Base(attdata.BaseData.SourceDir)))
+			filepath.Base(bdata.SourceDir)))
 	}
 	attdata.BackendInterface = &FetBackend{attdata}
 }
 
-func (fbe *FetBackend) Tidy() {
+func (fbe *FetBackend) Tidy(bdata *base.BaseData) {
 	if len(TEMPORARY_FOLDER) == 0 {
-		os.RemoveAll(filepath.Join(fbe.attdata.BaseData.SourceDir, "tmp"))
+		os.RemoveAll(filepath.Join(bdata.SourceDir, "tmp"))
 	} else {
 		os.RemoveAll(filepath.Join(TEMPORARY_FOLDER,
-			filepath.Base(fbe.attdata.BaseData.SourceDir)))
+			filepath.Base(bdata.SourceDir)))
 	}
 }
 
 func (fbe *FetBackend) RunBackend(
+	bdata *base.BaseData,
 	instance *autotimetable.TtInstance,
 ) autotimetable.TtBackend {
 	attdata := fbe.attdata
-	bdata := attdata.BaseData
 
 	ttoutdir := filepath.Join(bdata.SourceDir, "_"+bdata.Name)
 	os.RemoveAll(ttoutdir)
@@ -200,10 +200,10 @@ var re *regexp.Regexp = regexp.MustCompile(pattern)
 // `Tick` runs in the "tick" loop. Rather like a "tail" function it reads
 // the FET progress from its log file, by simply polling for new lines.
 func (data *FetTtData) Tick(
+	bdata *base.BaseData,
 	attdata *autotimetable.AutoTtData,
 	instance *autotimetable.TtInstance,
 ) {
-	bdata := attdata.BaseData
 	if data.reader == nil {
 		// Await the existence of the log file
 		file, err := os.Open(data.logfile)
@@ -282,9 +282,11 @@ exit:
 
 // If there is a result from the main process, there may be a
 // corresponding result from the source.
-func (data *FetTtData) FinalizeResult(attdata *autotimetable.AutoTtData) {
+func (data *FetTtData) FinalizeResult(
+	bdata *base.BaseData,
+	attdata *autotimetable.AutoTtData) {
 	// Write FET file at top level of working directory.
-	fetfile := filepath.Join(attdata.BaseData.SourceDir, "Result.fet")
+	fetfile := filepath.Join(bdata.SourceDir, "Result.fet")
 	err := os.WriteFile(fetfile, data.fetxml, 0644)
 	if err != nil {
 		panic("Couldn't write fet file to: " + fetfile)
@@ -293,10 +295,11 @@ func (data *FetTtData) FinalizeResult(attdata *autotimetable.AutoTtData) {
 
 // Gather the results of the given run.
 func (data *FetTtData) Results(
+	bdata *base.BaseData,
 	attdata *autotimetable.AutoTtData,
 	instance *autotimetable.TtInstance,
 ) []autotimetable.TtActivityPlacement {
-	logger := attdata.BaseData.Logger
+	logger := bdata.Logger
 	// Get placements
 	xmlpath := filepath.Join(data.odir, "timetables", instance.Tag,
 		instance.Tag+"_activities.xml")
