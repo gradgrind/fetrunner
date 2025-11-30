@@ -273,6 +273,8 @@ tickloop:
 
 		select {
 		case <-ticker.C:
+
+			//TODO???
 		case <-sigChan:
 			logger.Info("[%d] !!! INTERRUPTED !!!\n",
 				attdata.Ticks)
@@ -280,9 +282,7 @@ tickloop:
 		}
 
 		attdata.Ticks++
-		logger.Info(
-			"[%d] +TICK\n",
-			attdata.Ticks)
+		logger.Tick(attdata.Ticks)
 
 		runqueue.update_instances()
 

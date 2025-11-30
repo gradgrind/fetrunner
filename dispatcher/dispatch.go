@@ -8,7 +8,6 @@ import (
 	"fetrunner/makefet"
 	"fetrunner/timetable"
 	"fetrunner/w365tt"
-	"fmt"
 	"path/filepath"
 	"strings"
 )
@@ -215,11 +214,10 @@ func runtt(dsp *Dispatcher, op *DispatchOp) {
 	}()
 }
 
-// TODO
-func polltt(fr *Dispatcher, op *DispatchOp) {
-	fmt.Println("Poll")
+func polltt(dsp *Dispatcher, op *DispatchOp) {
+	dsp.BaseData.Logger.Poll()
 }
 
 // TODO
-func stoptt(fr *Dispatcher, op *DispatchOp) {
+func stoptt(dsp *Dispatcher, op *DispatchOp) {
 }

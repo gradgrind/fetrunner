@@ -23,6 +23,8 @@ const (
 
 	STARTOP
 	ENDOP
+	TICKOP
+	POLLOP
 )
 
 var logType = map[LogType]string{
@@ -34,6 +36,8 @@ var logType = map[LogType]string{
 	RESULT:  "$",
 	STARTOP: "+++",
 	ENDOP:   "---",
+	TICKOP:  "TICK",
+	POLLOP:  "POLL",
 }
 
 func (ltype LogType) String() string {
@@ -63,6 +67,8 @@ type Logger struct {
 	LogChan    chan LogEntry
 	LogBuf     []LogEntry
 	ResultChan chan string
+	pollwait   int8
+	ticked     bool
 }
 
 func NewLogger() *Logger {
@@ -72,18 +78,44 @@ func NewLogger() *Logger {
 	}
 }
 
+// TODO: This is not getting the final data to the front-end!
 // Log entry handler adding log entries to a buffer.
 func LogToBuffer(logger *Logger) {
 	for entry := range logger.LogChan {
 		logger.LogBuf = append(logger.LogBuf, entry)
-		if entry.Type == ENDOP {
-			bytes, err := json.Marshal(logger.LogBuf)
-			logger.LogBuf = nil
-			if err != nil {
-				panic(err)
-			} else {
-				logger.ResultChan <- string(bytes)
+		switch entry.Type {
+
+		case TICKOP:
+			if logger.pollwait != 2 {
+				logger.ticked = true
+				continue
 			}
+
+		case POLLOP:
+			logger.pollwait = 1
+			continue
+
+		case ENDOP:
+			if !logger.ticked {
+				if logger.pollwait == 1 {
+					logger.pollwait = 2
+					continue
+				}
+			}
+
+		default:
+			continue
+
+		}
+
+		bytes, err := json.Marshal(logger.LogBuf)
+		logger.LogBuf = nil
+		if err != nil {
+			panic(err)
+		} else {
+			logger.ticked = false
+			logger.pollwait = 0
+			logger.ResultChan <- string(bytes)
 		}
 	}
 }
@@ -136,6 +168,14 @@ func (l *Logger) Bug(s string, a ...any) {
 		p = "Location?: "
 	}
 	l.logEnter(BUG, p+s, a)
+}
+
+func (l *Logger) Tick(n int) {
+	l.logEnter(TICKOP, "%d", n)
+}
+
+func (l *Logger) Poll() {
+	l.logEnter(POLLOP, "")
 }
 
 // TODO?
