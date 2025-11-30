@@ -61,7 +61,6 @@ func Dispatch(cmd0 string) string {
 func dispatchOp(op *DispatchOp) {
 	if op.Id == "" {
 		// Some ops are only valid using the null Id.
-		startOp(logger0, op)
 		switch op.Op {
 
 		case "CONFIG_INIT":
@@ -115,9 +114,6 @@ func dispatchOp(op *DispatchOp) {
 			return
 		}
 
-		if dsp.BaseData.Id != "" {
-			startOp(dsp.BaseData.Logger, op)
-		}
 		f(dsp, op)
 	} else {
 		dsp.BaseData.Logger.Error("!InvalidOp_Op: %s", op.Op)
@@ -130,24 +126,6 @@ func CheckArgs(l *base.Logger, op *DispatchOp, n int) bool {
 		return false
 	}
 	return true
-}
-
-// TODO: Always sending this line stops the return from blocking, which
-// might be a problem ...
-// Well, actually, there seems to be another problem too ...
-func startOp(logger *base.Logger, op *DispatchOp) {
-	return
-
-	var text string
-	if op.Id != "" {
-		text = "[" + op.Id + "] "
-	}
-	text += op.Op
-	if len(op.Data) != 0 {
-		text += " (" + strings.Join(op.Data, ", ") + ")"
-	}
-	logger.LogChan <- base.LogEntry{
-		Type: base.STARTOP, Text: text}
 }
 
 func init() {
@@ -229,12 +207,10 @@ func runtt(dsp *Dispatcher, op *DispatchOp) {
 	dsp.BaseData.Logger.Result("OK", "")
 
 	// Need an extra goroutine so that this can return immediately.
-	// Also a blocking poll command from the front end to read progress.
 	//TODO: timeout
 	go func() {
 		dsp.Running = true
 		attdata.StartGeneration(dsp.BaseData, 10)
-		dsp.BaseData.Logger.Info("Done? %v\n", dsp.Running)
 		dsp.Running = false
 	}()
 }

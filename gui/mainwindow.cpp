@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->tableWidget->resizeColumnsToContents();
 
     backend = new Backend();
+    connect(backend, &Backend::logcolour, ui->logview, &QTextEdit::setTextColor);
     connect(backend, &Backend::log, ui->logview, &QTextEdit::append);
     connect(backend, &Backend::error, this, &MainWindow::error_popup);
     connect(ui->pb_open_new, &QPushButton::clicked, this, &MainWindow::open_file);

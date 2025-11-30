@@ -3,7 +3,7 @@
 #include "../libfetrunner/libfetrunner.h"
 //#include <iostream>
 
-QMap<QString, QString> colours{
+QMap<QString, QColor> colours{
     // display colours for the log
     {"*INFO*", "#009000"},
     {"*WARNING*", "#eb8900"},
@@ -39,11 +39,8 @@ QList<KeyVal> Backend::op(QString cmd, QStringList data)
             auto key = e["Type"].toString();
             auto val = e["Text"].toString();
             auto t0 = key + " " + val;
-            auto t = QString(R"(<span style="color:%1;">%2</span>)")
-                         .arg( //
-                             colours.value(key, "#765eff"),
-                             t0);
-            emit log(t);
+            emit logcolour(colours.value(key, "#765eff"));
+            emit log(t0);
             if (key == "*ERROR*") {
                 errors.append(val);
             }

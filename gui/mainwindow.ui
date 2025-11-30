@@ -244,7 +244,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="tab_1">
         <attribute name="title">
@@ -484,6 +484,9 @@
            <property name="readOnly">
             <bool>true</bool>
            </property>
+           <property name="acceptRichText">
+            <bool>false</bool>
+           </property>
           </widget>
          </item>
          <item>
@@ -510,12 +513,12 @@
    <slot>clear()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>496</x>
-     <y>514</y>
+     <x>471</x>
+     <y>518</y>
     </hint>
     <hint type="destinationlabel">
-     <x>491</x>
-     <y>479</y>
+     <x>493</x>
+     <y>418</y>
     </hint>
    </hints>
   </connection>

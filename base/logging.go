@@ -75,6 +75,7 @@ func NewLogger() *Logger {
 // Log entry handler adding log entries to a buffer.
 func LogToBuffer(logger *Logger) {
 	for entry := range logger.LogChan {
+		logger.LogBuf = append(logger.LogBuf, entry)
 		if entry.Type == ENDOP {
 			bytes, err := json.Marshal(logger.LogBuf)
 			logger.LogBuf = nil
@@ -83,8 +84,6 @@ func LogToBuffer(logger *Logger) {
 			} else {
 				logger.ResultChan <- string(bytes)
 			}
-		} else {
-			logger.LogBuf = append(logger.LogBuf, entry)
 		}
 	}
 }
@@ -107,6 +106,7 @@ func LogToFile(logger *Logger, logpath string) {
 func (l *Logger) logEnter(ltype LogType, s string, a ...any) {
 	lstring := strings.TrimSpace(fmt.Sprintf(s, a...))
 	l.LogChan <- LogEntry{ltype, lstring}
+	fmt.Printf("§INFO %+v\n", lstring)
 }
 
 func (l *Logger) Info(s string, a ...any) {

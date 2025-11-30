@@ -27,6 +27,7 @@ public:
     void setConfig(QString key, QString val);
 
 signals:
+    void logcolour(QColor);
     void log(QString);
     void error(QString);
 };
