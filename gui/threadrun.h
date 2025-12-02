@@ -5,21 +5,21 @@
 #include <QThread>
 #include <qdebug.h>
 
-class TtRunWorker : public QObject
+class RunThreadWorker : public QObject
 {
     Q_OBJECT
 
 public:
     //TODO-- this is just for testing
-    ~TtRunWorker() { qDebug() << "Delete TtRunWorker"; }
+    ~RunThreadWorker() { qDebug() << "Delete RunThreadWorker"; }
 
     bool stopFlag;
 
 public slots:
-    void doWork(const QString &parameter);
+    void ttrun(const QString &parameter);
 
 signals:
-    void resultReady(const QString &result);
+    void runThreadWorkerDone(const QString &result);
     void tickTime(const QString &result);
 };
 
@@ -28,7 +28,7 @@ class RunThreadController : public QObject
     Q_OBJECT
 
     QThread runThread;
-    TtRunWorker *worker;
+    RunThreadWorker *runThreadWorker{nullptr};
 
 public:
     //RunThreadController();
@@ -45,7 +45,7 @@ public slots:
     void stopThread();
 
 signals:
-    void operate(const QString &);
+    void startTtRun(const QString &);
     void elapsedTime(const QString);
 };
 

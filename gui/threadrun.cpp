@@ -2,7 +2,7 @@
 #include <QTimer>
 #include "backend.h"
 
-void TtRunWorker::doWork(const QString &parameter)
+void RunThreadWorker::ttrun(const QString &parameter)
 {
     //QTimer *timer = new QTimer(this);
     //connect(timer, &QTimer::timeout, this, &TtRunWorker::tick);
@@ -63,7 +63,7 @@ void TtRunWorker::doWork(const QString &parameter)
             break;
         //QThread::msleep(500);
     }
-    emit resultReady(result);
+    emit runThreadWorkerDone(result);
     //thread()->quit();
 }
 
@@ -97,14 +97,32 @@ void RunThreadController::runTtThread()
     // The back-end should now be running the timetable generation.
     //TODO: Adjust anything that needs to reflect this ...
 
-    worker = new TtRunWorker;
-    worker->moveToThread(&runThread);
-    connect(&runThread, &QThread::finished, worker, &QObject::deleteLater);
-    connect(this, &RunThreadController::operate, worker, &TtRunWorker::doWork);
-    connect(worker, &TtRunWorker::resultReady, this, &RunThreadController::handleResults);
-    connect(worker, &TtRunWorker::tickTime, this, &RunThreadController::elapsedTime);
-    runThread.start();
-    emit operate("GO");
+    if (!runThreadWorker) {
+        runThreadWorker = new RunThreadWorker;
+        runThreadWorker->moveToThread(&runThread);
+        connect( //
+            &runThread,
+            &QThread::finished,
+            runThreadWorker,
+            &QObject::deleteLater);
+        connect( //
+            this,
+            &RunThreadController::startTtRun,
+            runThreadWorker,
+            &RunThreadWorker::ttrun);
+        connect( //
+            runThreadWorker,
+            &RunThreadWorker::runThreadWorkerDone,
+            this,
+            &RunThreadController::handleResults);
+        connect( //
+            runThreadWorker,
+            &RunThreadWorker::tickTime,
+            this,
+            &RunThreadController::elapsedTime);
+        runThread.start();
+    }
+    emit startTtRun("GO");
 }
 
 void RunThreadController::handleResults(const QString &result)
@@ -115,5 +133,5 @@ void RunThreadController::handleResults(const QString &result)
 void RunThreadController::stopThread()
 {
     qDebug() << "!!!STOP!!!";
-    worker->stopFlag = true;
+    runThreadWorker->stopFlag = true;
 }
