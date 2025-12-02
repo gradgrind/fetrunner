@@ -19,6 +19,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(backend, &Backend::error, this, &MainWindow::error_popup);
     connect(ui->pb_open_new, &QPushButton::clicked, this, &MainWindow::open_file);
     connect(ui->pb_go, &QPushButton::clicked, this, &MainWindow::push_go);
+    connect(ui->pb_stop, &QPushButton::clicked, &threadrunner, &RunThreadController::stopThread);
+    connect(&threadrunner, &RunThreadController::elapsedTime, ui->elapsed_time, &QLineEdit::setText);
 
     backend->op("CONFIG_INIT");
 
@@ -113,5 +115,5 @@ void MainWindow::push_go()
 
     //TODO
     //backend->op("TT_GO", {ui->tt_timeout->text()});
-    ttrun.run();
+    threadrunner.runTtThread();
 }

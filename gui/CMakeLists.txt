@@ -22,7 +22,7 @@ qt_add_executable(fetrunner-gui
     mainwindow.h
     mainwindow.ui
     backend.h backend.cpp
-    ttrun.h ttrun.cpp
+    threadrun.h threadrun.cpp
 
 )
 

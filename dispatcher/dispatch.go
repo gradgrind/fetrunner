@@ -220,4 +220,5 @@ func polltt(dsp *Dispatcher, op *DispatchOp) {
 
 // TODO
 func stoptt(dsp *Dispatcher, op *DispatchOp) {
+	dsp.BaseData.StopFlag = true
 }

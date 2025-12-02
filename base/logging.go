@@ -36,8 +36,8 @@ var logType = map[LogType]string{
 	RESULT:  "$",
 	STARTOP: "+++",
 	ENDOP:   "---",
-	TICKOP:  "TICK",
-	POLLOP:  "POLL",
+	TICKOP:  ".TICK",
+	POLLOP:  ".POLL",
 }
 
 func (ltype LogType) String() string {
@@ -82,20 +82,23 @@ func NewLogger() *Logger {
 // Log entry handler adding log entries to a buffer.
 func LogToBuffer(logger *Logger) {
 	for entry := range logger.LogChan {
-		logger.LogBuf = append(logger.LogBuf, entry)
 		switch entry.Type {
 
 		case TICKOP:
+			logger.LogBuf = append(logger.LogBuf, LogEntry{
+				RESULT, TICKOP.String() + "=" + entry.Text})
 			if logger.pollwait != 2 {
 				logger.ticked = true
 				continue
 			}
 
 		case POLLOP:
+			logger.LogBuf = append(logger.LogBuf, entry)
 			logger.pollwait = 1
 			continue
 
 		case ENDOP:
+			logger.LogBuf = append(logger.LogBuf, entry)
 			if !logger.ticked {
 				if logger.pollwait == 1 {
 					logger.pollwait = 2
@@ -104,6 +107,7 @@ func LogToBuffer(logger *Logger) {
 			}
 
 		default:
+			logger.LogBuf = append(logger.LogBuf, entry)
 			continue
 
 		}
@@ -138,7 +142,7 @@ func LogToFile(logger *Logger, logpath string) {
 func (l *Logger) logEnter(ltype LogType, s string, a ...any) {
 	lstring := strings.TrimSpace(fmt.Sprintf(s, a...))
 	l.LogChan <- LogEntry{ltype, lstring}
-	fmt.Printf("§INFO %+v\n", lstring)
+	fmt.Printf("§§§ %s: %+v\n", ltype, lstring)
 }
 
 func (l *Logger) Info(s string, a ...any) {

@@ -1,5 +1,5 @@
-#ifndef TTRUN_H
-#define TTRUN_H
+#ifndef THREADRUN_H
+#define THREADRUN_H
 
 #include <QObject>
 #include <QThread>
@@ -9,43 +9,44 @@ class TtRunWorker : public QObject
 {
     Q_OBJECT
 
-    int stopstate{0};
-
 public:
     //TODO-- this is just for testing
     ~TtRunWorker() { qDebug() << "Delete TtRunWorker"; }
 
+    bool stopFlag;
+
 public slots:
     void doWork(const QString &parameter);
-    void tick();
-    void stop();
 
 signals:
     void resultReady(const QString &result);
+    void tickTime(const QString &result);
 };
 
-class TtRun : public QObject
+class RunThreadController : public QObject
 {
     Q_OBJECT
 
-    QThread workerThread;
+    QThread runThread;
     TtRunWorker *worker;
 
 public:
-    //TtRun();
-    ~TtRun()
+    //RunThreadController();
+    ~RunThreadController()
     {
-        workerThread.quit();
-        workerThread.wait();
+        runThread.quit();
+        runThread.wait();
     }
 
-    void run();
+    void runTtThread();
 
 public slots:
     void handleResults(const QString &);
+    void stopThread();
 
 signals:
     void operate(const QString &);
+    void elapsedTime(const QString);
 };
 
-#endif // TTRUN_H
+#endif // THREADRUN_H

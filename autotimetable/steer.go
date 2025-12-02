@@ -5,13 +5,11 @@ import (
 	"fetrunner/base"
 	"fmt"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"runtime"
 	"runtime/debug"
 	"slices"
 	"strings"
-	"syscall"
 	"time"
 )
 
@@ -119,6 +117,7 @@ been produced by the generator back-end).
 
 func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData, TIMEOUT int) {
 	logger := bdata.Logger
+	bdata.StopFlag = false
 	attdata.lastResult = nil
 	attdata.ConstraintErrors = map[ConstraintIndex]string{}
 	attdata.BlockConstraint = map[ConstraintIndex]bool{}
@@ -126,8 +125,8 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData, TIMEOUT int) {
 	attdata.current_instance = nil
 
 	// Catch termination signal
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	//sigChan := make(chan os.Signal, 1)
+	//signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
 	runqueue := &RunQueue{
 		BData:      bdata,
@@ -271,14 +270,23 @@ tickloop:
 				attdata.Ticks)
 		}
 
+		//TODO: Without the signal catcher, I don't need a "select"
 		select {
 		case <-ticker.C:
 
 			//TODO???
-		case <-sigChan:
+			//case <-sigChan:
+			//	logger.Info("[%d] !!! INTERRUPTED !!!\n",
+			//		attdata.Ticks)
+			//	break tickloop
+		}
+
+		// TODO???
+		if bdata.StopFlag {
 			logger.Info("[%d] !!! INTERRUPTED !!!\n",
 				attdata.Ticks)
 			break tickloop
+
 		}
 
 		attdata.Ticks++
@@ -463,7 +471,7 @@ tickloop:
 	if result != nil {
 		logger.Info("Result: %s\n", result.Tag)
 	}
-	logger.Result("TT_DONE", "")
+	logger.Tick(-1)
 }
 
 func (attdata *AutoTtData) abort_instance(instance *TtInstance) {

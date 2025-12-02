@@ -1,4 +1,4 @@
-#include "ttrun.h"
+#include "threadrun.h"
 #include <QTimer>
 #include "backend.h"
 
@@ -9,6 +9,9 @@ void TtRunWorker::doWork(const QString &parameter)
     //timer->start(1000);
 
     QString result{"Done ..."};
+
+    stopFlag = false;
+    bool stopped = false; // set this to stop (further) stop commands
 
     /* ... here is the expensive or blocking operation ... */
 
@@ -35,23 +38,36 @@ void TtRunWorker::doWork(const QString &parameter)
     bool done = false;
     for (int i = 0; i < 25; ++i) {
         qDebug() << "§poll" << i;
+        if (stopFlag && !stopped) {
+            const auto kvlist = backend->op("_STOP_TT");
+            for (const auto &kv : kvlist) {
+                qDebug() << "?STOP?" << kv.key << kv.val;
+            }
+            stopped = true;
+        }
         const auto kvlist = backend->op("_POLL_TT");
         for (const auto &kv : kvlist) {
             qDebug() << kv.key << kv.val;
-            if (kv.key == "TT_DONE") {
-                // result = kv.val;
-                done = true;
+            if (kv.key == ".TICK") {
+                if (kv.val == "-1") {
+                    // result = kv.val;
+                    done = true;
+                } else {
+                    //qDebug() << "???" << kv.val;
+                    emit tickTime(kv.val);
+                }
             }
         }
         qDebug() << "§loop-end" << done;
         if (done)
             break;
-        QThread::msleep(500);
+        //QThread::msleep(500);
     }
-    thread()->quit();
+    emit resultReady(result);
+    //thread()->quit();
 }
 
-//TODO
+/* TODO--
 void TtRunWorker::tick()
 {
     bool done = false;
@@ -67,16 +83,10 @@ void TtRunWorker::tick()
         thread()->quit();
     }
 }
-
-void TtRunWorker::stop()
-{
-    if (stopstate == 0) {
-        stopstate = 1;
-    }
-}
+*/
 
 //TODO
-void TtRun::run()
+void RunThreadController::runTtThread()
 {
     auto kv = backend->op("RUN_TT");
     if (kv.length() == 0)
@@ -88,15 +98,22 @@ void TtRun::run()
     //TODO: Adjust anything that needs to reflect this ...
 
     worker = new TtRunWorker;
-    worker->moveToThread(&workerThread);
-    connect(&workerThread, &QThread::finished, worker, &QObject::deleteLater);
-    connect(this, &TtRun::operate, worker, &TtRunWorker::doWork);
-    connect(worker, &TtRunWorker::resultReady, this, &TtRun::handleResults);
-    workerThread.start();
+    worker->moveToThread(&runThread);
+    connect(&runThread, &QThread::finished, worker, &QObject::deleteLater);
+    connect(this, &RunThreadController::operate, worker, &TtRunWorker::doWork);
+    connect(worker, &TtRunWorker::resultReady, this, &RunThreadController::handleResults);
+    connect(worker, &TtRunWorker::tickTime, this, &RunThreadController::elapsedTime);
+    runThread.start();
     emit operate("GO");
 }
 
-void TtRun::handleResults(const QString &result)
+void RunThreadController::handleResults(const QString &result)
 {
-    qDebug() << result;
+    qDebug() << "handleResults" << result;
+}
+
+void RunThreadController::stopThread()
+{
+    qDebug() << "!!!STOP!!!";
+    worker->stopFlag = true;
 }

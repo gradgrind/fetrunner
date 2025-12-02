@@ -1,7 +1,7 @@
 #include "backend.h"
 #include <QMap>
 #include "../libfetrunner/libfetrunner.h"
-//#include <iostream>
+#include <iostream>
 
 QMap<QString, QColor> colours{
     // display colours for the log
@@ -26,8 +26,8 @@ QList<KeyVal> Backend::op(QString cmd, QStringList data)
     QJsonDocument doc(cmdobj);
     auto cs = doc.toJson(QJsonDocument::Compact);
     auto result = FetRunner(cs.data());
-    //std::cout << "<<<" << cs.data() << std::endl;
-    //std::cout << ">>>" << result << std::endl;
+    std::cout << "<<<" << cs.data() << std::endl;
+    std::cout << ">>>" << result << std::endl;
     auto jsondoc = QJsonDocument::fromJson(result);
     if (!jsondoc.isArray()) {
         // This needs to be thread-safe, so use a signal.
@@ -39,10 +39,11 @@ QList<KeyVal> Backend::op(QString cmd, QStringList data)
             auto key = e["Type"].toString();
             auto val = e["Text"].toString();
             auto t0 = key + " " + val;
-            emit logcolour(colours.value(key, "#765eff"));
+            emit logcolour(colours.value(key, QColor{0x76, 0x5e, 0xff}));
             emit log(t0);
             if (key == "*ERROR*") {
                 errors.append(val);
+                continue;
             }
             if (key == "$") {
                 // a result
@@ -55,12 +56,15 @@ QList<KeyVal> Backend::op(QString cmd, QStringList data)
                     results.append({key, val});
                     //qDebug() << "$$$" << key << "=" << val;
                 }
-            } else if (key == "+++") {
-                //std::cout << "+++ " << qUtf8Printable(val) << std::endl;
-            } else {
-                //messages.append(key + " " + val);
-                //std::cout << ">>> " << qUtf8Printable(key) << " " << qUtf8Printable(val) << std::endl;
+                continue;
             }
+            if (key == "+++") {
+                //std::cout << "+++ " << qUtf8Printable(val) << std::endl;
+                continue;
+            }
+            // else:
+            //messages.append(key + " " + val);
+            //std::cout << ">>> " << qUtf8Printable(key) << " " << qUtf8Printable(val) << std::endl;
         }
         if (!errors.empty()) {
             if (errors.length() > 5) {

@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QWidget>
-#include "ttrun.h"
+#include "threadrun.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -27,7 +27,7 @@ private:
     QString filedir{};
     QString datatype{};
     bool running{false};
-    TtRun ttrun;
+    RunThreadController threadrunner;
 
 public slots:
     void error_popup(QString msg);
