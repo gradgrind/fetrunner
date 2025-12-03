@@ -270,16 +270,17 @@ tickloop:
 				attdata.Ticks)
 		}
 
-		//TODO: Without the signal catcher, I don't need a "select"
-		select {
-		case <-ticker.C:
+		<-ticker.C
 
-			//TODO???
-			//case <-sigChan:
-			//	logger.Info("[%d] !!! INTERRUPTED !!!\n",
-			//		attdata.Ticks)
-			//	break tickloop
-		}
+		//TODO: Without the signal catcher, I don't need a "select"
+		//select {
+		//case <-ticker.C:
+		//TODO???
+		//case <-sigChan:
+		//	logger.Info("[%d] !!! INTERRUPTED !!!\n",
+		//		attdata.Ticks)
+		//	break tickloop
+		//}
 
 		// TODO???
 		if bdata.StopFlag {

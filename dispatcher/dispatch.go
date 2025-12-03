@@ -129,6 +129,7 @@ func CheckArgs(l *base.Logger, op *DispatchOp, n int) bool {
 
 func init() {
 	OpHandlerMap["SET_FILE"] = file_loader
+	OpHandlerMap["RUN_TT_SOURCE"] = runtt_source
 	OpHandlerMap["RUN_TT"] = runtt
 	OpHandlerMap["_POLL_TT"] = polltt
 	OpHandlerMap["_STOP_TT"] = stoptt
@@ -176,20 +177,25 @@ func file_loader(dsp *Dispatcher, op *DispatchOp) {
 	logger.Error("LoadFile_InvalidContent: %s", fpath)
 }
 
+// `runtt_source` must be run before `runtt` to ensure that there is source data.
+func runtt_source(dsp *Dispatcher, op *DispatchOp) {
+	if dsp.TtSource == nil {
+		if dsp.BaseData.Db != nil {
+			dsp.TtSource = makefet.FetTree(dsp.BaseData, timetable.BasicSetup(dsp.BaseData))
+		} else {
+			dsp.BaseData.Logger.Error("No source")
+			dsp.BaseData.Logger.Result("OK", "false")
+			return
+		}
+	}
+	dsp.BaseData.Logger.Result("OK", "true")
+}
+
 func runtt(dsp *Dispatcher, op *DispatchOp) {
 
 	//TODO: Handle parameters, if any. Persumably timeout could be
 	// one of them.
 
-	if dsp.TtSource == nil {
-
-		//TODO???
-		if dsp.BaseData.Db != nil {
-			dsp.TtSource = makefet.FetTree(dsp.BaseData, timetable.BasicSetup(dsp.BaseData))
-		} else {
-			panic("No source")
-		}
-	}
 	// Set up FET back-end and start processing
 	attdata := &autotimetable.AutoTtData{
 		Source:            dsp.TtSource,
@@ -203,7 +209,7 @@ func runtt(dsp *Dispatcher, op *DispatchOp) {
 
 	fet.SetFetBackend(dsp.BaseData, attdata)
 
-	dsp.BaseData.Logger.Result("OK", "")
+	dsp.BaseData.Logger.Result("OK", "true")
 
 	// Need an extra goroutine so that this can return immediately.
 	//TODO: timeout

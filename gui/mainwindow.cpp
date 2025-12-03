@@ -145,12 +145,12 @@ void MainWindow::push_go()
     if (running)
         return;
 
-    //TODO
-    //backend->op("TT_GO", {ui->tt_timeout->text()});
-    ui->pb_go->setEnabled(false);
-    ui->pb_stop->setEnabled(true);
-    ui->elapsed_time->setText("0");
-    threadrunner.runTtThread();
+    if (backend->op1("RUN_TT_SOURCE", {}, "OK").val == "true") {
+        ui->pb_go->setEnabled(false);
+        ui->pb_stop->setEnabled(true);
+        ui->elapsed_time->setText("0");
+        threadrunner.runTtThread();
+    }
 }
 
 void MainWindow::threadRunFinished()
