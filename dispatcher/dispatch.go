@@ -27,10 +27,10 @@ func init() {
 }
 
 type Dispatcher struct {
-	BaseData *base.BaseData
-	TtSource autotimetable.TtSource
-	//AutoTtData *autotimetable.AutoTtData
-	Running bool
+	BaseData   *base.BaseData
+	TtSource   autotimetable.TtSource
+	AutoTtData *autotimetable.AutoTtData
+	Running    bool
 }
 
 type DispatchOp struct {
@@ -133,6 +133,7 @@ func init() {
 	OpHandlerMap["RUN_TT"] = runtt
 	OpHandlerMap["_POLL_TT"] = polltt
 	OpHandlerMap["_STOP_TT"] = stoptt
+	OpHandlerMap["RESULT_TT"] = ttresult
 }
 
 // Handle (currently) ".fet" and "_w365.json" input files.
@@ -206,6 +207,7 @@ func runtt(dsp *Dispatcher, op *DispatchOp) {
 		SoftConstraintMap: dsp.TtSource.GetSoftConstraintMap(),
 	}
 	attdata.SetParameterDefault()
+	dsp.AutoTtData = attdata
 
 	fet.SetFetBackend(dsp.BaseData, attdata)
 
@@ -224,7 +226,13 @@ func polltt(dsp *Dispatcher, op *DispatchOp) {
 	dsp.BaseData.Logger.Poll()
 }
 
-// TODO
 func stoptt(dsp *Dispatcher, op *DispatchOp) {
 	dsp.BaseData.StopFlag = true
+}
+
+// Get the result data as a JSON string.
+func ttresult(dsp *Dispatcher, op *DispatchOp) {
+	result := dsp.AutoTtData.GetLastResult()
+	//TODO
+	_ = result
 }

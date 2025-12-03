@@ -1,7 +1,6 @@
 package autotimetable
 
 import (
-	"encoding/json"
 	"fetrunner/base"
 	"fmt"
 	"os"
@@ -237,28 +236,20 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData, TIMEOUT int) {
 			// Remove all remaining temporary files
 			attdata.BackendInterface.Tidy(bdata)
 		}
-		if attdata.lastResult != nil {
 
-			attdata.lastResult.ConstraintErrors = attdata.ConstraintErrors
-
-			// Save result of last successful instance.
-			//b, err := json.Marshal(LastResult)
-			b, err := json.MarshalIndent(attdata.lastResult, "", "  ")
+		//TODO: Where (whether?) to save the Result.json file
+		jsonbytes := attdata.GetLastResult()
+		if len(jsonbytes) != 0 {
+			fpath := filepath.Join(bdata.SourceDir, bdata.Name+"_Result.json")
+			err := os.WriteFile(fpath, jsonbytes, 0644)
 			if err != nil {
-				panic(err)
+				logger.Error("%s", err)
 			}
-			fpath := filepath.Join(bdata.SourceDir, "Result.json")
-			f, err := os.Create(fpath)
-			if err != nil {
-				panic("Couldn't open output file: " + fpath)
-			}
-			defer f.Close()
-			_, err = f.Write(b)
-			if err != nil {
-				panic("Couldn't write result to: " + fpath)
-			}
-			attdata.current_instance.Backend.FinalizeResult(bdata, attdata)
 		}
+
+		//TODO: Where (whether?) to save the FET file ...
+		// Perhaps return a JSON object containing anything relevant as a field?
+		attdata.current_instance.Backend.FinalizeResult(bdata, attdata)
 	}()
 
 tickloop:

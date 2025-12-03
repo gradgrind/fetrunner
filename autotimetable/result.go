@@ -100,3 +100,20 @@ func (attdata *AutoTtData) new_current_instance(
 		}
 	}
 }
+
+// Get the "result" of the last successful instance as JSON.
+func (attdata *AutoTtData) GetLastResult() []byte {
+	if attdata.lastResult == nil {
+		return nil
+	}
+
+	// This will include entries added after the "last result" was recorded
+	attdata.lastResult.ConstraintErrors = attdata.ConstraintErrors
+
+	//b, err := json.Marshal(LastResult)
+	b, err := json.MarshalIndent(attdata.lastResult, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	return b
+}
