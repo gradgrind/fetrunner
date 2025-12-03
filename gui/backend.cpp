@@ -1,7 +1,7 @@
 #include "backend.h"
 #include <QMap>
 #include "../libfetrunner/libfetrunner.h"
-#include <iostream>
+//#include <iostream>
 
 QMap<QString, QColor> colours{
     // display colours for the log
@@ -26,8 +26,8 @@ QList<KeyVal> Backend::op(QString cmd, QStringList data)
     QJsonDocument doc(cmdobj);
     auto cs = doc.toJson(QJsonDocument::Compact);
     auto result = FetRunner(cs.data());
-    std::cout << "<<<" << cs.data() << std::endl;
-    std::cout << ">>>" << result << std::endl;
+    //std::cout << "<<<" << cs.data() << std::endl;
+    //std::cout << ">>>" << result << std::endl;
     auto jsondoc = QJsonDocument::fromJson(result);
     if (!jsondoc.isArray()) {
         // This needs to be thread-safe, so use a signal.

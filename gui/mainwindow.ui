@@ -225,6 +225,9 @@
          </item>
          <item>
           <widget class="QPushButton" name="pb_stop">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>&amp;Stop</string>
            </property>

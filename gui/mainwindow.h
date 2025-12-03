@@ -31,9 +31,10 @@ private:
 
 public slots:
     void error_popup(QString msg);
-    void push_go();
+    void threadRunFinished();
 
 private slots:
     void open_file();
+    void push_go();
 };
 #endif // MAINWINDOW_H

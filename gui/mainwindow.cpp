@@ -14,13 +14,45 @@ MainWindow::MainWindow(QWidget *parent)
     ui->tableWidget->resizeColumnsToContents();
 
     backend = new Backend();
-    connect(backend, &Backend::logcolour, ui->logview, &QTextEdit::setTextColor);
-    connect(backend, &Backend::log, ui->logview, &QTextEdit::append);
-    connect(backend, &Backend::error, this, &MainWindow::error_popup);
-    connect(ui->pb_open_new, &QPushButton::clicked, this, &MainWindow::open_file);
-    connect(ui->pb_go, &QPushButton::clicked, this, &MainWindow::push_go);
-    connect(ui->pb_stop, &QPushButton::clicked, &threadrunner, &RunThreadController::stopThread);
-    connect(&threadrunner, &RunThreadController::elapsedTime, ui->elapsed_time, &QLineEdit::setText);
+    connect( //
+        backend,
+        &Backend::logcolour,
+        ui->logview,
+        &QTextEdit::setTextColor);
+    connect( //
+        backend,
+        &Backend::log,
+        ui->logview,
+        &QTextEdit::append);
+    connect( //
+        backend,
+        &Backend::error,
+        this,
+        &MainWindow::error_popup);
+    connect( //
+        ui->pb_open_new,
+        &QPushButton::clicked,
+        this,
+        &MainWindow::open_file);
+    connect( //
+        ui->pb_go,
+        &QPushButton::clicked,
+        this,
+        &MainWindow::push_go);
+    connect( //
+        ui->pb_stop,
+        &QPushButton::clicked,
+        &threadrunner,
+        &RunThreadController::stopThread);
+    connect( //
+        &threadrunner,
+        &RunThreadController::elapsedTime,
+        ui->elapsed_time,
+        &QLineEdit::setText);
+    connect(&threadrunner,
+            &RunThreadController::handleRunFinished,
+            this,
+            &MainWindow::threadRunFinished);
 
     backend->op("CONFIG_INIT");
 
@@ -115,5 +147,15 @@ void MainWindow::push_go()
 
     //TODO
     //backend->op("TT_GO", {ui->tt_timeout->text()});
+    ui->pb_go->setEnabled(false);
+    ui->pb_stop->setEnabled(true);
+    ui->elapsed_time->setText("0");
     threadrunner.runTtThread();
+}
+
+void MainWindow::threadRunFinished()
+{
+    qDebug() << "threadRunFinished";
+    ui->pb_go->setEnabled(true);
+    ui->pb_stop->setEnabled(false);
 }

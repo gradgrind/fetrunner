@@ -41,12 +41,12 @@ public:
     void runTtThread();
 
 public slots:
-    void handleResults(const QString &);
     void stopThread();
 
 signals:
     void startTtRun(const QString &);
     void elapsedTime(const QString);
+    void handleRunFinished();
 };
 
 #endif // THREADRUN_H

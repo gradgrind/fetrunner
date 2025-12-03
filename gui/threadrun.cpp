@@ -37,17 +37,18 @@ void RunThreadWorker::ttrun(const QString &parameter)
 
     bool done = false;
     for (int i = 0; i < 25; ++i) {
-        qDebug() << "§poll" << i;
+        //qDebug() << "§poll" << i;
         if (stopFlag && !stopped) {
-            const auto kvlist = backend->op("_STOP_TT");
-            for (const auto &kv : kvlist) {
-                qDebug() << "?STOP?" << kv.key << kv.val;
-            }
+            backend->op("_STOP_TT");
+            //const auto kvlist = backend->op("_STOP_TT");
+            //for (const auto &kv : kvlist) {
+            //    qDebug() << "?STOP?" << kv.key << kv.val;
+            //}
             stopped = true;
         }
         const auto kvlist = backend->op("_POLL_TT");
         for (const auto &kv : kvlist) {
-            qDebug() << kv.key << kv.val;
+            //qDebug() << kv.key << kv.val;
             if (kv.key == ".TICK") {
                 if (kv.val == "-1") {
                     // result = kv.val;
@@ -58,7 +59,7 @@ void RunThreadWorker::ttrun(const QString &parameter)
                 }
             }
         }
-        qDebug() << "§loop-end" << done;
+        //qDebug() << "§loop-end" << done;
         if (done)
             break;
         //QThread::msleep(500);
@@ -92,7 +93,7 @@ void RunThreadController::runTtThread()
     if (kv.length() == 0)
         return; // return if start unsuccessful
 
-    qDebug() << "Start ...";
+    //qDebug() << "Start ...";
 
     // The back-end should now be running the timetable generation.
     //TODO: Adjust anything that needs to reflect this ...
@@ -114,7 +115,7 @@ void RunThreadController::runTtThread()
             runThreadWorker,
             &RunThreadWorker::runThreadWorkerDone,
             this,
-            &RunThreadController::handleResults);
+            &RunThreadController::handleRunFinished);
         connect( //
             runThreadWorker,
             &RunThreadWorker::tickTime,
@@ -123,11 +124,6 @@ void RunThreadController::runTtThread()
         runThread.start();
     }
     emit startTtRun("GO");
-}
-
-void RunThreadController::handleResults(const QString &result)
-{
-    qDebug() << "handleResults" << result;
 }
 
 void RunThreadController::stopThread()
