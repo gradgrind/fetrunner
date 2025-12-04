@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QCloseEvent>
 #include <QWidget>
 #include "threadrun.h"
 
@@ -22,6 +23,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    void closeEvent(QCloseEvent *e);
 
     QString filename{};
     QString filedir{};

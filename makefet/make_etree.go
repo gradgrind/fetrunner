@@ -35,6 +35,7 @@ func FetTree(
 	fetbuild := &FetBuild{
 		basedata:           bdata,
 		ttdata:             tt_data,
+		rundata:            rundata,
 		fet_virtual_rooms:  map[string]string{},
 		fet_virtual_room_n: map[string]int{},
 	}

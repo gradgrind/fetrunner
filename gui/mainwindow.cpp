@@ -91,6 +91,13 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::closeEvent(QCloseEvent *e)
+{
+    qDebug() << "Quitting ...";
+
+    QWidget::closeEvent(e);
+}
+
 void MainWindow::open_file()
 {
     //qDebug() << "Open File";
@@ -148,6 +155,8 @@ void MainWindow::push_go()
     if (backend->op1("RUN_TT_SOURCE", {}, "OK").val == "true") {
         ui->pb_go->setEnabled(false);
         ui->pb_stop->setEnabled(true);
+        ui->pb_open_new->setEnabled(false);
+        ui->frame_parameters->setEnabled(false);
         ui->elapsed_time->setText("0");
         threadrunner.runTtThread();
     }
@@ -158,4 +167,6 @@ void MainWindow::threadRunFinished()
     qDebug() << "threadRunFinished";
     ui->pb_go->setEnabled(true);
     ui->pb_stop->setEnabled(false);
+    ui->pb_open_new->setEnabled(true);
+    ui->frame_parameters->setEnabled(true);
 }

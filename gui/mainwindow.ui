@@ -35,7 +35,7 @@
      <item>
       <widget class="QLineEdit" name="currentDir">
        <property name="text">
-        <string>/long/path/to/</string>
+        <string/>
        </property>
        <property name="readOnly">
         <bool>true</bool>
@@ -79,7 +79,7 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QFrame" name="frame">
+        <widget class="QFrame" name="frame_parameters">
          <layout class="QFormLayout" name="formLayout">
           <item row="0" column="0">
            <widget class="QLabel" name="label_3">
@@ -119,32 +119,6 @@
              </size>
             </property>
            </spacer>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>Elapsed (secs)</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QLineEdit" name="elapsed_time">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-            </property>
-            <property name="readOnly">
-             <bool>true</bool>
-            </property>
-           </widget>
           </item>
           <item row="3" column="1">
            <spacer name="horizontalSpacer_4">
@@ -192,6 +166,44 @@
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="horizontalFrame">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>40</height>
+          </size>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Elapsed (secs)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="elapsed_time">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -516,12 +528,12 @@
    <slot>clear()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>471</x>
-     <y>518</y>
+     <x>400</x>
+     <y>128</y>
     </hint>
     <hint type="destinationlabel">
-     <x>493</x>
-     <y>418</y>
+     <x>400</x>
+     <y>121</y>
     </hint>
    </hints>
   </connection>
