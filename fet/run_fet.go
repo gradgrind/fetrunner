@@ -31,11 +31,11 @@ func SetFetBackend(bdata *base.BaseData, attdata *autotimetable.AutoTtData) {
 }
 
 func (fbe *FetBackend) Tidy(bdata *base.BaseData) {
-	if len(TEMPORARY_FOLDER) == 0 {
-		os.RemoveAll(filepath.Join(bdata.SourceDir, "tmp"))
+	if TEMPORARY_FOLDER == "" {
+		os.RemoveAll(filepath.Join(bdata.SourceDir, "tmp", bdata.Name))
 	} else {
 		os.RemoveAll(filepath.Join(TEMPORARY_FOLDER,
-			filepath.Base(bdata.SourceDir)))
+			filepath.Base(bdata.Name)))
 	}
 }
 
@@ -45,26 +45,16 @@ func (fbe *FetBackend) RunBackend(
 ) autotimetable.TtBackend {
 	attdata := fbe.attdata
 
-	ttoutdir := filepath.Join(bdata.SourceDir, "_"+bdata.Name)
-	os.RemoveAll(ttoutdir)
-	logger := bdata.Logger
-	err := os.MkdirAll(ttoutdir, 0755)
-	if err != nil {
-		//TODO?
-		logger.Error("!FetOutputDir: %s", err)
-		return nil
-	}
-
 	fname := instance.Tag
 	var odir string
-	if len(TEMPORARY_FOLDER) == 0 {
-		odir = filepath.Join(bdata.SourceDir, "tmp", fname)
+	if TEMPORARY_FOLDER == "" {
+		odir = filepath.Join(bdata.SourceDir, "tmp", bdata.Name, fname)
 	} else {
 		odir = filepath.Join(TEMPORARY_FOLDER,
-			filepath.Base(bdata.SourceDir),
+			filepath.Base(bdata.Name),
 			fname)
 	}
-	err = os.MkdirAll(odir, 0755)
+	err := os.MkdirAll(odir, 0755)
 	if err != nil {
 		//TODO?
 		panic(err)
