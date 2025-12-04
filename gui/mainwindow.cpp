@@ -2,6 +2,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include "backend.h"
+#include "progress_delegate.h"
 #include "ui_mainwindow.h"
 
 Backend *backend;
@@ -11,7 +12,20 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->tableWidget->resizeColumnsToContents();
+    ui->instance_table->resizeColumnsToContents();
+    ui->specials_table->setItemDelegateForColumn( //
+        1,
+        new ProgressDelegate(ui->specials_table));
+
+    auto it_progress0 = new QTableWidgetItem();
+    it_progress0->setData(Qt::UserRole + 1000, 30);
+    ui->specials_table->setItem(0, 1, it_progress0);
+    auto it_progress1 = new QTableWidgetItem();
+    it_progress1->setData(Qt::UserRole + 1000, 50);
+    ui->specials_table->setItem(1, 1, it_progress1);
+    auto it_progress2 = new QTableWidgetItem();
+    it_progress2->setData(Qt::UserRole + 1000, 80);
+    ui->specials_table->setItem(2, 1, it_progress2);
 
     backend = new Backend();
     connect( //
@@ -91,7 +105,8 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::closeEvent(QCloseEvent *e)
+void MainWindow::closeEvent(
+    QCloseEvent *e)
 {
     qDebug() << "Quitting ...";
 
@@ -101,10 +116,6 @@ void MainWindow::closeEvent(QCloseEvent *e)
 void MainWindow::open_file()
 {
     //qDebug() << "Open File";
-
-    //TODO?
-    if (running)
-        return;
 
     QString fdir = filedir;
     if (fdir.isEmpty()) {
@@ -148,15 +159,8 @@ void MainWindow::push_go()
 {
     //qDebug() << "Run fetrunner";
 
-    //TODO?
-    if (running)
-        return;
-
     if (backend->op1("RUN_TT_SOURCE", {}, "OK").val == "true") {
-        ui->pb_go->setEnabled(false);
-        ui->pb_stop->setEnabled(true);
-        ui->pb_open_new->setEnabled(false);
-        ui->frame_parameters->setEnabled(false);
+        threadRunActivated(true);
         ui->elapsed_time->setText("0");
         threadrunner.runTtThread();
     }
@@ -165,8 +169,80 @@ void MainWindow::push_go()
 void MainWindow::threadRunFinished()
 {
     qDebug() << "threadRunFinished";
-    ui->pb_go->setEnabled(true);
-    ui->pb_stop->setEnabled(false);
-    ui->pb_open_new->setEnabled(true);
-    ui->frame_parameters->setEnabled(true);
+    threadRunActivated(false);
 }
+
+void MainWindow::threadRunActivated(
+    bool active)
+{
+    ui->pb_go->setDisabled(active);
+    ui->pb_stop->setEnabled(active);
+    ui->pb_open_new->setDisabled(active);
+    ui->frame_parameters->setDisabled(active);
+}
+
+ProgressDelegate::ProgressDelegate(
+    QObject *parent)
+    : QStyledItemDelegate(parent)
+{}
+
+//TODO: adapt for progress bar
+void ProgressDelegate::paint(
+    //
+    QPainter *painter,
+    const QStyleOptionViewItem &option,
+    const QModelIndex &index) const
+{
+    auto progress = index.data(Qt::UserRole + 1000).toInt();
+
+    qDebug() << "P" << progress;
+
+    QStyleOptionProgressBar progbar;
+    progbar.rect = option.rect;
+    progbar.minimum = 0;
+    progbar.maximum = 100;
+    progbar.progress = progress;
+    progbar.text = QString::number(progress);
+    progbar.textVisible = true;
+    QApplication::style()->drawControl( //
+        QStyle::CE_ProgressBar,
+        &progbar,
+        painter);
+}
+
+/*
+data = [("1", "Baharak", 10), ("2", "Darwaz", 60),
+        ("3", "Fays abad", 20), ("4", "Ishkashim", 80), 
+        ("5", "Jurm", 100)]
+
+class ProgressDelegate(QtWidgets.QStyledItemDelegate):
+    def paint(self, painter, option, index):
+        progress = index.data(QtCore.Qt.UserRole+1000)
+        opt = QtWidgets.QStyleOptionProgressBar()
+        opt.rect = option.rect
+        opt.minimum = 0
+        opt.maximum = 100
+        opt.progress = progress
+        opt.text = "{}%".format(progress)
+        opt.textVisible = True
+        QtWidgets.QApplication.style().drawControl(QtWidgets.QStyle.CE_ProgressBar, opt, painter)
+
+if __name__ == '__main__':
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    w = QtWidgets.QTableWidget(0, 3)
+    delegate = ProgressDelegate(w)
+    w.setItemDelegateForColumn(2, delegate)
+
+    w.setHorizontalHeaderLabels(["ID", "Name", "Progress"])
+    for r, (_id, _name, _progress) in enumerate(data):
+        it_id = QtWidgets.QTableWidgetItem(_id)
+        it_name = QtWidgets.QTableWidgetItem(_name)
+        it_progress = QtWidgets.QTableWidgetItem()
+        it_progress.setData(QtCore.Qt.UserRole+1000, _progress)
+        w.insertRow(w.rowCount())
+        for c, item in enumerate((it_id, it_name, it_progress)):
+            w.setItem(r, c, item)
+    w.show()
+    sys.exit(app.exec_())
+*/

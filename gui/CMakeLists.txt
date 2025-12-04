@@ -23,6 +23,7 @@ qt_add_executable(fetrunner-gui
     mainwindow.ui
     backend.h backend.cpp
     threadrun.h threadrun.cpp
+    progress_delegate.h
 
 )
 

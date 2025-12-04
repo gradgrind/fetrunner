@@ -28,7 +28,8 @@ private:
     QString filename{};
     QString filedir{};
     QString datatype{};
-    bool running{false};
+    void threadRunActivated(bool active);
+
     RunThreadController threadrunner;
 
 public slots:
