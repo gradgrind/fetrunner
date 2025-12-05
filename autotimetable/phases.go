@@ -123,7 +123,7 @@ func (rq *RunQueue) mainphase() bool {
 			if attdata.hard_instance.ProcessingState == 1 {
 				logger.Info(
 					"[%d] Phase 2 ... <- %s\n",
-					attdata.Ticks, attdata.hard_instance.Tag)
+					attdata.Ticks, attdata.hard_instance.ConstraintType)
 			} else {
 				logger.Info(
 					"[%d] Phase 2 ... <- (accumulated instance)\n",
@@ -171,10 +171,11 @@ func (rq *RunQueue) mainphase() bool {
 				for _, si := range rq.split_instance(
 					instance, base_instance, timeout) {
 					split_instances = append(split_instances, si)
-					sit = append(sit, si.Tag)
+					sit = append(sit,
+						fmt.Sprintf("%d:%s", si.Index, si.ConstraintType))
 				}
-				logger.Info("[%d] (SPLIT) %s -> %v\n",
-					attdata.Ticks, instance.Tag, sit)
+				logger.Info("[%d] (SPLIT) %d:%s -> %v\n",
+					attdata.Ticks, instance.Index, instance.ConstraintType, sit)
 
 				//split_instances = append(split_instances,
 				//	runqueue.split_instance(

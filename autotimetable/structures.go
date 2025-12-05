@@ -71,7 +71,7 @@ type AutoTtData struct {
 }
 
 type TtInstance struct {
-	Tag     string
+	Index   int
 	Timeout int // ticks
 
 	// Base instance from which this instance is derived:

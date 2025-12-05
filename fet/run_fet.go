@@ -45,7 +45,7 @@ func (fbe *FetBackend) RunBackend(
 ) autotimetable.TtBackend {
 	attdata := fbe.attdata
 
-	fname := instance.Tag
+	fname := fmt.Sprintf("z%05d~%s", instance.Index, instance.ConstraintType)
 	var odir string
 	if TEMPORARY_FOLDER == "" {
 		odir = filepath.Join(bdata.SourceDir, "tmp", bdata.Name, fname)
@@ -71,7 +71,7 @@ func (fbe *FetBackend) RunBackend(
 		//TODO?
 		panic("Couldn't write fet file to: " + fetfile)
 	}
-	if instance.Tag == "COMPLETE" {
+	if instance.ConstraintType == "_COMPLETE" {
 		// Save fet file at top level of working directory.
 		cfile := filepath.Join(bdata.SourceDir,
 			filepath.Base(strings.TrimSuffix(
@@ -82,16 +82,18 @@ func (fbe *FetBackend) RunBackend(
 		}
 	}
 	logfile := filepath.Join(odir, "logs", "max_placed_activities.txt")
+	resultfile := filepath.Join(odir, "timetables", fname, fname+"_activities.xml")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	// Note that it should be safe to call `cancel` multiple times.
 	fet_data := &FetTtData{
-		finished: 0,
-		ifile:    fetfile,
-		fetxml:   fet_xml,
-		odir:     odir,
-		logfile:  logfile,
-		cancel:   cancel,
+		finished:   0,
+		ifile:      fetfile,
+		fetxml:     fet_xml,
+		odir:       odir,
+		logfile:    logfile,
+		resultfile: resultfile,
+		cancel:     cancel,
 	}
 
 	params := []string{
@@ -136,6 +138,7 @@ type FetTtData struct {
 	fetxml      []byte
 	odir        string // the working directory for this instance
 	logfile     string
+	resultfile  string
 	rdfile      *os.File // this must be closed when the subprocess finishes
 	reader      *bufio.Reader
 	cancel      func()
@@ -220,8 +223,11 @@ func (data *FetTtData) Tick(
 							percent := (count * 100) / int(attdata.NActivities)
 							if percent > instance.Progress {
 								instance.Progress = percent
-								base.Report(fmt.Sprintf("%s: %d @ %d\n",
-									instance.Tag, percent, instance.Ticks))
+								base.Report(fmt.Sprintf("%d:%s: %d @ %d\n",
+									instance.Index,
+									instance.ConstraintType,
+									percent,
+									instance.Ticks))
 							}
 						}
 					}
@@ -291,8 +297,7 @@ func (data *FetTtData) Results(
 ) []autotimetable.TtActivityPlacement {
 	logger := bdata.Logger
 	// Get placements
-	xmlpath := filepath.Join(data.odir, "timetables", instance.Tag,
-		instance.Tag+"_activities.xml")
+	xmlpath := data.resultfile
 	// Open the XML file
 	xmlFile, err := os.Open(xmlpath)
 	if err != nil {

@@ -66,9 +66,10 @@ func (rq *RunQueue) update_instances() {
 					instance.Ticks >= attdata.Parameters.LAST_TIME_1 {
 					// Stop instance
 					logger.Info(
-						"[%d] Stop (too slow) %s @ %d, p: %d n: %d\n",
+						"[%d] Stop (too slow) %d:%s @ %d, p: %d n: %d\n",
 						attdata.Ticks,
-						instance.Tag,
+						instance.Index,
+						instance.ConstraintType,
 						instance.Ticks,
 						instance.Progress,
 						len(instance.Constraints))
@@ -87,9 +88,10 @@ func (rq *RunQueue) update_instances() {
 					// ... but stretch the rule a bit
 					continue
 				}
-				logger.Info("[%d] Timeout %s @ %d, p: %d n: %d\n",
+				logger.Info("[%d] Timeout %d:%s @ %d, p: %d n: %d\n",
 					attdata.Ticks,
-					instance.Tag,
+					instance.Index,
+					instance.ConstraintType,
 					instance.Ticks,
 					instance.Progress,
 					len(instance.Constraints))
@@ -101,8 +103,11 @@ func (rq *RunQueue) update_instances() {
 			//logger.Info("[%d] <<+ %s @ %d (%d)\n + %v\n",
 			//	basic_data.Ticks, instance.Tag, instance.Ticks,
 			//	len(instance.Constraints), instance.Constraints)
-			logger.Info("[%d] <<+ %s @ %d (%d)\n",
-				attdata.Ticks, instance.Tag, instance.Ticks,
+			logger.Info("[%d] <<+ %d:%s @ %d (%d)\n",
+				attdata.Ticks,
+				instance.Index,
+				instance.ConstraintType,
+				instance.Ticks,
 				len(instance.Constraints))
 			instance.ProcessingState = 1
 
@@ -110,8 +115,11 @@ func (rq *RunQueue) update_instances() {
 			//logger.Info("[%d] <<- %s @ %d (%d)\n + %v\n",
 			//	basic_data.Ticks, instance.Tag, instance.Ticks,
 			//	len(instance.Constraints), instance.Constraints)
-			logger.Info("[%d] <<- %s @ %d (%d)\n",
-				attdata.Ticks, instance.Tag, instance.Ticks,
+			logger.Info("[%d] <<- %d:%s @ %d (%d)\n",
+				attdata.Ticks,
+				instance.Index,
+				instance.ConstraintType,
+				instance.Ticks,
 				len(instance.Constraints))
 			instance.ProcessingState = 2
 		}
@@ -148,9 +156,10 @@ func (rq *RunQueue) update_queue() int {
 			//	len(instance.Constraints),
 			//	instance.Timeout,
 			//	instance.Constraints)
-			logger.Info("[%d] >> %s n: %d t: %d\n",
+			logger.Info("[%d] >> %d:%s n: %d t: %d\n",
 				attdata.Ticks,
-				instance.Tag,
+				instance.Index,
+				instance.ConstraintType,
 				len(instance.Constraints),
 				instance.Timeout)
 			instance.Backend =
@@ -210,14 +219,15 @@ func (rq *RunQueue) update_queue() int {
 				attdata.constraint_list = append(
 					attdata.constraint_list, inew)
 				rq.add(inew)
-				tags = append(tags, inew.Tag)
+				tags = append(tags,
+					fmt.Sprintf("%d:%s", inew.Index, inew.ConstraintType))
 				running++
 			}
 			if n != 0 {
 				panic("Bug: wrong constraint division ...")
 			}
-			logger.Info("[%d] (NSPLIT) %s -> %v\n",
-				attdata.Ticks, instance.Tag, tags)
+			logger.Info("[%d] (NSPLIT) %d:%s -> %v\n",
+				attdata.Ticks, instance.Index, instance.ConstraintType, tags)
 		}
 	}
 

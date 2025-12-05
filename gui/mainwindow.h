@@ -13,6 +13,10 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
+enum UserRoleN { // Used for table data types
+    UserRoleInt = Qt::UserRole
+};
+
 class MainWindow : public QWidget
 {
     Q_OBJECT

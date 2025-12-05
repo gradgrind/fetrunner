@@ -3,6 +3,7 @@ package autotimetable
 import (
 	"encoding/json"
 	"fetrunner/base"
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -27,8 +28,8 @@ type Result struct {
 func (attdata *AutoTtData) new_current_instance(
 	bdata *base.BaseData, instance *TtInstance,
 ) {
-	bdata.Logger.Info("[%d] <<< %s @ %d, n: %d\n",
-		attdata.Ticks, instance.Tag,
+	bdata.Logger.Info("[%d] <<< %d:%s @ %d, n: %d\n",
+		attdata.Ticks, instance.Index, instance.ConstraintType,
 		instance.Ticks, len(instance.Constraints))
 
 	// Read placements
@@ -88,7 +89,8 @@ func (attdata *AutoTtData) new_current_instance(
 		if err != nil {
 			panic(err)
 		}
-		fpath := filepath.Join(bdata.SourceDir, instance.Tag+".json")
+		fpath := filepath.Join(bdata.SourceDir,
+			fmt.Sprintf("%s_%d.json", instance.ConstraintType, instance.Index))
 		f, err := os.Create(fpath)
 		if err != nil {
 			panic("Couldn't open output file: " + fpath)

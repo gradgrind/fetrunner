@@ -150,7 +150,8 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData, TIMEOUT int) {
 		enabled[i] = true
 	}
 	attdata.full_instance = &TtInstance{
-		Tag:               "COMPLETE",
+		Index:             0,
+		ConstraintType:    "_COMPLETE",
 		Timeout:           0,
 		ConstraintEnabled: enabled,
 	}
@@ -165,8 +166,10 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData, TIMEOUT int) {
 			enabled[i] = true
 		}
 	}
+	attdata.instanceCounter++
 	attdata.hard_instance = &TtInstance{
-		Tag:               "HARD_ONLY",
+		Index:             attdata.instanceCounter,
+		ConstraintType:    "_HARD_ONLY",
 		Timeout:           0,
 		ConstraintEnabled: enabled,
 	}
@@ -182,8 +185,10 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData, TIMEOUT int) {
 		}
 	} else {
 		enabled = make([]bool, attdata.NConstraints)
+		attdata.instanceCounter++
 		attdata.null_instance = &TtInstance{
-			Tag:               "UNCONSTRAINED",
+			Index:             attdata.instanceCounter,
+			ConstraintType:    "_UNCONSTRAINED",
 			Timeout:           attdata.cycle_timeout,
 			ConstraintEnabled: enabled,
 		}
@@ -301,7 +306,7 @@ tickloop:
 				logger.Info(
 					"[%d] ? %s (%d @ %d)\n",
 					attdata.Ticks,
-					attdata.full_instance.Tag,
+					attdata.full_instance.ConstraintType,
 					full_progress,
 					full_progress_ticks,
 				)
@@ -337,7 +342,7 @@ tickloop:
 					logger.Info(
 						"[%d] ? %s (%d @ %d)\n",
 						attdata.Ticks,
-						attdata.hard_instance.Tag,
+						attdata.full_instance.ConstraintType,
 						hard_progress,
 						hard_progress_ticks,
 					)
@@ -364,10 +369,10 @@ tickloop:
 			logger.Info(
 				"[%d] !!! TIMEOUT !!!\n + %s: %d @ %d\n + %s: %d @ %d\n",
 				attdata.Ticks,
-				attdata.full_instance.Tag,
+				attdata.full_instance.ConstraintType,
 				full_progress,
 				full_progress_ticks,
-				attdata.hard_instance.Tag,
+				attdata.hard_instance.ConstraintType,
 				hard_progress,
 				hard_progress_ticks,
 			)
@@ -461,7 +466,7 @@ tickloop:
 	base.Report(report)
 
 	if result != nil {
-		logger.Info("Result: %s\n", result.Tag)
+		logger.Info("Result: %d:%s\n", result.Index, result.ConstraintType)
 	}
 	logger.Tick(-1)
 }
@@ -492,8 +497,7 @@ func (attdata *AutoTtData) new_instance(
 	// Make a new `TtInstance`
 	attdata.instanceCounter++
 	instance := &TtInstance{
-		Tag: fmt.Sprintf("z%05d~%s",
-			attdata.instanceCounter, constraint_type),
+		Index:        attdata.instanceCounter,
 		Timeout:      timeout,
 		BaseInstance: instance_0,
 

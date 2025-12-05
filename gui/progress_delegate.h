@@ -1,8 +1,8 @@
 #ifndef PROGRESS_DELEGATE_H
 #define PROGRESS_DELEGATE_H
 
-#import <QApplication>
-#import <QStyledItemDelegate>
+#include <QApplication>
+#include <QStyledItemDelegate>
 
 class ProgressDelegate : public QStyledItemDelegate
 {
