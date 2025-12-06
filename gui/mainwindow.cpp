@@ -12,7 +12,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->instance_table->resizeColumnsToContents();
+    //ui->instance_table->resizeColumnsToContents();
+    ui->instance_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->instance_table->setItemDelegateForColumn( //
         4,
         new ProgressDelegate(ui->instance_table));
@@ -186,6 +187,10 @@ void MainWindow::push_go()
 {
     //qDebug() << "Run fetrunner";
 
+    instance_row_map.clear();
+    ui->instance_table->setRowCount(0);
+    ui->instance_table->resizeColumnsToContents();
+
     if (backend->op1("RUN_TT_SOURCE", {}, "OK").val == "true") {
         threadRunActivated(true);
         ui->elapsed_time->setText("0");
@@ -240,6 +245,26 @@ void MainWindow::ticker(const QString &data)
 {
     ui->elapsed_time->setText(data);
     timeTicks = data;
+
+    // Go through instance rows, removing "ended" ones
+    // which have not been "accepted".
+    struct rempair
+    {
+        int key;
+        QTableWidgetItem *item;
+    };
+    QList<rempair> to_remove;
+    for (const auto &[key, val] : std::as_const(instance_row_map).asKeyValueRange()) {
+        if (val.state < 0) {
+            to_remove.append({key, val.item});
+        }
+    }
+    for (const auto &rp : to_remove) {
+        auto row = rp.item->row();
+        qDebug() << "?removeRow" << row << rp.key;
+        ui->instance_table->removeRow(row);
+        instance_row_map.remove(rp.key);
+    }
 }
 
 void MainWindow::nconstraints(const QString &data)
@@ -264,10 +289,14 @@ void MainWindow::progress(const QString &data)
         auto irow = instance_row_map.value(key);
         int row;
         if (irow.item == nullptr) {
-            auto item0 = new QTableWidgetItem();
-            auto item1 = new QTableWidgetItem();
-            auto item2 = new QTableWidgetItem();
+            auto text0 = irow.data[1];
+            auto item0 = new QTableWidgetItem(text0);
+            auto item1 = new QTableWidgetItem(irow.data[2]);
+            item1->setTextAlignment(Qt::AlignCenter);
+            auto item2 = new QTableWidgetItem(irow.data[3]);
+            item2->setTextAlignment(Qt::AlignCenter);
             auto item3 = new QTableWidgetItem();
+            item3->setTextAlignment(Qt::AlignCenter);
             auto item4 = new QTableWidgetItem();
             row = ui->instance_table->rowCount();
             ui->instance_table->insertRow(row);
@@ -278,6 +307,15 @@ void MainWindow::progress(const QString &data)
             ui->instance_table->setItem(row, 4, item4);
             irow.item = item4;
             instance_row_map[key] = irow;
+
+            QFontMetrics fm(ui->instance_table->font());
+            int col_width = fm.horizontalAdvance(text0) + 10; // add some padding
+            if (col_width >= ui->instance_table->width() / 2) {
+                col_width = ui->instance_table->width() / 2;
+            }
+            if (ui->instance_table->columnWidth(0) < col_width) {
+                ui->instance_table->setColumnWidth(0, col_width);
+            }
         } else {
             row = ui->instance_table->row(irow.item);
         }
@@ -292,7 +330,7 @@ void MainWindow::istart(const QString &data)
     auto key = slist[0].toInt();
     if (key < INSTANCE0)
         return;
-    instance_row_map[key] = {slist, nullptr};
+    instance_row_map[key] = {slist, nullptr, 0};
 }
 
 void MainWindow::iend(const QString &data)
@@ -301,6 +339,11 @@ void MainWindow::iend(const QString &data)
     auto key = slist[0].toInt();
     if (key < INSTANCE0)
         return;
+    auto irow = instance_row_map[key];
+    if (irow.state == 0) {
+        irow.state = -1;
+        instance_row_map[key] = irow;
+    }
 }
 
 void MainWindow::iaccept(const QString &data)
@@ -309,4 +352,7 @@ void MainWindow::iaccept(const QString &data)
     auto key = slist[0].toInt();
     if (key < INSTANCE0)
         return;
+    auto irow = instance_row_map[key];
+    irow.state = 1;
+    instance_row_map[key] = irow;
 }

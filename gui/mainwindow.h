@@ -22,6 +22,7 @@ struct instance_row
 {
     QStringList data;
     QTableWidgetItem *item;
+    int state;
 };
 
 class MainWindow : public QWidget
