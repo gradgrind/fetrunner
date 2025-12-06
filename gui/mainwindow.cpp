@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     ui->instance_table->resizeColumnsToContents();
     ui->instance_table->setItemDelegateForColumn( //
-        3,
+        4,
         new ProgressDelegate(ui->instance_table));
     ui->specials_table->setItemDelegateForColumn( //
         1,
@@ -81,6 +81,21 @@ MainWindow::MainWindow(QWidget *parent)
         &RunThreadController::progress,
         this,
         &MainWindow::progress);
+    connect( //
+        &threadrunner,
+        &RunThreadController::istart,
+        this,
+        &MainWindow::istart);
+    connect( //
+        &threadrunner,
+        &RunThreadController::iend,
+        this,
+        &MainWindow::iend);
+    connect( //
+        &threadrunner,
+        &RunThreadController::iaccept,
+        this,
+        &MainWindow::iaccept);
     connect(&threadrunner,
             &RunThreadController::runThreadWorkerDone,
             this,
@@ -235,20 +250,63 @@ void MainWindow::nconstraints(const QString &data)
     ui->c_enabled_s->setText(slist[2] + " / " + slist[3]);
 }
 
+const int INSTANCE0 = 3;
+
 void MainWindow::progress(const QString &data)
 {
     auto slist = data.split(u'.');
     auto key = slist[0].toInt();
-    if (key < 3) {
+    if (key < INSTANCE0) {
         ui->specials_table->item(key, 0)->setText(slist[2]);
         ui->specials_table->item(key, 1)->setData(UserRoleInt, slist[1].toInt());
     } else {
-        //TODO: The entry must be in the map!
-        /*
-        auto item = instance_progress_map.value(key);
-        item->setData(UserRoleInt, slist[1].toInt());
-        auto row = ui->instance_table->row(item);
+        // The entry must be in the map!
+        auto irow = instance_row_map.value(key);
+        int row;
+        if (irow.item == nullptr) {
+            auto item0 = new QTableWidgetItem();
+            auto item1 = new QTableWidgetItem();
+            auto item2 = new QTableWidgetItem();
+            auto item3 = new QTableWidgetItem();
+            auto item4 = new QTableWidgetItem();
+            row = ui->instance_table->rowCount();
+            ui->instance_table->insertRow(row);
+            ui->instance_table->setItem(row, 0, item0);
+            ui->instance_table->setItem(row, 1, item1);
+            ui->instance_table->setItem(row, 2, item2);
+            ui->instance_table->setItem(row, 3, item3);
+            ui->instance_table->setItem(row, 4, item4);
+            irow.item = item4;
+            instance_row_map[key] = irow;
+        } else {
+            row = ui->instance_table->row(irow.item);
+        }
+        irow.item->setData(UserRoleInt, slist[1].toInt());
         ui->instance_table->item(row, 3)->setText(slist[2]);
-        */
     }
+}
+
+void MainWindow::istart(const QString &data)
+{
+    auto slist = data.split(u'.');
+    auto key = slist[0].toInt();
+    if (key < INSTANCE0)
+        return;
+    instance_row_map[key] = {slist, nullptr};
+}
+
+void MainWindow::iend(const QString &data)
+{
+    auto slist = data.split(u'.');
+    auto key = slist[0].toInt();
+    if (key < INSTANCE0)
+        return;
+}
+
+void MainWindow::iaccept(const QString &data)
+{
+    auto slist = data.split(u'.');
+    auto key = slist[0].toInt();
+    if (key < INSTANCE0)
+        return;
 }

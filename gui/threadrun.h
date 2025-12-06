@@ -11,7 +11,7 @@ class RunThreadWorker : public QObject
 
 public:
     //TODO-- this is just for testing
-    ~RunThreadWorker() { qDebug() << "Delete RunThreadWorker"; }
+    //~RunThreadWorker() { qDebug() << "Delete RunThreadWorker"; }
 
     bool stopFlag;
 

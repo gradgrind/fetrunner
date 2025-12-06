@@ -75,25 +75,6 @@ void RunThreadWorker::ttrun(const QString &parameter)
     //thread()->quit();
 }
 
-/* TODO--
-void TtRunWorker::tick()
-{
-    bool done = false;
-    for (const auto &kv : backend->op("_POLL_TT")) {
-        qDebug() << kv.key << kv.val;
-        if (kv.key == "TT_DONE") {
-            // result = kv.val;
-            done = true;
-        }
-    }
-    if (done) {
-        //emit resultReady(result);
-        thread()->quit();
-    }
-}
-*/
-
-//TODO
 void RunThreadController::runTtThread()
 {
     auto kv = backend->op("RUN_TT");
@@ -138,6 +119,21 @@ void RunThreadController::runTtThread()
             &RunThreadWorker::progress,
             this,
             &RunThreadController::progress);
+        connect( //
+            runThreadWorker,
+            &RunThreadWorker::istart,
+            this,
+            &RunThreadController::istart);
+        connect( //
+            runThreadWorker,
+            &RunThreadWorker::iend,
+            this,
+            &RunThreadController::iend);
+        connect( //
+            runThreadWorker,
+            &RunThreadWorker::iaccept,
+            this,
+            &RunThreadController::iaccept);
         runThread.start();
     }
     emit startTtRun("GO");
