@@ -311,6 +311,11 @@
            </column>
            <column>
             <property name="text">
+             <string>@ (secs)</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
              <string>Progress</string>
             </property>
            </column>

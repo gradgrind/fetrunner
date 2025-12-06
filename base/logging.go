@@ -181,12 +181,3 @@ func (l *Logger) Tick(n int) {
 func (l *Logger) Poll() {
 	l.logEnter(POLLOP, "")
 }
-
-// TODO?
-var CONSOLE bool
-
-func Report(msg string) {
-	if CONSOLE {
-		fmt.Print(msg)
-	}
-}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 )
 
 type Result struct {
@@ -28,9 +29,7 @@ type Result struct {
 func (attdata *AutoTtData) new_current_instance(
 	bdata *base.BaseData, instance *TtInstance,
 ) {
-	bdata.Logger.Info("[%d] <<< %d:%s @ %d, n: %d\n",
-		attdata.Ticks, instance.Index, instance.ConstraintType,
-		instance.Ticks, len(instance.Constraints))
+	bdata.Logger.Result(".ACCEPT", strconv.Itoa(instance.Index))
 
 	// Read placements
 	alist := instance.Backend.Results(bdata, attdata, instance)

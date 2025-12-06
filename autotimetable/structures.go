@@ -15,6 +15,8 @@ type ConstraintIndex = int
 // timetable data (based on a source file, for example).
 type AutoTtData struct {
 	Parameters struct {
+		//TODO: not all entries are (currently) used by libfetrunner
+
 		// The behaviour of the TESTING flag depends on the back-end. It
 		// might, for example, use fixed seeds for random number generators
 		// so as to produce reproduceable runs.

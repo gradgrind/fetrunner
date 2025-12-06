@@ -8,7 +8,6 @@ import (
 	"runtime"
 	"runtime/debug"
 	"slices"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -223,7 +222,6 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData, TIMEOUT int) {
 			fmt.Printf("??? logger: %v\n", logger)
 			//logger.Bug("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---\n",
 			//	attdata.Ticks, r, debug.Stack())
-			base.Report("!!! ERROR: see log\n")
 		}
 		for {
 			// Wait for active instances to finish, stopping them if
@@ -260,7 +258,7 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData, TIMEOUT int) {
 		// Perhaps return a JSON object containing anything relevant as a field?
 		attdata.current_instance.Backend.FinalizeResult(bdata, attdata)
 
-		logger.Tick(-1)
+		logger.Tick(-1) // signal end of process
 	}()
 
 tickloop:
@@ -309,9 +307,7 @@ tickloop:
 			p := attdata.full_instance.Progress
 			if p > full_progress {
 				full_progress = p
-				logger.Result(".PROGRESS",
-					attdata.full_instance.ConstraintType+"."+
-						strconv.Itoa(full_progress))
+				reportProgress(logger, attdata.full_instance)
 			}
 		}
 
@@ -341,9 +337,7 @@ tickloop:
 				p := attdata.hard_instance.Progress
 				if p > hard_progress {
 					hard_progress = p
-					logger.Result(".PROGRESS",
-						attdata.hard_instance.ConstraintType+"."+
-							strconv.Itoa(hard_progress))
+					reportProgress(logger, attdata.hard_instance)
 				}
 			}
 		} else if attdata.Parameters.SKIP_HARD {
@@ -385,9 +379,7 @@ tickloop:
 				p := attdata.null_instance.Progress
 				if p > null_progress {
 					null_progress = p
-					logger.Result(".PROGRESS",
-						attdata.null_instance.ConstraintType+"."+
-							strconv.Itoa(null_progress))
+					reportProgress(logger, attdata.null_instance)
 				}
 				continue
 
@@ -401,7 +393,6 @@ tickloop:
 				logger.Info(
 					"[%d] Couldn't process input data!\n",
 					attdata.Ticks)
-				base.Report("!!! Couldn't process input data!\n")
 				return
 
 			default:
@@ -468,11 +459,17 @@ tickloop:
 		"::: ALL CONSTRAINTS: (hard) %d / %d  (soft) %d / %d\n",
 		hnn, hnall, snn, snall)
 	logger.Info("%s", report)
-	base.Report(report)
 
 	if result != nil {
 		logger.Info("Result: %d:%s\n", result.Index, result.ConstraintType)
 	}
+}
+
+func reportProgress(logger *base.Logger, instance *TtInstance) {
+	logger.Result(".PROGRESS", fmt.Sprintf("%d.%d.%d",
+		instance.Index,
+		instance.Progress,
+		instance.Ticks))
 }
 
 func (attdata *AutoTtData) abort_instance(instance *TtInstance) {

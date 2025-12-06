@@ -4,6 +4,7 @@ import (
 	"fetrunner/base"
 	"fmt"
 	"slices"
+	"strconv"
 )
 
 type RunQueue struct {
@@ -56,6 +57,7 @@ func (rq *RunQueue) update_instances() {
 		switch instance.RunState {
 		case 0: // running, not finished
 			if instance.Progress == 100 {
+				reportProgress(logger, instance)
 				continue // the state will be changed next time round
 			}
 			// Check for timeout or getting "stuck"
@@ -78,6 +80,9 @@ func (rq *RunQueue) update_instances() {
 						attdata.BlockConstraint[instance.Constraints[0]] = true
 					}
 				}
+				if instance.LastTime == instance.Ticks {
+					reportProgress(logger, instance)
+				}
 				continue
 			}
 
@@ -99,28 +104,19 @@ func (rq *RunQueue) update_instances() {
 				continue
 			}
 
+			if instance.LastTime == instance.Ticks {
+				reportProgress(logger, instance)
+			}
+
 		case 1: // completed successfully
-			//logger.Info("[%d] <<+ %s @ %d (%d)\n + %v\n",
-			//	basic_data.Ticks, instance.Tag, instance.Ticks,
-			//	len(instance.Constraints), instance.Constraints)
-			logger.Info("[%d] <<+ %d:%s @ %d (%d)\n",
-				attdata.Ticks,
-				instance.Index,
-				instance.ConstraintType,
-				instance.Ticks,
-				len(instance.Constraints))
+			//logger.Result(".END", strconv.Itoa(instance.Index))
 			instance.ProcessingState = 1
+			if instance.LastTime == instance.Ticks {
+				reportProgress(logger, instance)
+			}
 
 		default: // completed unsuccessfully
-			//logger.Info("[%d] <<- %s @ %d (%d)\n + %v\n",
-			//	basic_data.Ticks, instance.Tag, instance.Ticks,
-			//	len(instance.Constraints), instance.Constraints)
-			logger.Info("[%d] <<- %d:%s @ %d (%d)\n",
-				attdata.Ticks,
-				instance.Index,
-				instance.ConstraintType,
-				instance.Ticks,
-				len(instance.Constraints))
+			//logger.Result(".END", strconv.Itoa(instance.Index))
 			instance.ProcessingState = 2
 		}
 	}
@@ -133,6 +129,7 @@ func (rq *RunQueue) update_queue() int {
 	running := 0
 	for instance := range rq.Active {
 		if instance.RunState != 0 {
+			logger.Result(".END", strconv.Itoa(instance.Index))
 			delete(rq.Active, instance)
 			if !attdata.Parameters.DEBUG {
 				instance.Backend.Clear()
@@ -150,18 +147,11 @@ func (rq *RunQueue) update_queue() int {
 		rq.Next++
 
 		if instance.ProcessingState < 0 {
-			//logger.Info("[%d] >> %s n: %d t: %d\n + %v\n",
-			//	basic_data.Ticks,
-			//	instance.Tag,
-			//	len(instance.Constraints),
-			//	instance.Timeout,
-			//	instance.Constraints)
-			logger.Info("[%d] >> %d:%s n: %d t: %d\n",
-				attdata.Ticks,
+			logger.Result(".START", fmt.Sprintf("%d.%s.%d.%d",
 				instance.Index,
 				instance.ConstraintType,
 				len(instance.Constraints),
-				instance.Timeout)
+				instance.Timeout))
 			instance.Backend =
 				attdata.BackendInterface.RunBackend(rq.BData, instance)
 			instance.ProcessingState = 0 // indicate started/running

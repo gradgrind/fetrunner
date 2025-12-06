@@ -22,7 +22,10 @@ signals:
     void runThreadWorkerDone(const QString &result);
     void ticker(const QString &result);
     void nconstraints(const QString &result);
+    void istart(const QString &result);
     void progress(const QString &result);
+    void iend(const QString &result);
+    void iaccept(const QString &result);
 };
 
 class RunThreadController : public QObject
@@ -50,7 +53,10 @@ signals:
     void ticker(const QString &);
     void runThreadWorkerDone();
     void nconstraints(const QString &result);
+    void istart(const QString &result);
     void progress(const QString &result);
+    void iend(const QString &result);
+    void iaccept(const QString &result);
 };
 
 #endif // THREADRUN_H

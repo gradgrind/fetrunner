@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QCloseEvent>
+#include <QTableWidgetItem>
 #include <QWidget>
 #include "threadrun.h"
 
@@ -36,6 +37,7 @@ private:
 
     RunThreadController threadrunner;
     QString timeTicks{};
+    QHash<int, QTableWidgetItem *> instance_progress_map;
 
 public slots:
     void error_popup(const QString &msg);

@@ -238,15 +238,17 @@ void MainWindow::nconstraints(const QString &data)
 void MainWindow::progress(const QString &data)
 {
     auto slist = data.split(u'.');
-    auto key = slist[0];
-    if (key == "_COMPLETE") {
-        ui->specials_table->item(0, 0)->setText(timeTicks);
-        ui->specials_table->item(0, 1)->setData(UserRoleInt, slist[1].toInt());
-    } else if (key == "_HARD_ONLY") {
-        ui->specials_table->item(1, 0)->setText(timeTicks);
-        ui->specials_table->item(1, 1)->setData(UserRoleInt, slist[1].toInt());
-    } else if (key == "_UNCONSTRAINED") {
-        ui->specials_table->item(2, 0)->setText(timeTicks);
-        ui->specials_table->item(2, 1)->setData(UserRoleInt, slist[1].toInt());
+    auto key = slist[0].toInt();
+    if (key < 3) {
+        ui->specials_table->item(key, 0)->setText(slist[2]);
+        ui->specials_table->item(key, 1)->setData(UserRoleInt, slist[1].toInt());
+    } else {
+        //TODO: The entry must be in the map!
+        /*
+        auto item = instance_progress_map.value(key);
+        item->setData(UserRoleInt, slist[1].toInt());
+        auto row = ui->instance_table->row(item);
+        ui->instance_table->item(row, 3)->setText(slist[2]);
+        */
     }
 }

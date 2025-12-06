@@ -223,11 +223,6 @@ func (data *FetTtData) Tick(
 							percent := (count * 100) / int(attdata.NActivities)
 							if percent > instance.Progress {
 								instance.Progress = percent
-								base.Report(fmt.Sprintf("%d:%s: %d @ %d\n",
-									instance.Index,
-									instance.ConstraintType,
-									percent,
-									instance.Ticks))
 							}
 						}
 					}

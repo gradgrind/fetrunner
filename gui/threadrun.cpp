@@ -62,6 +62,8 @@ void RunThreadWorker::ttrun(const QString &parameter)
                 emit nconstraints(kv.val);
             } else if (kv.key == ".PROGRESS") {
                 emit progress(kv.val);
+            } else if (kv.key == ".START") {
+                emit istart(kv.val);
             }
         }
         //qDebug() << "§loop-end" << done;
