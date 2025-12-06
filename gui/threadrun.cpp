@@ -57,6 +57,9 @@ void RunThreadWorker::ttrun(const QString &parameter)
                     //qDebug() << "???" << kv.val;
                     emit tickTime(kv.val);
                 }
+            } else if (kv.key == ".NCONSTRAINTS") {
+                auto items = kv.val.split(u'.');
+                emit nconstraints(kv.val);
             }
         }
         //qDebug() << "§loop-end" << done;
@@ -121,6 +124,11 @@ void RunThreadController::runTtThread()
             &RunThreadWorker::tickTime,
             this,
             &RunThreadController::elapsedTime);
+        connect( //
+            runThreadWorker,
+            &RunThreadWorker::nconstraints,
+            this,
+            &RunThreadController::nconstraints);
         runThread.start();
     }
     emit startTtRun("GO");

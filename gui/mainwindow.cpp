@@ -66,6 +66,11 @@ MainWindow::MainWindow(QWidget *parent)
         &RunThreadController::elapsedTime,
         ui->elapsed_time,
         &QLineEdit::setText);
+    connect( //
+        &threadrunner,
+        &RunThreadController::nconstraints,
+        this,
+        &MainWindow::nconstraints);
     connect(&threadrunner,
             &RunThreadController::handleRunFinished,
             this,
@@ -87,12 +92,6 @@ MainWindow::MainWindow(QWidget *parent)
         auto wh = s.split("x");
         resize(wh[0].toInt(), wh[1].toInt());
     }
-
-    //TODO--
-    QString s1{tr("Hello")};
-    ui->lineEdit_3->setText(s1);
-    QString s2{tr("Something")};
-    ui->lineEdit_4->setText(s2);
 }
 
 MainWindow::~MainWindow()
@@ -189,7 +188,6 @@ ProgressDelegate::ProgressDelegate(
     : QStyledItemDelegate(parent)
 {}
 
-//TODO: adapt for progress bar
 void ProgressDelegate::paint( //
     QPainter *painter,
     const QStyleOptionViewItem &option,
@@ -207,4 +205,12 @@ void ProgressDelegate::paint( //
         QStyle::CE_ProgressBar,
         &progbar,
         painter);
+}
+
+void MainWindow::nconstraints(QString data)
+{
+    auto slist = data.split(u'.');
+    ui->c_enabled_t->setText(slist[0]);
+    ui->c_enabled_h->setText(slist[1] + " / " + slist[2]);
+    ui->c_enabled_s->setText(slist[3] + " / " + slist[4]);
 }

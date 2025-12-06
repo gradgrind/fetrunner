@@ -35,34 +35,6 @@ func (attdata *AutoTtData) new_current_instance(
 	// Read placements
 	alist := instance.Backend.Results(bdata, attdata, instance)
 
-	// The discarded hard constraints ...
-	hnall := 0 // count all hard constraints
-	// Gather constraint indexes:
-	hunfulfilled := map[ConstraintType][]ConstraintIndex{}
-	for ctype, clist := range attdata.HardConstraintMap {
-		ulist := []ConstraintIndex{}
-		for _, i := range clist {
-			if !instance.ConstraintEnabled[i] {
-				ulist = append(ulist, i)
-			}
-		}
-		hunfulfilled[ctype] = ulist
-		hnall += len(clist)
-	}
-	// The discarded soft constraints ...
-	snall := 0 // count all soft constraints
-	// Gather constraint indexes:
-	sunfulfilled := map[ConstraintType][]ConstraintIndex{}
-	for ctype, clist := range attdata.SoftConstraintMap {
-		ulist := []ConstraintIndex{}
-		for _, i := range clist {
-			if !instance.ConstraintEnabled[i] {
-				ulist = append(ulist, i)
-			}
-		}
-		sunfulfilled[ctype] = ulist
-		snall += len(clist)
-	}
 	clist := attdata.Source.GetConstraints()
 	rlist := attdata.Source.GetRooms()
 	attdata.lastResult = &Result{
@@ -75,14 +47,13 @@ func (attdata *AutoTtData) new_current_instance(
 		// This allows constraint errors which are detected later to be
 		// included, but there may also be spurious timeout messages about
 		// constraints which are enabled.
-		ConstraintErrors:           attdata.ConstraintErrors,
-		Rooms:                      rlist,
-		Placements:                 alist,
-		UnfulfilledHardConstraints: hunfulfilled,
-		TotalHardConstraints:       hnall,
-		UnfulfilledSoftConstraints: sunfulfilled,
-		TotalSoftConstraints:       snall,
+		ConstraintErrors: attdata.ConstraintErrors,
+		Rooms:            rlist,
+		Placements:       alist,
 	}
+
+	attdata.get_nconstraints(bdata, instance)
+
 	if attdata.Parameters.DEBUG {
 		//b, err := json.Marshal(LastResult)
 		b, err := json.MarshalIndent(attdata.lastResult, "", "  ")
@@ -100,6 +71,54 @@ func (attdata *AutoTtData) new_current_instance(
 		if err != nil {
 			panic("Couldn't write result to: " + fpath)
 		}
+	}
+}
+
+func (attdata *AutoTtData) get_nconstraints(
+	bdata *base.BaseData, instance *TtInstance,
+) {
+	// The discarded hard constraints ...
+	hnall := 0 // count all hard constraints
+	hn := 0    // count fulfilled hard constraints
+	// Gather constraint indexes:
+	hunfulfilled := map[ConstraintType][]ConstraintIndex{}
+	for ctype, clist := range attdata.HardConstraintMap {
+		ulist := []ConstraintIndex{}
+		for _, i := range clist {
+			if instance.ConstraintEnabled[i] {
+				hn++
+			} else {
+				ulist = append(ulist, i)
+			}
+		}
+		hunfulfilled[ctype] = ulist
+		hnall += len(clist)
+	}
+	// The discarded soft constraints ...
+	snall := 0 // count all soft constraints
+	sn := 0    // count fulfilled soft constraints
+	// Gather constraint indexes:
+	sunfulfilled := map[ConstraintType][]ConstraintIndex{}
+	for ctype, clist := range attdata.SoftConstraintMap {
+		ulist := []ConstraintIndex{}
+		for _, i := range clist {
+			if instance.ConstraintEnabled[i] {
+				sn++
+			} else {
+				ulist = append(ulist, i)
+			}
+		}
+		sunfulfilled[ctype] = ulist
+		snall += len(clist)
+	}
+	bdata.Logger.Result(".NCONSTRAINTS", fmt.Sprintf("%d.%d.%d.%d.%d",
+		attdata.Ticks, hn, hnall, sn, snall))
+
+	if attdata.lastResult != nil {
+		attdata.lastResult.UnfulfilledHardConstraints = hunfulfilled
+		attdata.lastResult.TotalHardConstraints = hnall
+		attdata.lastResult.UnfulfilledSoftConstraints = sunfulfilled
+		attdata.lastResult.TotalSoftConstraints = snall
 	}
 }
 

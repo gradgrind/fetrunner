@@ -207,6 +207,8 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData, TIMEOUT int) {
 	hard_progress := 0       // current percentage
 	hard_progress_ticks := 0 // time of last increment
 
+	attdata.get_nconstraints(bdata, attdata.null_instance) // count constraints
+
 	// *** Ticker loop ***
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()

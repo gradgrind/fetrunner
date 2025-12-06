@@ -345,7 +345,7 @@
                </widget>
               </item>
               <item row="0" column="1">
-               <widget class="QLineEdit" name="lineEdit_3">
+               <widget class="QLineEdit" name="c_enabled_h">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
                   <horstretch>50</horstretch>
@@ -365,7 +365,7 @@
                </widget>
               </item>
               <item row="1" column="1">
-               <widget class="QLineEdit" name="lineEdit_4">
+               <widget class="QLineEdit" name="c_enabled_s">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
                   <horstretch>50</horstretch>
@@ -378,7 +378,7 @@
                </widget>
               </item>
               <item row="3" column="1">
-               <widget class="QLineEdit" name="lineEdit_6">
+               <widget class="QLineEdit" name="c_enabled_t">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
                   <horstretch>50</horstretch>

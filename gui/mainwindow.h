@@ -43,5 +43,6 @@ public slots:
 private slots:
     void open_file();
     void push_go();
+    void nconstraints(QString data);
 };
 #endif // MAINWINDOW_H
