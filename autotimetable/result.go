@@ -111,8 +111,8 @@ func (attdata *AutoTtData) get_nconstraints(
 		sunfulfilled[ctype] = ulist
 		snall += len(clist)
 	}
-	bdata.Logger.Result(".NCONSTRAINTS", fmt.Sprintf("%d.%d.%d.%d.%d",
-		attdata.Ticks, hn, hnall, sn, snall))
+	bdata.Logger.Result(".NCONSTRAINTS", fmt.Sprintf("%d.%d.%d.%d",
+		hn, hnall, sn, snall))
 
 	if attdata.lastResult != nil {
 		attdata.lastResult.UnfulfilledHardConstraints = hunfulfilled

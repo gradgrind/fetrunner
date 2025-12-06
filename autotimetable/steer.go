@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"runtime/debug"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -202,16 +203,17 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData, TIMEOUT int) {
 		attdata.phase = 0
 	}
 
-	full_progress := 0       // current percentage
-	full_progress_ticks := 0 // time of last increment
-	hard_progress := 0       // current percentage
-	hard_progress_ticks := 0 // time of last increment
+	full_progress := 0 // current percentage
+	hard_progress := 0 // current percentage
+	null_progress := 0
 
 	attdata.get_nconstraints(bdata, attdata.null_instance) // count constraints
 
 	// *** Ticker loop ***
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
+
+	// The final tidying up – also when an error occurs
 	defer func() {
 		// Tidy up
 		r := recover()
@@ -257,6 +259,8 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData, TIMEOUT int) {
 		//TODO: Where (whether?) to save the FET file ...
 		// Perhaps return a JSON object containing anything relevant as a field?
 		attdata.current_instance.Backend.FinalizeResult(bdata, attdata)
+
+		logger.Tick(-1)
 	}()
 
 tickloop:
@@ -299,19 +303,15 @@ tickloop:
 			attdata.new_current_instance(bdata, attdata.current_instance)
 			logger.Info("[%d] +A+ All constraints OK +++\n",
 				attdata.Ticks)
+			attdata.get_nconstraints(bdata, attdata.current_instance)
 			break
 		} else {
 			p := attdata.full_instance.Progress
 			if p > full_progress {
 				full_progress = p
-				full_progress_ticks = attdata.Ticks
-				logger.Info(
-					"[%d] ? %s (%d @ %d)\n",
-					attdata.Ticks,
-					attdata.full_instance.ConstraintType,
-					full_progress,
-					full_progress_ticks,
-				)
+				logger.Result(".PROGRESS",
+					attdata.full_instance.ConstraintType+"."+
+						strconv.Itoa(full_progress))
 			}
 		}
 
@@ -323,6 +323,7 @@ tickloop:
 				logger.Info(
 					"[%d] +H+ All hard constraints OK +++\n",
 					attdata.Ticks)
+				attdata.get_nconstraints(bdata, attdata.current_instance)
 				// Cancel everything except full instance.
 				if attdata.null_instance.ProcessingState == 0 {
 					attdata.abort_instance(attdata.null_instance)
@@ -340,14 +341,9 @@ tickloop:
 				p := attdata.hard_instance.Progress
 				if p > hard_progress {
 					hard_progress = p
-					hard_progress_ticks = attdata.Ticks
-					logger.Info(
-						"[%d] ? %s (%d @ %d)\n",
-						attdata.Ticks,
-						attdata.full_instance.ConstraintType,
-						hard_progress,
-						hard_progress_ticks,
-					)
+					logger.Result(".PROGRESS",
+						attdata.hard_instance.ConstraintType+"."+
+							strconv.Itoa(hard_progress))
 				}
 			}
 		} else if attdata.Parameters.SKIP_HARD {
@@ -355,6 +351,7 @@ tickloop:
 				if attdata.hard_instance.ProcessingState == 1 {
 					// First successful instance.
 					attdata.current_instance = attdata.hard_instance
+					attdata.get_nconstraints(bdata, attdata.current_instance)
 				}
 			} else if attdata.hard_instance.ProcessingState == 0 {
 				attdata.abort_instance(attdata.hard_instance)
@@ -364,19 +361,18 @@ tickloop:
 				attdata.current_instance == nil {
 				// First successful instance.
 				attdata.current_instance = attdata.hard_instance
+				attdata.get_nconstraints(bdata, attdata.current_instance)
 			}
 		}
 
 		if attdata.Ticks == TIMEOUT {
 			logger.Info(
-				"[%d] !!! TIMEOUT !!!\n + %s: %d @ %d\n + %s: %d @ %d\n",
+				"[%d] !!! TIMEOUT !!!\n + %s: %d + %s: %d\n",
 				attdata.Ticks,
 				attdata.full_instance.ConstraintType,
 				full_progress,
-				full_progress_ticks,
 				attdata.hard_instance.ConstraintType,
 				hard_progress,
-				hard_progress_ticks,
 			)
 			break
 		}
@@ -386,6 +382,13 @@ tickloop:
 			// `null_instance` are running.
 			switch runqueue.phase0() {
 			case 0:
+				p := attdata.null_instance.Progress
+				if p > null_progress {
+					null_progress = p
+					logger.Result(".PROGRESS",
+						attdata.null_instance.ConstraintType+"."+
+							strconv.Itoa(null_progress))
+				}
 				continue
 
 			case 1:
@@ -470,7 +473,6 @@ tickloop:
 	if result != nil {
 		logger.Info("Result: %d:%s\n", result.Index, result.ConstraintType)
 	}
-	logger.Tick(-1)
 }
 
 func (attdata *AutoTtData) abort_instance(instance *TtInstance) {

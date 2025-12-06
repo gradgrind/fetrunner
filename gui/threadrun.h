@@ -20,8 +20,9 @@ public slots:
 
 signals:
     void runThreadWorkerDone(const QString &result);
-    void tickTime(const QString &result);
+    void ticker(const QString &result);
     void nconstraints(const QString &result);
+    void progress(const QString &result);
 };
 
 class RunThreadController : public QObject
@@ -46,9 +47,10 @@ public slots:
 
 signals:
     void startTtRun(const QString &);
-    void elapsedTime(const QString &);
-    void handleRunFinished();
+    void ticker(const QString &);
+    void runThreadWorkerDone();
     void nconstraints(const QString &result);
+    void progress(const QString &result);
 };
 
 #endif // THREADRUN_H

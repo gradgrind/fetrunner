@@ -35,14 +35,17 @@ private:
     void threadRunActivated(bool active);
 
     RunThreadController threadrunner;
+    QString timeTicks{};
 
 public slots:
-    void error_popup(QString msg);
-    void threadRunFinished();
+    void error_popup(const QString &msg);
 
 private slots:
     void open_file();
     void push_go();
-    void nconstraints(QString data);
+    void ticker(const QString &data);
+    void nconstraints(const QString &data);
+    void progress(const QString &data);
+    void runThreadWorkerDone();
 };
 #endif // MAINWINDOW_H

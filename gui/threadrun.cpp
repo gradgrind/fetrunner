@@ -55,11 +55,13 @@ void RunThreadWorker::ttrun(const QString &parameter)
                     done = true;
                 } else {
                     //qDebug() << "???" << kv.val;
-                    emit tickTime(kv.val);
+                    emit ticker(kv.val);
                 }
             } else if (kv.key == ".NCONSTRAINTS") {
                 auto items = kv.val.split(u'.');
                 emit nconstraints(kv.val);
+            } else if (kv.key == ".PROGRESS") {
+                emit progress(kv.val);
             }
         }
         //qDebug() << "§loop-end" << done;
@@ -118,17 +120,22 @@ void RunThreadController::runTtThread()
             runThreadWorker,
             &RunThreadWorker::runThreadWorkerDone,
             this,
-            &RunThreadController::handleRunFinished);
+            &RunThreadController::runThreadWorkerDone);
         connect( //
             runThreadWorker,
-            &RunThreadWorker::tickTime,
+            &RunThreadWorker::ticker,
             this,
-            &RunThreadController::elapsedTime);
+            &RunThreadController::ticker);
         connect( //
             runThreadWorker,
             &RunThreadWorker::nconstraints,
             this,
             &RunThreadController::nconstraints);
+        connect( //
+            runThreadWorker,
+            &RunThreadWorker::progress,
+            this,
+            &RunThreadController::progress);
         runThread.start();
     }
     emit startTtRun("GO");
