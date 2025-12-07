@@ -271,13 +271,13 @@ void MainWindow::ticker(const QString &data)
     };
     QList<rempair> to_remove;
     for (const auto &[key, val] : std::as_const(instance_row_map).asKeyValueRange()) {
-        if (val.state < 0) {
+        if (val.state < 0 && val.item != nullptr) {
             to_remove.append({key, val.item});
         }
     }
     for (const auto &rp : to_remove) {
+        //qDebug() << "?removeRow" << row << rp.key;
         auto row = rp.item->row();
-        qDebug() << "?removeRow" << row << rp.key;
         ui->instance_table->removeRow(row);
         instance_row_map.remove(rp.key);
     }
