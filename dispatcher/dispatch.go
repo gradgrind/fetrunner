@@ -9,6 +9,7 @@ import (
 	"fetrunner/timetable"
 	"fetrunner/w365tt"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -240,6 +241,40 @@ func ttresult(dsp *Dispatcher, op *DispatchOp) {
 
 // Set a parameter for autotimetable.
 func ttparameter(dsp *Dispatcher, op *DispatchOp) {
+	logger := dsp.BaseData.Logger
+	key := op.Data[0]
+	val := op.Data[1]
 	//TODO
-	dsp.BaseData.Logger.Result("OK", "true")
+	switch key {
+
+	case "TIMEOUT":
+		n, err := strconv.Atoi(val)
+		if err != nil {
+			logger.Error("BadNumber: %s=%s", key, val)
+			return
+		} else {
+			dsp.TtParameters.TIMEOUT = n
+		}
+
+	case "MAXPROCESSES":
+		n, err := strconv.Atoi(val)
+		if err != nil {
+			logger.Error("BadNumber: %s=%s", key, val)
+			return
+		} else {
+			dsp.TtParameters.MAXPROCESSES = autotimetable.MaxProcesses(n)
+		}
+
+	case "DEBUG":
+		dsp.TtParameters.DEBUG = (val == "true")
+
+	case "TESTING":
+		dsp.TtParameters.TESTING = (val == "true")
+
+	case "SKIP_HARD":
+		dsp.TtParameters.SKIP_HARD = (val == "true")
+
+	}
+
+	dsp.BaseData.Logger.Result(key, val)
 }

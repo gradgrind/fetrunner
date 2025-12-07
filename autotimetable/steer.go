@@ -24,7 +24,7 @@ necessary (depending on the difficulty of the data).
 */
 func DefaultParameters() *Parameters {
 	return &Parameters{
-		MAXPROCESSES:             min(max(runtime.NumCPU(), 4), 6),
+		MAXPROCESSES:             MaxProcesses(0),
 		TIMEOUT:                  300, // seconds
 		NEW_BASE_TIMEOUT_FACTOR:  12,  // => 1.2
 		NEW_CYCLE_TIMEOUT_FACTOR: 15,  // => 1.5
@@ -32,6 +32,18 @@ func DefaultParameters() *Parameters {
 		LAST_TIME_1:              50,
 		DEBUG:                    false,
 	}
+}
+
+const minProcesses int = 4
+
+func MaxProcesses(n int) int {
+	if n == 0 {
+		return min(max(runtime.NumCPU(), 4), 6)
+	}
+	if n <= minProcesses {
+		return minProcesses
+	}
+	return n
 }
 
 /*
