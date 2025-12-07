@@ -323,6 +323,13 @@ void MainWindow::progress(const QString &data)
             ui->instance_table->setItem(row, 4, item4);
             irow.item = item4;
             instance_row_map[key] = irow;
+
+            //ui->instance_table->scrollToItem(item4); // ensure new row visible
+
+            QTimer::singleShot(0, [this, item4]() { //
+                this->ui->instance_table->scrollToItem(item4);
+            });
+
         } else {
             row = ui->instance_table->row(irow.item);
         }
