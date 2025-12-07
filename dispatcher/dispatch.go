@@ -150,7 +150,7 @@ func file_loader(dsp *Dispatcher, op *DispatchOp) {
 	}
 	fpath := op.Data[0]
 
-	if strings.HasSuffix(fpath, ".fet") {
+	if strings.HasSuffix(strings.ToLower(fpath), ".fet") {
 		ttRunDataFet := fet.FetRead(bd, fpath)
 		if ttRunDataFet != nil {
 			dsp.TtSource = ttRunDataFet
@@ -162,7 +162,7 @@ func file_loader(dsp *Dispatcher, op *DispatchOp) {
 			bd.Db = nil
 			return
 		}
-	} else if strings.HasSuffix(fpath, "_w365.json") {
+	} else if strings.HasSuffix(strings.ToLower(fpath), "_w365.json") {
 		db0 := bd.Db
 		bd.Db = base.NewDb()
 		if w365tt.LoadJSON(bd, fpath) {
