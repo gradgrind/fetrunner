@@ -12,23 +12,26 @@ import (
 	"time"
 )
 
-func (attdata *AutoTtData) SetParameterDefault() {
-	/* There is probably no general "optimum" value for the various
-	parameters, that is likely to depend on the data. But perhaps values
-	can be found which are frequently useful. It might be helpful to use
-	shorter overall timeouts during the initial cycles of testing the data,
-	to identify potential problem areas without long processing delays. For
-	later cycles longer times may be necessary (depending on the difficulty
-	of the data).
-	*/
-	attdata.Parameters.MAXPROCESSES = min(max(runtime.NumCPU(), 4), 6)
+/*
+	Default parameter values for autotimetable.
 
-	attdata.Parameters.NEW_BASE_TIMEOUT_FACTOR = 12  // => 1.2
-	attdata.Parameters.NEW_CYCLE_TIMEOUT_FACTOR = 15 // => 1.5
-	attdata.Parameters.LAST_TIME_0 = 5
-	attdata.Parameters.LAST_TIME_1 = 50
-
-	attdata.Parameters.DEBUG = false
+There is probably no general "optimum" value for the various parameters,
+that is likely to depend on the data. But perhaps values can be found which
+are frequently useful. It might be helpful to use shorter overall timeouts
+during the initial cycles of testing the data, to identify potential problem
+areas without long processing delays. For later cycles longer times may be
+necessary (depending on the difficulty of the data).
+*/
+func DefaultParameters() *Parameters {
+	return &Parameters{
+		MAXPROCESSES:             min(max(runtime.NumCPU(), 4), 6),
+		TIMEOUT:                  300, // seconds
+		NEW_BASE_TIMEOUT_FACTOR:  12,  // => 1.2
+		NEW_CYCLE_TIMEOUT_FACTOR: 15,  // => 1.5
+		LAST_TIME_0:              5,
+		LAST_TIME_1:              50,
+		DEBUG:                    false,
+	}
 }
 
 /*
@@ -114,7 +117,7 @@ which constraints were dropped and any error messages for them which may have
 been produced by the generator back-end).
 */
 
-func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData, TIMEOUT int) {
+func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 	logger := bdata.Logger
 	bdata.StopFlag = false
 	attdata.lastResult = nil
@@ -359,7 +362,7 @@ tickloop:
 			}
 		}
 
-		if attdata.Ticks == TIMEOUT {
+		if attdata.Ticks == attdata.Parameters.TIMEOUT {
 			logger.Info(
 				"[%d] !!! TIMEOUT !!!\n + %s: %d + %s: %d\n",
 				attdata.Ticks,

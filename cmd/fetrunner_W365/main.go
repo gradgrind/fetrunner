@@ -2,16 +2,16 @@
 fetrunner_W365 produces a FET configuration file from a supplied Waldorf 365
 data set (JSON). It then runs the `fetrunner` back-end on this file.
 
-The name of the input file should ideally end with "_w365.json", for example
-"myfile_w365.json". This will enable a consistent automatic naming of the
+The name of the input file should end with "_w365.json", for example
+"myfile_w365.json". This allows consistent automatic naming of the
 generated files.
 
 The correlation of the Walforf 365 elements with their FET equivalents is
 achieved by placing pairs of identifiers/references in the result file
-("Result.json").
+("myfile_Result.json").
 
 The `autotimetable` package provides the main `fetrunner` algorithm. Its
-basic data is in the structure `autotimetable.BasicData`, including the
+basic data is in the structure `autotimetable.AutoTtData`, including the
 run-time parameters, among other things.
 
 After dealing with the parameters and file paths, the input file is read
@@ -20,7 +20,7 @@ Waldorf 365. This form is managed in the "base" package, the primary data
 structure being `base.DbTopLevel`.
 
 There are some useful pieces of information which are not contained directly
-directly in the input file, but which can be derived from it. The method
+in the input file, but which can be derived from it. The method
 `base.PrepareDb` performs the first of this processing and also checks for
 certain errors in the data.
 
@@ -28,35 +28,32 @@ Some further preprocessing of the data specifically for timetable purposes
 is performed by `timetable.BasicSetup`, which produces a `timetable.TtData`
 structure.
 
-The function `makefet.FetTree` uses the above structures to produce an
+The function `makefet.FetTree` uses the above structures to produce a
 `fet.TtRunDataFet` structure containing information specific to the
 `fetrunner` FET back-end, including the XML structure of the FET file,
 so that modified versions can be produced easily. Also, further information
-is added to the `autotimetable.BasicData` structure.
+is added to the `autotimetable.AutoTtData` structure.
 
 The `fetrunner` back-end using FET to generate timetables is set up by the
 call to `fet.SetFetBackend` and the actual `fetrunner` algorithm is started
 by calling the method `StartGeneration`.
 
-The result-files are saved in a (new) subdirectory of the directory of the
-input file. The name of this subdirectory is based on the name of the input
-file.
+The result-files are saved in the same directory as the input file and are
+based on the stem of the input file name. Using "myfile_w365.json" as
+input:
 
-  - Log file (run.log): Contains error messages and warnings as well as
-    information about the steps performed. It can be read continueously
+  - Log file (myfile.log): Contains error messages and warnings as well as
+    information about the steps performed. It can be read continuously
     to monitor progress.
 
-  - Initial FET file: The file to be fed to FET with all constraints active.
-    Its name is based on that of the input file, the contents should be
-    essentiallly the same, but the constraints are tagged with identifiers
-    in their "Comments" fields and there there may be some minor formatting
-    differences.
+  - Initial FET file (myfile.fet): The file to be fed to FET with all
+    constraints active.
 
-  - Successful FET file (Result.fet): The last FET file to run successfully
-    before the process ended.
+  - Successful FET file (myfile_Result.fet): The last FET file to run
+    successfully before the process ended.
 
-  - Result file (Result.json): A processed view of the results of the last
-    successful FET run (with Result.fet).
+  - Result file (myfile_Result.json): A processed view of the results of
+    the last successful FET run (with myfile_Result.fet).
 
   - Other files will be generated temporarily, but removed before the process
     completes.
@@ -74,44 +71,20 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
 )
 
+const file_ending string = "_w365.json"
+
+var logfile *os.File
+
 func main() {
-
-	parameters := struct {
-		//TODO: not all entries are (currently) used by libfetrunner
-
-		// The behaviour of the TESTING flag depends on the back-end. It
-		// might, for example, use fixed seeds for random number generators
-		// so as to produce reproduceable runs.
-		TESTING bool
-		// If the SKIP_HARD flag is true, assume the hard constraints are
-		// satisfiable – skip the unconstrained instance, basing tests on
-		// the hard-only instance.
-		SKIP_HARD bool
-		// This approach relies on parallel processing. If there are too few
-		// real processors it will be inefficient:
-		MAXPROCESSES int
-
-		NEW_BASE_TIMEOUT_FACTOR  int // factor * 10
-		CYCLE_TIMEOUT_MIN        int
-		NEW_CYCLE_TIMEOUT_FACTOR int // factor * 10
-
-		DEBUG bool
-
-		// Tick count limits for testing whether an instance with no timeout
-		// has got stuck. See `(*RunQueue).update_instances()` method.
-		LAST_TIME_0 int
-		LAST_TIME_1 int
-	}{}
-
 	v := flag.Bool("v", false, "print version and exit")
-	flag.BoolVar(&parameters.TESTING, "T", false, "run in testing mode")
-	flag.BoolVar(&parameters.SKIP_HARD, "h", false,
-		"skip hard constraint testing phase")
+	testing := flag.Bool("T", false, "run in testing mode")
+	skip_hard := flag.Bool("h", false, "skip hard constraint testing phase")
 	timeout := flag.Int("t", 300, "set timeout")
 	nprocesses := flag.Int("p", 0, "max. parallel processes")
 	debug := flag.Bool("d", false, "debug")
@@ -119,94 +92,53 @@ func main() {
 	flag.Parse()
 
 	if *v {
-		fmt.Printf("fetrunner version %s\n", base.VERSION)
+		fmt.Println("fetrunner version:", base.VERSION)
 		return
-	}
-
-	if *nprocesses > 0 {
-		parameters.MAXPROCESSES = *nprocesses
-	}
-	if *debug {
-		parameters.DEBUG = true
 	}
 
 	args := flag.Args()
 	if len(args) != 1 {
 		if len(args) == 0 {
-			log.Fatalln("ERROR* No input file")
+			log.Fatalln("No input file")
 		}
-		log.Fatalf("*ERROR* Too many command-line arguments:\n  %+v\n", args)
+		log.Fatalf("Too many command-line arguments:  %+v\n", args)
 	}
 	abspath, err := filepath.Abs(args[0])
 	if err != nil {
-		log.Fatalf("*ERROR* Couldn't resolve file path: %s\n", args[0])
+		log.Fatalln(err)
 	}
-	if !strings.HasSuffix(strings.ToLower(abspath), "_w365.json") {
-		log.Fatalf("*ERROR* Source file without '_w365.json' ending: %s\n", abspath)
+	if !strings.HasSuffix(strings.ToLower(abspath), file_ending) {
+		log.Fatalf("Source file without '%s' ending: %s\n", file_ending, abspath)
 	}
 	if _, err := os.Stat(abspath); errors.Is(err, os.ErrNotExist) {
-		log.Fatalf("*ERROR* Source file doesn't exist: %s\n", abspath)
+		log.Fatalln(err)
 	}
 
-	dispatcher.Dispatch(`{"Op":"CONFIG_INIT"}`)
-	dispatcher.Dispatch(fmt.Sprintf(`{"Op":"SET_FILE", "Data":["%s"]}`, abspath))
-	dispatcher.Dispatch(`{"Op":"RUN_TT_SOURCE"}`)
+	logpath := strings.TrimSuffix(abspath, file_ending) + ".log"
+	logfile, err = os.OpenFile(logpath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer logfile.Close()
+
+	do("TT_PARAMETER", "TIMEOUT", strconv.Itoa(*timeout))
+	do("TT_PARAMETER", "MAXPROCESSES", strconv.Itoa(*nprocesses))
+	do("TT_PARAMETER", "DEBUG", strconv.FormatBool(*debug))
+	do("TT_PARAMETER", "TESTING", strconv.FormatBool(*testing))
+	do("TT_PARAMETER", "SKIP_HARD", strconv.FormatBool(*skip_hard))
+
+	do("CONFIG_INIT")
+	do("SET_FILE", abspath)
+	do("RUN_TT_SOURCE")
 
 	go termination()
 	var wg sync.WaitGroup
 	wg.Go(runloop)
 	wg.Wait()
-
-	_ = timeout
-
-	/*
-		f1 := filepath.Base(strings.TrimSuffix(abspath, filepath.Ext(abspath)))
-		d1 := filepath.Dir(abspath)
-		workingdir := filepath.Join(d1, "_"+f1)
-		os.RemoveAll(workingdir)
-		err = os.MkdirAll(workingdir, 0755)
-		if err != nil {
-			log.Fatal(err)
-		}
-		attdata.SourceDir = workingdir
-
-		logger := base.NewLogger()
-		logpath := filepath.Join(workingdir, "run.log")
-		go base.LogToFile(logger, logpath)
-		logger.InitConfig()
-		logger.TestFet()
-		attdata.Logger = logger
-
-		db0 := base.NewDb()
-		w365tt.LoadJSON(db0, abspath)
-		db0.PrepareDb()
-
-		db0.SaveDb(filepath.Join(d1, f1+"_DB.json"))
-
-		// Make FET file
-		tt_data := timetable.BasicSetup(db0)
-		/ *
-			base.Report(fmt.Sprintf("Atomic Groups: %d\n",
-				len(tt_data.AtomicGroups)))
-			base.Report(fmt.Sprintf("Teachers: %d\n",
-				len(db0.Teachers)))
-			base.Report(fmt.Sprintf("Rooms: %d\n",
-				len(db0.Rooms)))
-			base.Report(fmt.Sprintf("Activities: %d\n",
-				len(tt_data.Activities)))
-		* /
-		makefet.FetTree(attdata, tt_data)
-
-		// Set up FET back-end and start processing
-		fet.SetFetBackend(attdata)
-		attdata.StartGeneration(*timeout)
-	*/
 }
 
-var stop_request bool = false
-
 func runloop() {
-	dispatcher.Dispatch(`{"Op":"RUN_TT"}`)
+	do("RUN_TT")
 	for {
 		if stop_request {
 			do("_STOP_TT")
@@ -235,15 +167,20 @@ func do(op string, data ...string) {
 	json.Unmarshal([]byte(res), &v)
 	done := false
 	for _, r := range v {
-		fmt.Println("===", r)
 		if r.Text == ".TICK=-1" {
 			done = true
 		}
+
+		lstring := r.Type + " " + r.Text
+		logfile.WriteString(lstring + "\n")
 	}
+
 	if done {
 		os.Exit(0)
 	}
 }
+
+var stop_request bool = false
 
 // Catch "terminate" signal (goroutine)
 func termination() {
@@ -252,8 +189,5 @@ func termination() {
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
 	<-sigChan // wait for signal
-	//	logger.Info("[%d] !!! INTERRUPTED !!!\n",
-	//		attdata.Ticks)
-	fmt.Println("!!! INTERRUPTED !!!")
 	stop_request = true
 }

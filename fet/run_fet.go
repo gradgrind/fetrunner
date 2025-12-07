@@ -277,7 +277,7 @@ func (data *FetTtData) FinalizeResult(
 	bdata *base.BaseData,
 	attdata *autotimetable.AutoTtData) {
 	// Write FET file at top level of working directory.
-	fetfile := filepath.Join(bdata.SourceDir, "Result.fet")
+	fetfile := filepath.Join(bdata.SourceDir, bdata.Name+"_Result.fet")
 	err := os.WriteFile(fetfile, data.fetxml, 0644)
 	if err != nil {
 		panic("Couldn't write fet file to: " + fetfile)

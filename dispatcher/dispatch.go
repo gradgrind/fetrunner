@@ -12,25 +12,27 @@ import (
 	"strings"
 )
 
-var logger0 *base.Logger
+var Logger0 *base.Logger
 
 func init() {
 	// Set up logger.
-	logger0 = base.NewLogger()
-	go base.LogToBuffer(logger0)
+	Logger0 = base.NewLogger()
+	go base.LogToBuffer(Logger0)
 	// Set up default Dispatcher
 	DispatcherMap[""] = &Dispatcher{
+		TtParameters: autotimetable.DefaultParameters(),
 		BaseData: &base.BaseData{
-			Logger: logger0,
+			Logger: Logger0,
 		},
 	}
 }
 
 type Dispatcher struct {
-	BaseData   *base.BaseData
-	TtSource   autotimetable.TtSource
-	AutoTtData *autotimetable.AutoTtData
-	Running    bool
+	BaseData     *base.BaseData
+	TtSource     autotimetable.TtSource
+	AutoTtData   *autotimetable.AutoTtData
+	TtParameters *autotimetable.Parameters
+	Running      bool
 }
 
 type DispatchOp struct {
@@ -46,15 +48,15 @@ var OpHandlerMap map[string]func(*Dispatcher, *DispatchOp) = map[string]func(
 func Dispatch(cmd0 string) string {
 	var op DispatchOp
 	if err := json.Unmarshal([]byte(cmd0), &op); err != nil {
-		logger0.Error("!InvalidOp_JSON: %s", err)
+		Logger0.Error("!InvalidOp_JSON: %s", err)
 	} else {
 		dispatchOp(&op)
 	}
 	// At the end of an operation the log entries must be collected.
 	// To ensure that none are missed, the logger channels are used to
 	// synchronize the accesses.
-	logger0.LogChan <- base.LogEntry{Type: base.ENDOP}
-	return <-logger0.ResultChan
+	Logger0.LogChan <- base.LogEntry{Type: base.ENDOP}
+	return <-Logger0.ResultChan
 }
 
 func dispatchOp(op *DispatchOp) {
@@ -63,28 +65,28 @@ func dispatchOp(op *DispatchOp) {
 		switch op.Op {
 
 		case "CONFIG_INIT":
-			if CheckArgs(logger0, op, 0) {
-				logger0.InitConfig()
+			if CheckArgs(Logger0, op, 0) {
+				Logger0.InitConfig()
 			}
 			return
 
 		case "GET_CONFIG":
-			if CheckArgs(logger0, op, 1) {
+			if CheckArgs(Logger0, op, 1) {
 				key := op.Data[0]
-				logger0.Result(key, logger0.GetConfig(key))
+				Logger0.Result(key, Logger0.GetConfig(key))
 			}
 			return
 
 		case "SET_CONFIG":
-			if CheckArgs(logger0, op, 2) {
-				logger0.SetConfig(op.Data[0], op.Data[1])
+			if CheckArgs(Logger0, op, 2) {
+				Logger0.SetConfig(op.Data[0], op.Data[1])
 			}
 			return
 
 		// FET handling
 		case "GET_FET":
-			if CheckArgs(logger0, op, 0) {
-				logger0.TestFet()
+			if CheckArgs(Logger0, op, 0) {
+				Logger0.TestFet()
 			}
 			return
 
@@ -134,6 +136,8 @@ func init() {
 	OpHandlerMap["_POLL_TT"] = polltt
 	OpHandlerMap["_STOP_TT"] = stoptt
 	OpHandlerMap["RESULT_TT"] = ttresult
+
+	OpHandlerMap["TT_PARAMETER"] = ttparameter
 }
 
 // Handle (currently) ".fet" and "_w365.json" input files.
@@ -193,12 +197,9 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 }
 
 func runtt(dsp *Dispatcher, op *DispatchOp) {
-
-	//TODO: Handle parameters, if any. Persumably timeout could be
-	// one of them.
-
 	// Set up FET back-end and start processing
 	attdata := &autotimetable.AutoTtData{
+		Parameters:        dsp.TtParameters,
 		Source:            dsp.TtSource,
 		NActivities:       dsp.TtSource.GetNActivities(),
 		NConstraints:      dsp.TtSource.GetNConstraints(),
@@ -206,7 +207,7 @@ func runtt(dsp *Dispatcher, op *DispatchOp) {
 		HardConstraintMap: dsp.TtSource.GetHardConstraintMap(),
 		SoftConstraintMap: dsp.TtSource.GetSoftConstraintMap(),
 	}
-	attdata.SetParameterDefault()
+
 	dsp.AutoTtData = attdata
 
 	fet.SetFetBackend(dsp.BaseData, attdata)
@@ -217,7 +218,7 @@ func runtt(dsp *Dispatcher, op *DispatchOp) {
 	//TODO: timeout
 	go func() {
 		dsp.Running = true
-		attdata.StartGeneration(dsp.BaseData, 60)
+		attdata.StartGeneration(dsp.BaseData)
 		dsp.Running = false
 	}()
 }
@@ -235,4 +236,10 @@ func ttresult(dsp *Dispatcher, op *DispatchOp) {
 	result := dsp.AutoTtData.GetLastResult()
 	//TODO
 	_ = result
+}
+
+// Set a parameter for autotimetable.
+func ttparameter(dsp *Dispatcher, op *DispatchOp) {
+	//TODO
+	dsp.BaseData.Logger.Result("OK", "true")
 }

@@ -3,7 +3,6 @@ package base
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -78,8 +77,8 @@ func NewLogger() *Logger {
 	}
 }
 
-// TODO: This is not getting the final data to the front-end!
 // Log entry handler adding log entries to a buffer.
+// Run it as a goroutine.
 func LogToBuffer(logger *Logger) {
 	for entry := range logger.LogChan {
 		switch entry.Type {
@@ -124,25 +123,10 @@ func LogToBuffer(logger *Logger) {
 	}
 }
 
-// LogToFile allows the log entries to be saved to a file, as they are
-// generated.
-// Run it as a goroutine.
-func LogToFile(logger *Logger, logpath string) {
-	file, err := os.OpenFile(logpath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-	for entry := range logger.LogChan {
-		lstring := entry.Type.String() + " " + entry.Text
-		file.WriteString(lstring + "\n")
-	}
-}
-
 func (l *Logger) logEnter(ltype LogType, s string, a ...any) {
 	lstring := strings.TrimSpace(fmt.Sprintf(s, a...))
 	l.LogChan <- LogEntry{ltype, lstring}
-	fmt.Printf("§§§ %s: %+v\n", ltype, lstring)
+	//fmt.Printf("§§§ %s: %+v\n", ltype, lstring)
 }
 
 func (l *Logger) Info(s string, a ...any) {
