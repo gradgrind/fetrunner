@@ -5,6 +5,8 @@ _*
 .vscode
 *.log
 tmp*
+build/
+.qtcreator/
 
 #
 # Binaries for programs and plugins
@@ -13,6 +15,7 @@ tmp*
 *.dll
 *.so
 *.dylib
+*.a
 
 # Test binary, built with `go test -c`
 *.test
