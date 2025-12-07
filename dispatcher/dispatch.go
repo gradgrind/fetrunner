@@ -217,7 +217,7 @@ func runtt(dsp *Dispatcher, op *DispatchOp) {
 	//TODO: timeout
 	go func() {
 		dsp.Running = true
-		attdata.StartGeneration(dsp.BaseData, 10)
+		attdata.StartGeneration(dsp.BaseData, 60)
 		dsp.Running = false
 	}()
 }

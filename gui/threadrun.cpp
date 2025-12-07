@@ -36,7 +36,7 @@ void RunThreadWorker::ttrun(const QString &parameter)
     */
 
     bool done = false;
-    for (int i = 0; i < 25; ++i) {
+    while (!done) {
         //qDebug() << "§poll" << i;
         if (stopFlag && !stopped) {
             backend->op("_STOP_TT");
@@ -64,12 +64,12 @@ void RunThreadWorker::ttrun(const QString &parameter)
                 emit progress(kv.val);
             } else if (kv.key == ".START") {
                 emit istart(kv.val);
+            } else if (kv.key == ".END") {
+                emit iend(kv.val);
+            } else if (kv.key == ".ACCEPT") {
+                emit iaccept(kv.val);
             }
         }
-        //qDebug() << "§loop-end" << done;
-        if (done)
-            break;
-        //QThread::msleep(500);
     }
     emit runThreadWorkerDone(result);
     //thread()->quit();

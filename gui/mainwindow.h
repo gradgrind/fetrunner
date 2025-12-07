@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QCloseEvent>
+#include <QMessageBox>
 #include <QTableWidgetItem>
 #include <QWidget>
 #include "threadrun.h"
@@ -35,11 +36,16 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    void closeEvent(QCloseEvent *e);
+    void closeEvent(QCloseEvent *e) override;
+    void resizeEvent(QResizeEvent *event) override;
+    void resizeColumns();
 
+    bool quit_requested{false};
+    bool thread_running{false};
     QString filename{};
     QString filedir{};
     QString datatype{};
+    QMessageBox closingMessageBox;
     void threadRunActivated(bool active);
 
     RunThreadController threadrunner;
@@ -52,6 +58,7 @@ public slots:
 private slots:
     void open_file();
     void push_go();
+    void push_stop();
     void ticker(const QString &data);
     void nconstraints(const QString &data);
     void progress(const QString &data);

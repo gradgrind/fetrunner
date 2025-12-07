@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QTimer>
 #include "backend.h"
 #include "progress_delegate.h"
 #include "ui_mainwindow.h"
@@ -12,11 +13,14 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    //ui->instance_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     //ui->instance_table->resizeColumnsToContents();
-    ui->instance_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    QTimer::singleShot(0, this, &MainWindow::resizeColumns);
     ui->instance_table->setItemDelegateForColumn( //
         4,
         new ProgressDelegate(ui->instance_table));
+    //ui->specials_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->specials_table->setItemDelegateForColumn( //
         1,
         new ProgressDelegate(ui->specials_table));
@@ -65,8 +69,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect( //
         ui->pb_stop,
         &QPushButton::clicked,
-        &threadrunner,
-        &RunThreadController::stopThread);
+        this,
+        &MainWindow::push_stop);
     connect( //
         &threadrunner,
         &RunThreadController::ticker,
@@ -136,9 +140,17 @@ MainWindow::~MainWindow()
 void MainWindow::closeEvent(
     QCloseEvent *e)
 {
-    qDebug() << "Quitting ...";
+    quit_requested = true;
+    if (thread_running) {
+        push_stop();
+        e->ignore();
+    } else
+        QWidget::closeEvent(e);
+}
 
-    QWidget::closeEvent(e);
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    resizeColumns();
 }
 
 void MainWindow::open_file()
@@ -189,10 +201,9 @@ void MainWindow::push_go()
 
     instance_row_map.clear();
     ui->instance_table->setRowCount(0);
-    ui->instance_table->resizeColumnsToContents();
-
     if (backend->op1("RUN_TT_SOURCE", {}, "OK").val == "true") {
         threadRunActivated(true);
+        ui->pb_stop->setEnabled(true);
         ui->elapsed_time->setText("0");
         for (int i = 0; i < 3; ++i) {
             ui->specials_table->item(i, 0)->setText("");
@@ -202,17 +213,31 @@ void MainWindow::push_go()
     }
 }
 
+void MainWindow::push_stop()
+{
+    ui->pb_stop->setEnabled(false);
+    threadrunner.stopThread();
+    closingMessageBox.setText(tr("Finishing ..."));
+    closingMessageBox.setIcon(QMessageBox::Information);
+    closingMessageBox.setStandardButtons(QMessageBox::NoButton);
+    closingMessageBox.exec();
+}
+
 void MainWindow::runThreadWorkerDone()
 {
     qDebug() << "threadRunFinished";
     threadRunActivated(false);
+    closingMessageBox.hide();
+    if (quit_requested)
+        close();
 }
 
 void MainWindow::threadRunActivated(
     bool active)
 {
+    thread_running = active;
     ui->pb_go->setDisabled(active);
-    ui->pb_stop->setEnabled(active);
+    //ui->pb_stop->setEnabled(active);
     ui->pb_open_new->setDisabled(active);
     ui->frame_parameters->setDisabled(active);
 }
@@ -307,21 +332,28 @@ void MainWindow::progress(const QString &data)
             ui->instance_table->setItem(row, 4, item4);
             irow.item = item4;
             instance_row_map[key] = irow;
-
-            QFontMetrics fm(ui->instance_table->font());
-            int col_width = fm.horizontalAdvance(text0) + 10; // add some padding
-            if (col_width >= ui->instance_table->width() / 2) {
-                col_width = ui->instance_table->width() / 2;
-            }
-            if (ui->instance_table->columnWidth(0) < col_width) {
-                ui->instance_table->setColumnWidth(0, col_width);
-            }
         } else {
             row = ui->instance_table->row(irow.item);
         }
         irow.item->setData(UserRoleInt, slist[1].toInt());
         ui->instance_table->item(row, 3)->setText(slist[2]);
     }
+}
+
+void MainWindow::resizeColumns()
+{
+    QFontMetrics fm(ui->instance_table->font());
+    int table_width = ui->instance_table->width();
+    int w = 0;
+    for (auto col = 1; col < 5; ++col) {
+        auto headerItem = ui->instance_table->horizontalHeaderItem(col);
+        auto text = headerItem->text();
+        int col_width = fm.horizontalAdvance(text) + 10; // add some padding
+        w += col_width;
+        ui->instance_table->setColumnWidth(col, col_width);
+    }
+    int wsb = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent);
+    ui->instance_table->setColumnWidth(0, table_width - w - wsb - 10);
 }
 
 void MainWindow::istart(const QString &data)
