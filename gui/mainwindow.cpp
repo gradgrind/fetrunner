@@ -108,15 +108,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     backend->op("CONFIG_INIT");
 
-    /*
-    settings = new QSettings("gradgrind", "fetrunner");
-    //const auto geometry = settings->value("MainWindow", QByteArray()).toByteArray();
-    const auto geometry = settings->value("MainWindowSize").value<QSize>();
-    if (!geometry.isEmpty())
-        //restoreGeometry(geometry);
-        resize(geometry);
-    */
-
     auto s = backend->getConfig("gui/MainWindowSize");
     if (!s.isEmpty()) {
         auto wh = s.split("x");

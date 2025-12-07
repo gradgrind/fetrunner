@@ -64,53 +64,29 @@ file.
 package main
 
 import (
-	"encoding/json"
 	"errors"
+	"fetrunner/autotimetable"
 	"fetrunner/base"
-	"fetrunner/dispatcher"
+	"fetrunner/fet"
+	"fetrunner/makefet"
+	"fetrunner/timetable"
+	"fetrunner/w365tt"
 	"flag"
 	"fmt"
 	"log"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"strings"
-	"sync"
-	"syscall"
 )
 
 func main() {
 
-	parameters := struct {
-		//TODO: not all entries are (currently) used by libfetrunner
-
-		// The behaviour of the TESTING flag depends on the back-end. It
-		// might, for example, use fixed seeds for random number generators
-		// so as to produce reproduceable runs.
-		TESTING bool
-		// If the SKIP_HARD flag is true, assume the hard constraints are
-		// satisfiable – skip the unconstrained instance, basing tests on
-		// the hard-only instance.
-		SKIP_HARD bool
-		// This approach relies on parallel processing. If there are too few
-		// real processors it will be inefficient:
-		MAXPROCESSES int
-
-		NEW_BASE_TIMEOUT_FACTOR  int // factor * 10
-		CYCLE_TIMEOUT_MIN        int
-		NEW_CYCLE_TIMEOUT_FACTOR int // factor * 10
-
-		DEBUG bool
-
-		// Tick count limits for testing whether an instance with no timeout
-		// has got stuck. See `(*RunQueue).update_instances()` method.
-		LAST_TIME_0 int
-		LAST_TIME_1 int
-	}{}
+	attdata := &autotimetable.AutoTtData{}
+	attdata.SetParameterDefault()
 
 	v := flag.Bool("v", false, "print version and exit")
-	flag.BoolVar(&parameters.TESTING, "T", false, "run in testing mode")
-	flag.BoolVar(&parameters.SKIP_HARD, "h", false,
+	flag.BoolVar(&attdata.Parameters.TESTING, "T", false, "run in testing mode")
+	flag.BoolVar(&attdata.Parameters.SKIP_HARD, "h", false,
 		"skip hard constraint testing phase")
 	timeout := flag.Int("t", 300, "set timeout")
 	nprocesses := flag.Int("p", 0, "max. parallel processes")
@@ -124,10 +100,10 @@ func main() {
 	}
 
 	if *nprocesses > 0 {
-		parameters.MAXPROCESSES = *nprocesses
+		attdata.Parameters.MAXPROCESSES = *nprocesses
 	}
 	if *debug {
-		parameters.DEBUG = true
+		attdata.Parameters.DEBUG = true
 	}
 
 	args := flag.Args()
@@ -141,119 +117,51 @@ func main() {
 	if err != nil {
 		log.Fatalf("*ERROR* Couldn't resolve file path: %s\n", args[0])
 	}
-	if !strings.HasSuffix(strings.ToLower(abspath), "_w365.json") {
-		log.Fatalf("*ERROR* Source file without '_w365.json' ending: %s\n", abspath)
+	if !strings.HasSuffix(strings.ToLower(abspath), ".json") {
+		log.Fatalf("*ERROR* Source file without '.json' ending: %s\n", abspath)
 	}
 	if _, err := os.Stat(abspath); errors.Is(err, os.ErrNotExist) {
 		log.Fatalf("*ERROR* Source file doesn't exist: %s\n", abspath)
 	}
 
-	dispatcher.Dispatch(`{"Op":"CONFIG_INIT"}`)
-	dispatcher.Dispatch(fmt.Sprintf(`{"Op":"SET_FILE", "Data":["%s"]}`, abspath))
-	dispatcher.Dispatch(`{"Op":"RUN_TT_SOURCE"}`)
-
-	go termination()
-	var wg sync.WaitGroup
-	wg.Go(runloop)
-	wg.Wait()
-
-	_ = timeout
-
-	/*
-		f1 := filepath.Base(strings.TrimSuffix(abspath, filepath.Ext(abspath)))
-		d1 := filepath.Dir(abspath)
-		workingdir := filepath.Join(d1, "_"+f1)
-		os.RemoveAll(workingdir)
-		err = os.MkdirAll(workingdir, 0755)
-		if err != nil {
-			log.Fatal(err)
-		}
-		attdata.SourceDir = workingdir
-
-		logger := base.NewLogger()
-		logpath := filepath.Join(workingdir, "run.log")
-		go base.LogToFile(logger, logpath)
-		logger.InitConfig()
-		logger.TestFet()
-		attdata.Logger = logger
-
-		db0 := base.NewDb()
-		w365tt.LoadJSON(db0, abspath)
-		db0.PrepareDb()
-
-		db0.SaveDb(filepath.Join(d1, f1+"_DB.json"))
-
-		// Make FET file
-		tt_data := timetable.BasicSetup(db0)
-		/ *
-			base.Report(fmt.Sprintf("Atomic Groups: %d\n",
-				len(tt_data.AtomicGroups)))
-			base.Report(fmt.Sprintf("Teachers: %d\n",
-				len(db0.Teachers)))
-			base.Report(fmt.Sprintf("Rooms: %d\n",
-				len(db0.Rooms)))
-			base.Report(fmt.Sprintf("Activities: %d\n",
-				len(tt_data.Activities)))
-		* /
-		makefet.FetTree(attdata, tt_data)
-
-		// Set up FET back-end and start processing
-		fet.SetFetBackend(attdata)
-		attdata.StartGeneration(*timeout)
-	*/
-}
-
-var stop_request bool = false
-
-func runloop() {
-	dispatcher.Dispatch(`{"Op":"RUN_TT"}`)
-	for {
-		if stop_request {
-			do("_STOP_TT")
-		}
-		do("_POLL_TT")
-	}
-}
-
-type DispatcherOp struct {
-	Op   string
-	Data []string
-}
-
-type DispatcherResult struct {
-	Type string
-	Text string
-}
-
-func do(op string, data ...string) {
-	jsonbytes, err := json.Marshal(DispatcherOp{op, data})
+	f1 := filepath.Base(strings.TrimSuffix(abspath, filepath.Ext(abspath)))
+	d1 := filepath.Dir(abspath)
+	workingdir := filepath.Join(d1, "_"+f1)
+	os.RemoveAll(workingdir)
+	err = os.MkdirAll(workingdir, 0755)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-	res := dispatcher.Dispatch(string(jsonbytes))
-	v := []DispatcherResult{}
-	json.Unmarshal([]byte(res), &v)
-	done := false
-	for _, r := range v {
-		fmt.Println("===", r)
-		if r.Text == ".TICK=-1" {
-			done = true
-		}
-	}
-	if done {
-		os.Exit(0)
-	}
-}
+	attdata.SourceDir = workingdir
 
-// Catch "terminate" signal (goroutine)
-func termination() {
-	// Catch termination signal
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	logger := base.NewLogger()
+	logpath := filepath.Join(workingdir, "run.log")
+	go base.LogToFile(logger, logpath)
+	logger.InitConfig()
+	logger.TestFet()
+	attdata.Logger = logger
 
-	<-sigChan // wait for signal
-	//	logger.Info("[%d] !!! INTERRUPTED !!!\n",
-	//		attdata.Ticks)
-	fmt.Println("!!! INTERRUPTED !!!")
-	stop_request = true
+	db0 := base.NewDb()
+	w365tt.LoadJSON(db0, abspath)
+	db0.PrepareDb()
+
+	db0.SaveDb(filepath.Join(d1, f1+"_DB.json"))
+
+	// Make FET file
+	tt_data := timetable.BasicSetup(db0)
+	/*
+		base.Report(fmt.Sprintf("Atomic Groups: %d\n",
+			len(tt_data.AtomicGroups)))
+		base.Report(fmt.Sprintf("Teachers: %d\n",
+			len(db0.Teachers)))
+		base.Report(fmt.Sprintf("Rooms: %d\n",
+			len(db0.Rooms)))
+		base.Report(fmt.Sprintf("Activities: %d\n",
+			len(tt_data.Activities)))
+	*/
+	makefet.FetTree(attdata, tt_data)
+
+	// Set up FET back-end and start processing
+	fet.SetFetBackend(attdata)
+	attdata.StartGeneration(*timeout)
 }
