@@ -118,11 +118,11 @@ func dispatchOp(op *DispatchOp) *base.Logger {
 		// generation. Those valid when running have a "_" prefix.
 		if dsp.Running {
 			if op.Op[0] != '_' {
-				logger.Error("!InvalidOp_RunningOp: %s", op.Op)
+				logger.Error("!InvalidOp_Running: %s", op.Op)
 				return logger
 			}
 		} else if op.Op[0] == '_' {
-			logger.Error("!InvalidOp_NotRunningOp: %s", op.Op)
+			logger.Error("!InvalidOp_NotRunning: %s", op.Op)
 			return logger
 		}
 
@@ -209,6 +209,9 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 }
 
 func runtt(dsp *Dispatcher, op *DispatchOp) {
+	if dsp.Running {
+		panic("Attempt to start generation when already running")
+	}
 	// Set up FET back-end and start processing
 	attdata := &autotimetable.AutoTtData{
 		Parameters:        dsp.TtParameters,
@@ -227,9 +230,8 @@ func runtt(dsp *Dispatcher, op *DispatchOp) {
 	dsp.BaseData.Logger.Result("OK", "true")
 
 	// Need an extra goroutine so that this can return immediately.
-	//TODO: timeout
+	dsp.Running = true
 	go func() {
-		dsp.Running = true
 		attdata.StartGeneration(dsp.BaseData)
 		dsp.Running = false
 	}()

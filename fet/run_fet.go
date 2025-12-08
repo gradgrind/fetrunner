@@ -174,9 +174,17 @@ func run(fet_data *FetTtData, cmd *exec.Cmd) {
 	_, err := cmd.CombinedOutput()
 	if err != nil {
 		e := err.Error()
-		if strings.HasPrefix(e, "signal") {
+		// Some errors arise as a result of a termination signal, or after
+		// calling `Abort`, which leads to the context being cancelled.
+		if strings.HasPrefix(e, "signal") || strings.HasPrefix(e, "context") {
 			fet_data.finished = -1
 		} else {
+
+			//TODO--
+			//fmt.Printf("§§§ %s\n", err)
+			//fmt.Printf("  *** %s\n", fet_data.ifile)
+			//panic("§§§ ...")
+
 			fet_data.finished = -2 // program failed
 		}
 	} else {
