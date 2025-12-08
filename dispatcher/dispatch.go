@@ -167,7 +167,7 @@ func file_loader(dsp *Dispatcher, op *DispatchOp) {
 			dsp.TtSource = ttRunDataFet
 			bd.SourceDir = filepath.Dir(fpath)
 			n := filepath.Base(fpath)
-			bd.Name = n[:len(n)-4]
+			bd.Name = strings.TrimSuffix(n, filepath.Ext(n))
 			logger.Result(op.Op, fpath)
 			logger.Result("DATA_TYPE", "FET")
 			bd.Db = nil
@@ -180,7 +180,7 @@ func file_loader(dsp *Dispatcher, op *DispatchOp) {
 			dsp.TtSource = nil
 			bd.SourceDir = filepath.Dir(fpath)
 			n := filepath.Base(fpath)
-			bd.Name = n[:len(n)-10]
+			bd.Name = strings.TrimSuffix(n, filepath.Ext(n))
 			bd.PrepareDb()
 			logger.Result(op.Op, fpath)
 			logger.Result("DATA_TYPE", "DB")

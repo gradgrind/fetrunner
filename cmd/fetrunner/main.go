@@ -77,9 +77,10 @@ import (
 	"syscall"
 )
 
-const file_ending string = ".fet"
-
-var logfile *os.File
+var (
+	file_ending []string = []string{"_w365.json", ".fet"}
+	logfile     *os.File
+)
 
 func main() {
 	v := flag.Bool("v", false, "print version and exit")
@@ -107,14 +108,11 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	if !strings.HasSuffix(strings.ToLower(abspath), file_ending) {
-		log.Fatalf("Source file without '%s' ending: %s\n", file_ending, abspath)
-	}
 	if _, err := os.Stat(abspath); errors.Is(err, os.ErrNotExist) {
 		log.Fatalln(err)
 	}
 
-	logpath := strings.TrimSuffix(abspath, file_ending) + ".log"
+	logpath := strings.TrimSuffix(abspath, filepath.Ext(abspath)) + ".log"
 	logfile, err = os.OpenFile(logpath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		log.Fatalln(err)
@@ -128,7 +126,9 @@ func main() {
 	do("TT_PARAMETER", "SKIP_HARD", strconv.FormatBool(*skip_hard))
 
 	do("CONFIG_INIT")
-	do("SET_FILE", abspath)
+	if !do("SET_FILE", abspath) {
+		return
+	}
 	do("RUN_TT_SOURCE")
 
 	go termination()
@@ -157,7 +157,7 @@ type DispatcherResult struct {
 	Text string
 }
 
-func do(op string, data ...string) {
+func do(op string, data ...string) bool {
 	jsonbytes, err := json.Marshal(DispatcherOp{op, data})
 	if err != nil {
 		panic(err)
@@ -166,7 +166,11 @@ func do(op string, data ...string) {
 	v := []DispatcherResult{}
 	json.Unmarshal([]byte(res), &v)
 	done := false
+	ok := true
 	for _, r := range v {
+		if r.Type == base.ERROR.String() {
+			ok = false
+		}
 		if r.Text == ".TICK=-1" {
 			done = true
 		}
@@ -178,6 +182,7 @@ func do(op string, data ...string) {
 	if done {
 		os.Exit(0)
 	}
+	return ok
 }
 
 var stop_request bool = false
