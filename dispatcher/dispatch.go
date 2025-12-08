@@ -8,6 +8,7 @@ import (
 	"fetrunner/makefet"
 	"fetrunner/timetable"
 	"fetrunner/w365tt"
+	"fmt"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -47,49 +48,56 @@ var OpHandlerMap map[string]func(*Dispatcher, *DispatchOp) = map[string]func(
 	*Dispatcher, *DispatchOp){}
 
 func Dispatch(cmd0 string) string {
+	logger := Logger0
 	var op DispatchOp
 	if err := json.Unmarshal([]byte(cmd0), &op); err != nil {
-		Logger0.Error("!InvalidOp_JSON: %s", err)
+		logger.Error("!InvalidOp_JSON: %s", err)
 	} else {
-		dispatchOp(&op)
+		logger = dispatchOp(&op)
 	}
 	// At the end of an operation the log entries must be collected.
 	// To ensure that none are missed, the logger channels are used to
 	// synchronize the accesses.
-	Logger0.LogChan <- base.LogEntry{Type: base.ENDOP}
-	return <-Logger0.ResultChan
+	logger.LogChan <- base.LogEntry{Type: base.ENDOP}
+	return <-logger.ResultChan
 }
 
-func dispatchOp(op *DispatchOp) {
+func opLog(logger *base.Logger, op *DispatchOp) {
+	logger.LogChan <- base.LogEntry{Type: base.STARTOP,
+		Text: fmt.Sprintf("%s %+v", op.Op, op.Data)}
+}
+
+func dispatchOp(op *DispatchOp) *base.Logger {
 	if op.Id == "" {
 		// Some ops are only valid using the null Id.
 		switch op.Op {
 
 		case "CONFIG_INIT":
+			opLog(Logger0, op)
 			if CheckArgs(Logger0, op, 0) {
 				Logger0.InitConfig()
 			}
-			return
+			return Logger0
 
 		case "GET_CONFIG":
 			if CheckArgs(Logger0, op, 1) {
 				key := op.Data[0]
 				Logger0.Result(key, Logger0.GetConfig(key))
 			}
-			return
+			return Logger0
 
 		case "SET_CONFIG":
 			if CheckArgs(Logger0, op, 2) {
 				Logger0.SetConfig(op.Data[0], op.Data[1])
 			}
-			return
+			return Logger0
 
 		// FET handling
 		case "GET_FET":
 			if CheckArgs(Logger0, op, 0) {
 				Logger0.TestFet()
 			}
-			return
+			return Logger0
 
 		default:
 
@@ -102,24 +110,27 @@ func dispatchOp(op *DispatchOp) {
 		//TODO
 		panic("No instance with Id = " + op.Id)
 	}
+	logger := dsp.BaseData.Logger
+	opLog(logger, op)
 	f, ok := OpHandlerMap[op.Op]
 	if ok {
 		// The valid commands are dependent on the run-state of the timetable
 		// generation. Those valid when running have a "_" prefix.
 		if dsp.Running {
 			if op.Op[0] != '_' {
-				dsp.BaseData.Logger.Error("!InvalidOp_RunningOp: %s", op.Op)
-				return
+				logger.Error("!InvalidOp_RunningOp: %s", op.Op)
+				return logger
 			}
 		} else if op.Op[0] == '_' {
-			dsp.BaseData.Logger.Error("!InvalidOp_NotRunningOp: %s", op.Op)
-			return
+			logger.Error("!InvalidOp_NotRunningOp: %s", op.Op)
+			return logger
 		}
 
 		f(dsp, op)
 	} else {
-		dsp.BaseData.Logger.Error("!InvalidOp_Op: %s", op.Op)
+		logger.Error("!InvalidOp_Op: %s", op.Op)
 	}
+	return logger
 }
 
 func CheckArgs(l *base.Logger, op *DispatchOp, n int) bool {
