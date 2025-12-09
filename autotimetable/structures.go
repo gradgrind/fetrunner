@@ -25,6 +25,7 @@ type Parameters struct {
 	// This approach relies on parallel processing. If there are too few
 	// real processors it will be inefficient:
 	MAXPROCESSES int
+	FETPATH      string // path to `fet-cl` executable
 
 	TIMEOUT                  int // the overall timeout, secs
 	NEW_BASE_TIMEOUT_FACTOR  int // factor * 10

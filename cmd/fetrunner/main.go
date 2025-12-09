@@ -77,10 +77,7 @@ import (
 	"syscall"
 )
 
-var (
-	file_ending []string = []string{"_w365.json", ".fet"}
-	logfile     *os.File
-)
+var logfile *os.File
 
 func main() {
 	v := flag.Bool("v", false, "print version and exit")
@@ -89,6 +86,7 @@ func main() {
 	timeout := flag.Int("t", 300, "set timeout")
 	nprocesses := flag.Int("p", 0, "max. parallel processes")
 	debug := flag.Bool("d", false, "debug")
+	fetpath := flag.String("fet", "", "/path/to/fet-cl")
 
 	flag.Parse()
 
@@ -124,8 +122,16 @@ func main() {
 	do("TT_PARAMETER", "DEBUG", strconv.FormatBool(*debug))
 	do("TT_PARAMETER", "TESTING", strconv.FormatBool(*testing))
 	do("TT_PARAMETER", "SKIP_HARD", strconv.FormatBool(*skip_hard))
+	if *fetpath != "" {
+		do("TT_PARAMETER", "FETPATH", *fetpath)
+	}
 
-	do("CONFIG_INIT")
+	if !do("GET_FET") {
+		return
+	}
+
+	//TODO-- do("CONFIG_INIT")
+
 	if !do("SET_FILE", abspath) {
 		return
 	}

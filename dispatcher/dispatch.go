@@ -9,7 +9,9 @@ import (
 	"fetrunner/timetable"
 	"fetrunner/w365tt"
 	"fmt"
+	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -68,29 +70,30 @@ func opLog(logger *base.Logger, op *DispatchOp) {
 }
 
 func dispatchOp(op *DispatchOp) *base.Logger {
+	/*TODO--
 	if op.Id == "" {
 		// Some ops are only valid using the null Id.
 		switch op.Op {
 
-		case "CONFIG_INIT":
-			opLog(Logger0, op)
-			if CheckArgs(Logger0, op, 0) {
-				Logger0.InitConfig()
-			}
-			return Logger0
+			case "CONFIG_INIT":
+				opLog(Logger0, op)
+				if CheckArgs(Logger0, op, 0) {
+					Logger0.InitConfig()
+				}
+				return Logger0
 
-		case "GET_CONFIG":
-			if CheckArgs(Logger0, op, 1) {
-				key := op.Data[0]
-				Logger0.Result(key, Logger0.GetConfig(key))
-			}
-			return Logger0
+			case "GET_CONFIG":
+				if CheckArgs(Logger0, op, 1) {
+					key := op.Data[0]
+					Logger0.Result(key, Logger0.GetConfig(key))
+				}
+				return Logger0
 
-		case "SET_CONFIG":
-			if CheckArgs(Logger0, op, 2) {
-				Logger0.SetConfig(op.Data[0], op.Data[1])
-			}
-			return Logger0
+			case "SET_CONFIG":
+				if CheckArgs(Logger0, op, 2) {
+					Logger0.SetConfig(op.Data[0], op.Data[1])
+				}
+				return Logger0
 
 		// FET handling
 		case "GET_FET":
@@ -105,6 +108,8 @@ func dispatchOp(op *DispatchOp) *base.Logger {
 	}
 
 	// Now deal with the other ops, which can (in principle) be used with any Id.
+	*/
+
 	dsp, ok := DispatcherMap[op.Id]
 	if !ok {
 		//TODO
@@ -142,6 +147,7 @@ func CheckArgs(l *base.Logger, op *DispatchOp, n int) bool {
 }
 
 func init() {
+	OpHandlerMap["GET_FET"] = get_fet
 	OpHandlerMap["SET_FILE"] = file_loader
 	OpHandlerMap["RUN_TT_SOURCE"] = runtt_source
 	OpHandlerMap["RUN_TT"] = runtt
@@ -150,6 +156,28 @@ func init() {
 	OpHandlerMap["RESULT_TT"] = ttresult
 
 	OpHandlerMap["TT_PARAMETER"] = ttparameter
+}
+
+// Check path to `fet-cl` and get FET version.
+func get_fet(dsp *Dispatcher, op *DispatchOp) {
+	logger := dsp.BaseData.Logger
+	if CheckArgs(logger, op, 0) {
+		fetpath := dsp.TtParameters.FETPATH
+		cmd := exec.Command(fetpath, "--version")
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			//TODO?
+			logger.Error("FET_NOT_FOUND %s // %s", fetpath, out)
+			return
+		}
+		version := regexp.MustCompile(`(?m)version +([0-9.]+)`)
+		match := version.FindSubmatch(out)
+		if match == nil {
+			logger.Result("FET_VERSION", "?")
+		} else {
+			logger.Result("FET_VERSION", string(match[1]))
+		}
+	}
 }
 
 // Handle (currently) ".fet" and "_w365.json" input files.
@@ -276,6 +304,7 @@ func ttparameter(dsp *Dispatcher, op *DispatchOp) {
 			return
 		} else {
 			dsp.TtParameters.MAXPROCESSES = autotimetable.MaxProcesses(n)
+			val = strconv.Itoa(dsp.TtParameters.MAXPROCESSES)
 		}
 
 	case "DEBUG":
@@ -287,6 +316,8 @@ func ttparameter(dsp *Dispatcher, op *DispatchOp) {
 	case "SKIP_HARD":
 		dsp.TtParameters.SKIP_HARD = (val == "true")
 
+	case "FETPATH":
+		dsp.TtParameters.FETPATH = val
 	}
 
 	dsp.BaseData.Logger.Result(key, val)

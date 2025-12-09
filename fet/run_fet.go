@@ -123,8 +123,7 @@ func (fbe *FetBackend) RunBackend(
 	}
 
 	runCmd := exec.CommandContext(ctx,
-		//runCmd := exec.Command(
-		bdata.Logger.GetConfig("FET"), params...,
+		attdata.Parameters.FETPATH, params...,
 	)
 
 	go run(fet_data, runCmd)
@@ -140,9 +139,10 @@ type FetTtData struct {
 	rdfile      *os.File // this must be closed when the subprocess finishes
 	reader      *bufio.Reader
 	cancel      func()
-	fet_timeout bool //
+	fet_timeout bool
 	finished    int
 	count       int
+	errormsg    string // record error message
 }
 
 func (data *FetTtData) Abort() {
@@ -179,13 +179,8 @@ func run(fet_data *FetTtData, cmd *exec.Cmd) {
 		if strings.HasPrefix(e, "signal") || strings.HasPrefix(e, "context") {
 			fet_data.finished = -1
 		} else {
-
-			//TODO--
-			//fmt.Printf("§§§ %s\n", err)
-			//fmt.Printf("  *** %s\n", fet_data.ifile)
-			//panic("§§§ ...")
-
 			fet_data.finished = -2 // program failed
+			fet_data.errormsg = e
 		}
 	} else {
 		fet_data.finished = 1
@@ -258,7 +253,7 @@ exit:
 			instance.RunState = 2
 		}
 		if data.finished == -2 {
-			bdata.Logger.Error("FET_Failed: %s", bdata.Logger.GetConfig("FET"))
+			bdata.Logger.Error("FET_Failed: %s", data.errormsg)
 			return
 		}
 

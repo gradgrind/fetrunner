@@ -15,8 +15,8 @@ import (
 /*
 	Default parameter values for autotimetable.
 
-There is probably no general "optimum" value for the various parameters,
-that is likely to depend on the data. But perhaps values can be found which
+There is probably no general "optimum" value for some parameters, it is
+likely to depend on the data. But perhaps values can be found which
 are frequently useful. It might be helpful to use shorter overall timeouts
 during the initial cycles of testing the data, to identify potential problem
 areas without long processing delays. For later cycles longer times may be
@@ -24,6 +24,7 @@ necessary (depending on the difficulty of the data).
 */
 func DefaultParameters() *Parameters {
 	return &Parameters{
+		FETPATH:                  "fet-cl",
 		MAXPROCESSES:             MaxProcesses(0),
 		TIMEOUT:                  300, // seconds
 		NEW_BASE_TIMEOUT_FACTOR:  12,  // => 1.2
