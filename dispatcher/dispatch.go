@@ -166,8 +166,7 @@ func get_fet(dsp *Dispatcher, op *DispatchOp) {
 		cmd := exec.Command(fetpath, "--version")
 		out, err := cmd.CombinedOutput()
 		if err != nil {
-			//TODO?
-			logger.Error("FET_NOT_FOUND %s // %s", fetpath, out)
+			logger.Error("FET_NOT_FOUND: %s", err)
 			return
 		}
 		version := regexp.MustCompile(`(?m)version +([0-9.]+)`)

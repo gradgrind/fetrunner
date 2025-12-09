@@ -106,24 +106,46 @@ MainWindow::MainWindow(QWidget *parent)
             this,
             &MainWindow::runThreadWorkerDone);
 
-    backend->op("CONFIG_INIT");
+    settings = new QSettings("gradgrind", "fetrunner");
+    const auto geometry = settings->value("gui/MainWindowSize").value<QSize>();
+    if (!geometry.isEmpty())
+        resize(geometry);
 
-    auto s = backend->getConfig("gui/MainWindowSize");
-    if (!s.isEmpty()) {
-        auto wh = s.split("x");
-        resize(wh[0].toInt(), wh[1].toInt());
+    QTimer::singleShot(0, this, &MainWindow::check_fet);
+}
+
+void MainWindow::check_fet()
+{
+    auto fetpath0 = settings->value("fet/FetPath").toString();
+    while (true) {
+        auto fetpath = fetpath0;
+        if (!fetpath.isEmpty()) {
+            backend->op("TT_PARAMETER", {"FETPATH", fetpath});
+        }
+        auto fetv = backend->op1("GET_FET", {}, "FET_VERSION").val;
+        if (!fetv.isEmpty()) {
+            if (fetpath != fetpath0) {
+                settings->setValue("fet/FetPath", fetpath);
+            }
+            break;
+        }
+        // Handle FET executable not found
+        fetpath = QFileDialog::getOpenFileName( //
+            this,
+            tr("Seek FET executable"),
+            QDir::homePath(),
+            tr("FET executable (fet-cl)"));
+        if (fetpath.isEmpty()) {
+            QApplication::exit(1);
+            break;
+        }
     }
 }
 
 MainWindow::~MainWindow()
 {
-    //settings->setValue("MainWindow", saveGeometry());
-    //settings->setValue("MainWindowSize", size());
-    //delete settings;
-    auto s = QString("%1x%2").arg( //
-        QString::number(width()),
-        QString::number(height()));
-    backend->setConfig("gui/MainWindowSize", s);
+    settings->setValue("gui/MainWindowSize", size());
+    delete settings;
     delete backend;
     delete ui;
 }
@@ -150,14 +172,11 @@ void MainWindow::open_file()
 
     QString fdir = filedir;
     if (fdir.isEmpty()) {
-        fdir = backend->getConfig("gui/SourceDir");
-        if (fdir.isEmpty()) {
-            fdir = QDir::homePath();
-        }
+        fdir = settings->value("gui/SourceDir", QDir::homePath()).toString();
     }
     QString filepath = QFileDialog::getOpenFileName( //
         this,
-        tr("Open Timetable Specifiation"),
+        tr("Open Timetable Specification File"),
         fdir,
         tr("FET / W365 Files (*.fet *_w365.json)"));
 
@@ -172,7 +191,7 @@ void MainWindow::open_file()
                 ui->currentFile->setText(filename);
                 if (fdir != filedir) {
                     filedir = fdir;
-                    backend->setConfig("gui/SourceDir", fdir);
+                    settings->setValue("gui/SourceDir", fdir);
                 }
             } else if (kv.key == "DATA_TYPE") {
                 datatype = kv.val;

@@ -20,7 +20,7 @@ QList<KeyVal> Backend::op(QString cmd, QStringList data)
 {
     QList<KeyVal> results;
     auto darray = QJsonArray::fromStringList(data);
-    emit log("+++ " + cmd + " [" + data.join(", ") + "]");
+    //emit log("+++ " + cmd + " [" + data.join(", ") + "]");
     //qDebug() << QString{"+++ "} + cmd << darray;
     QJsonObject cmdobj{{"Op", cmd}, {"Data", darray}};
     QJsonDocument doc(cmdobj);
@@ -88,18 +88,4 @@ KeyVal Backend::op1(
             return kv;
     }
     return {};
-}
-
-QString Backend::getConfig(
-    QString key, QString fallback)
-{
-    auto kv = op1("GET_CONFIG", {key}, key);
-    if (kv.key.isEmpty())
-        return fallback;
-    return kv.val;
-}
-
-void Backend::setConfig(QString key, QString val)
-{
-    op("SET_CONFIG", {key, val});
 }

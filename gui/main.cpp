@@ -21,8 +21,6 @@ int main(
 
     MainWindow w;
 
-    backend->op("GET_FET");
-
     w.show();
     return a.exec();
 }

@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+const FET_COMMAND string = "fet-cl"
+
 /*
 	Default parameter values for autotimetable.
 
@@ -24,7 +26,7 @@ necessary (depending on the difficulty of the data).
 */
 func DefaultParameters() *Parameters {
 	return &Parameters{
-		FETPATH:                  "fet-cl",
+		FETPATH:                  FET_COMMAND,
 		MAXPROCESSES:             MaxProcesses(0),
 		TIMEOUT:                  300, // seconds
 		NEW_BASE_TIMEOUT_FACTOR:  12,  // => 1.2

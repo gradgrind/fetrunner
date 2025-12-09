@@ -3,6 +3,7 @@
 
 #include <QCloseEvent>
 #include <QMessageBox>
+#include <QSettings>
 #include <QTableWidgetItem>
 #include <QWidget>
 #include "threadrun.h"
@@ -35,9 +36,11 @@ public:
     ~MainWindow();
 
 private:
+    QSettings *settings;
     Ui::MainWindow *ui;
     void closeEvent(QCloseEvent *e) override;
     void resizeEvent(QResizeEvent *event) override;
+    void check_fet();
     void resizeColumns();
 
     bool quit_requested{false};
