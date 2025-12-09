@@ -317,6 +317,10 @@ func ttparameter(dsp *Dispatcher, op *DispatchOp) {
 
 	case "FETPATH":
 		dsp.TtParameters.FETPATH = val
+
+	default:
+		logger.Error("UnknownParameter: %s", key)
+		return
 	}
 
 	dsp.BaseData.Logger.Result(key, val)

@@ -195,21 +195,29 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 	runqueue.add(attdata.hard_instance)
 
 	// Unconstrained instance
-	attdata.cycle_timeout = 0
+	enabled = make([]bool, attdata.NConstraints)
+	attdata.instanceCounter++
+	attdata.null_instance = &TtInstance{
+		Index:             attdata.instanceCounter,
+		ConstraintType:    "_UNCONSTRAINED",
+		Timeout:           attdata.cycle_timeout,
+		ConstraintEnabled: enabled,
+	}
+	attdata.get_nconstraints(bdata, attdata.null_instance) // count constraints
+
 	if attdata.Parameters.SKIP_HARD {
+
+		//TODO: This is not working properly ...
+
 		attdata.phase = 2
-		if len(attdata.SoftConstraintMap) == 0 {
+		var n int
+		attdata.constraint_list, n = attdata.get_basic_constraints(
+			attdata.hard_instance, true)
+		if n == 0 {
+			//if len(attdata.SoftConstraintMap) == 0 {
 			logger.Warning("-h- Option -h: no soft constraints")
 		}
 	} else {
-		enabled = make([]bool, attdata.NConstraints)
-		attdata.instanceCounter++
-		attdata.null_instance = &TtInstance{
-			Index:             attdata.instanceCounter,
-			ConstraintType:    "_UNCONSTRAINED",
-			Timeout:           attdata.cycle_timeout,
-			ConstraintEnabled: enabled,
-		}
 		// Add to run queue
 		runqueue.add(attdata.null_instance)
 
@@ -220,11 +228,10 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 		attdata.phase = 0
 	}
 
+	attdata.cycle_timeout = 0
 	full_progress := 0 // current percentage
 	hard_progress := 0 // current percentage
 	null_progress := 0
-
-	attdata.get_nconstraints(bdata, attdata.null_instance) // count constraints
 
 	// *** Ticker loop ***
 	ticker := time.NewTicker(time.Second)
@@ -290,17 +297,6 @@ tickloop:
 
 		<-ticker.C
 
-		//TODO: Without the signal catcher, I don't need a "select"
-		//select {
-		//case <-ticker.C:
-		//TODO???
-		//case <-sigChan:
-		//	logger.Info("[%d] !!! INTERRUPTED !!!\n",
-		//		attdata.Ticks)
-		//	break tickloop
-		//}
-
-		// TODO???
 		if bdata.StopFlag {
 			logger.Info("[%d] !!! INTERRUPTED !!!\n",
 				attdata.Ticks)

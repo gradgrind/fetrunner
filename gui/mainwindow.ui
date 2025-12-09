@@ -137,7 +137,7 @@
            </spacer>
           </item>
           <item row="1" column="0" colspan="2">
-           <widget class="QCheckBox" name="checkBox">
+           <widget class="QCheckBox" name="tt_skip_hard">
             <property name="toolTip">
              <string>All hard constraints enabled, for testing soft constraints.</string>
             </property>
@@ -154,7 +154,7 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QLineEdit" name="lineEdit_7">
+           <widget class="QLineEdit" name="tt_processors">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
               <horstretch>0</horstretch>

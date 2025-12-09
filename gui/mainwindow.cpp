@@ -106,6 +106,11 @@ MainWindow::MainWindow(QWidget *parent)
             this,
             &MainWindow::runThreadWorkerDone);
 
+    QValidator *validator1 = new QIntValidator(0, 99999, this);
+    ui->tt_timeout->setValidator(validator1);
+    QValidator *validator2 = new QIntValidator(4, 10, this);
+    ui->tt_processors->setValidator(validator2);
+
     settings = new QSettings("gradgrind", "fetrunner");
     const auto geometry = settings->value("gui/MainWindowSize").value<QSize>();
     if (!geometry.isEmpty())
@@ -207,7 +212,13 @@ void MainWindow::error_popup(const QString &msg)
 
 void MainWindow::push_go()
 {
-    //qDebug() << "Run fetrunner";
+    // Set parameters
+    auto t = ui->tt_timeout->text();
+    backend->op("TT_PARAMETER", {"TIMEOUT", t});
+    auto np = ui->tt_processors->text();
+    backend->op("TT_PARAMETER", {"MAXPROCESSES", np});
+    auto sh = ui->tt_skip_hard->isChecked();
+    backend->op("TT_PARAMETER", {"SKIP_HARD", sh ? "true" : "false"});
 
     instance_row_map.clear();
     ui->instance_table->setRowCount(0);
@@ -235,7 +246,7 @@ void MainWindow::push_stop()
 
 void MainWindow::runThreadWorkerDone()
 {
-    qDebug() << "threadRunFinished";
+    //qDebug() << "threadRunFinished";
     threadRunActivated(false);
     closingMessageBox.hide();
     if (quit_requested)
