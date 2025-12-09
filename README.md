@@ -37,7 +37,7 @@ An executable should be produced in the same directory.
 
 ## Running the tool
 
-Important: The FET command-line executable must be runnable by calling "fet-cl", i.e. it must be in the user's PATH.
+Important: By default the FET command-line executable ist expected to be runnable by calling "fet-cl", i.e. it must be in the user's PATH. There is, however, a command line option (-fet) to specify a different location, the value must be a full, absolute path.
 
 `fetrunner` can be run with just the source file as argument:
 
@@ -45,13 +45,13 @@ Important: The FET command-line executable must be runnable by calling "fet-cl",
 ./fetrunner path/to/fetfile.fet
 ```
 
-This will normally run for up to five minutes, placing the results in a subdirectory, "path/to/_fetfile":
+This will normally run for up to five minutes, placing the results in the same directory, "path/to/":
 
-    Result.fet – the fet-file used to produce the result
+    fetfile_Result.fet – the fet-file used to produce the result
 
-    Result.json – the results of the run, including the placements of the activities and the constraints which were deactivated
+    fetfile_Result.json – the results of the run, including the placements of the activities and the constraints which were deactivated
 
-    run.log – a log file giving information about the run
+    fetfile.log – a log file giving information about the run
 
     _fetfile.fet – should be essentially the same as the original fetfile.fet
 
@@ -62,14 +62,15 @@ There are a few command-line options:
 ```
 fetrunner -help
  ->
-  -T    run in testing mode
-  -c    enable progress output
-  -d    debug
-  -h    skip hard constraint testing phase
+  -T	run in testing mode
+  -d	debug
+  -fet string
+    	/path/to/fet-cl
+  -h	skip hard constraint testing phase
   -p int
-        max. parallel processes
+    	max. parallel processes
   -t int
-        set timeout (default 300)
+    	set timeout (default 300)
   -v	print version and exit
 ```
 
