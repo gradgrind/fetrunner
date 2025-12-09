@@ -5,6 +5,7 @@ import (
 	"fetrunner/base"
 	"fmt"
 	"regexp"
+	"strconv"
 
 	"github.com/beevik/etree"
 )
@@ -13,14 +14,15 @@ import (
 // all lumped together in th `ConstraintElements` list, but their indexes
 // are also recorded in the `TimeConstraints` and `SpaceConstraints` lists.
 
-func FetRead(basic_data *BasicData, fetpath string) *TtRunDataFet {
-	base.Message.Printf("SOURCE: %s\n", fetpath)
+func FetRead(bdata *base.BaseData, fetpath string) *TtRunDataFet {
+	logger := bdata.Logger
+	logger.Info("SOURCE: %s\n", fetpath)
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(fetpath); err != nil {
-		panic(err)
+		logger.Error("%s", err)
+		return nil
 	}
 	rundata := &TtRunDataFet{Doc: doc}
-	basic_data.Source = rundata
 	fetroot := doc.Root()
 
 	/*
@@ -47,9 +49,8 @@ func FetRead(basic_data *BasicData, fetpath string) *TtRunDataFet {
 				inactive++
 			}
 		}
-		basic_data.NActivities = len(activities)
 		if inactive != 0 {
-			base.Message.Printf("-A- %d inactive activities", inactive)
+			logger.Result("INACTIVE_ACTIVITIES", strconv.Itoa(inactive))
 		}
 		rundata.ActivityElements = activities
 		rundata.ActivityIds = aidlist
@@ -143,17 +144,17 @@ func FetRead(basic_data *BasicData, fetpath string) *TtRunDataFet {
 		}
 		if inactive != 0 {
 			if timespace == 0 {
-				base.Message.Printf("-T- %d inactive time constraints", inactive)
+				logger.Result("INACTIVE_TIME_CONSTRAINTS", strconv.Itoa(inactive))
 			} else {
-				base.Message.Printf("-S- %d inactive space constraints", inactive)
+				logger.Result("INACTIVE_SPACE_CONSTRAINTS", strconv.Itoa(inactive))
 			}
 		}
 	}
 
-	basic_data.NConstraints = ConstraintIndex(constraint_counter)
-	basic_data.ConstraintTypes = SortConstraintTypes(constraint_types)
-	basic_data.HardConstraintMap = hard_constraint_map
-	basic_data.SoftConstraintMap = soft_constraint_map
+	rundata.NConstraints = ConstraintIndex(constraint_counter)
+	rundata.ConstraintTypes = SortConstraintTypes(constraint_types)
+	rundata.HardConstraintMap = hard_constraint_map
+	rundata.SoftConstraintMap = soft_constraint_map
 
 	return rundata
 }

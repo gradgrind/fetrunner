@@ -1,7 +1,7 @@
 package makefet
 
 import (
-	"fetrunner/db"
+	"fetrunner/base"
 	"slices"
 	"strconv"
 )
@@ -26,24 +26,24 @@ thus created by adjusting the max-gaps constraints.
 // ------------------------------------------------------------------------
 
 func (fetbuild *FetBuild) add_teacher_constraints(
-	namap map[db.NodeRef][]db.TimeSlot,
+	namap map[NodeRef][]base.TimeSlot,
 ) {
 	tt_data := fetbuild.ttdata
-	db0 := tt_data.Db
+	db := fetbuild.basedata.Db
 	rundata := fetbuild.rundata
 	ndays := tt_data.NDays
 	nhours := tt_data.NHours
 	tclist := fetbuild.time_constraints_list
 
-	for _, c0 := range db0.Constraints[db.C_TeacherMaxDays] {
-		data := c0.Data.(db.ResourceN)
+	for _, c0 := range db.Constraints[base.C_TeacherMaxDays] {
+		data := c0.Data.(base.ResourceN)
 		w := rundata.FetWeight(c0.Weight)
 		n := data.N
 		if n >= 0 && n < ndays {
 			tref := data.Resource
 			c := tclist.CreateElement("ConstraintTeacherMaxDaysPerWeek")
 			c.CreateElement("Weight_Percentage").SetText(w)
-			c.CreateElement("Teacher").SetText(db0.Ref2Tag(tref))
+			c.CreateElement("Teacher").SetText(db.Ref2Tag(tref))
 			c.CreateElement("Max_Days_Per_Week").SetText(strconv.Itoa(n))
 			c.CreateElement("Active").SetText("true")
 
@@ -52,15 +52,15 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 		}
 	}
 
-	for _, c0 := range db0.Constraints[db.C_TeacherMinActivitiesPerDay] {
-		data := c0.Data.(db.ResourceN)
+	for _, c0 := range db.Constraints[base.C_TeacherMinActivitiesPerDay] {
+		data := c0.Data.(base.ResourceN)
 		w := rundata.FetWeight(c0.Weight)
 		n := data.N
 		if n >= 2 && n <= nhours {
 			tref := data.Resource
 			c := tclist.CreateElement("ConstraintTeacherMinHoursDaily")
 			c.CreateElement("Weight_Percentage").SetText(w)
-			c.CreateElement("Teacher").SetText(db0.Ref2Tag(tref))
+			c.CreateElement("Teacher").SetText(db.Ref2Tag(tref))
 			c.CreateElement("Minimum_Hours_Daily").SetText(strconv.Itoa(n))
 			c.CreateElement("Allow_Empty_Days").SetText("true")
 			c.CreateElement("Active").SetText("true")
@@ -70,15 +70,15 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 		}
 	}
 
-	for _, c0 := range db0.Constraints[db.C_TeacherMaxActivitiesPerDay] {
-		data := c0.Data.(db.ResourceN)
+	for _, c0 := range db.Constraints[base.C_TeacherMaxActivitiesPerDay] {
+		data := c0.Data.(base.ResourceN)
 		w := rundata.FetWeight(c0.Weight)
 		n := data.N
 		if n >= 2 && n <= nhours {
 			tref := data.Resource
 			c := tclist.CreateElement("ConstraintTeacherMaxHoursDaily")
 			c.CreateElement("Weight_Percentage").SetText(w)
-			c.CreateElement("Teacher").SetText(db0.Ref2Tag(tref))
+			c.CreateElement("Teacher").SetText(db.Ref2Tag(tref))
 			c.CreateElement("Maximum_Hours_Daily").SetText(strconv.Itoa(n))
 			c.CreateElement("Active").SetText("true")
 
@@ -90,18 +90,18 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 	// Gather the max afternoons constraints as they may influence the
 	// max-gaps constraints.
 	//    teacher ref -> max number of afternoons
-	pmmap := map[db.NodeRef]int{}
-	h0 := db0.Info.FirstAfternoonHour
+	pmmap := map[NodeRef]int{}
+	h0 := db.Info.FirstAfternoonHour
 	if h0 > 0 {
-		for _, c0 := range db0.Constraints[db.C_TeacherMaxAfternoons] {
-			data := c0.Data.(db.ResourceN)
+		for _, c0 := range db.Constraints[base.C_TeacherMaxAfternoons] {
+			data := c0.Data.(base.ResourceN)
 			w := rundata.FetWeight(c0.Weight)
 			n := data.N
 			if n < ndays {
 				tref := data.Resource
 				c := tclist.CreateElement("ConstraintTeacherIntervalMaxDaysPerWeek")
 				c.CreateElement("Weight_Percentage").SetText(w)
-				c.CreateElement("Teacher").SetText(db0.Ref2Tag(tref))
+				c.CreateElement("Teacher").SetText(db.Ref2Tag(tref))
 				c.CreateElement("Interval_Start_Hour").SetText(rundata.HourIds[h0].Backend)
 				c.CreateElement("Interval_End_Hour").SetText("")
 				c.CreateElement("Max_Days_Per_Week").SetText(strconv.Itoa(n))
@@ -117,11 +117,11 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 	// Gather the lunch-break constraints as they may influence the
 	// max-gaps constraints.
 	//    teacher ref -> number of days with lunch break
-	lbmap := map[db.NodeRef]int{}
-	if mbhours := db0.Info.MiddayBreak; len(mbhours) != 0 {
-		for _, c0 := range db0.Constraints[db.C_TeacherLunchBreak] {
+	lbmap := map[NodeRef]int{}
+	if mbhours := db.Info.MiddayBreak; len(mbhours) != 0 {
+		for _, c0 := range db.Constraints[base.C_TeacherLunchBreak] {
 			w := rundata.FetWeight(c0.Weight)
-			tref := c0.Data.(db.NodeRef)
+			tref := c0.Data.(NodeRef)
 			// Generate the constraint unless all days have a blocked
 			// lesson at lunchtime.
 			lbdmap := make([]bool, ndays)
@@ -140,7 +140,7 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 				// Add a lunch-break constraint.
 				c := tclist.CreateElement("ConstraintTeacherMaxHoursDailyInInterval")
 				c.CreateElement("Weight_Percentage").SetText(w)
-				c.CreateElement("Teacher").SetText(db0.Ref2Tag(tref))
+				c.CreateElement("Teacher").SetText(db.Ref2Tag(tref))
 				c.CreateElement("Interval_Start_Hour").
 					SetText(rundata.HourIds[mbhours[0]].Backend)
 				c.CreateElement("Interval_End_Hour").
@@ -156,8 +156,8 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 		}
 	}
 
-	for _, c0 := range db0.Constraints[db.C_TeacherMaxGapsPerDay] {
-		data := c0.Data.(db.ResourceN)
+	for _, c0 := range db.Constraints[base.C_TeacherMaxGapsPerDay] {
+		data := c0.Data.(base.ResourceN)
 		w := rundata.FetWeight(c0.Weight)
 		n := data.N
 		tref := data.Resource
@@ -175,7 +175,7 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 		if n >= 0 {
 			c := tclist.CreateElement("ConstraintTeacherMaxGapsPerDay")
 			c.CreateElement("Weight_Percentage").SetText(w)
-			c.CreateElement("Teacher").SetText(db0.Ref2Tag(tref))
+			c.CreateElement("Teacher").SetText(db.Ref2Tag(tref))
 			c.CreateElement("Max_Gaps").SetText(strconv.Itoa(n))
 			c.CreateElement("Active").SetText("true")
 
@@ -184,8 +184,8 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 		}
 	}
 
-	for _, c0 := range db0.Constraints[db.C_TeacherMaxGapsPerWeek] {
-		data := c0.Data.(db.ResourceN)
+	for _, c0 := range db.Constraints[base.C_TeacherMaxGapsPerWeek] {
+		data := c0.Data.(base.ResourceN)
 		w := rundata.FetWeight(c0.Weight)
 		n := data.N
 		tref := data.Resource
@@ -202,7 +202,7 @@ func (fetbuild *FetBuild) add_teacher_constraints(
 			}
 			c := tclist.CreateElement("ConstraintTeacherMaxGapsPerWeek")
 			c.CreateElement("Weight_Percentage").SetText(w)
-			c.CreateElement("Teacher").SetText(db0.Ref2Tag(tref))
+			c.CreateElement("Teacher").SetText(db.Ref2Tag(tref))
 			c.CreateElement("Max_Gaps").SetText(strconv.Itoa(n))
 			c.CreateElement("Active").SetText("true")
 

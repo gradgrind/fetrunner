@@ -19,41 +19,44 @@ import (
 var TEMPORARY_FOLDER string
 
 type FetBackend struct {
-	basic_data *autotimetable.BasicData
+	attdata *autotimetable.AutoTtData
 }
 
-func SetFetBackend(basic_data *autotimetable.BasicData) {
+func SetFetBackend(bdata *base.BaseData, attdata *autotimetable.AutoTtData) {
 	if len(TEMPORARY_FOLDER) != 0 {
 		os.RemoveAll(filepath.Join(TEMPORARY_FOLDER,
-			filepath.Base(basic_data.WorkingDir)))
+			filepath.Base(bdata.SourceDir)))
 	}
-	basic_data.BackendInterface = &FetBackend{basic_data}
+	attdata.BackendInterface = &FetBackend{attdata}
 }
 
-func (fbe *FetBackend) Tidy() {
-	if len(TEMPORARY_FOLDER) == 0 {
-		os.RemoveAll(filepath.Join(fbe.basic_data.WorkingDir, "tmp"))
+func (fbe *FetBackend) Tidy(bdata *base.BaseData) {
+	if TEMPORARY_FOLDER == "" {
+		os.RemoveAll(filepath.Join(bdata.SourceDir, "tmp", bdata.Name))
 	} else {
 		os.RemoveAll(filepath.Join(TEMPORARY_FOLDER,
-			filepath.Base(fbe.basic_data.WorkingDir)))
+			filepath.Base(bdata.Name)))
 	}
 }
 
 func (fbe *FetBackend) RunBackend(
+	bdata *base.BaseData,
 	instance *autotimetable.TtInstance,
 ) autotimetable.TtBackend {
-	basic_data := fbe.basic_data
-	fname := instance.Tag
+	attdata := fbe.attdata
+
+	fname := fmt.Sprintf("z%05d~%s", instance.Index, instance.ConstraintType)
 	var odir string
-	if len(TEMPORARY_FOLDER) == 0 {
-		odir = filepath.Join(basic_data.WorkingDir, "tmp", fname)
+	if TEMPORARY_FOLDER == "" {
+		odir = filepath.Join(bdata.SourceDir, "tmp", bdata.Name, fname)
 	} else {
 		odir = filepath.Join(TEMPORARY_FOLDER,
-			filepath.Base(fbe.basic_data.WorkingDir),
+			filepath.Base(bdata.Name),
 			fname)
 	}
 	err := os.MkdirAll(odir, 0755)
 	if err != nil {
+		//TODO?
 		panic(err)
 	}
 	stemfile := filepath.Join(odir, fname)
@@ -61,33 +64,34 @@ func (fbe *FetBackend) RunBackend(
 
 	// Construct the FET-file
 	var fet_xml []byte
-	basic_data.Source.PrepareRun(instance.ConstraintEnabled, &fet_xml)
+	attdata.Source.PrepareRun(instance.ConstraintEnabled, &fet_xml)
 	// Write FET file
 	err = os.WriteFile(fetfile, fet_xml, 0644)
 	if err != nil {
+		//TODO?
 		panic("Couldn't write fet file to: " + fetfile)
 	}
-	if instance.Tag == "COMPLETE" {
-		// Save fet file at top level of working directory.
-		cfile := filepath.Join(basic_data.WorkingDir,
-			filepath.Base(strings.TrimSuffix(
-				basic_data.WorkingDir, "_fet")+".fet"))
+	if instance.ConstraintType == "_COMPLETE" {
+		// Save "complete" fet file with "_" prefix in working directory.
+		cfile := filepath.Join(bdata.SourceDir, "_"+bdata.Name+".fet")
 		err = os.WriteFile(cfile, fet_xml, 0644)
 		if err != nil {
 			panic("Couldn't write fet file to: " + cfile)
 		}
 	}
 	logfile := filepath.Join(odir, "logs", "max_placed_activities.txt")
+	resultfile := filepath.Join(odir, "timetables", fname, fname+"_activities.xml")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	// Note that it should be safe to call `cancel` multiple times.
 	fet_data := &FetTtData{
-		finished: false,
-		ifile:    fetfile,
-		fetxml:   fet_xml,
-		odir:     odir,
-		logfile:  logfile,
-		cancel:   cancel,
+		finished:   0,
+		ifile:      fetfile,
+		fetxml:     fet_xml,
+		odir:       odir,
+		logfile:    logfile,
+		resultfile: resultfile,
+		cancel:     cancel,
 	}
 
 	params := []string{
@@ -108,7 +112,7 @@ func (fbe *FetBackend) RunBackend(
 		"--outputdir=" + odir,
 	}
 
-	if basic_data.Parameters.TESTING {
+	if attdata.Parameters.TESTING {
 		params = append(params,
 			"--randomseeds10=10",
 			"--randomseeds11=11",
@@ -119,8 +123,7 @@ func (fbe *FetBackend) RunBackend(
 	}
 
 	runCmd := exec.CommandContext(ctx,
-		//runCmd := exec.Command(
-		"fet-cl", params...,
+		attdata.Parameters.FETPATH, params...,
 	)
 
 	go run(fet_data, runCmd)
@@ -132,12 +135,14 @@ type FetTtData struct {
 	fetxml      []byte
 	odir        string // the working directory for this instance
 	logfile     string
+	resultfile  string
 	rdfile      *os.File // this must be closed when the subprocess finishes
 	reader      *bufio.Reader
 	cancel      func()
-	fet_timeout bool //
-	finished    bool
+	fet_timeout bool
+	finished    int
 	count       int
+	errormsg    string // record error message
 }
 
 func (data *FetTtData) Abort() {
@@ -148,7 +153,7 @@ func (data *FetTtData) Clear() {
 	//base.Message.Printf("### Remove %s\n", fttd.workingdir)
 	os.RemoveAll(data.odir)
 	//} else {
-	//	base.Message.Printf("### No TtData: %s\n", instance.Tag)
+	//  base.Message.Printf("### No TtData: %s\n", instance.Tag)
 }
 
 // The executable, `fet-cl`, places any messages in the `log` directory, as
@@ -166,8 +171,20 @@ func (data *FetTtData) Clear() {
 // `run` is a goroutine. The last item to be changed must be `fet_data.state`,
 // to avoid potential race conditions.
 func run(fet_data *FetTtData, cmd *exec.Cmd) {
-	cmd.CombinedOutput()
-	fet_data.finished = true
+	_, err := cmd.CombinedOutput()
+	if err != nil {
+		e := err.Error()
+		// Some errors arise as a result of a termination signal, or after
+		// calling `Abort`, which leads to the context being cancelled.
+		if strings.HasPrefix(e, "signal") || strings.HasPrefix(e, "context") {
+			fet_data.finished = -1
+		} else {
+			fet_data.finished = -2 // program failed
+			fet_data.errormsg = e
+		}
+	} else {
+		fet_data.finished = 1
+	}
 }
 
 // Regexp for reading the progress of a run from the FET log file
@@ -177,7 +194,8 @@ var re *regexp.Regexp = regexp.MustCompile(pattern)
 // `Tick` runs in the "tick" loop. Rather like a "tail" function it reads
 // the FET progress from its log file, by simply polling for new lines.
 func (data *FetTtData) Tick(
-	basic_data *autotimetable.BasicData,
+	bdata *base.BaseData,
+	attdata *autotimetable.AutoTtData,
 	instance *autotimetable.TtInstance,
 ) {
 	if data.reader == nil {
@@ -203,11 +221,9 @@ func (data *FetTtData) Tick(
 					if err == nil {
 						if count > data.count {
 							instance.LastTime = instance.Ticks
-							percent := (count * 100) / int(basic_data.NActivities)
+							percent := (count * 100) / int(attdata.NActivities)
 							if percent > instance.Progress {
 								instance.Progress = percent
-								base.Report(fmt.Sprintf("%s: %d @ %d\n",
-									instance.Tag, percent, instance.Ticks))
 							}
 						}
 					}
@@ -227,7 +243,7 @@ func (data *FetTtData) Tick(
 		}
 	}
 exit:
-	if data.finished {
+	if data.finished != 0 {
 		if data.rdfile != nil {
 			data.rdfile.Close()
 		}
@@ -235,6 +251,10 @@ exit:
 			instance.RunState = 1
 		} else {
 			instance.RunState = 2
+		}
+		if data.finished == -2 {
+			bdata.Logger.Error("FET_Failed: %s", data.errormsg)
+			return
 		}
 
 		efile, err := os.ReadFile(filepath.Join(data.odir, "logs", "errors.txt"))
@@ -247,16 +267,18 @@ exit:
 			return
 		}
 		if len(instance.Constraints) == 1 {
-			basic_data.BlockConstraint[instance.Constraints[0]] = true
+			attdata.BlockConstraint[instance.Constraints[0]] = true
 		}
 	}
 }
 
 // If there is a result from the main process, there may be a
 // corresponding result from the source.
-func (data *FetTtData) FinalizeResult(basic_data *autotimetable.BasicData) {
+func (data *FetTtData) FinalizeResult(
+	bdata *base.BaseData,
+	attdata *autotimetable.AutoTtData) {
 	// Write FET file at top level of working directory.
-	fetfile := filepath.Join(basic_data.WorkingDir, "Result.fet")
+	fetfile := filepath.Join(bdata.SourceDir, bdata.Name+"_Result.fet")
 	err := os.WriteFile(fetfile, data.fetxml, 0644)
 	if err != nil {
 		panic("Couldn't write fet file to: " + fetfile)
@@ -265,50 +287,51 @@ func (data *FetTtData) FinalizeResult(basic_data *autotimetable.BasicData) {
 
 // Gather the results of the given run.
 func (data *FetTtData) Results(
-	basic_data *autotimetable.BasicData,
+	bdata *base.BaseData,
+	attdata *autotimetable.AutoTtData,
 	instance *autotimetable.TtInstance,
 ) []autotimetable.TtActivityPlacement {
+	logger := bdata.Logger
 	// Get placements
-	xmlpath := filepath.Join(data.odir, "timetables", instance.Tag,
-		instance.Tag+"_activities.xml")
+	xmlpath := data.resultfile
 	// Open the XML file
 	xmlFile, err := os.Open(xmlpath)
 	if err != nil {
-		base.Bug.Print(err)
+		logger.Bug("%v", err)
 		return nil
 	}
 	// Remember to close the file at the end of the function
 	defer xmlFile.Close()
 	// read the opened XML file as a byte array.
-	base.Message.Printf("Reading: %s\n", xmlpath)
+	logger.Info("Reading: %s\n", xmlpath)
 	byteValue, _ := io.ReadAll(xmlFile)
 	v := fetResultRoot{}
 	err = xml.Unmarshal(byteValue, &v)
 	if err != nil {
-		base.Bug.Printf("XML error in %s:\n %v\n", xmlpath, err)
+		logger.Bug("XML error in %s:\n %v\n", xmlpath, err)
 		return nil
 	}
 	// Need to prepare the `ActivityPlacment` fields: activities, days,
 	// hours and rooms ...
 	// ... room conversion
 	room2index := map[string]int{}
-	for i, r := range basic_data.Source.GetRooms() {
+	for i, r := range attdata.Source.GetRooms() {
 		room2index[r.Backend] = i
 
 	}
 	// ... day conversion
 	day2index := map[string]int{}
-	for i, d := range basic_data.Source.GetDays() {
+	for i, d := range attdata.Source.GetDays() {
 		day2index[d.Backend] = i
 	}
 	// ... hour conversion
 	hour2index := map[string]int{}
-	for i, h := range basic_data.Source.GetHours() {
+	for i, h := range attdata.Source.GetHours() {
 		hour2index[h.Backend] = i
 	}
 	// ... activity conversion
 	activity2index := map[string]int{}
-	for i, a := range basic_data.Source.GetActivities() {
+	for i, a := range attdata.Source.GetActivities() {
 		activity2index[a.Backend] = i
 	}
 

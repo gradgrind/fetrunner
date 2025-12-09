@@ -3,7 +3,6 @@ package w365tt
 import (
 	"encoding/json"
 	"fetrunner/base"
-	"fetrunner/db"
 	"io"
 	"os"
 	"strconv"
@@ -11,29 +10,35 @@ import (
 )
 
 // Read to the local, tweaked DbTopLevel
-func ReadJSON(jsonpath string) *W365TopLevel {
+func ReadJSON(logger *base.Logger, jsonpath string) *W365TopLevel {
 	// Open the  JSON file
 	jsonFile, err := os.Open(jsonpath)
 	if err != nil {
-		base.Error.Fatal(err)
+		logger.Error("%v", err)
+		return nil
 	}
 	// Remember to close the file at the end of the function
 	defer jsonFile.Close()
 	// read the opened XML file as a byte array.
 	byteValue, _ := io.ReadAll(jsonFile)
-	base.Message.Printf("*+ Reading: %s\n", jsonpath)
+	logger.Info("*+ Reading: %s\n", jsonpath)
 	v := W365TopLevel{}
 	err = json.Unmarshal(byteValue, &v)
 	if err != nil {
-		base.Error.Fatalf("Could not unmarshal json: %s\n", err)
+		logger.Error("Could not unmarshal json: %s\n", err)
+		return nil
 	}
 	return &v
 }
 
-func LoadJSON(newdb *db.DbTopLevel, jsonpath string) {
-	dbi := ReadJSON(jsonpath)
-	newdb.Info = db.Info(dbi.Info)
-	newdb.ModuleData = map[string]any{
+func LoadJSON(newdb *base.BaseData, jsonpath string) bool {
+	dbi := ReadJSON(newdb.Logger, jsonpath)
+	if dbi == nil {
+		return false
+	}
+	ndb := newdb.Db
+	ndb.Info = base.Info(dbi.Info)
+	ndb.ModuleData = map[string]any{
 		"FetData": dbi.FetData,
 	}
 	dbi.readDays(newdb)
@@ -50,9 +55,10 @@ func LoadJSON(newdb *db.DbTopLevel, jsonpath string) {
 	dbi.readSuperCourses(newdb)
 	dbi.readLessons(newdb)
 	dbi.readConstraints(newdb)
+	return true
 }
 
-func (dbi *W365TopLevel) readDays(newdb *db.DbTopLevel) {
+func (dbi *W365TopLevel) readDays(newdb *base.BaseData) {
 	for _, e := range dbi.Days {
 		n := newdb.NewDay(e.Id)
 		n.Tag = e.Tag
@@ -60,7 +66,7 @@ func (dbi *W365TopLevel) readDays(newdb *db.DbTopLevel) {
 	}
 }
 
-func (dbi *W365TopLevel) readHours(newdb *db.DbTopLevel) {
+func (dbi *W365TopLevel) readHours(newdb *base.BaseData) {
 	for i, e := range dbi.Hours {
 		tag := e.Tag
 		if tag == "" {
@@ -85,16 +91,17 @@ func (dbi *W365TopLevel) readHours(newdb *db.DbTopLevel) {
 	}
 }
 
-func (dbi *W365TopLevel) readTeachers(newdb *db.DbTopLevel) {
+func (dbi *W365TopLevel) readTeachers(newdb *base.BaseData) {
 	dbi.TeacherMap = map[NodeRef]struct{}{}
 	tagmap := map[string]struct{}{} // to test for duplicate tags
 	for _, e := range dbi.Teachers {
 		// Perform some checks and add to the tag map.
 		_, nok := tagmap[e.Tag]
 		if nok {
-			base.Error.Fatalf(
+			newdb.Logger.Error(
 				"Teacher Tag (Shortcut) defined twice: %s\n",
 				e.Tag)
+			continue
 		}
 		tagmap[e.Tag] = struct{}{}
 
@@ -107,50 +114,51 @@ func (dbi *W365TopLevel) readTeachers(newdb *db.DbTopLevel) {
 		dbi.TeacherMap[e.Id] = struct{}{} // flag the Id as valid teacher
 
 		// +++ Add constraints ...
+		ndb := newdb.Db
 
 		// MaxAfternoons = 0 has a special meaning (all blocked), so the
 		// corresponding constraint is not needed, see `handleZeroAfternoons`.
 		amax := e.MaxAfternoons
 		if amax > 0 {
-			newdb.NewTeacherMaxAfternoons(
-				"", db.MAXWEIGHT, n.Id, amax)
+			ndb.NewTeacherMaxAfternoons(
+				"", base.MAXWEIGHT, n.Id, amax)
 		}
 		// Not available times – add all afternoons if amax == 0
 		tsl := dbi.handleZeroAfternoons(e.NotAvailable, amax)
 		if len(tsl) != 0 {
 			// Add a constraint
-			newdb.NewTeacherNotAvailable("", db.MAXWEIGHT, n.Id, tsl)
+			ndb.NewTeacherNotAvailable("", base.MAXWEIGHT, n.Id, tsl)
 		}
 
 		// MinActivitiesPerDay
 		if e.MinLessonsPerDay > 0 {
-			newdb.NewTeacherMinActivitiesPerDay(
-				"", db.MAXWEIGHT, n.Id, e.MinLessonsPerDay)
+			ndb.NewTeacherMinActivitiesPerDay(
+				"", base.MAXWEIGHT, n.Id, e.MinLessonsPerDay)
 		}
 		// MaxActivitiesPerDay
 		if e.MaxLessonsPerDay > 0 {
-			newdb.NewTeacherMaxActivitiesPerDay(
-				"", db.MAXWEIGHT, n.Id, e.MaxLessonsPerDay)
+			ndb.NewTeacherMaxActivitiesPerDay(
+				"", base.MAXWEIGHT, n.Id, e.MaxLessonsPerDay)
 		}
 		// MaxDays
 		if e.MaxDays > 0 {
-			newdb.NewTeacherMaxDays(
-				"", db.MAXWEIGHT, n.Id, e.MaxDays)
+			ndb.NewTeacherMaxDays(
+				"", base.MAXWEIGHT, n.Id, e.MaxDays)
 		}
 		// MaxGapsPerDay
 		if e.MaxGapsPerDay >= 0 {
-			newdb.NewTeacherMaxGapsPerDay(
-				"", db.MAXWEIGHT, n.Id, e.MaxGapsPerDay)
+			ndb.NewTeacherMaxGapsPerDay(
+				"", base.MAXWEIGHT, n.Id, e.MaxGapsPerDay)
 		}
 		// MaxGapsPerWeek
 		if e.MaxGapsPerWeek >= 0 {
-			newdb.NewTeacherMaxGapsPerWeek(
-				"", db.MAXWEIGHT, n.Id, e.MaxGapsPerWeek)
+			ndb.NewTeacherMaxGapsPerWeek(
+				"", base.MAXWEIGHT, n.Id, e.MaxGapsPerWeek)
 		}
 		// LunchBreak
 		if e.LunchBreak {
-			newdb.NewTeacherLunchBreak(
-				"", db.MAXWEIGHT, n.Id)
+			ndb.NewTeacherLunchBreak(
+				"", base.MAXWEIGHT, n.Id)
 		}
 	}
 }

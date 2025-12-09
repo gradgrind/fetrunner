@@ -1,0 +1,9 @@
+To build a static library:
+
+go build -buildmode=c-archive libfetrunner.go
+
+To build a shared library on Linux:
+
+go build -buildmode=c-shared -o libfetrunner.so libfetrunner.go
+
+On Windows and Darwin the output file will presumably need adapting.

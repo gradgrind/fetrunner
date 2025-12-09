@@ -1,5 +1,12 @@
 package autotimetable
 
+import "fetrunner/base"
+
+type BackendInterface interface {
+	RunBackend(*base.BaseData, *TtInstance) TtBackend
+	Tidy(*base.BaseData)
+}
+
 type TtSource interface {
 	//TODO?
 	//GetConstraintTypeSets() map[string][]int // ctype -> []constraint-index
@@ -16,6 +23,12 @@ type TtSource interface {
 	GetActivities() []IdPair
 
 	GetConstraints() []Constraint
+
+	GetNActivities() int
+	GetNConstraints() ConstraintIndex
+	GetConstraintTypes() []ConstraintType // ordered list of constraint types
+	GetHardConstraintMap() map[ConstraintType][]ConstraintIndex
+	GetSoftConstraintMap() map[ConstraintType][]ConstraintIndex
 
 	// Prepare the "source" for a run with a set of enabled constraints:
 	PrepareRun([]bool, any)

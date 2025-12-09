@@ -2,12 +2,12 @@ package w365tt
 
 import (
 	"encoding/json"
-	"fetrunner/db"
+	"fetrunner/base"
 )
 
 // The structures used for the "database", adapted to read from W365
 
-type NodeRef = db.NodeRef // Element reference
+type NodeRef = base.NodeRef // Element reference
 
 type Info struct {
 	Institution        string
@@ -196,22 +196,22 @@ type W365TopLevel struct {
 	Constraints  []map[string]any
 
 	// These fields do not belong in the JSON object.
-	RealRooms       map[NodeRef]*db.Room      `json:"-"`
-	RoomGroupMap    map[NodeRef]*db.RoomGroup `json:"-"`
-	SubjectMap      map[NodeRef]*db.Subject   `json:"-"`
-	GroupRefMap     map[NodeRef]NodeRef       `json:"-"`
-	TeacherMap      map[NodeRef]struct{}      `json:"-"`
-	CourseMap       map[NodeRef]struct{}      `json:"-"`
-	SubjectTags     map[string]NodeRef        `json:"-"`
-	RoomTags        map[string]NodeRef        `json:"-"`
-	RoomChoiceNames map[string]NodeRef        `json:"-"`
+	RealRooms       map[NodeRef]*base.Room      `json:"-"`
+	RoomGroupMap    map[NodeRef]*base.RoomGroup `json:"-"`
+	SubjectMap      map[NodeRef]*base.Subject   `json:"-"`
+	GroupRefMap     map[NodeRef]NodeRef         `json:"-"`
+	TeacherMap      map[NodeRef]struct{}        `json:"-"`
+	CourseMap       map[NodeRef]struct{}        `json:"-"`
+	SubjectTags     map[string]NodeRef          `json:"-"`
+	RoomTags        map[string]NodeRef          `json:"-"`
+	RoomChoiceNames map[string]NodeRef          `json:"-"`
 }
 
 // Block all afternoons if nAfternnons == 0.
 func (dbp *W365TopLevel) handleZeroAfternoons(
 	notAvailable []TimeSlot,
 	nAfternoons int,
-) []db.TimeSlot {
+) []base.TimeSlot {
 	// Make a bool array and fill this in two passes, then remake list
 	namap := make([][]bool, len(dbp.Days))
 	nhours := len(dbp.Hours)
@@ -233,11 +233,11 @@ func (dbp *W365TopLevel) handleZeroAfternoons(
 		//TODO: else an error message?
 	}
 	// Build a new base.TimeSlot list
-	na := []db.TimeSlot{}
+	na := []base.TimeSlot{}
 	for d, naday := range namap {
 		for h, nahour := range naday {
 			if nahour {
-				na = append(na, db.TimeSlot{Day: d, Hour: h})
+				na = append(na, base.TimeSlot{Day: d, Hour: h})
 			}
 		}
 	}

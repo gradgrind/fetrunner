@@ -1,6 +1,7 @@
 package timetable
 
 import (
+	"fetrunner/base"
 	"strings"
 )
 
@@ -9,8 +10,7 @@ const ATOMIC_GROUP_SEP2 = "~"
 
 // Prepare filtered versions of the class Divisions containing only
 // those Divisions which have Groups used in activities.
-func (tt_data *TtData) FilterDivisions() {
-	db := tt_data.Db
+func (tt_data *TtData) FilterDivisions(db *base.DbTopLevel) {
 
 	// Collect groups used in courses
 	usedgroups := map[NodeRef]bool{}
@@ -31,7 +31,7 @@ func (tt_data *TtData) FilterDivisions() {
 	}
 
 	// Filter the class divisions, discarding the division names.
-	for _, c := range tt_data.Db.Classes {
+	for _, c := range db.Classes {
 		divs := [][]NodeRef{}
 		for _, div := range c.Divisions {
 			for _, gref := range div.Groups {
@@ -56,14 +56,13 @@ func (a *AtomicGroup) GetResourceTag() string {
 	return a.Tag
 }
 
-func (tt_data *TtData) MakeAtomicGroups() {
+func (tt_data *TtData) MakeAtomicGroups(db *base.DbTopLevel) {
 	// Set up the class index map
 	tt_data.ClassIndex = map[NodeRef]ClassIndex{}
 
 	// An atomic group is an ordered list of single groups, one from each
 	// division.
 	tt_data.AtomicGroupIndex = map[NodeRef][]AtomicIndex{}
-	db := tt_data.Db
 
 	// Go through the classes inspecting their Divisions.
 	// Build a list-basis for the atomic groups based on the Cartesian product.
@@ -145,7 +144,7 @@ func (tt_data *TtData) MakeAtomicGroups() {
 	}
 }
 
-/*TODO
+/*TODO: This would need updating to the newer structures
 // For testing
 func (ttinfo *TtInfo) PrintAtomicGroups() {
 	for _, cl := range ttinfo.Db.Classes {

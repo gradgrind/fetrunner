@@ -1,8 +1,7 @@
 package makefet
 
 import (
-	"fetrunner/autotimetable"
-	"fetrunner/db"
+	"fetrunner/base"
 	"fetrunner/fet"
 	"fetrunner/timetable"
 	"fmt"
@@ -12,7 +11,7 @@ import (
 	"github.com/beevik/etree"
 )
 
-type NodeRef = db.NodeRef
+type NodeRef = base.NodeRef
 
 const CLASS_GROUP_SEP = "."
 const VIRTUAL_ROOM_PREFIX = "!"
@@ -23,7 +22,7 @@ const VIRTUAL_ROOM_PREFIX = "!"
 // Use a `FetBuild` as basis for constructing a `fet.TtRunDataFet`. In addition,
 // some fields of the `autotimetable.BasicData` are initialized.
 func FetTree(
-	basic_data *autotimetable.BasicData,
+	bdata *base.BaseData,
 	tt_data *timetable.TtData,
 ) *fet.TtRunDataFet {
 	doc := etree.NewDocument()
@@ -32,9 +31,9 @@ func FetTree(
 		Doc:         doc,
 		WeightTable: fet.MakeFetWeights(),
 	}
-	basic_data.Source = rundata
 
 	fetbuild := &FetBuild{
+		basedata:           bdata,
 		ttdata:             tt_data,
 		rundata:            rundata,
 		fet_virtual_rooms:  map[string]string{},
@@ -46,7 +45,7 @@ func FetTree(
 	fetroot.CreateAttr("version", fet_version)
 	fetroot.CreateElement("Mode").SetText("Official")
 	fetroot.CreateElement("Institution_Name").SetText(
-		tt_data.Db.Info.Institution)
+		bdata.Db.Info.Institution)
 
 	//TODO?
 	source_ref := ""
@@ -77,7 +76,7 @@ func FetTree(
 
 	// Add "NotAvailable" constraints for all resources, returning a map
 	// linking a resource to its blocked slot list:
-	//   db.NodeRef -> []db.TimeSlot
+	//   NodeRef -> []db.TimeSlot
 	namap := fetbuild.blocked_slots()
 
 	//TODO: Handle WITHOUT_ROOM_CONSTRAINTS
@@ -90,9 +89,6 @@ func FetTree(
 
 	//TODO: The remaining constraints
 
-	// Number of activities
-	basic_data.NActivities = len(rundata.ActivityIds)
-
 	// Collect the constraints, dividing into soft and hard groups.
 	hard_constraint_map := map[string][]int{}
 	soft_constraint_map := map[string][]int{}
@@ -102,7 +98,7 @@ func FetTree(
 		constraint_types = append(constraint_types, c.Ctype)
 		// ... duplicates wil be removed in `sort_constraint_types`
 
-		if c.Weight == db.MAXWEIGHT {
+		if c.Weight == base.MAXWEIGHT {
 			// Hard constraint
 			hard_constraint_map[c.Ctype] = append(
 				hard_constraint_map[c.Ctype], i)
@@ -112,14 +108,12 @@ func FetTree(
 				soft_constraint_map[c.Ctype], i)
 		}
 	}
-	basic_data.NConstraints = len(rundata.Constraints)
-	basic_data.ConstraintTypes = fet.SortConstraintTypes(constraint_types)
-	basic_data.HardConstraintMap = hard_constraint_map
-	basic_data.SoftConstraintMap = soft_constraint_map
+	rundata.NConstraints = len(rundata.Constraints)
+	rundata.ConstraintTypes = fet.SortConstraintTypes(constraint_types)
+	rundata.HardConstraintMap = hard_constraint_map
+	rundata.SoftConstraintMap = soft_constraint_map
 
-	//
-
-	return fetbuild.rundata
+	return rundata
 }
 
 func oldweight2fet(w int) string {
@@ -142,7 +136,7 @@ func (fetbuild *FetBuild) add_activity_tag(tag string) {
 }
 
 func param_constraint(
-	ctype string, id db.NodeRef, index int, weight int,
+	ctype string, id NodeRef, index int, weight int,
 ) Constraint {
 	return Constraint{
 		IdPair:     IdPair{Source: string(id)},
@@ -152,7 +146,7 @@ func param_constraint(
 }
 
 func params_constraint(
-	ctype string, id db.NodeRef, indexlist []int, weight int,
+	ctype string, id NodeRef, indexlist []int, weight int,
 ) Constraint {
 	return Constraint{
 		IdPair:     IdPair{Source: string(id)},

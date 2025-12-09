@@ -2,6 +2,7 @@ package makefet
 
 import (
 	"fetrunner/autotimetable"
+	"fetrunner/base"
 	"fetrunner/fet"
 	"fetrunner/timetable"
 
@@ -14,6 +15,7 @@ type IdPair = autotimetable.IdPair
 type Constraint = autotimetable.Constraint
 
 type FetBuild struct {
+	basedata               *base.BaseData
 	ttdata                 *timetable.TtData
 	rundata                *fet.TtRunDataFet // the structure to be built
 	fetroot                *etree.Element

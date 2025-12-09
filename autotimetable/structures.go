@@ -1,6 +1,9 @@
 package autotimetable
 
-import "fetrunner/timetable"
+import (
+	"fetrunner/base"
+	"fetrunner/timetable"
+)
 
 // Structures and global variables used in connection with automation of the
 // timetable generation.
@@ -8,33 +11,39 @@ import "fetrunner/timetable"
 type ConstraintType = string
 type ConstraintIndex = int
 
-// The `BasicData` structure is set up once for the handling of a set of
+type Parameters struct {
+	//TODO: not all entries are (currently) used by libfetrunner
+
+	// The behaviour of the TESTING flag depends on the back-end. It
+	// might, for example, use fixed seeds for random number generators
+	// so as to produce reproduceable runs.
+	TESTING bool
+	// If the SKIP_HARD flag is true, assume the hard constraints are
+	// satisfiable – skip the unconstrained instance, basing tests on
+	// the hard-only instance.
+	SKIP_HARD bool
+	// This approach relies on parallel processing. If there are too few
+	// real processors it will be inefficient:
+	MAXPROCESSES int
+	FETPATH      string // path to `fet-cl` executable
+
+	TIMEOUT                  int // the overall timeout, secs
+	NEW_BASE_TIMEOUT_FACTOR  int // factor * 10
+	CYCLE_TIMEOUT_MIN        int
+	NEW_CYCLE_TIMEOUT_FACTOR int // factor * 10
+
+	DEBUG bool
+
+	// Tick count limits for testing whether an instance with no timeout
+	// has got stuck. See `(*RunQueue).update_instances()` method.
+	LAST_TIME_0 int
+	LAST_TIME_1 int
+}
+
+// The `AutoTtData` structure is set up once for the handling of a set of
 // timetable data (based on a source file, for example).
-type BasicData struct {
-	Parameters struct {
-		// The behaviour of the TESTING flag depends on the back-end. It
-		// might, for example, use fixed seeds for random number generators
-		// so as to produce reproduceable runs.
-		TESTING bool
-		// If the SKIP_HARD flag is true, assume the hard constraints are
-		// satisfiable – skip the unconstrained instance, basing tests on
-		// the hard-only instance.
-		SKIP_HARD bool
-		// This approach relies on parallel processing. If there are too few
-		// real processors it will be inefficient:
-		MAXPROCESSES int
-
-		NEW_BASE_TIMEOUT_FACTOR  int // factor * 10
-		CYCLE_TIMEOUT_MIN        int
-		NEW_CYCLE_TIMEOUT_FACTOR int // factor * 10
-
-		DEBUG bool
-
-		// Tick count limits for testing whether an instance with no timeout
-		// has got stuck. See `(*RunQueue).update_instances()` method.
-		LAST_TIME_0 int
-		LAST_TIME_1 int
-	}
+type AutoTtData struct {
+	Parameters *Parameters
 
 	Source           TtSource
 	BackendInterface BackendInterface
@@ -47,10 +56,7 @@ type BasicData struct {
 	ConstraintErrors  map[ConstraintIndex]string // collect error messages
 	BlockConstraint   map[ConstraintIndex]bool   // if true, don't enable the constraint
 
-	// `WorkingDir` provides the path to a working directory which can be used
-	// freely during processing. It is set up before entering `StartGeneration`.
-	WorkingDir string
-	Ticks      int // "global" time ticker
+	Ticks int // "global" time ticker
 	// The instance tick counter is in `TtInstance` because it may be needed
 	// by the run-time back-end.
 
@@ -70,13 +76,8 @@ type BasicData struct {
 	constraint_list []*TtInstance
 }
 
-type BackendInterface interface {
-	RunBackend(instance *TtInstance) TtBackend
-	Tidy()
-}
-
 type TtInstance struct {
-	Tag     string
+	Index   int
 	Timeout int // ticks
 
 	// Base instance from which this instance is derived:
@@ -104,10 +105,10 @@ type TtInstance struct {
 
 type TtBackend interface {
 	Abort()
-	Tick(*BasicData, *TtInstance)
+	Tick(*base.BaseData, *AutoTtData, *TtInstance)
 	Clear()
-	Results(*BasicData, *TtInstance) []TtActivityPlacement
-	FinalizeResult(*BasicData)
+	Results(*base.BaseData, *AutoTtData, *TtInstance) []TtActivityPlacement
+	FinalizeResult(*base.BaseData, *AutoTtData)
 }
 
 type TtActivityPlacement = timetable.TtActivityPlacement

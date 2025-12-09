@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func (tt_data *TtData) roomChoiceFilter(cinfo *CourseInfo) {
+func (tt_data *TtData) roomChoiceFilter(cinfo *CourseInfo, bdata *base.BaseData) {
 	delta := 0
 
 	necessary := slices.Clone(cinfo.FixedRooms)
@@ -51,7 +51,7 @@ stage1:
 			if delta < 0 {
 				// Report error and try to recover by using current `necessary`
 				// and dropping choice lists
-				tt_data.errorRCG(cinfo, rc0)
+				tt_data.errorRCG(cinfo, rc0, bdata)
 				cinfo.RoomChoices = nil
 				slices.Sort(necessary)
 				cinfo.FixedRooms = necessary
@@ -92,7 +92,7 @@ stage1:
 		if len(newcp) == 0 {
 			// Report error and try to recover by using current `necessary`
 			// and dropping choice lists
-			tt_data.errorRCG(cinfo, rc)
+			tt_data.errorRCG(cinfo, rc, bdata)
 			cinfo.RoomChoices = nil
 			slices.Sort(necessary)
 			cinfo.FixedRooms = necessary
@@ -134,11 +134,12 @@ stage1:
 	//fmt.Printf("\n delta: %d\n", delta)
 }
 
-func (tt_data *TtData) errorRCG(cinfo *CourseInfo, rooms []RoomIndex) {
+func (tt_data *TtData) errorRCG(cinfo *CourseInfo, rooms []RoomIndex, bdata *base.BaseData) {
+	db := bdata.Db
 	rlist := []string{}
 	for _, r := range rooms {
-		rlist = append(rlist, tt_data.Db.Rooms[r].GetTag())
+		rlist = append(rlist, db.Rooms[r].GetTag())
 	}
-	base.Error.Printf("Course %s: Invalid room-choice-group with %s\n",
-		tt_data.View(cinfo), strings.Join(rlist, ", "))
+	bdata.Logger.Error("Course %s: Invalid room-choice-group with %s",
+		tt_data.View(cinfo, db), strings.Join(rlist, ", "))
 }

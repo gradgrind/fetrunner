@@ -1,7 +1,7 @@
 package makefet
 
 import (
-	"fetrunner/db"
+	"fetrunner/base"
 	"fetrunner/timetable"
 	"fmt"
 	"strconv"
@@ -10,7 +10,7 @@ import (
 
 func (fetbuild *FetBuild) add_placement_constraints(without_rooms bool) {
 	tt_data := fetbuild.ttdata
-	db0 := tt_data.Db
+	db := fetbuild.basedata.Db
 	rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 	sclist := fetbuild.space_constraints_list
@@ -25,9 +25,9 @@ func (fetbuild *FetBuild) add_placement_constraints(without_rooms bool) {
 		hour    int
 	}
 	ai2start := map[int]start_time{}
-	for _, c0 := range db0.Constraints[db.C_ActivityStartTime] {
+	for _, c0 := range db.Constraints[base.C_ActivityStartTime] {
 		w := rundata.FetWeight(c0.Weight)
-		data := c0.Data.(db.ActivityStartTime)
+		data := c0.Data.(base.ActivityStartTime)
 		ai := tt_data.Ref2ActivityIndex[data.Activity]
 		ai2start[ai] = start_time{
 			weight0: c0.Weight, weight: w, day: data.Day, hour: data.Hour}
@@ -45,7 +45,7 @@ func (fetbuild *FetBuild) add_placement_constraints(without_rooms bool) {
 
 		// Add the constraints.
 		for _, ai := range cinfo.Activities {
-			a := db0.Activities[ai]
+			a := db.Activities[ai]
 			aid := fet_activity_index(ai)
 			if len(rooms) != 0 {
 				c := sclist.CreateElement("ConstraintActivityPreferredRooms")
@@ -59,7 +59,7 @@ func (fetbuild *FetBuild) add_placement_constraints(without_rooms bool) {
 				c.CreateElement("Active").SetText("true")
 
 				fetbuild.add_space_constraint(c, param_constraint(
-					db.C_SetRooms, a.Id, ai, 100))
+					base.C_SetRooms, a.Id, ai, 100))
 			}
 
 			start, ok := ai2start[ai]
@@ -73,7 +73,7 @@ func (fetbuild *FetBuild) add_placement_constraints(without_rooms bool) {
 				c.CreateElement("Active").SetText("true")
 
 				fetbuild.add_time_constraint(c, param_constraint(
-					db.C_SetStartingTime, a.Id, ai, start.weight0))
+					base.C_SetStartingTime, a.Id, ai, start.weight0))
 			}
 		}
 	}
@@ -84,7 +84,7 @@ func (fetbuild *FetBuild) get_fet_rooms(cinfo *timetable.CourseInfo) []string {
 	var result []string
 
 	// First get the Element Tags used as ids by FET.
-	rooms := fetbuild.ttdata.Db.Rooms
+	rooms := fetbuild.basedata.Db.Rooms
 	rtags := []string{}
 	for _, rr := range cinfo.FixedRooms {
 		rtags = append(rtags,

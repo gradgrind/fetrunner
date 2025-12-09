@@ -1,37 +1,52 @@
 package autotimetable
 
 import (
-	"encoding/json"
 	"fetrunner/base"
 	"fmt"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"runtime"
 	"runtime/debug"
 	"slices"
 	"strings"
-	"syscall"
 	"time"
 )
 
-func (bdata *BasicData) SetParameterDefault() {
-	/* There is probably no general "optimum" value for the various
-	parameters, that is likely to depend on the data. But perhaps values
-	can be found which are frequently useful. It might be helpful to use
-	shorter overall timeouts during the initial cycles of testing the data,
-	to identify potential problem areas without long processing delays. For
-	later cycles longer times may be necessary (depending on the difficulty
-	of the data).
-	*/
-	bdata.Parameters.MAXPROCESSES = min(max(runtime.NumCPU(), 4), 6)
+const FET_COMMAND string = "fet-cl"
 
-	bdata.Parameters.NEW_BASE_TIMEOUT_FACTOR = 12  // => 1.2
-	bdata.Parameters.NEW_CYCLE_TIMEOUT_FACTOR = 15 // => 1.5
-	bdata.Parameters.LAST_TIME_0 = 5
-	bdata.Parameters.LAST_TIME_1 = 50
+/*
+	Default parameter values for autotimetable.
 
-	bdata.Parameters.DEBUG = false
+There is probably no general "optimum" value for some parameters, it is
+likely to depend on the data. But perhaps values can be found which
+are frequently useful. It might be helpful to use shorter overall timeouts
+during the initial cycles of testing the data, to identify potential problem
+areas without long processing delays. For later cycles longer times may be
+necessary (depending on the difficulty of the data).
+*/
+func DefaultParameters() *Parameters {
+	return &Parameters{
+		FETPATH:                  FET_COMMAND,
+		MAXPROCESSES:             MaxProcesses(0),
+		TIMEOUT:                  300, // seconds
+		NEW_BASE_TIMEOUT_FACTOR:  12,  // => 1.2
+		NEW_CYCLE_TIMEOUT_FACTOR: 15,  // => 1.5
+		LAST_TIME_0:              5,
+		LAST_TIME_1:              50,
+		DEBUG:                    false,
+	}
+}
+
+const minProcesses int = 4
+
+func MaxProcesses(n int) int {
+	if n == 0 {
+		return min(max(runtime.NumCPU(), 4), 6)
+	}
+	if n <= minProcesses {
+		return minProcesses
+	}
+	return n
 }
 
 /*
@@ -72,8 +87,7 @@ instance and handles the actions resulting from their completion, whether
 successful or not.
 
 Should the fully constrained instance complete successfully within the
-allotted time, all other instances are terminated and its result will be
-saved.
+allotted time, its result will be saved and all other instances are terminated.
 
 When the unconstrained instance completes successfully, a series of further
 instances is queued for running, each specifying the addition of a list of
@@ -118,25 +132,30 @@ which constraints were dropped and any error messages for them which may have
 been produced by the generator back-end).
 */
 
-func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
-	basic_data.lastResult = nil
-	basic_data.ConstraintErrors = map[ConstraintIndex]string{}
-	basic_data.BlockConstraint = map[ConstraintIndex]bool{}
+func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
+	logger := bdata.Logger
+	bdata.StopFlag = false
+	attdata.lastResult = nil
+	attdata.ConstraintErrors = map[ConstraintIndex]string{}
+	attdata.BlockConstraint = map[ConstraintIndex]bool{}
+	attdata.instanceCounter = 0
+	attdata.current_instance = nil
 
 	// Catch termination signal
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	//sigChan := make(chan os.Signal, 1)
+	//signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
 	runqueue := &RunQueue{
-		BasicData:  basic_data,
+		BData:      bdata,
+		AutoTtData: attdata,
 		Queue:      nil,
 		Active:     map[*TtInstance]struct{}{},
-		MaxRunning: basic_data.Parameters.MAXPROCESSES,
+		MaxRunning: attdata.Parameters.MAXPROCESSES,
 		Next:       0,
 	}
 
 	// Global data
-	basic_data.Ticks = 0
+	attdata.Ticks = 0
 
 	// First run: all constraints enabled.
 	// On successful completion, all other instances should be stopped.
@@ -144,74 +163,83 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 	// should run until it times out, at which point any other active
 	// instances should be stopped and the "best" solution at this point
 	// chosen.
-	enabled := make([]bool, basic_data.NConstraints)
-	for i := range basic_data.NConstraints {
+	enabled := make([]bool, attdata.NConstraints)
+	for i := range attdata.NConstraints {
 		enabled[i] = true
 	}
-	basic_data.full_instance = &TtInstance{
-		Tag:               "COMPLETE",
+	attdata.full_instance = &TtInstance{
+		Index:             0,
+		ConstraintType:    "_COMPLETE",
 		Timeout:           0,
 		ConstraintEnabled: enabled,
 	}
 	// Add to run queue
-	runqueue.add(basic_data.full_instance)
+	runqueue.add(attdata.full_instance)
 
 	// Instance without soft constraints (if any, otherwise same as full
 	// instance) – enable only the hard constraints.
-	enabled = make([]bool, basic_data.NConstraints)
-	for _, ilist := range basic_data.HardConstraintMap {
+	enabled = make([]bool, attdata.NConstraints)
+	for _, ilist := range attdata.HardConstraintMap {
 		for _, i := range ilist {
 			enabled[i] = true
 		}
 	}
-	basic_data.hard_instance = &TtInstance{
-		Tag:               "HARD_ONLY",
+	attdata.instanceCounter++
+	attdata.hard_instance = &TtInstance{
+		Index:             attdata.instanceCounter,
+		ConstraintType:    "_HARD_ONLY",
 		Timeout:           0,
 		ConstraintEnabled: enabled,
 	}
 	// Add to run queue
-	runqueue.add(basic_data.hard_instance)
+	runqueue.add(attdata.hard_instance)
 
 	// Unconstrained instance
-	basic_data.cycle_timeout = 0
-	if basic_data.Parameters.SKIP_HARD {
-		basic_data.phase = 2
-		if len(basic_data.SoftConstraintMap) == 0 {
-			base.Warning.Println("-h- Option -h: no soft constraints")
+	attdata.cycle_timeout = 0
+	if attdata.Parameters.SKIP_HARD {
+		attdata.phase = 2
+		if len(attdata.SoftConstraintMap) == 0 {
+			logger.Warning("-h- Option -h: no soft constraints")
 		}
 	} else {
-		enabled = make([]bool, basic_data.NConstraints)
-		basic_data.null_instance = &TtInstance{
-			Tag:               "UNCONSTRAINED",
-			Timeout:           basic_data.cycle_timeout,
+		enabled = make([]bool, attdata.NConstraints)
+		attdata.instanceCounter++
+		attdata.null_instance = &TtInstance{
+			Index:             attdata.instanceCounter,
+			ConstraintType:    "_UNCONSTRAINED",
+			Timeout:           attdata.cycle_timeout,
 			ConstraintEnabled: enabled,
 		}
 		// Add to run queue
-		runqueue.add(basic_data.null_instance)
+		runqueue.add(attdata.null_instance)
 
 		// Start phase 0
-		base.Message.Printf(
+		logger.Info(
 			"[%d] Phase 0 ...\n",
-			basic_data.Ticks)
-		basic_data.phase = 0
+			attdata.Ticks)
+		attdata.phase = 0
 	}
 
-	//TODO-- basic_data.cycle = 0
-	full_progress := 0       // current percentage
-	full_progress_ticks := 0 // time of last increment
-	hard_progress := 0       // current percentage
-	hard_progress_ticks := 0 // time of last increment
+	full_progress := 0 // current percentage
+	hard_progress := 0 // current percentage
+	null_progress := 0
+
+	attdata.get_nconstraints(bdata, attdata.null_instance) // count constraints
 
 	// *** Ticker loop ***
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
+
+	// The final tidying up – also when an error occurs
 	defer func() {
 		// Tidy up
 		r := recover()
 		if r != nil {
-			base.Bug.Printf("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---\n",
-				basic_data.Ticks, r, debug.Stack())
-			base.Report("!!! ERROR: see log\n")
+			fmt.Printf("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---\n",
+				attdata.Ticks, r, debug.Stack())
+			fmt.Printf("??? logger: %v\n", logger)
+			//logger.Bug("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---\n",
+			//	attdata.Ticks, r, debug.Stack())
 		}
 		for {
 			// Wait for active instances to finish, stopping them if
@@ -219,9 +247,9 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 			count := 0
 			for instance := range runqueue.Active {
 				if instance.RunState == 0 {
-					instance.Backend.Tick(basic_data, instance)
+					instance.Backend.Tick(bdata, attdata, instance)
 					count++
-					basic_data.abort_instance(instance)
+					attdata.abort_instance(instance)
 				}
 			}
 			if count == 0 {
@@ -229,168 +257,164 @@ func (basic_data *BasicData) StartGeneration(TIMEOUT int) {
 			}
 			<-ticker.C
 		}
-		if !basic_data.Parameters.DEBUG {
+		if !attdata.Parameters.DEBUG {
 			// Remove all remaining temporary files
-			basic_data.BackendInterface.Tidy()
+			attdata.BackendInterface.Tidy(bdata)
 		}
-		if basic_data.lastResult != nil {
 
-			basic_data.lastResult.ConstraintErrors = basic_data.ConstraintErrors
-
-			// Save result of last successful instance.
-			//b, err := json.Marshal(LastResult)
-			b, err := json.MarshalIndent(basic_data.lastResult, "", "  ")
+		//TODO: Where (whether?) to save the Result.json file
+		jsonbytes := attdata.GetLastResult()
+		if len(jsonbytes) != 0 {
+			fpath := filepath.Join(bdata.SourceDir, bdata.Name+"_Result.json")
+			err := os.WriteFile(fpath, jsonbytes, 0644)
 			if err != nil {
-				panic(err)
+				logger.Error("%s", err)
 			}
-			fpath := filepath.Join(basic_data.WorkingDir, "Result.json")
-			f, err := os.Create(fpath)
-			if err != nil {
-				panic("Couldn't open output file: " + fpath)
-			}
-			defer f.Close()
-			_, err = f.Write(b)
-			if err != nil {
-				panic("Couldn't write result to: " + fpath)
-			}
-			basic_data.current_instance.Backend.FinalizeResult(basic_data)
 		}
+
+		//TODO: Where (whether?) to save the FET file ...
+		// Perhaps return a JSON object containing anything relevant as a field?
+		attdata.current_instance.Backend.FinalizeResult(bdata, attdata)
+
+		logger.Tick(-1) // signal end of process
 	}()
 
 tickloop:
 	// Start queued instances if there are free processors.
 	for {
 		if runqueue.update_queue() == 0 {
-			base.Message.Printf(
+			logger.Info(
 				"[%d] Run-queue empty\n",
-				basic_data.Ticks)
+				attdata.Ticks)
 		}
 
-		select {
-		case <-ticker.C:
-		case <-sigChan:
-			base.Message.Printf("[%d] !!! INTERRUPTED !!!\n",
-				basic_data.Ticks)
+		<-ticker.C
+
+		//TODO: Without the signal catcher, I don't need a "select"
+		//select {
+		//case <-ticker.C:
+		//TODO???
+		//case <-sigChan:
+		//	logger.Info("[%d] !!! INTERRUPTED !!!\n",
+		//		attdata.Ticks)
+		//	break tickloop
+		//}
+
+		// TODO???
+		if bdata.StopFlag {
+			logger.Info("[%d] !!! INTERRUPTED !!!\n",
+				attdata.Ticks)
 			break tickloop
+
 		}
 
-		basic_data.Ticks++
-		base.Message.Printf(
-			"[%d] +TICK\n",
-			basic_data.Ticks)
+		attdata.Ticks++
+		logger.Tick(attdata.Ticks)
 
 		runqueue.update_instances()
 
-		if basic_data.full_instance.ProcessingState == 1 {
+		if attdata.full_instance.ProcessingState == 1 {
 			// Cancel all other runs and return this instance as result.
-			basic_data.current_instance = basic_data.full_instance
-			basic_data.new_current_instance(basic_data.current_instance)
-			base.Message.Printf("[%d] +A+ All constraints OK +++\n",
-				basic_data.Ticks)
+			attdata.current_instance = attdata.full_instance
+			attdata.new_current_instance(bdata, attdata.current_instance)
+			logger.Info("[%d] +A+ All constraints OK +++\n",
+				attdata.Ticks)
+			attdata.get_nconstraints(bdata, attdata.current_instance)
 			break
 		} else {
-			p := basic_data.full_instance.Progress
+			p := attdata.full_instance.Progress
 			if p > full_progress {
 				full_progress = p
-				full_progress_ticks = basic_data.Ticks
-				base.Message.Printf(
-					"[%d] ? %s (%d @ %d)\n",
-					basic_data.Ticks,
-					basic_data.full_instance.Tag,
-					full_progress,
-					full_progress_ticks,
-				)
+				reportProgress(logger, attdata.full_instance)
 			}
 		}
 
-		if basic_data.phase != 2 {
-			if basic_data.hard_instance.ProcessingState == 1 {
+		if attdata.phase != 2 {
+			if attdata.hard_instance.ProcessingState == 1 {
 				// Set as current and start processing soft constraints.
-				basic_data.current_instance = basic_data.hard_instance
-				basic_data.new_current_instance(basic_data.current_instance)
-				base.Message.Printf(
+				attdata.current_instance = attdata.hard_instance
+				attdata.new_current_instance(bdata, attdata.current_instance)
+				logger.Info(
 					"[%d] +H+ All hard constraints OK +++\n",
-					basic_data.Ticks)
+					attdata.Ticks)
+				attdata.get_nconstraints(bdata, attdata.current_instance)
 				// Cancel everything except full instance.
-				if basic_data.null_instance.ProcessingState == 0 {
-					basic_data.abort_instance(basic_data.null_instance)
+				if attdata.null_instance.ProcessingState == 0 {
+					attdata.abort_instance(attdata.null_instance)
 				}
-				for _, instance := range basic_data.constraint_list {
+				for _, instance := range attdata.constraint_list {
 					if instance.ProcessingState == 0 {
-						basic_data.abort_instance(instance)
+						attdata.abort_instance(instance)
 					}
 					// Indicate that a queued instance is not to be started
 					instance.ProcessingState = 3
 				}
-				basic_data.constraint_list = nil
-				basic_data.phase = 1
+				attdata.constraint_list = nil
+				attdata.phase = 1
 			} else {
-				p := basic_data.hard_instance.Progress
+				p := attdata.hard_instance.Progress
 				if p > hard_progress {
 					hard_progress = p
-					hard_progress_ticks = basic_data.Ticks
-					base.Message.Printf(
-						"[%d] ? %s (%d @ %d)\n",
-						basic_data.Ticks,
-						basic_data.hard_instance.Tag,
-						hard_progress,
-						hard_progress_ticks,
-					)
+					reportProgress(logger, attdata.hard_instance)
 				}
 			}
-		} else if basic_data.Parameters.SKIP_HARD {
-			if basic_data.current_instance == nil {
-				if basic_data.hard_instance.ProcessingState == 1 {
+		} else if attdata.Parameters.SKIP_HARD {
+			if attdata.current_instance == nil {
+				if attdata.hard_instance.ProcessingState == 1 {
 					// First successful instance.
-					basic_data.current_instance = basic_data.hard_instance
+					attdata.current_instance = attdata.hard_instance
+					attdata.get_nconstraints(bdata, attdata.current_instance)
 				}
-			} else if basic_data.hard_instance.ProcessingState == 0 {
-				basic_data.abort_instance(basic_data.hard_instance)
+			} else if attdata.hard_instance.ProcessingState == 0 {
+				attdata.abort_instance(attdata.hard_instance)
 			}
 
-			if basic_data.hard_instance.ProcessingState == 1 &&
-				basic_data.current_instance == nil {
+			if attdata.hard_instance.ProcessingState == 1 &&
+				attdata.current_instance == nil {
 				// First successful instance.
-				basic_data.current_instance = basic_data.hard_instance
+				attdata.current_instance = attdata.hard_instance
+				attdata.get_nconstraints(bdata, attdata.current_instance)
 			}
 		}
 
-		if basic_data.Ticks == TIMEOUT {
-			base.Message.Printf(
-				"[%d] !!! TIMEOUT !!!\n + %s: %d @ %d\n + %s: %d @ %d\n",
-				basic_data.Ticks,
-				basic_data.full_instance.Tag,
+		if attdata.Ticks == attdata.Parameters.TIMEOUT {
+			logger.Info(
+				"[%d] !!! TIMEOUT !!!\n + %s: %d + %s: %d\n",
+				attdata.Ticks,
+				attdata.full_instance.ConstraintType,
 				full_progress,
-				full_progress_ticks,
-				basic_data.hard_instance.Tag,
+				attdata.hard_instance.ConstraintType,
 				hard_progress,
-				hard_progress_ticks,
 			)
 			break
 		}
 
-		if basic_data.phase == 0 {
+		if attdata.phase == 0 {
 			// During phase 0 only `full_instance`, `hard_instance` and
 			// `null_instance` are running.
 			switch runqueue.phase0() {
 			case 0:
+				p := attdata.null_instance.Progress
+				if p > null_progress {
+					null_progress = p
+					reportProgress(logger, attdata.null_instance)
+				}
 				continue
 
 			case 1:
-				//TODO-- basic_data.phase = 1
+				//TODO-- attdata.phase = 1
 				//TODO-- base.Message.Printf(
 				//TODO-- 	"[%d] Phase 1 ...\n",
-				//TODO-- 	basic_data.Ticks)
+				//TODO-- 	attdata.Ticks)
 
 			case -1:
-				base.Error.Printf(
+				logger.Info(
 					"[%d] Couldn't process input data!\n",
-					basic_data.Ticks)
-				base.Report("!!! Couldn't process input data!\n")
+					attdata.Ticks)
 				return
 
 			default:
-				panic("basic_data.phase0() -> invalid return value")
+				panic("attdata.phase0() -> invalid return value")
 			}
 		}
 
@@ -398,22 +422,22 @@ tickloop:
 			break
 		}
 	} // tickloop: end
-	base.Message.Printf(
+	logger.Info(
 		"[%d] Phase 3 ... finalizing ...\n",
-		basic_data.Ticks)
+		attdata.Ticks)
 
 	hnn := 0
 	hnall := 0
 	snn := 0
 	snall := 0
-	result := basic_data.current_instance
+	result := attdata.current_instance
 	type constraintinfo struct {
 		c string
 		n int
 		N int
 	}
 	infolist := []constraintinfo{}
-	for c, clist := range basic_data.HardConstraintMap {
+	for c, clist := range attdata.HardConstraintMap {
 		n := 0
 		for _, cix := range clist {
 			if result != nil && result.ConstraintEnabled[cix] {
@@ -428,7 +452,7 @@ tickloop:
 		}
 	}
 
-	for c, clist := range basic_data.SoftConstraintMap {
+	for c, clist := range attdata.SoftConstraintMap {
 		n := 0
 		for _, cix := range clist {
 			if result != nil && result.ConstraintEnabled[cix] {
@@ -446,28 +470,34 @@ tickloop:
 		return strings.Compare(a.c, b.c)
 	})
 	for _, info := range infolist {
-		base.Message.Printf("$ %s: %d / %d\n", info.c, info.n, info.N)
+		logger.Info("$ %s: %d / %d\n", info.c, info.n, info.N)
 	}
 
 	report := fmt.Sprintf(
 		"::: ALL CONSTRAINTS: (hard) %d / %d  (soft) %d / %d\n",
 		hnn, hnall, snn, snall)
-	base.Message.Print(report)
-	base.Report(report)
+	logger.Info("%s", report)
 
 	if result != nil {
-		base.Message.Printf("Result: %s\n", result.Tag)
+		logger.Info("Result: %d:%s\n", result.Index, result.ConstraintType)
 	}
 }
 
-func (basic_data *BasicData) abort_instance(instance *TtInstance) {
+func reportProgress(logger *base.Logger, instance *TtInstance) {
+	logger.Result(".PROGRESS", fmt.Sprintf("%d.%d.%d",
+		instance.Index,
+		instance.Progress,
+		instance.Ticks))
+}
+
+func (attdata *AutoTtData) abort_instance(instance *TtInstance) {
 	if !instance.Stopped {
 		instance.Backend.Abort()
 		instance.Stopped = true
 	}
 }
 
-func (basic_data *BasicData) new_instance(
+func (attdata *AutoTtData) new_instance(
 	instance_0 *TtInstance,
 	constraint_type ConstraintType,
 	constraint_indexes []ConstraintIndex,
@@ -484,10 +514,9 @@ func (basic_data *BasicData) new_instance(
 	}
 
 	// Make a new `TtInstance`
-	basic_data.instanceCounter++
+	attdata.instanceCounter++
 	instance := &TtInstance{
-		Tag: fmt.Sprintf("z%05d~%s",
-			basic_data.instanceCounter, constraint_type),
+		Index:        attdata.instanceCounter,
 		Timeout:      timeout,
 		BaseInstance: instance_0,
 

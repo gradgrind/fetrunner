@@ -2,7 +2,6 @@ package makefet
 
 import (
 	"fetrunner/base"
-	"fetrunner/db"
 	"strconv"
 )
 
@@ -48,12 +47,12 @@ func (fetbuild *FetBuild) days_between() {
 
 func (fetbuild *FetBuild) ends_day() {
 	tt_data := fetbuild.ttdata
-	db0 := tt_data.Db
+	db := fetbuild.basedata.Db
 	rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
-	for _, c0 := range db0.Constraints[db.C_ActivitiesEndDay] {
+	for _, c0 := range db.Constraints[base.C_ActivitiesEndDay] {
 		w := rundata.FetWeight(c0.Weight)
-		course := c0.Data.(db.NodeRef)
+		course := c0.Data.(NodeRef)
 		cinfo := tt_data.Ref2CourseInfo[course]
 		for _, ai := range cinfo.Activities {
 			c := tclist.CreateElement("ConstraintActivityEndsStudentsDay")
@@ -90,11 +89,11 @@ func (fetbuild *FetBuild) parallel_activities() {
 
 func (fetbuild *FetBuild) before_after_hour() {
 	tt_data := fetbuild.ttdata
-	db0 := tt_data.Db
+	db := fetbuild.basedata.Db
 	rundata := fetbuild.rundata
 
-	for _, c0 := range db0.Constraints[db.C_AfterHour] {
-		data := c0.Data.(*db.BeforeAfterHour)
+	for _, c0 := range db.Constraints[base.C_AfterHour] {
+		data := c0.Data.(*base.BeforeAfterHour)
 		timeslots := []preferred_time{}
 		for d := 0; d < tt_data.NDays; d++ {
 			for h := data.Hour + 1; h < tt_data.NHours; h++ {
@@ -107,8 +106,8 @@ func (fetbuild *FetBuild) before_after_hour() {
 		fetbuild.make_before_after_hour(c0, timeslots)
 	}
 
-	for _, c0 := range db0.Constraints[db.C_BeforeHour] {
-		data := c0.Data.(*db.BeforeAfterHour)
+	for _, c0 := range db.Constraints[base.C_BeforeHour] {
+		data := c0.Data.(*base.BeforeAfterHour)
 		timeslots := []preferred_time{}
 		for d := 0; d < tt_data.NDays; d++ {
 			for h := 0; h < data.Hour; h++ {
@@ -123,17 +122,19 @@ func (fetbuild *FetBuild) before_after_hour() {
 }
 
 func (fetbuild *FetBuild) make_before_after_hour(
-	c0 *db.Constraint, timeslots []preferred_time,
+	c0 *base.Constraint, timeslots []preferred_time,
 ) {
 	tt_data := fetbuild.ttdata
+	logger := fetbuild.basedata.Logger
 	rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
-	data := c0.Data.(*db.BeforeAfterHour)
+	data := c0.Data.(*base.BeforeAfterHour)
 	w := rundata.FetWeight(c0.Weight)
 	for _, course := range data.Courses {
 		cinfo, ok := tt_data.Ref2CourseInfo[course]
 		if !ok {
-			base.Bug.Fatalf("Invalid course: %s\n", course)
+			logger.Bug("Invalid course: %s", course)
+			continue
 		}
 		for _, ai := range cinfo.Activities {
 			c := tclist.CreateElement("ConstraintActivityPreferredTimeSlots")
@@ -156,14 +157,17 @@ func (fetbuild *FetBuild) make_before_after_hour(
 
 func (fetbuild *FetBuild) double_no_break() {
 	tt_data := fetbuild.ttdata
+	db := fetbuild.basedata.Db
 	rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 
 	var doubleBlocked []bool
-	for _, c0 := range tt_data.Db.Constraints[db.C_DoubleActivityNotOverBreaks] {
+	for _, c0 := range db.Constraints[base.C_DoubleActivityNotOverBreaks] {
 		if len(doubleBlocked) != 0 {
-			base.Error.Fatalln("Constraint DoubleActivityNotOverBreaks" +
-				" specified more than once")
+			fetbuild.basedata.Logger.Bug(
+				"Constraint DoubleActivityNotOverBreaks" +
+					" specified more than once")
+			continue
 		}
 		w := rundata.FetWeight(c0.Weight)
 		timeslots := []preferred_time{}
@@ -204,10 +208,10 @@ func (fetbuild *FetBuild) double_no_break() {
 }
 
 /* TODO
-for _, c0 := range db0.Constraints[db.C_MinHoursFollowing] {
-	base.Error.Printf("!!! Constraint not implemented:\n%+v\n", c0)
+for _, c0 := range db0.Constraints[base.C_MinHoursFollowing] {
+	...Error("!!! Constraint not implemented:\n%+v\n", c0)
 	//w := weight2fet(c0.Weight)
-	//data := c0.Data.(*db.MinHoursFollowing)
+	//data := c0.Data.(*base.MinHoursFollowing)
 
 	//MinHoursFollowing{
 	//	Course1: course1,
