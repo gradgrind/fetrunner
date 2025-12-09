@@ -207,16 +207,10 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 
 	if attdata.Parameters.SKIP_HARD {
 
-		//TODO: This is not working properly ...
+		//TODO: Is there any way of starting the constraint instances before
+		// hard_instance completes?
+		attdata.phase = 1
 
-		attdata.phase = 2
-		var n int
-		attdata.constraint_list, n = attdata.get_basic_constraints(
-			attdata.hard_instance, true)
-		if n == 0 {
-			//if len(attdata.SoftConstraintMap) == 0 {
-			logger.Warning("-h- Option -h: no soft constraints")
-		}
 	} else {
 		// Add to run queue
 		runqueue.add(attdata.null_instance)
