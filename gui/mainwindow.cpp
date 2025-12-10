@@ -224,7 +224,7 @@ void MainWindow::push_go()
     ui->instance_table->setRowCount(0);
     if (backend->op1("RUN_TT_SOURCE", {}, "OK").val == "true") {
         threadRunActivated(true);
-        ui->pb_stop->setEnabled(true);
+        //ui->pb_stop->setEnabled(true);
         ui->elapsed_time->setText("0");
         for (int i = 0; i < 3; ++i) {
             ui->specials_table->item(i, 0)->setText("");
@@ -258,7 +258,7 @@ void MainWindow::threadRunActivated(
 {
     thread_running = active;
     ui->pb_go->setDisabled(active);
-    //ui->pb_stop->setEnabled(active);
+    ui->pb_stop->setEnabled(active);
     ui->pb_open_new->setDisabled(active);
     ui->frame_parameters->setDisabled(active);
 }

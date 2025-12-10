@@ -13,37 +13,13 @@ void RunThreadWorker::ttrun(const QString &parameter)
     stopFlag = false;
     bool stopped = false; // set this to stop (further) stop commands
 
-    /* ... here is the expensive or blocking operation ... */
-
-    //QThread::sleep(5);
-
-    /*
-    bool done = false;
-    while (!done) {
-        const auto kvlist = backend->op("_POLL_TT");
-        for (const auto &kv : kvlist) {
-            if (kv.key == "FINISHED") {
-                // result = kv.val;
-                done = true;
-            }
-        }
-
-        if (stopstate > 0) {
-            backend->op("_STOP_TT");
-            stopstate = -1;
-        }
-    }
-    */
+    /* ... here is the long-running operation ... */
 
     bool done = false;
     while (!done) {
         //qDebug() << "§poll" << i;
         if (stopFlag && !stopped) {
             backend->op("_STOP_TT");
-            //const auto kvlist = backend->op("_STOP_TT");
-            //for (const auto &kv : kvlist) {
-            //    qDebug() << "?STOP?" << kv.key << kv.val;
-            //}
             stopped = true;
         }
         const auto kvlist = backend->op("_POLL_TT");
@@ -72,7 +48,6 @@ void RunThreadWorker::ttrun(const QString &parameter)
         }
     }
     emit runThreadWorkerDone(result);
-    //thread()->quit();
 }
 
 void RunThreadController::runTtThread()
@@ -84,8 +59,6 @@ void RunThreadController::runTtThread()
     //qDebug() << "Start ...";
 
     // The back-end should now be running the timetable generation.
-    //TODO: Adjust anything that needs to reflect this ...
-
     if (!runThreadWorker) {
         runThreadWorker = new RunThreadWorker;
         runThreadWorker->moveToThread(&runThread);
@@ -141,6 +114,6 @@ void RunThreadController::runTtThread()
 
 void RunThreadController::stopThread()
 {
-    qDebug() << "!!!STOP!!!";
+    //qDebug() << "!!!STOP!!!";
     runThreadWorker->stopFlag = true;
 }

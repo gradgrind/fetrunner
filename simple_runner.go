@@ -3,7 +3,6 @@ package fetrunner
 import (
 	"encoding/json"
 	"fetrunner/internal/base"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -64,11 +63,6 @@ func Do(op string, data ...string) ([]string, bool) {
 			resultlist = append(resultlist, r.Type+" "+r.Text)
 		}
 	}
-
-	if run_finished {
-		fmt.Printf("??? %s %v\n  %+v\n", op, data, v)
-	}
-
 	return resultlist, ok
 }
 

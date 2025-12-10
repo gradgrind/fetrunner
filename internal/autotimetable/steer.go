@@ -238,8 +238,8 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 			fmt.Printf("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---\n",
 				attdata.Ticks, r, debug.Stack())
 			fmt.Printf("??? logger: %v\n", logger)
-			//logger.Bug("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---\n",
-			//	attdata.Ticks, r, debug.Stack())
+			logger.Bug("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---\n",
+				attdata.Ticks, r, debug.Stack())
 		}
 		for {
 			// Wait for active instances to finish, stopping them if
@@ -396,10 +396,6 @@ tickloop:
 				continue
 
 			case 1:
-				//TODO-- attdata.phase = 1
-				//TODO-- base.Message.Printf(
-				//TODO-- 	"[%d] Phase 1 ...\n",
-				//TODO-- 	attdata.Ticks)
 
 			case -1:
 				logger.Info(
@@ -471,10 +467,6 @@ tickloop:
 		"::: ALL CONSTRAINTS: (hard) %d / %d  (soft) %d / %d\n",
 		hnn, hnall, snn, snall)
 	logger.Info("%s", report)
-
-	if result != nil {
-		logger.Info("Result: %d:%s\n", result.Index, result.ConstraintType)
-	}
 }
 
 func reportProgress(logger *base.Logger, instance *TtInstance) {

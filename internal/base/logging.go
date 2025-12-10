@@ -66,6 +66,8 @@ func (e LogEntry) MarshalJSON() ([]byte, error) {
 }
 
 type Logger struct {
+	Running    bool
+	endrun     bool
 	Mu         sync.Mutex
 	LogChan    chan LogEntry
 	LogBuf     []LogEntry
@@ -121,6 +123,9 @@ func LogToBuffer(logger *Logger) {
 		case TICK:
 			logger.LogBuf = append(logger.LogBuf, LogEntry{
 				RESULT, TICK.String() + "=" + entry.Text})
+			if entry.Text == "-1" {
+				logger.endrun = true
+			}
 			if logger.pollwait != 2 {
 				logger.ticked = true
 				continue
@@ -151,11 +156,19 @@ func LogToBuffer(logger *Logger) {
 		if err != nil {
 			panic(err)
 		} else {
+			if logger.endrun {
+				logger.Running = false
+			}
 			logger.ticked = false
 			logger.pollwait = 0
 			logger.ResultChan <- string(bytes)
 		}
 	}
+}
+
+func (l *Logger) StartRun() {
+	l.Running = true
+	l.endrun = false
 }
 
 func (l *Logger) logEnter(ltype LogType, s string, a ...any) {

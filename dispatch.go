@@ -36,7 +36,6 @@ type Dispatcher struct {
 	TtSource     autotimetable.TtSource
 	AutoTtData   *autotimetable.AutoTtData
 	TtParameters *autotimetable.Parameters
-	Running      bool
 }
 
 type DispatchOp struct {
@@ -75,7 +74,7 @@ func Dispatch(cmd0 string) string {
 		if ok {
 			// The valid commands are dependent on the run-state of the timetable
 			// generation. Those valid when running have a "_" prefix.
-			if dsp.Running {
+			if logger.Running {
 				if op.Op[0] != '_' {
 					logger.Error("!InvalidOp_Running: %s", op.Op)
 					goto opdone
@@ -201,7 +200,8 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 }
 
 func runtt(dsp *Dispatcher, op *DispatchOp) {
-	if dsp.Running {
+	logger := dsp.BaseData.Logger
+	if logger.Running {
 		panic("Attempt to start generation when already running")
 	}
 	// Set up FET back-end and start processing
@@ -219,14 +219,11 @@ func runtt(dsp *Dispatcher, op *DispatchOp) {
 
 	fet.SetFetBackend(dsp.BaseData, attdata)
 
-	dsp.BaseData.Logger.Result("OK", "true")
+	logger.Result("OK", "true")
 
 	// Need an extra goroutine so that this can return immediately.
-	dsp.Running = true
-	go func() {
-		attdata.StartGeneration(dsp.BaseData)
-		dsp.Running = false
-	}()
+	logger.StartRun()
+	go attdata.StartGeneration(dsp.BaseData)
 }
 
 func polltt(dsp *Dispatcher, op *DispatchOp) {
