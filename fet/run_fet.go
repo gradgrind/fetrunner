@@ -281,7 +281,7 @@ func (data *FetTtData) FinalizeResult(
 	fetfile := filepath.Join(bdata.SourceDir, bdata.Name+"_Result.fet")
 	err := os.WriteFile(fetfile, data.fetxml, 0644)
 	if err != nil {
-		panic("Couldn't write fet file to: " + fetfile)
+		bdata.Logger.Error("%s", err)
 	}
 }
 
