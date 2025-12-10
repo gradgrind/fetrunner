@@ -49,93 +49,58 @@ var DispatcherMap map[string]*Dispatcher = map[string]*Dispatcher{}
 var OpHandlerMap map[string]func(*Dispatcher, *DispatchOp) = map[string]func(
 	*Dispatcher, *DispatchOp){}
 
+// Read a command from JSON, logs a STARTOP for it, look up the corresponding
+// function in `OpHandlerMap` and call it. On return log an ENDOP and return
+// the data from the result channel. Each logger has a mutex to avoid calling
+// Dispatch on it from more than one thread simultaneously (which should not
+// happen normally anyway).
 func Dispatch(cmd0 string) string {
 	logger := Logger0
 	var op DispatchOp
 	if err := json.Unmarshal([]byte(cmd0), &op); err != nil {
+		logger.Mu.Lock()
+		defer logger.Mu.Unlock()
 		logger.Error("!InvalidOp_JSON: %s", err)
 	} else {
-		logger = dispatchOp(&op)
+		dsp, ok := DispatcherMap[op.Id]
+		if !ok {
+			//TODO
+			panic("No instance with Id = " + op.Id)
+		}
+		logger = dsp.BaseData.Logger
+		logger.Mu.Lock()
+		defer logger.Mu.Unlock()
+		opLog(logger, &op)
+		f, ok := OpHandlerMap[op.Op]
+		if ok {
+			// The valid commands are dependent on the run-state of the timetable
+			// generation. Those valid when running have a "_" prefix.
+			if dsp.Running {
+				if op.Op[0] != '_' {
+					logger.Error("!InvalidOp_Running: %s", op.Op)
+					goto opdone
+				}
+			} else if op.Op[0] == '_' {
+				logger.Error("!InvalidOp_NotRunning: %s", op.Op)
+				goto opdone
+			}
+
+			f(dsp, &op)
+		} else {
+			logger.Error("!InvalidOp_Op: %s", op.Op)
+		}
 	}
+opdone:
 	// At the end of an operation the log entries must be collected.
 	// To ensure that none are missed, the logger channels are used to
 	// synchronize the accesses.
-	logger.LogChan <- base.LogEntry{Type: base.ENDOP}
+	logger.LogChan <- base.LogEntry{Type: base.OP_END}
 	return <-logger.ResultChan
 }
 
 func opLog(logger *base.Logger, op *DispatchOp) {
-	logger.LogChan <- base.LogEntry{Type: base.STARTOP,
+	logger.LogChan <- base.LogEntry{Type: base.OP_START,
 		Text: fmt.Sprintf("%s %+v", op.Op, op.Data)}
-}
-
-func dispatchOp(op *DispatchOp) *base.Logger {
-	/*TODO--
-	  if op.Id == "" {
-	      // Some ops are only valid using the null Id.
-	      switch op.Op {
-
-	          case "CONFIG_INIT":
-	              opLog(Logger0, op)
-	              if CheckArgs(Logger0, op, 0) {
-	                  Logger0.InitConfig()
-	              }
-	              return Logger0
-
-	          case "GET_CONFIG":
-	              if CheckArgs(Logger0, op, 1) {
-	                  key := op.Data[0]
-	                  Logger0.Result(key, Logger0.GetConfig(key))
-	              }
-	              return Logger0
-
-	          case "SET_CONFIG":
-	              if CheckArgs(Logger0, op, 2) {
-	                  Logger0.SetConfig(op.Data[0], op.Data[1])
-	              }
-	              return Logger0
-
-	      // FET handling
-	      case "GET_FET":
-	          if CheckArgs(Logger0, op, 0) {
-	              Logger0.TestFet()
-	          }
-	          return Logger0
-
-	      default:
-
-	      }
-	  }
-
-	  // Now deal with the other ops, which can (in principle) be used with any Id.
-	*/
-
-	dsp, ok := DispatcherMap[op.Id]
-	if !ok {
-		//TODO
-		panic("No instance with Id = " + op.Id)
-	}
-	logger := dsp.BaseData.Logger
-	opLog(logger, op)
-	f, ok := OpHandlerMap[op.Op]
-	if ok {
-		// The valid commands are dependent on the run-state of the timetable
-		// generation. Those valid when running have a "_" prefix.
-		if dsp.Running {
-			if op.Op[0] != '_' {
-				logger.Error("!InvalidOp_Running: %s", op.Op)
-				return logger
-			}
-		} else if op.Op[0] == '_' {
-			logger.Error("!InvalidOp_NotRunning: %s", op.Op)
-			return logger
-		}
-
-		f(dsp, op)
-	} else {
-		logger.Error("!InvalidOp_Op: %s", op.Op)
-	}
-	return logger
 }
 
 func CheckArgs(l *base.Logger, op *DispatchOp, n int) bool {

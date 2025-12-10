@@ -70,7 +70,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
 )
 
 var (
@@ -134,9 +133,7 @@ func main() {
 	do("RUN_TT_SOURCE")
 
 	go fetrunner.Termination()
-	var wg sync.WaitGroup
-	wg.Go(func() { fetrunner.RunLoop(do) })
-	wg.Wait()
+	fetrunner.RunLoop(do)
 }
 
 func do(op string, data ...string) bool {

@@ -3,10 +3,14 @@ package fetrunner
 import (
 	"encoding/json"
 	"fetrunner/internal/base"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 )
+
+// Implement a framework for running a basic app using just the
+// default logger.
 
 var (
 	stop_request bool = false
@@ -55,11 +59,16 @@ func Do(op string, data ...string) ([]string, bool) {
 			run_finished = true
 		}
 
-		if r.Type != base.STARTOP.String() || r.Text[0] != '_' {
+		if r.Type != base.OP_START.String() || r.Text[0] != '_' {
 			//fmt.Println(r.Type, r.Text)
 			resultlist = append(resultlist, r.Type+" "+r.Text)
 		}
 	}
+
+	if run_finished {
+		fmt.Printf("??? %s %v\n  %+v\n", op, data, v)
+	}
+
 	return resultlist, ok
 }
 

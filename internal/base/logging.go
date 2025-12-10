@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 )
 
 type LogType int
@@ -20,9 +21,9 @@ const (
 	COMMAND
 	RESULT
 
-	STARTOP
-	ENDOP
-	TICKOP
+	OP_START
+	OP_END
+	TICK
 	POLLOP
 )
 
@@ -33,10 +34,12 @@ var logType = map[LogType]string{
 	BUG:     "*BUG*",
 	COMMAND: "#",
 	RESULT:  "$",
-	STARTOP: "+++",
-	ENDOP:   "---",
-	TICKOP:  ".TICK",
-	POLLOP:  ".POLL",
+
+	POLLOP: "_POLL",
+
+	OP_START: "+++",
+	OP_END:   "---",
+	TICK:     ".TICK",
 }
 
 func (ltype LogType) String() string {
@@ -63,6 +66,7 @@ func (e LogEntry) MarshalJSON() ([]byte, error) {
 }
 
 type Logger struct {
+	Mu         sync.Mutex
 	LogChan    chan LogEntry
 	LogBuf     []LogEntry
 	ResultChan chan string
@@ -77,15 +81,46 @@ func NewLogger() *Logger {
 	}
 }
 
-// Log entry handler adding log entries to a buffer.
-// Run it as a goroutine.
+/*
+	Log entry handler adding log entries to a buffer.
+
+Run it as a goroutine.
+
+All operations cause a OP_START to be logged before doing anything else,
+and an OP_END at the end. Any results or other log entries associated
+with this operation will normally be between these two entries.
+The OP_END will cause the buffer contents to be output to the result
+channel.
+However, for long-running operations it may be desirable to read the log
+entries before the operation is completed. This can be managed by letting
+the long-running operation start a goroutine for the lengthy part. The
+starter part would return, sending its OP_END before the lengthy part is
+completed. Then POLLOP operations are initiated periodically to monitor
+the progress.
+As the polling will be done in a loop, a mechanism is needed to ensure that
+the polling is not too rapid. This could be done by a timer in the polling
+loop, but as the long-running backend already has a timer, issuing ticks
+every second, this is used instead, delaying the return from a POLLOP
+operation until a tick has been logged.
+
+A TICK is entered into the buffer directly, not as part of an operation,
+so it has no OP_END. Normally it just sets the flag `logger.ticked` to true,
+but if a polling operation is awaiting a tick (logger.pollwait = 2) it will
+cause the buffer to be read as result, allowing the POLLOP operation to
+finish.
+
+A POLLOP operation sets the flag `logger.pollwait` to 1, indicating to the
+OP_END handler that the buffer should not be passed to the result channel if
+no tick has been registered. If there has not been a tick, the OP_END sets
+`logger.pollwait` to 2, so that the next tick will cause it to complete.
+*/
 func LogToBuffer(logger *Logger) {
 	for entry := range logger.LogChan {
 		switch entry.Type {
 
-		case TICKOP:
+		case TICK:
 			logger.LogBuf = append(logger.LogBuf, LogEntry{
-				RESULT, TICKOP.String() + "=" + entry.Text})
+				RESULT, TICK.String() + "=" + entry.Text})
 			if logger.pollwait != 2 {
 				logger.ticked = true
 				continue
@@ -96,7 +131,7 @@ func LogToBuffer(logger *Logger) {
 			logger.pollwait = 1
 			continue
 
-		case ENDOP:
+		case OP_END:
 			//logger.LogBuf = append(logger.LogBuf, entry)
 			if !logger.ticked {
 				if logger.pollwait == 1 {
@@ -159,7 +194,7 @@ func (l *Logger) Bug(s string, a ...any) {
 }
 
 func (l *Logger) Tick(n int) {
-	l.logEnter(TICKOP, "%d", n)
+	l.logEnter(TICK, "%d", n)
 }
 
 func (l *Logger) Poll() {
