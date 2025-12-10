@@ -77,7 +77,11 @@ import (
 	"syscall"
 )
 
-var logfile *os.File
+var (
+	logfile      *os.File
+	stop_request bool = false
+	run_finished bool = false
+)
 
 func main() {
 	v := flag.Bool("v", false, "print version and exit")
@@ -150,6 +154,9 @@ func runloop() {
 			do("_STOP_TT")
 		}
 		do("_POLL_TT")
+		if run_finished {
+			return
+		}
 	}
 }
 
@@ -171,27 +178,22 @@ func do(op string, data ...string) bool {
 	res := dispatcher.Dispatch(string(jsonbytes))
 	v := []DispatcherResult{}
 	json.Unmarshal([]byte(res), &v)
-	done := false
 	ok := true
 	for _, r := range v {
 		if r.Type == base.ERROR.String() {
 			ok = false
 		}
 		if r.Text == ".TICK=-1" {
-			done = true
+			run_finished = true
 		}
 
 		lstring := r.Type + " " + r.Text
-		logfile.WriteString(lstring + "\n")
-	}
-
-	if done {
-		os.Exit(0)
+		if r.Type != base.STARTOP.String() || r.Text[0] != '_' {
+			logfile.WriteString(lstring + "\n")
+		}
 	}
 	return ok
 }
-
-var stop_request bool = false
 
 // Catch "terminate" signal (goroutine)
 func termination() {

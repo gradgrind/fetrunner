@@ -92,12 +92,12 @@ func LogToBuffer(logger *Logger) {
 			}
 
 		case POLLOP:
-			logger.LogBuf = append(logger.LogBuf, entry)
+			//logger.LogBuf = append(logger.LogBuf, entry)
 			logger.pollwait = 1
 			continue
 
 		case ENDOP:
-			logger.LogBuf = append(logger.LogBuf, entry)
+			//logger.LogBuf = append(logger.LogBuf, entry)
 			if !logger.ticked {
 				if logger.pollwait == 1 {
 					logger.pollwait = 2

@@ -229,7 +229,6 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 
 	// *** Ticker loop ***
 	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
 
 	// The final tidying up – also when an error occurs
 	defer func() {
@@ -254,6 +253,7 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 				}
 			}
 			if count == 0 {
+				ticker.Stop()
 				break
 			}
 			<-ticker.C
@@ -263,19 +263,23 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 			attdata.BackendInterface.Tidy(bdata)
 		}
 
-		//TODO: Where (whether?) to save the Result.json file
-		jsonbytes := attdata.GetLastResult()
-		if len(jsonbytes) != 0 {
-			fpath := filepath.Join(bdata.SourceDir, bdata.Name+"_Result.json")
-			err := os.WriteFile(fpath, jsonbytes, 0644)
-			if err != nil {
-				logger.Error("%s", err)
+		if attdata.current_instance == nil {
+			logger.Error("!!! NO_RESULT !!!")
+		} else {
+			//TODO: Where (whether?) to save the Result.json file
+			jsonbytes := attdata.GetLastResult()
+			if len(jsonbytes) != 0 {
+				fpath := filepath.Join(bdata.SourceDir, bdata.Name+"_Result.json")
+				err := os.WriteFile(fpath, jsonbytes, 0644)
+				if err != nil {
+					logger.Error("%s", err)
+				}
 			}
-		}
 
-		//TODO: Where (whether?) to save the FET file ...
-		// Perhaps return a JSON object containing anything relevant as a field?
-		attdata.current_instance.Backend.FinalizeResult(bdata, attdata)
+			//TODO: Where (whether?) to save the FET file ...
+			// Perhaps return a JSON object containing anything relevant as a field?
+			attdata.current_instance.Backend.FinalizeResult(bdata, attdata)
+		}
 
 		logger.Tick(-1) // signal end of process
 	}()
