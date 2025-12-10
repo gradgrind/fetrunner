@@ -63,8 +63,8 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fetrunner/base"
-	"fetrunner/dispatcher"
+	"fetrunner"
+	"fetrunner/internal/base"
 	"flag"
 	"fmt"
 	"log"
@@ -175,7 +175,7 @@ func do(op string, data ...string) bool {
 	if err != nil {
 		panic(err)
 	}
-	res := dispatcher.Dispatch(string(jsonbytes))
+	res := fetrunner.Dispatch(string(jsonbytes))
 	v := []DispatcherResult{}
 	json.Unmarshal([]byte(res), &v)
 	ok := true

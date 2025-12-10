@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fetrunner/dispatcher"
+	"fetrunner"
 	"unsafe"
 )
 
@@ -17,7 +17,7 @@ var cmsg *C.char
 //export FetRunner
 func FetRunner(cString *C.char) *C.char {
 	gString := C.GoString(cString)
-	result := dispatcher.Dispatch(gString)
+	result := fetrunner.Dispatch(gString)
 	C.free(unsafe.Pointer(cmsg)) // cmsg == `nil` is OK
 	cmsg = C.CString(result)
 	return cmsg
