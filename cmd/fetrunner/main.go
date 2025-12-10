@@ -61,26 +61,20 @@ input:
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fetrunner"
-	"fetrunner/internal/base"
 	"flag"
 	"fmt"
 	"log"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
-	"syscall"
 )
 
 var (
-	logfile      *os.File
-	stop_request bool = false
-	run_finished bool = false
+	logfile *os.File
 )
 
 func main() {
@@ -95,7 +89,7 @@ func main() {
 	flag.Parse()
 
 	if *v {
-		fmt.Println("fetrunner version:", base.VERSION)
+		fmt.Println("fetrunner version:", fetrunner.VERSION)
 		return
 	}
 
@@ -134,73 +128,21 @@ func main() {
 		return
 	}
 
-	//TODO-- do("CONFIG_INIT")
-
 	if !do("SET_FILE", abspath) {
 		return
 	}
 	do("RUN_TT_SOURCE")
 
-	go termination()
+	go fetrunner.Termination()
 	var wg sync.WaitGroup
-	wg.Go(runloop)
+	wg.Go(func() { fetrunner.RunLoop(do) })
 	wg.Wait()
 }
 
-func runloop() {
-	do("RUN_TT")
-	for {
-		if stop_request {
-			do("_STOP_TT")
-		}
-		do("_POLL_TT")
-		if run_finished {
-			return
-		}
-	}
-}
-
-type DispatcherOp struct {
-	Op   string
-	Data []string
-}
-
-type DispatcherResult struct {
-	Type string
-	Text string
-}
-
 func do(op string, data ...string) bool {
-	jsonbytes, err := json.Marshal(DispatcherOp{op, data})
-	if err != nil {
-		panic(err)
-	}
-	res := fetrunner.Dispatch(string(jsonbytes))
-	v := []DispatcherResult{}
-	json.Unmarshal([]byte(res), &v)
-	ok := true
-	for _, r := range v {
-		if r.Type == base.ERROR.String() {
-			ok = false
-		}
-		if r.Text == ".TICK=-1" {
-			run_finished = true
-		}
-
-		lstring := r.Type + " " + r.Text
-		if r.Type != base.STARTOP.String() || r.Text[0] != '_' {
-			logfile.WriteString(lstring + "\n")
-		}
+	strs, ok := fetrunner.Do(op, data...)
+	for _, s := range strs {
+		logfile.WriteString(s + "\n")
 	}
 	return ok
-}
-
-// Catch "terminate" signal (goroutine)
-func termination() {
-	// Catch termination signal
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
-
-	<-sigChan // wait for signal
-	stop_request = true
 }
