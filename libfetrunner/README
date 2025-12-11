@@ -7,3 +7,7 @@ To build a shared library on Linux:
 go build -buildmode=c-shared -o libfetrunner.so libfetrunner.go
 
 On Windows and Darwin the output file will presumably need adapting.
+
+Cross-compile Linux to Windows:
+
+GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -buildmode=c-archive libfetrunner/libfetrunner.go

@@ -122,8 +122,8 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::check_fet()
 {
     auto fetpath0 = settings->value("fet/FetPath").toString();
+    auto fetpath = fetpath0;
     while (true) {
-        auto fetpath = fetpath0;
         if (!fetpath.isEmpty()) {
             backend->op("TT_PARAMETER", {"FETPATH", fetpath});
         }
@@ -139,7 +139,7 @@ void MainWindow::check_fet()
             this,
             tr("Seek FET executable"),
             QDir::homePath(),
-            tr("FET executable (fet-cl)"));
+            tr("FET executable (fet-cl fet-cl.exe)"));
         if (fetpath.isEmpty()) {
             QApplication::exit(1);
             break;
