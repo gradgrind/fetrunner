@@ -1,12 +1,17 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
 #include <QCloseEvent>
 #include <QMessageBox>
 #include <QSettings>
 #include <QTableWidgetItem>
 #include <QWidget>
 #include "threadrun.h"
+
+#ifdef Q_OS_WIN
+const QString FET_CL = "fet-cl.exe";
+#else
+const QString FET_CL = "fet-cl";
+#endif
 
 QT_BEGIN_NAMESPACE
 namespace Ui {

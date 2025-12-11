@@ -139,7 +139,7 @@ void MainWindow::check_fet()
             this,
             tr("Seek FET executable"),
             QDir::homePath(),
-            tr("FET executable (fet-cl fet-cl.exe)"));
+            tr("FET executable") + " (" + FET_CL + ")");
         if (fetpath.isEmpty()) {
             QApplication::exit(1);
             break;
