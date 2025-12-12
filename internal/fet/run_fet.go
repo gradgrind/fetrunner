@@ -130,6 +130,32 @@ func (fbe *FetBackend) RunBackend(
 	return fet_data
 }
 
+/*
+
+func fetchData() {
+    ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+    defer cancel()
+    <-ctx.Done()
+    fmt.Println("Fetch complete or canceled")
+}
+
+func main() {
+    parent := context.Background()
+    ctx, cancel := context.WithCancel(parent)
+    go func() {
+        time.Sleep(1 * time.Second)
+        cancel()
+    }()
+    select {
+    case <-ctx.Done():
+        fmt.Println("Stopped:", ctx.Err())
+    }
+}
+
+
+
+*/
+
 type FetTtData struct {
 	ifile       string
 	fetxml      []byte
@@ -180,11 +206,12 @@ func run(fet_data *FetTtData, cmd *exec.Cmd) {
 			fet_data.finished = -1
 		} else {
 			fet_data.finished = -2 // program failed
-			fet_data.errormsg = e
 		}
+		fet_data.errormsg = e
 	} else {
 		fet_data.finished = 1
 	}
+	fet_data.cancel()
 }
 
 // Regexp for reading the progress of a run from the FET log file
@@ -252,9 +279,13 @@ exit:
 		} else {
 			instance.RunState = 2
 		}
-		if data.finished == -2 {
-			bdata.Logger.Error("FET_Failed: %s", data.errormsg)
-			return
+		//if data.finished == -2 {
+		//	bdata.Logger.Error("FET_Failed: %s", data.errormsg)
+		//	return
+		//} -> TODO: Investigating problems on windows ...
+		if data.finished < 0 {
+			bdata.Logger.Info("FET_Failed: [%d: %d] %s",
+				instance.Index, data.finished, data.errormsg)
 		}
 
 		efile, err := os.ReadFile(filepath.Join(data.odir, "logs", "errors.txt"))
