@@ -39,12 +39,20 @@ func DefaultParameters() *Parameters {
 
 const minProcesses int = 4
 
+// Don't allow the number of processes to exceed the number of processor
+// thread, unless that is smaller than `minProcesses`. If the parameter `n`
+// is zero try to return an "optimal" number.
+// TODO: Is this really the desired behaviour?
 func MaxProcesses(n int) int {
+	np := runtime.NumCPU()
 	if n == 0 {
-		return min(max(runtime.NumCPU(), 4), 6)
+		return min(max(np, 4), 6)
 	}
 	if n <= minProcesses {
 		return minProcesses
+	}
+	if n > np {
+		return np
 	}
 	return n
 }

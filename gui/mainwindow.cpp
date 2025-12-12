@@ -216,7 +216,9 @@ void MainWindow::push_go()
     auto t = ui->tt_timeout->text();
     backend->op("TT_PARAMETER", {"TIMEOUT", t});
     auto np = ui->tt_processors->text();
-    backend->op("TT_PARAMETER", {"MAXPROCESSES", np});
+    auto mp = backend->op1("TT_PARAMETER", {"MAXPROCESSES", np}, "MAXPROCESSES");
+    if (mp.val != np)
+        ui->tt_processors->setText(mp.val);
     auto sh = ui->tt_skip_hard->isChecked();
     backend->op("TT_PARAMETER", {"SKIP_HARD", sh ? "true" : "false"});
 

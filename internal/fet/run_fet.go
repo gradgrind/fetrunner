@@ -13,7 +13,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
-	"strings"
 )
 
 var TEMPORARY_FOLDER string
@@ -126,35 +125,15 @@ func (fbe *FetBackend) RunBackend(
 		attdata.Parameters.FETPATH, params...,
 	)
 
+	bdata.Logger.Result(".START", fmt.Sprintf("%d.%s.%d.%d",
+		instance.Index,
+		instance.ConstraintType,
+		len(instance.Constraints),
+		instance.Timeout))
+
 	go run(fet_data, runCmd)
 	return fet_data
 }
-
-/*
-
-func fetchData() {
-    ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-    defer cancel()
-    <-ctx.Done()
-    fmt.Println("Fetch complete or canceled")
-}
-
-func main() {
-    parent := context.Background()
-    ctx, cancel := context.WithCancel(parent)
-    go func() {
-        time.Sleep(1 * time.Second)
-        cancel()
-    }()
-    select {
-    case <-ctx.Done():
-        fmt.Println("Stopped:", ctx.Err())
-    }
-}
-
-
-
-*/
 
 type FetTtData struct {
 	ifile       string
@@ -202,11 +181,9 @@ func run(fet_data *FetTtData, cmd *exec.Cmd) {
 		e := err.Error()
 		// Some errors arise as a result of a termination signal, or after
 		// calling `Abort`, which leads to the context being cancelled.
-		if strings.HasPrefix(e, "signal") || strings.HasPrefix(e, "context") {
-			fet_data.finished = -1
-		} else {
-			fet_data.finished = -2 // program failed
-		}
+		// The actual message seems to be system-dependent, so probably not
+		// that interesting ... except if there is a bug somewhere?
+		fet_data.finished = -1
 		fet_data.errormsg = e
 	} else {
 		fet_data.finished = 1
@@ -261,6 +238,8 @@ func (data *FetTtData) Tick(
 				if !data.fet_timeout && instance.LastTime < 2 &&
 					instance.Ticks-instance.LastTime > 10 {
 					data.fet_timeout = true
+					bdata.Logger.Info("FET_Stuck %d @ %d, %d%%",
+						instance.Index, instance.Ticks, instance.Progress)
 					data.Abort()
 				}
 
@@ -279,20 +258,19 @@ exit:
 		} else {
 			instance.RunState = 2
 		}
-		//if data.finished == -2 {
-		//	bdata.Logger.Error("FET_Failed: %s", data.errormsg)
-		//	return
-		//} -> TODO: Investigating problems on windows ...
-		if data.finished < 0 {
-			bdata.Logger.Info("FET_Failed: [%d: %d] %s",
-				instance.Index, data.finished, data.errormsg)
-		}
+		//if data.finished < 0 {
+		//	bdata.Logger.Info("FET_Failed: [%d] %s",
+		//		instance.Index, data.errormsg)
+		//}
+
+		bdata.Logger.Result(".END", fmt.Sprintf("%d:%d",
+			instance.Index, instance.RunState))
 
 		efile, err := os.ReadFile(filepath.Join(data.odir, "logs", "errors.txt"))
 		if err == nil {
 			instance.Message = string(efile)
 		} else if data.fet_timeout {
-			instance.Message = fmt.Sprintf("FET stuck at beginning (%d%%)",
+			instance.Message = fmt.Sprintf("FET_Stuck_At_Beginning (%d%%)",
 				instance.Progress)
 		} else {
 			return

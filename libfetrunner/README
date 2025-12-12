@@ -1,6 +1,8 @@
 To build a static library:
 
-go build -buildmode=c-archive libfetrunner.go
+CGO_ENABLED=1 go build -buildmode=c-archive libfetrunner.go
+
+(Although CGO_ENABLED=1 is, normally, the default for native builds, I needed it on Windows.)
 
 To build a shared library on Linux:
 
