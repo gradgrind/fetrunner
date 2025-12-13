@@ -368,6 +368,10 @@ void MainWindow::progress(const QString &data)
         int row;
         if (irow.item == nullptr) {
             auto text0 = irow.data[1];
+            // FET starts all its constraints with "Constraint",
+            // which doesn't really need to be displayed ...
+            if (text0.startsWith("Constraint"))
+                text0.remove(0, 10);
             auto item0 = new QTableWidgetItem(text0);
             auto item1 = new QTableWidgetItem(irow.data[2]);
             item1->setTextAlignment(Qt::AlignCenter);
@@ -409,6 +413,8 @@ void MainWindow::resizeColumns()
         auto headerItem = ui->instance_table->horizontalHeaderItem(col);
         auto text = headerItem->text();
         int col_width = fm.horizontalAdvance(text) + 10; // add some padding
+        if (col == 4 && col_width < 100)
+            col_width = 120;
         w += col_width;
         ui->instance_table->setColumnWidth(col, col_width);
     }
