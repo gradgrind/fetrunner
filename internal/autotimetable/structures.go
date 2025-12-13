@@ -105,7 +105,7 @@ type TtInstance struct {
 
 type TtBackend interface {
 	Abort()
-	Tick(*base.BaseData, *AutoTtData, *TtInstance)
+	DoTick(*base.BaseData, *AutoTtData, *TtInstance)
 	Clear()
 	Results(*base.BaseData, *AutoTtData, *TtInstance) []TtActivityPlacement
 	FinalizeResult(*base.BaseData, *AutoTtData)

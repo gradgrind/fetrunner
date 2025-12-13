@@ -76,12 +76,12 @@ func Dispatch(cmd0 string) string {
 			// generation. Those valid when running have a "_" prefix.
 			if logger.Running {
 				if op.Op[0] != '_' {
-					logger.Error("!InvalidOp_Running: %s", op.Op)
-					goto opdone
+					panic("!InvalidOp_Running: " + op.Op)
+					//goto opdone
 				}
 			} else if op.Op[0] == '_' {
-				logger.Error("!InvalidOp_NotRunning: %s", op.Op)
-				goto opdone
+				panic("!InvalidOp_NotRunning: " + op.Op)
+				//goto opdone
 			}
 
 			f(dsp, &op)
@@ -89,7 +89,7 @@ func Dispatch(cmd0 string) string {
 			logger.Error("!InvalidOp_Op: %s", op.Op)
 		}
 	}
-opdone:
+	//opdone:
 	// At the end of an operation the log entries must be collected.
 	// To ensure that none are missed, the logger channels are used to
 	// synchronize the accesses.
@@ -120,6 +120,7 @@ func init() {
 	OpHandlerMap["RESULT_TT"] = ttresult
 
 	OpHandlerMap["TT_PARAMETER"] = ttparameter
+	OpHandlerMap["N_PROCESSES"] = nprocesses
 }
 
 // Check path to `fet-cl` and get FET version.
@@ -286,4 +287,9 @@ func ttparameter(dsp *Dispatcher, op *DispatchOp) {
 	}
 
 	dsp.BaseData.Logger.Result(key, val)
+}
+
+func nprocesses(dsp *Dispatcher, op *DispatchOp) {
+	nmin, np, nopt := autotimetable.MinNpOptProcesses()
+	dsp.BaseData.Logger.Result(op.Op, fmt.Sprintf("%d.%d.%d", nmin, np, nopt))
 }

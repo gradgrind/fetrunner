@@ -195,9 +195,9 @@ func run(fet_data *FetTtData, cmd *exec.Cmd) {
 var pattern = "time (.*), FET reached ([0-9]+)"
 var re *regexp.Regexp = regexp.MustCompile(pattern)
 
-// `Tick` runs in the "tick" loop. Rather like a "tail" function it reads
+// `DoTick` runs in the "tick" loop. Rather like a "tail" function it reads
 // the FET progress from its log file, by simply polling for new lines.
-func (data *FetTtData) Tick(
+func (data *FetTtData) DoTick(
 	bdata *base.BaseData,
 	attdata *autotimetable.AutoTtData,
 	instance *autotimetable.TtInstance,
@@ -228,6 +228,11 @@ func (data *FetTtData) Tick(
 							percent := (count * 100) / int(attdata.NActivities)
 							if percent > instance.Progress {
 								instance.Progress = percent
+								bdata.Logger.Result(".PROGRESS",
+									fmt.Sprintf("%d.%d.%d",
+										instance.Index,
+										instance.Progress,
+										instance.Ticks))
 							}
 						}
 					}
@@ -263,8 +268,8 @@ exit:
 		//		instance.Index, data.errormsg)
 		//}
 
-		bdata.Logger.Result(".END", fmt.Sprintf("%d:%d",
-			instance.Index, instance.RunState))
+		bdata.Logger.Result(".END", fmt.Sprintf("%d.%d",
+			instance.Index, instance.Progress))
 
 		efile, err := os.ReadFile(filepath.Join(data.odir, "logs", "errors.txt"))
 		if err == nil {

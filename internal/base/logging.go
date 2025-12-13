@@ -23,7 +23,7 @@ const (
 
 	OP_START
 	OP_END
-	TICK
+	TICKOP
 	POLLOP
 )
 
@@ -39,7 +39,7 @@ var logType = map[LogType]string{
 
 	OP_START: "+++",
 	OP_END:   "---",
-	TICK:     ".TICK",
+	TICKOP:   "_TICK",
 }
 
 func (ltype LogType) String() string {
@@ -120,9 +120,9 @@ func LogToBuffer(logger *Logger) {
 	for entry := range logger.LogChan {
 		switch entry.Type {
 
-		case TICK:
+		case TICKOP:
 			logger.LogBuf = append(logger.LogBuf, LogEntry{
-				RESULT, TICK.String() + "=" + entry.Text})
+				RESULT, ".TICK=" + entry.Text})
 			if entry.Text == "-1" {
 				logger.endrun = true
 			}
@@ -207,7 +207,7 @@ func (l *Logger) Bug(s string, a ...any) {
 }
 
 func (l *Logger) Tick(n int) {
-	l.logEnter(TICK, "%d", n)
+	l.logEnter(TICKOP, "%d", n)
 }
 
 func (l *Logger) Poll() {

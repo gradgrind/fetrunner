@@ -37,16 +37,18 @@ func DefaultParameters() *Parameters {
 	}
 }
 
-const minProcesses int = 4
+const (
+	minProcesses int = 4
+	optProcesses int = 6
+)
 
 // Don't allow the number of processes to exceed the number of processor
 // thread, unless that is smaller than `minProcesses`. If the parameter `n`
 // is zero try to return an "optimal" number.
-// TODO: Is this really the desired behaviour?
 func MaxProcesses(n int) int {
-	np := runtime.NumCPU()
+	nmin, np, nopt := MinNpOptProcesses()
 	if n == 0 {
-		return min(max(np, 4), 6)
+		return min(max(nmin, np), nopt)
 	}
 	if n <= minProcesses {
 		return minProcesses
@@ -55,6 +57,10 @@ func MaxProcesses(n int) int {
 		return np
 	}
 	return n
+}
+
+func MinNpOptProcesses() (int, int, int) {
+	return minProcesses, runtime.NumCPU(), optProcesses
 }
 
 /*
@@ -255,7 +261,7 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 			count := 0
 			for instance := range runqueue.Active {
 				if instance.RunState == 0 {
-					instance.Backend.Tick(bdata, attdata, instance)
+					instance.Backend.DoTick(bdata, attdata, instance)
 					count++
 					attdata.abort_instance(instance)
 				}
@@ -327,7 +333,6 @@ tickloop:
 			p := attdata.full_instance.Progress
 			if p > full_progress {
 				full_progress = p
-				reportProgress(logger, attdata.full_instance)
 			}
 		}
 
@@ -357,7 +362,6 @@ tickloop:
 				p := attdata.hard_instance.Progress
 				if p > hard_progress {
 					hard_progress = p
-					reportProgress(logger, attdata.hard_instance)
 				}
 			}
 		} else if attdata.Parameters.SKIP_HARD {
@@ -399,7 +403,6 @@ tickloop:
 				p := attdata.null_instance.Progress
 				if p > null_progress {
 					null_progress = p
-					reportProgress(logger, attdata.null_instance)
 				}
 				continue
 
@@ -475,13 +478,6 @@ tickloop:
 		"::: ALL CONSTRAINTS: (hard) %d / %d  (soft) %d / %d\n",
 		hnn, hnall, snn, snall)
 	logger.Info("%s", report)
-}
-
-func reportProgress(logger *base.Logger, instance *TtInstance) {
-	logger.Result(".PROGRESS", fmt.Sprintf("%d.%d.%d",
-		instance.Index,
-		instance.Progress,
-		instance.Ticks))
 }
 
 func (attdata *AutoTtData) abort_instance(instance *TtInstance) {

@@ -41,6 +41,21 @@ MainWindow::MainWindow(QWidget *parent)
     ui->specials_table->setItem(2, 1, new QTableWidgetItem());
 
     backend = new Backend();
+
+    // Get range for number of processes.
+    // Do this before connecting the "valueChanged" signal, to
+    // avoid triggering this before any actual change.
+    auto nps = backend->op1("N_PROCESSES", {}, "N_PROCESSES").val;
+    auto nn = nps.split(".");
+    auto n0 = nn[0].toInt();
+    auto n1 = nn[1].toInt();
+    if (n1 < n0)
+        n1 = n0;
+    auto n = nn[2].toInt();
+    ui->tt_processes->setMinimum(n0);
+    ui->tt_processes->setMaximum(n1);
+    ui->tt_processes->setValue(n);
+
     connect( //
         backend,
         &Backend::logcolour,
@@ -56,6 +71,11 @@ MainWindow::MainWindow(QWidget *parent)
         &Backend::error,
         this,
         &MainWindow::error_popup);
+    connect( //
+        ui->tt_processes,
+        &QSpinBox::valueChanged,
+        this,
+        &MainWindow::nprocesses);
     connect( //
         ui->pb_open_new,
         &QPushButton::clicked,
@@ -108,19 +128,20 @@ MainWindow::MainWindow(QWidget *parent)
 
     QValidator *validator1 = new QIntValidator(0, 99999, this);
     ui->tt_timeout->setValidator(validator1);
-    QValidator *validator2 = new QIntValidator(4, 10, this);
-    ui->tt_processors->setValidator(validator2);
 
     settings = new QSettings("gradgrind", "fetrunner");
     const auto geometry = settings->value("gui/MainWindowSize").value<QSize>();
     if (!geometry.isEmpty())
         resize(geometry);
 
-    QTimer::singleShot(0, this, &MainWindow::check_fet);
+    QTimer::singleShot(0, this, &MainWindow::init2);
 }
 
-void MainWindow::check_fet()
+void MainWindow::init2()
 {
+    // This is run immediately after starting the event loop.
+
+    // Check FET
     auto fetpath0 = settings->value("fet/FetPath").toString();
     auto fetpath = fetpath0;
     while (true) {
@@ -171,6 +192,16 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     resizeColumns();
 }
 
+void MainWindow::nprocesses(
+    int n)
+{
+    auto nn = QString::number(n);
+    auto mp = backend->op1("TT_PARAMETER", {"MAXPROCESSES", nn}, "MAXPROCESSES");
+    if (mp.val != nn)
+        error_popup("BUG: invalid number of processes: " + nn);
+    ui->tt_processes->setValue(mp.val.toInt());
+}
+
 void MainWindow::open_file()
 {
     //qDebug() << "Open File";
@@ -212,13 +243,12 @@ void MainWindow::error_popup(const QString &msg)
 
 void MainWindow::push_go()
 {
+    // Clear log
+    ui->logview->clear();
+
     // Set parameters
     auto t = ui->tt_timeout->text();
     backend->op("TT_PARAMETER", {"TIMEOUT", t});
-    auto np = ui->tt_processors->text();
-    auto mp = backend->op1("TT_PARAMETER", {"MAXPROCESSES", np}, "MAXPROCESSES");
-    if (mp.val != np)
-        ui->tt_processors->setText(mp.val);
     auto sh = ui->tt_skip_hard->isChecked();
     backend->op("TT_PARAMETER", {"SKIP_HARD", sh ? "true" : "false"});
 

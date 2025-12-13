@@ -45,7 +45,7 @@ private:
     Ui::MainWindow *ui;
     void closeEvent(QCloseEvent *e) override;
     void resizeEvent(QResizeEvent *event) override;
-    void check_fet();
+    void init2();
     void resizeColumns();
 
     bool quit_requested{false};
@@ -64,6 +64,7 @@ public slots:
     void error_popup(const QString &msg);
 
 private slots:
+    void nprocesses(int n);
     void open_file();
     void push_go();
     void push_stop();

@@ -42,7 +42,7 @@ func (rq *RunQueue) update_instances() {
 		if instance.RunState == 0 {
 			instance.Ticks++
 			// Among other things, update the state:
-			instance.Backend.Tick(rq.BData, attdata, instance)
+			instance.Backend.DoTick(rq.BData, attdata, instance)
 		} else if instance.ProcessingState < 2 {
 			// This should only be possible after the call to
 			// the back-end tick method.
@@ -54,9 +54,9 @@ func (rq *RunQueue) update_instances() {
 			continue
 		}
 		switch instance.RunState {
+
 		case 0: // running, not finished
 			if instance.Progress == 100 {
-				reportProgress(logger, instance)
 				continue // the state will be changed next time round
 			}
 			// Check for timeout or getting "stuck"
@@ -79,9 +79,6 @@ func (rq *RunQueue) update_instances() {
 						attdata.BlockConstraint[instance.Constraints[0]] = true
 					}
 				}
-				if instance.LastTime == instance.Ticks {
-					reportProgress(logger, instance)
-				}
 				continue
 			}
 
@@ -100,15 +97,8 @@ func (rq *RunQueue) update_instances() {
 				continue
 			}
 
-			if instance.LastTime == instance.Ticks {
-				reportProgress(logger, instance)
-			}
-
 		case 1: // completed successfully
 			instance.ProcessingState = 1
-			if instance.LastTime == instance.Ticks {
-				reportProgress(logger, instance)
-			}
 
 		default: // completed unsuccessfully
 			instance.ProcessingState = 2
