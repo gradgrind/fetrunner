@@ -229,6 +229,7 @@ void MainWindow::open_file()
                     filedir = fdir;
                     settings->setValue("gui/SourceDir", fdir);
                 }
+                ui->logview->clear();
             } else if (kv.key == "DATA_TYPE") {
                 datatype = kv.val;
             }
@@ -255,6 +256,9 @@ void MainWindow::push_go()
     instance_row_map.clear();
     ui->instance_table->setRowCount(0);
     if (backend->op1("RUN_TT_SOURCE", {}, "OK").val == "true") {
+        backend->op("HARD_CONSTRAINTS");
+        backend->op("SOFT_CONSTRAINTS");
+
         threadRunActivated(true);
         //ui->pb_stop->setEnabled(true);
         ui->elapsed_time->setText("0");

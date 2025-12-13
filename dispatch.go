@@ -114,6 +114,8 @@ func init() {
 	OpHandlerMap["GET_FET"] = get_fet
 	OpHandlerMap["SET_FILE"] = file_loader
 	OpHandlerMap["RUN_TT_SOURCE"] = runtt_source
+	OpHandlerMap["HARD_CONSTRAINTS"] = hardConstraints
+	OpHandlerMap["SOFT_CONSTRAINTS"] = softConstraints
 	OpHandlerMap["RUN_TT"] = runtt
 	OpHandlerMap["_POLL_TT"] = polltt
 	OpHandlerMap["_STOP_TT"] = stoptt
@@ -188,43 +190,40 @@ func file_loader(dsp *Dispatcher, op *DispatchOp) {
 
 // `runtt_source` must be run before `runtt` to ensure that there is source data.
 func runtt_source(dsp *Dispatcher, op *DispatchOp) {
-	if dsp.TtSource == nil {
+	bdata := dsp.BaseData
+	logger := bdata.Logger
+	ttsource := dsp.TtSource
+	if ttsource == nil {
 		if dsp.BaseData.Db != nil {
-			dsp.TtSource = makefet.FetTree(dsp.BaseData, timetable.BasicSetup(dsp.BaseData))
+			ttsource = makefet.FetTree(bdata, timetable.BasicSetup(bdata))
 		} else {
-			dsp.BaseData.Logger.Error("No source")
-			dsp.BaseData.Logger.Result("OK", "false")
+			logger.Error("No source")
+			logger.Result("OK", "false")
 			return
 		}
 	}
-	dsp.BaseData.Logger.Result("OK", "true")
-}
-
-func runtt(dsp *Dispatcher, op *DispatchOp) {
-	logger := dsp.BaseData.Logger
 	if logger.Running {
 		panic("Attempt to start generation when already running")
 	}
 	// Set up FET back-end and start processing
 	attdata := &autotimetable.AutoTtData{
 		Parameters:        dsp.TtParameters,
-		Source:            dsp.TtSource,
-		NActivities:       dsp.TtSource.GetNActivities(),
-		NConstraints:      dsp.TtSource.GetNConstraints(),
-		ConstraintTypes:   dsp.TtSource.GetConstraintTypes(),
-		HardConstraintMap: dsp.TtSource.GetHardConstraintMap(),
-		SoftConstraintMap: dsp.TtSource.GetSoftConstraintMap(),
+		Source:            ttsource,
+		NActivities:       ttsource.GetNActivities(),
+		NConstraints:      ttsource.GetNConstraints(),
+		ConstraintTypes:   ttsource.GetConstraintTypes(),
+		HardConstraintMap: ttsource.GetHardConstraintMap(),
+		SoftConstraintMap: ttsource.GetSoftConstraintMap(),
 	}
-
 	dsp.AutoTtData = attdata
-
-	fet.SetFetBackend(dsp.BaseData, attdata)
-
+	fet.SetFetBackend(bdata, attdata)
 	logger.Result("OK", "true")
+}
 
+func runtt(dsp *Dispatcher, op *DispatchOp) {
 	// Need an extra goroutine so that this can return immediately.
-	logger.StartRun()
-	go attdata.StartGeneration(dsp.BaseData)
+	dsp.BaseData.Logger.StartRun()
+	go dsp.AutoTtData.StartGeneration(dsp.BaseData)
 }
 
 func polltt(dsp *Dispatcher, op *DispatchOp) {
@@ -292,4 +291,16 @@ func ttparameter(dsp *Dispatcher, op *DispatchOp) {
 func nprocesses(dsp *Dispatcher, op *DispatchOp) {
 	nmin, np, nopt := autotimetable.MinNpOptProcesses()
 	dsp.BaseData.Logger.Result(op.Op, fmt.Sprintf("%d.%d.%d", nmin, np, nopt))
+}
+
+func hardConstraints(dsp *Dispatcher, op *DispatchOp) {
+	for c, ilist := range dsp.AutoTtData.HardConstraintMap {
+		dsp.BaseData.Logger.Result(c, strconv.Itoa(len(ilist)))
+	}
+}
+
+func softConstraints(dsp *Dispatcher, op *DispatchOp) {
+	for c, ilist := range dsp.AutoTtData.SoftConstraintMap {
+		dsp.BaseData.Logger.Result(c, strconv.Itoa(len(ilist)))
+	}
 }

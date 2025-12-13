@@ -53,11 +53,6 @@ void RunThreadWorker::ttrun(const QString &parameter)
 void RunThreadController::runTtThread()
 {
     auto kv = backend->op("RUN_TT");
-    if (kv.length() == 0)
-        return; // return if start unsuccessful
-
-    //qDebug() << "Start ...";
-
     // The back-end should now be running the timetable generation.
     if (!runThreadWorker) {
         runThreadWorker = new RunThreadWorker;
