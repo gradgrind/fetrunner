@@ -90,14 +90,17 @@ type TtInstance struct {
 	Constraints    []ConstraintIndex
 
 	// Run time ...
-	Backend         TtBackend // interface to generator back-end
-	Ticks           int       // run time of this instance
-	Stopped         bool      // `abort_instance()` has been called on this instance
-	ProcessingState int       // -1: queued, 0: running, 1: success, 2: failure,
-	// there is also 3: cancelled
+	Backend TtBackend // interface to generator back-end
+	Ticks   int       // run time of this instance
+	Stopped bool      // `abort_instance()` has been called on this instance
 
+	// `RunState` is used in the tick-loop, but the "finished" states are set
+	// using the back-end `DoTick` method (though still in the thread of the
+	// tick-loop).
+	RunState int // 0: not started, -1: running (not finished),
+	// 1: finished (success, 100%), 2: finished (unsuccessful),
+	// 3: don't start (waiting for deletion)
 	// The following are set by the back-end:
-	RunState int
 	Progress int    // percent
 	LastTime int    // last (instance) time at which the back-end made progress
 	Message  string // "" or error message

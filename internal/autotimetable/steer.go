@@ -230,9 +230,7 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 		runqueue.add(attdata.null_instance)
 
 		// Start phase 0
-		logger.Info(
-			"[%d] Phase 0 ...\n",
-			attdata.Ticks)
+		logger.Info("Phase 0 ...")
 		attdata.phase = 0
 	}
 
@@ -260,7 +258,7 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 			// necessary.
 			count := 0
 			for instance := range runqueue.Active {
-				if instance.RunState == 0 {
+				if instance.RunState < 0 {
 					instance.Backend.DoTick(bdata, attdata, instance)
 					count++
 					attdata.abort_instance(instance)
@@ -302,16 +300,13 @@ tickloop:
 	// Start queued instances if there are free processors.
 	for {
 		if runqueue.update_queue() == 0 {
-			logger.Info(
-				"[%d] Run-queue empty\n",
-				attdata.Ticks)
+			logger.Info("Run-queue empty")
 		}
 
 		<-ticker.C
 
 		if bdata.StopFlag {
-			logger.Info("[%d] !!! INTERRUPTED !!!\n",
-				attdata.Ticks)
+			logger.Info("!!! INTERRUPTED !!!")
 			break tickloop
 
 		}
@@ -321,13 +316,11 @@ tickloop:
 
 		runqueue.update_instances()
 
-		if attdata.full_instance.ProcessingState == 1 {
+		if attdata.full_instance.RunState == 1 {
 			// Cancel all other runs and return this instance as result.
 			attdata.current_instance = attdata.full_instance
+			logger.Info("+A+ All constraints OK +++")
 			attdata.new_current_instance(bdata, attdata.current_instance)
-			logger.Info("[%d] +A+ All constraints OK +++\n",
-				attdata.Ticks)
-			attdata.get_nconstraints(bdata, attdata.current_instance)
 			break
 		} else {
 			p := attdata.full_instance.Progress
@@ -337,24 +330,22 @@ tickloop:
 		}
 
 		if attdata.phase != 2 {
-			if attdata.hard_instance.ProcessingState == 1 {
+			if attdata.hard_instance.RunState == 1 {
 				// Set as current and start processing soft constraints.
 				attdata.current_instance = attdata.hard_instance
+				logger.Info(" +H+ All hard constraints OK +++")
 				attdata.new_current_instance(bdata, attdata.current_instance)
-				logger.Info(
-					"[%d] +H+ All hard constraints OK +++\n",
-					attdata.Ticks)
-				attdata.get_nconstraints(bdata, attdata.current_instance)
 				// Cancel everything except full instance.
-				if attdata.null_instance.ProcessingState == 0 {
+				if attdata.null_instance.RunState < 0 {
 					attdata.abort_instance(attdata.null_instance)
 				}
 				for _, instance := range attdata.constraint_list {
-					if instance.ProcessingState == 0 {
+					if instance.RunState < 0 {
 						attdata.abort_instance(instance)
+					} else if instance.RunState == 0 {
+						// Indicate that a queued instance is not to be started
+						instance.RunState = 3
 					}
-					// Indicate that a queued instance is not to be started
-					instance.ProcessingState = 3
 				}
 				attdata.constraint_list = nil
 				attdata.phase = 1
@@ -366,16 +357,16 @@ tickloop:
 			}
 		} else if attdata.Parameters.SKIP_HARD {
 			if attdata.current_instance == nil {
-				if attdata.hard_instance.ProcessingState == 1 {
+				if attdata.hard_instance.RunState == 1 {
 					// First successful instance.
 					attdata.current_instance = attdata.hard_instance
 					attdata.get_nconstraints(bdata, attdata.current_instance)
 				}
-			} else if attdata.hard_instance.ProcessingState == 0 {
+			} else if attdata.hard_instance.RunState < 0 {
 				attdata.abort_instance(attdata.hard_instance)
 			}
 
-			if attdata.hard_instance.ProcessingState == 1 &&
+			if attdata.hard_instance.RunState == 1 &&
 				attdata.current_instance == nil {
 				// First successful instance.
 				attdata.current_instance = attdata.hard_instance
@@ -385,8 +376,7 @@ tickloop:
 
 		if attdata.Ticks == attdata.Parameters.TIMEOUT {
 			logger.Info(
-				"[%d] !!! TIMEOUT !!!\n + %s: %d + %s: %d\n",
-				attdata.Ticks,
+				"!!! TIMEOUT !!!\n + %s: %d + %s: %d",
 				attdata.full_instance.ConstraintType,
 				full_progress,
 				attdata.hard_instance.ConstraintType,
@@ -409,9 +399,7 @@ tickloop:
 			case 1:
 
 			case -1:
-				logger.Info(
-					"[%d] Couldn't process input data!\n",
-					attdata.Ticks)
+				logger.Info("Couldn't process input data!")
 				return
 
 			default:
@@ -423,9 +411,7 @@ tickloop:
 			break
 		}
 	} // tickloop: end
-	logger.Info(
-		"[%d] Phase 3 ... finalizing ...\n",
-		attdata.Ticks)
+	logger.Info("Phase 3 ... finalizing ...")
 
 	hnn := 0
 	hnall := 0
@@ -471,7 +457,7 @@ tickloop:
 		return strings.Compare(a.c, b.c)
 	})
 	for _, info := range infolist {
-		logger.Info("$ %s: %d / %d\n", info.c, info.n, info.N)
+		logger.Info("$ %s: %d / %d", info.c, info.n, info.N)
 	}
 
 	report := fmt.Sprintf(

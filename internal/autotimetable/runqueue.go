@@ -25,37 +25,30 @@ func (rq *RunQueue) add(instance *TtInstance) {
 		rq.Queue = rq.Queue[:n]
 		rq.Next = 0
 	}
-	instance.ProcessingState = -1 // not started yet
+	//instance.ProcessingState = 0 // not started yet
 	rq.Queue = append(rq.Queue, instance)
 }
 
+// `update_instances` is called – in the tick-loop – just after receiving a
+// tick.
+// The `RunState` field is initially 0, which indicates "not started" (it may
+// or may not have started!). This field is set to a "finished" value, 1
+// (successful, 100%) or 2 (not succussful), in the back-end tick handler
+// `DoTick()`, called at the beginning of this method, and thus in the
+// tick-loop thread.
 func (rq *RunQueue) update_instances() {
 	attdata := rq.AutoTtData
 	logger := rq.BData.Logger
 	// First increment the ticks of active instances.
 	for instance := range rq.Active {
-		if instance.RunState != 0 && instance.ProcessingState < 2 {
-			// This should only be possible after the call to
-			// the back-end tick method below.
-			panic(fmt.Sprintf("Bug, State = %d", instance.RunState))
-		}
-		if instance.RunState == 0 {
+		if instance.RunState < 0 {
 			instance.Ticks++
 			// Among other things, update the state:
 			instance.Backend.DoTick(rq.BData, attdata, instance)
-		} else if instance.ProcessingState < 2 {
-			// This should only be possible after the call to
-			// the back-end tick method.
-			panic(fmt.Sprintf("Bug, State = %d", instance.RunState))
-		}
-
-		if instance.ProcessingState == 3 {
-			// Await completion of the goroutine
-			continue
 		}
 		switch instance.RunState {
 
-		case 0: // running, not finished
+		case -1: // running, not finished
 			if instance.Progress == 100 {
 				continue // the state will be changed next time round
 			}
@@ -67,8 +60,7 @@ func (rq *RunQueue) update_instances() {
 					instance.Ticks >= attdata.Parameters.LAST_TIME_1 {
 					// Stop instance
 					logger.Info(
-						"[%d] Stop (too slow) %d:%s @ %d, p: %d n: %d\n",
-						attdata.Ticks,
+						"Stop (too slow) %d:%s @ %d, p: %d n: %d",
 						instance.Index,
 						instance.ConstraintType,
 						instance.Ticks,
@@ -98,45 +90,50 @@ func (rq *RunQueue) update_instances() {
 			}
 
 		case 1: // completed successfully
-			instance.ProcessingState = 1
 
-		default: // completed unsuccessfully
-			instance.ProcessingState = 2
+		case 2: // completed unsuccessfully
+
+		case 3: // don't start
+
+		default: // shouldn't be possible
+			panic("Impossible instance RunState")
 		}
 	}
 }
 
+// `update_queue` is called – in the tick-loop – just before waiting for a tick.
+// Clean up finished/discarded instances, try to start new ones.
 func (rq *RunQueue) update_queue() int {
 	attdata := rq.AutoTtData
 	logger := rq.BData.Logger
-	// Try to start queued instances
+
+	// Count running instances, remove others
 	running := 0
 	for instance := range rq.Active {
-		if instance.RunState != 0 {
+		if instance.RunState == -1 {
+			running++
+		} else {
 			delete(rq.Active, instance)
 			if !attdata.Parameters.DEBUG {
 				instance.Backend.Clear()
 			}
-			continue
-		}
-		if instance.ProcessingState == 0 {
-			running++
 		}
 	}
 
+	// Try to start queued instances
 	for rq.Next < len(rq.Queue) && running < rq.MaxRunning {
 		instance := rq.Queue[rq.Next]
 		rq.Queue[rq.Next] = nil
 		rq.Next++
 
-		if instance.ProcessingState < 0 {
+		if instance.RunState == 0 {
 			instance.Backend =
 				attdata.BackendInterface.RunBackend(rq.BData, instance)
-			instance.ProcessingState = 0 // indicate started/running
+			instance.RunState = -1 // indicate started/running
 			rq.Active[instance] = struct{}{}
 			running++
 		} else {
-			if instance.ProcessingState != 3 {
+			if instance.RunState != 3 {
 				panic("Bug")
 			}
 			// Cancelled before starting, skip it
@@ -149,7 +146,7 @@ func (rq *RunQueue) update_queue() int {
 		if np <= 0 {
 			break
 		}
-		if instance.ProcessingState == 0 {
+		if instance.RunState < 0 {
 			n := len(instance.Constraints)
 			if n <= 1 {
 				continue
@@ -194,8 +191,8 @@ func (rq *RunQueue) update_queue() int {
 			if n != 0 {
 				panic("Bug: wrong constraint division ...")
 			}
-			logger.Info("[%d] (NSPLIT) %d:%s -> %v\n",
-				attdata.Ticks, instance.Index, instance.ConstraintType, tags)
+			logger.Info("(NSPLIT) %d:%s -> %v",
+				instance.Index, instance.ConstraintType, tags)
 		}
 	}
 

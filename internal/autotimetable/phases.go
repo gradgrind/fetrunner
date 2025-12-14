@@ -9,8 +9,8 @@ import (
 // `null_instance` are running.
 func (rq *RunQueue) phase0() int {
 	attdata := rq.AutoTtData
-	switch attdata.null_instance.ProcessingState {
-	case 0:
+	switch attdata.null_instance.RunState {
+	case -1:
 		if attdata.null_instance.Ticks ==
 			attdata.null_instance.Timeout {
 			attdata.abort_instance(attdata.null_instance)
@@ -27,7 +27,7 @@ func (rq *RunQueue) phase0() int {
 	default:
 		// The null instance failed.
 		rq.BData.Logger.Error(
-			"[%d] --- Unconstrained instance failed:\n+++\n%s\n---\n",
+			"[%d] --- Unconstrained instance failed:\n+++\n%s\n---",
 			attdata.Ticks, attdata.null_instance.Message)
 		return -1
 	}
@@ -76,7 +76,7 @@ func (rq *RunQueue) mainphase() bool {
 
 	// See if an instance has completed successfully.
 	for i, instance := range attdata.constraint_list {
-		if instance.ProcessingState == 1 {
+		if instance.RunState == 1 {
 			// Completed successfully, make this instance the new base.
 			attdata.current_instance = instance
 			base_instance = instance
@@ -98,7 +98,7 @@ func (rq *RunQueue) mainphase() bool {
 		// Start trials of remaining constraints, hard then soft,
 		// forcing a longer timeout.
 		old_ticks := base_instance.Ticks
-		if base_instance.ProcessingState != 1 {
+		if base_instance.RunState != 1 {
 			old_ticks = 0
 		}
 		attdata.cycle_timeout = (max(attdata.cycle_timeout,
@@ -108,9 +108,7 @@ func (rq *RunQueue) mainphase() bool {
 		switch attdata.phase {
 
 		case 0:
-			logger.Info(
-				"[%d] Phase 1 ...\n",
-				attdata.Ticks)
+			logger.Info("Phase 1 ...")
 			attdata.phase = 1
 			attdata.constraint_list, n = attdata.get_basic_constraints(
 				base_instance, false)
@@ -120,16 +118,13 @@ func (rq *RunQueue) mainphase() bool {
 			}
 
 		case 1:
-			if attdata.hard_instance.ProcessingState == 1 {
-				logger.Info(
-					"[%d] Phase 2 ... <- %s\n",
-					attdata.Ticks, attdata.hard_instance.ConstraintType)
+			if attdata.hard_instance.RunState == 1 {
+				logger.Info("Phase 2 ... <- %s",
+					attdata.hard_instance.ConstraintType)
 			} else {
-				logger.Info(
-					"[%d] Phase 2 ... <- (accumulated instance)\n",
-					attdata.Ticks)
+				logger.Info("Phase 2 ... <- (accumulated instance)")
 				// The hard-only instance is no longer needed.
-				if attdata.hard_instance.ProcessingState == 0 {
+				if attdata.hard_instance.RunState < 0 {
 					attdata.abort_instance(attdata.hard_instance)
 				}
 			}
@@ -159,7 +154,7 @@ func (rq *RunQueue) mainphase() bool {
 	split_instances := []*TtInstance{}
 	new_constraint_list := []*TtInstance{}
 	for _, instance := range attdata.constraint_list {
-		if instance.ProcessingState == 2 { // timed out / failed
+		if instance.RunState == 2 { // timed out / failed
 			// Split if more than one instance in list
 			if len(instance.Constraints) > 1 {
 				timeout := next_timeout
@@ -174,8 +169,8 @@ func (rq *RunQueue) mainphase() bool {
 					sit = append(sit,
 						fmt.Sprintf("%d:%s", si.Index, si.ConstraintType))
 				}
-				logger.Info("[%d] (SPLIT) %d:%s -> %v\n",
-					attdata.Ticks, instance.Index, instance.ConstraintType, sit)
+				logger.Info("(SPLIT) %d:%s -> %v",
+					instance.Index, instance.ConstraintType, sit)
 
 				//split_instances = append(split_instances,
 				//	runqueue.split_instance(
@@ -192,11 +187,12 @@ func (rq *RunQueue) mainphase() bool {
 		} else {
 			if next_timeout != 0 {
 				// Cancel existing instance
-				if instance.ProcessingState == 0 {
+				if instance.RunState < 0 {
 					attdata.abort_instance(instance)
+				} else if instance.RunState == 0 {
+					// Indicate that a queued instance is not to be started
+					instance.RunState = 3
 				}
-				// Indicate that a queued instance is not to be started
-				instance.ProcessingState = 3
 				// Build new instance
 				instance = attdata.new_instance(
 					base_instance,

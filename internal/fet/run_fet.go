@@ -317,7 +317,7 @@ func (data *FetTtData) Results(
 	// Remember to close the file at the end of the function
 	defer xmlFile.Close()
 	// read the opened XML file as a byte array.
-	logger.Info("Reading: %s\n", xmlpath)
+	logger.Info("Reading: %s", xmlpath)
 	byteValue, _ := io.ReadAll(xmlFile)
 	v := fetResultRoot{}
 	err = xml.Unmarshal(byteValue, &v)

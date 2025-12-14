@@ -32,22 +32,23 @@ func (dbi *W365TopLevel) readClasses(newdb *base.BaseData) {
 				flag, ok := pregroups[g]
 				if ok {
 					if flag {
-						logger.Error("Group Defined in"+
-							" multiple Divisions:\n  -- %s\n", g)
+						logger.Error(
+							"Group Defined in multiple Divisions:\n  -- %s", g)
 						continue dloop
 					}
 					// Flag Group and add to division's group list
 					pregroups[g] = true
 					glist = append(glist, g)
 				} else {
-					logger.Error("Unknown Group in Class %s,"+
-						" Division %s:\n  %s\n", e.Tag, wdiv.Name, g)
+					logger.Error(
+						"Unknown Group in Class %s, Division %s:\n  -- %s",
+						e.Tag, wdiv.Name, g)
 				}
 			}
 			// Accept Divisions which have too few Groups at this stage.
 			if len(glist) < 2 {
-				logger.Warning("In Class %s,"+
-					" not enough valid Groups (>1) in Division %s\n",
+				logger.Warning(
+					"In Class %s, not enough valid Groups (>1) in Division %s",
 					e.Tag, wdiv.Name)
 			}
 			divs = append(divs, base.Division{
@@ -125,8 +126,7 @@ func (dbi *W365TopLevel) readClasses(newdb *base.BaseData) {
 			g.Tag = n.Tag
 			dbi.GroupRefMap[n.Id] = n.Id // mapping to itself is correct!
 		} else {
-			logger.Error("Group not in Division, removing:\n  %s,",
-				n.Id)
+			logger.Error("Group not in Division, removing: %s", n.Id)
 		}
 	}
 }

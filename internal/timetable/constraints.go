@@ -73,7 +73,7 @@ func (tt_data *TtData) preprocessConstraints(bdata *base.BaseData) {
 			auto_weight = cadd0.Weight
 			auto_consec = cadd0.Data.(bool)
 		} else {
-			logger.Error("!!! %s * %d – only one is permitted\n",
+			logger.Error("!!! %s * %d – only one is permitted",
 				//TODO: use the source name instead?
 				base.C_AutomaticDifferentDays, len(cadd))
 		}
@@ -155,8 +155,8 @@ cloop:
 				for _, cr := range courses {
 					clist = append(clist, string(cr))
 				}
-				logger.Error("Parallel courses have different"+
-					" activities: %s\n",
+				logger.Error(
+					"Parallel courses have different activities: %s",
 					strings.Join(clist, ","))
 				continue cloop
 			}
@@ -170,8 +170,8 @@ cloop:
 					for _, cr := range courses {
 						clist = append(clist, string(cr))
 					}
-					logger.Error("Parallel courses have activity"+
-						" mismatch: %s\n",
+					logger.Error(
+						"Parallel courses have activity mismatch: %s",
 						strings.Join(clist, ","))
 					continue cloop
 				}
@@ -209,8 +209,9 @@ func (tt_data *TtData) days_between_activities(
 	if len(unfixeds) == 0 || (len(fixeds) == 0 && len(unfixeds) == 1) {
 		// No constraints necessary
 		//TODO?
-		logger.Warning("Ignoring superfluous DaysBetween constraint on"+
-			" course:\n  -- %s", tt_data.View(cinfo, bdata.Db))
+		logger.Warning(
+			"Ignoring superfluous DaysBetween constraint on course:\n  -- %s",
+			tt_data.View(cinfo, bdata.Db))
 		return allist
 	}
 	// Collect the activity groups to which the constraint is to be applied
@@ -235,8 +236,8 @@ func (tt_data *TtData) days_between_activities(
 		for _, alist := range aidlists {
 			if len(alist) > tt_data.NDays {
 				//TODO?
-				logger.Warning("Course has too many activities for"+
-					"DifferentDays constraint:\n  -- %s\n",
+				logger.Warning(
+					"Course has too many activities for DifferentDays constraint:\n  -- %s",
 					tt_data.View(cinfo, bdata.Db))
 				continue
 			}
