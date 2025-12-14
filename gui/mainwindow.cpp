@@ -187,7 +187,7 @@ void MainWindow::closeEvent(
         QWidget::closeEvent(e);
 }
 
-void MainWindow::resizeEvent(QResizeEvent *event)
+void MainWindow::resizeEvent(QResizeEvent *)
 {
     resizeColumns();
 }

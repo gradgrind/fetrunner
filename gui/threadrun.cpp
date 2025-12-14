@@ -2,7 +2,7 @@
 #include <QTimer>
 #include "backend.h"
 
-void RunThreadWorker::ttrun(const QString &parameter)
+void RunThreadWorker::ttrun()
 {
     //QTimer *timer = new QTimer(this);
     //connect(timer, &QTimer::timeout, this, &TtRunWorker::tick);

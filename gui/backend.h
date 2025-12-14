@@ -1,11 +1,12 @@
 #ifndef BACKEND_H
 #define BACKEND_H
 
+#include <QColor>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QObject>
-#include <QTextEdit>
+#include <QStringList>
 
 struct KeyVal
 {

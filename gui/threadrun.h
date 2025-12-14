@@ -16,7 +16,7 @@ public:
     bool stopFlag;
 
 public slots:
-    void ttrun(const QString &parameter);
+    void ttrun();
 
 signals:
     void runThreadWorkerDone(const QString &result);

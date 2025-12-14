@@ -44,7 +44,7 @@ private:
     QSettings *settings;
     Ui::MainWindow *ui;
     void closeEvent(QCloseEvent *e) override;
-    void resizeEvent(QResizeEvent *event) override;
+    void resizeEvent(QResizeEvent *) override;
     void init2();
     void resizeColumns();
 
