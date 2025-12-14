@@ -13,10 +13,12 @@ type Result struct {
 	Time                       int
 	Days                       []IdPair
 	Hours                      []IdPair
+	Teachers                   []IdPair
+	Classes                    []IdPair
+	Rooms                      []IdPair
 	Activities                 []IdPair
 	Constraints                []Constraint
 	ConstraintErrors           map[ConstraintIndex]string
-	Rooms                      []IdPair
 	Placements                 []TtActivityPlacement
 	UnfulfilledHardConstraints map[ConstraintType][]ConstraintIndex
 	TotalHardConstraints       int
@@ -35,11 +37,13 @@ func (attdata *AutoTtData) new_current_instance(
 	alist := instance.Backend.Results(bdata, attdata, instance)
 
 	clist := attdata.Source.GetConstraints()
-	rlist := attdata.Source.GetRooms()
 	attdata.lastResult = &Result{
 		Time:        instance.Ticks,
 		Days:        attdata.Source.GetDays(),
 		Hours:       attdata.Source.GetHours(),
+		Teachers:    attdata.Source.GetTeachers(),
+		Classes:     attdata.Source.GetClasses(),
+		Rooms:       attdata.Source.GetRooms(),
 		Activities:  attdata.Source.GetActivities(),
 		Constraints: clist,
 		// ConstraintErrors can be updated after this Result is constructed.
@@ -47,7 +51,6 @@ func (attdata *AutoTtData) new_current_instance(
 		// included, but there may also be spurious timeout messages about
 		// constraints which are enabled.
 		ConstraintErrors: attdata.ConstraintErrors,
-		Rooms:            rlist,
 		Placements:       alist,
 	}
 
