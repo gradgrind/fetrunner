@@ -28,6 +28,13 @@ struct instance_row
     int state;
 };
 
+struct progress_line
+{
+    int index;
+    int progress;
+    int total;
+};
+
 class MainWindow : public QWidget
 {
     Q_OBJECT
@@ -43,6 +50,8 @@ private:
     void resizeEvent(QResizeEvent *) override;
     void init2();
     void resizeColumns();
+    void init_progress_table();
+    void setup_progress_table();
 
     bool quit_requested{false};
     bool thread_running{false};
@@ -58,6 +67,8 @@ private:
 
     QString hard_count;
     QString soft_count;
+    QHash<QString, progress_line> hard_constraint_map;
+    QHash<QString, progress_line> soft_constraint_map;
 
 public slots:
     void error_popup(const QString &msg);
