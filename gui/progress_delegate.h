@@ -4,6 +4,10 @@
 #include <QApplication>
 #include <QStyledItemDelegate>
 
+enum UserRoleN { // Used for table data types
+    UserRoleInt = Qt::UserRole
+};
+
 class ProgressDelegate : public QStyledItemDelegate
 {
 public:

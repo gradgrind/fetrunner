@@ -21,10 +21,6 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
-enum UserRoleN { // Used for table data types
-    UserRoleInt = Qt::UserRole
-};
-
 struct instance_row
 {
     QStringList data;
@@ -59,6 +55,9 @@ private:
     RunThreadController threadrunner;
     QString timeTicks{};
     QHash<int, instance_row> instance_row_map;
+
+    QString hard_count;
+    QString soft_count;
 
 public slots:
     void error_popup(const QString &msg);

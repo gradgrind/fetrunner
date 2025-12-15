@@ -1,13 +1,15 @@
 cmake_minimum_required(VERSION 3.19)
 project(fetrunner-gui LANGUAGES CXX)
 
-find_package(Qt6 6.9 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 6.2 REQUIRED COMPONENTS Core Widgets)
 find_package(Qt6 REQUIRED COMPONENTS LinguistTools)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 
-qt_standard_project_setup(I18N_TRANSLATED_LANGUAGES de)
-
+#qt_standard_project_setup(I18N_TRANSLATED_LANGUAGES de) # or these:
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 
 add_library(libfetrunner STATIC IMPORTED) # STATIC or SHARED
 set_target_properties(libfetrunner PROPERTIES
@@ -24,6 +26,7 @@ qt_add_executable(fetrunner-gui
     backend.h backend.cpp
     threadrun.h threadrun.cpp
     progress_delegate.h
+    progress_delegate.cpp
 
 )
 
@@ -45,10 +48,3 @@ install(TARGETS fetrunner-gui
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
-
-qt_generate_deploy_app_script(
-    TARGET fetrunner-gui
-    OUTPUT_SCRIPT deploy_script
-    NO_UNSUPPORTED_PLATFORM_ERROR
-)
-install(SCRIPT ${deploy_script})

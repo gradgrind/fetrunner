@@ -20,26 +20,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->instance_table->setItemDelegateForColumn( //
         4,
         new ProgressDelegate(ui->instance_table));
-    //ui->specials_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    ui->specials_table->setItemDelegateForColumn( //
-        1,
-        new ProgressDelegate(ui->specials_table));
-
-    auto item = new QTableWidgetItem();
-    item->setTextAlignment(Qt::AlignCenter);
-    ui->specials_table->setItem(0, 0, item);
-    ui->specials_table->setItem(0, 1, new QTableWidgetItem());
-
-    item = new QTableWidgetItem();
-    item->setTextAlignment(Qt::AlignCenter);
-    ui->specials_table->setItem(1, 0, item);
-    ui->specials_table->setItem(1, 1, new QTableWidgetItem());
-
-    item = new QTableWidgetItem();
-    item->setTextAlignment(Qt::AlignCenter);
-    ui->specials_table->setItem(2, 0, item);
-    ui->specials_table->setItem(2, 1, new QTableWidgetItem());
-
     backend = new Backend();
 
     // Get range for number of processes.
@@ -262,10 +242,14 @@ void MainWindow::push_go()
         threadRunActivated(true);
         //ui->pb_stop->setEnabled(true);
         ui->elapsed_time->setText("0");
-        for (int i = 0; i < 3; ++i) {
-            ui->specials_table->item(i, 0)->setText("");
-            ui->specials_table->item(i, 1)->setData(UserRoleInt, 0);
-        }
+        ui->progress_complete->clear();
+        ui->progress_complete_bar->setValue(0);
+        ui->progress_hard_only->clear();
+        ui->progress_hard_only_bar->setValue(0);
+        ui->progress_unconstrained->clear();
+        ui->progress_unconstrained_bar->setValue(0);
+        hard_count.clear();
+        soft_count.clear();
         threadrunner.runTtThread();
     }
 }
@@ -299,30 +283,6 @@ void MainWindow::threadRunActivated(
     ui->frame_parameters->setDisabled(active);
 }
 
-ProgressDelegate::ProgressDelegate(
-    QObject *parent)
-    : QStyledItemDelegate(parent)
-{}
-
-void ProgressDelegate::paint( //
-    QPainter *painter,
-    const QStyleOptionViewItem &option,
-    const QModelIndex &index) const
-{
-    auto progress = index.data(UserRoleInt).toInt();
-    QStyleOptionProgressBar progbar;
-    progbar.rect = option.rect;
-    progbar.minimum = 0;
-    progbar.maximum = 100;
-    progbar.progress = progress;
-    progbar.text = QString::number(progress).append('%');
-    progbar.textVisible = true;
-    QApplication::style()->drawControl( //
-        QStyle::CE_ProgressBar,
-        &progbar,
-        painter);
-}
-
 void MainWindow::ticker(const QString &data)
 {
     ui->elapsed_time->setText(data);
@@ -335,11 +295,11 @@ void MainWindow::ticker(const QString &data)
         int key;
         QTableWidgetItem *item;
     };
-    QList<rempair> to_remove;
-    for (const auto &[key, val] : std::as_const(instance_row_map).asKeyValueRange()) {
-        if (val.state < 0 && val.item != nullptr) {
-            to_remove.append({key, val.item});
-        }
+    QList<rempair> to_remove;    
+    for (auto it = instance_row_map.cbegin(); it != instance_row_map.cend(); ++it) {
+        auto val = it.value();
+        if (val.state < 0 && val.item != nullptr)
+            to_remove.append({it.key(), val.item});
     }
     for (const auto &rp : to_remove) {
         //qDebug() << "?removeRow" << row << rp.key;
@@ -352,9 +312,16 @@ void MainWindow::ticker(const QString &data)
 void MainWindow::nconstraints(const QString &data)
 {
     auto slist = data.split(u'.');
-    ui->c_enabled_t->setText(timeTicks);
-    ui->c_enabled_h->setText(slist[0] + " / " + slist[1]);
-    ui->c_enabled_s->setText(slist[2] + " / " + slist[3]);
+    auto h = slist[0];
+    auto s = slist[2];
+    if (h != hard_count) {
+        ui->c_enabled_h->setText(h + " / " + slist[1] + " @ " + timeTicks);
+        hard_count = h;
+    }
+    if (s != soft_count) {
+        ui->c_enabled_s->setText(s + " / " + slist[3] + " @ " + timeTicks);
+        soft_count = s;
+    }
 }
 
 const int INSTANCE0 = 3;
@@ -363,10 +330,20 @@ void MainWindow::progress(const QString &data)
 {
     auto slist = data.split(u'.');
     auto key = slist[0].toInt();
-    if (key < INSTANCE0) {
-        ui->specials_table->item(key, 0)->setText(slist[2]);
-        ui->specials_table->item(key, 1)->setData(UserRoleInt, slist[1].toInt());
-    } else {
+    switch (key) {
+    case 0:
+        ui->progress_complete->setText("@ " + slist[2]);
+        ui->progress_complete_bar->setValue(slist[1].toInt());
+        break;
+    case 1:
+        ui->progress_hard_only->setText("@ " + slist[2]);
+        ui->progress_hard_only_bar->setValue(slist[1].toInt());
+        break;
+    case 2:
+        ui->progress_unconstrained->setText("@ " + slist[2]);
+        ui->progress_unconstrained_bar->setValue(slist[1].toInt());
+        break;
+    default:
         // The entry must be in the map!
         auto irow = instance_row_map.value(key);
         int row;
