@@ -27,7 +27,7 @@ qt_add_executable(fetrunner-gui
     threadrun.h threadrun.cpp
     progress_delegate.h
     progress_delegate.cpp
-    progress_table.cpp
+    ttgen_tables.cpp
 
 )
 

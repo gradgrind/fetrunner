@@ -13,14 +13,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
-    //ui->instance_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    //ui->instance_table->resizeColumnsToContents();
-    QTimer::singleShot(0, this, &MainWindow::resizeColumns);
-    ui->instance_table->setItemDelegateForColumn( //
-        4,
-        new ProgressDelegate(ui->instance_table));
     backend = new Backend();
+    init_ttgen_tables();
 
     // Get range for number of processes.
     // Do this before connecting the "valueChanged" signal, to
@@ -120,6 +114,7 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::init2()
 {
     // This is run immediately after starting the event loop.
+    reset_display();
 
     // Check FET
     auto fetpath0 = settings->value("fet/FetPath").toString();
@@ -167,11 +162,6 @@ void MainWindow::closeEvent(
         QWidget::closeEvent(e);
 }
 
-void MainWindow::resizeEvent(QResizeEvent *)
-{
-    resizeColumns();
-}
-
 void MainWindow::nprocesses(
     int n)
 {
@@ -180,6 +170,22 @@ void MainWindow::nprocesses(
     if (mp.val != nn)
         error_popup("BUG: invalid number of processes: " + nn);
     ui->tt_processes->setValue(mp.val.toInt());
+}
+
+void MainWindow::reset_display()
+{
+    ui->logview->clear();
+    ui->progress_table->setRowCount(0);
+    ui->instance_table->setRowCount(0);
+    ui->elapsed_time->setText("0");
+    ui->progress_complete->clear();
+    ui->progress_complete_bar->setValue(0);
+    ui->progress_hard_only->clear();
+    ui->progress_hard_only_bar->setValue(0);
+    ui->progress_unconstrained->clear();
+    ui->progress_unconstrained_bar->setValue(0);
+    hard_count.clear();
+    soft_count.clear();
 }
 
 void MainWindow::open_file()
@@ -209,7 +215,7 @@ void MainWindow::open_file()
                     filedir = fdir;
                     settings->setValue("gui/SourceDir", fdir);
                 }
-                ui->logview->clear();
+                reset_display();
             } else if (kv.key == "DATA_TYPE") {
                 datatype = kv.val;
             }
@@ -234,22 +240,9 @@ void MainWindow::push_go()
     backend->op("TT_PARAMETER", {"SKIP_HARD", sh ? "true" : "false"});
 
     instance_row_map.clear();
-    ui->instance_table->setRowCount(0);
+    reset_display();
     if (backend->op1("RUN_TT_SOURCE", {}, "OK").val == "true") {
-        backend->op("HARD_CONSTRAINTS");
-        backend->op("SOFT_CONSTRAINTS");
-
         threadRunActivated(true);
-        //ui->pb_stop->setEnabled(true);
-        ui->elapsed_time->setText("0");
-        ui->progress_complete->clear();
-        ui->progress_complete_bar->setValue(0);
-        ui->progress_hard_only->clear();
-        ui->progress_hard_only_bar->setValue(0);
-        ui->progress_unconstrained->clear();
-        ui->progress_unconstrained_bar->setValue(0);
-        hard_count.clear();
-        soft_count.clear();
         threadrunner.runTtThread();
     }
 }
@@ -348,30 +341,28 @@ void MainWindow::progress(const QString &data)
         auto irow = instance_row_map.value(key);
         int row;
         if (irow.item == nullptr) {
-            auto text0 = irow.data[1];
+            auto text0 = irow.data[1]; // constraint type
             // FET starts all its constraints with "Constraint",
             // which doesn't really need to be displayed ...
             if (text0.startsWith("Constraint"))
                 text0.remove(0, 10);
             auto item0 = new QTableWidgetItem(text0);
-            auto item1 = new QTableWidgetItem(irow.data[2]);
+            auto item1 = new QTableWidgetItem(irow.data[2]); // number of constraints
             item1->setTextAlignment(Qt::AlignCenter);
-            auto item2 = new QTableWidgetItem(irow.data[3]);
+            auto item2 = new QTableWidgetItem(irow.data[3]); // timeout
             item2->setTextAlignment(Qt::AlignCenter);
-            auto item3 = new QTableWidgetItem();
+            auto item3 = new QTableWidgetItem(); // @ time
             item3->setTextAlignment(Qt::AlignCenter);
-            auto item4 = new QTableWidgetItem();
+            auto item4 = new QTableWidgetItem(); // progress (%)
             row = ui->instance_table->rowCount();
             ui->instance_table->insertRow(row);
-            ui->instance_table->setItem(row, 0, item0);
-            ui->instance_table->setItem(row, 1, item1);
-            ui->instance_table->setItem(row, 2, item2);
-            ui->instance_table->setItem(row, 3, item3);
-            ui->instance_table->setItem(row, 4, item4);
+            ui->instance_table->setItem(row, 0, item1);
+            ui->instance_table->setItem(row, 1, item2);
+            ui->instance_table->setItem(row, 2, item3);
+            ui->instance_table->setItem(row, 3, item4);
+            ui->instance_table->setItem(row, 4, item0);
             irow.item = item4;
             instance_row_map[key] = irow;
-
-            //ui->instance_table->scrollToItem(item4); // ensure new row visible
 
             QTimer::singleShot(0, [this, item4]() { //
                 this->ui->instance_table->scrollToItem(item4);
@@ -380,27 +371,9 @@ void MainWindow::progress(const QString &data)
         } else {
             row = ui->instance_table->row(irow.item);
         }
-        irow.item->setData(UserRoleInt, slist[1].toInt());
-        ui->instance_table->item(row, 3)->setText(slist[2]);
+        irow.item->setData(UserRoleInt, slist[1].toInt()); // progress (%)
+        ui->instance_table->item(row, 2)->setText(slist[2]);
     }
-}
-
-void MainWindow::resizeColumns()
-{
-    QFontMetrics fm(ui->instance_table->font());
-    int table_width = ui->instance_table->width();
-    int w = 0;
-    for (auto col = 1; col < 5; ++col) {
-        auto headerItem = ui->instance_table->horizontalHeaderItem(col);
-        auto text = headerItem->text();
-        int col_width = fm.horizontalAdvance(text) + 10; // add some padding
-        if (col == 4 && col_width < 100)
-            col_width = 120;
-        w += col_width;
-        ui->instance_table->setColumnWidth(col, col_width);
-    }
-    int wsb = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent);
-    ui->instance_table->setColumnWidth(0, table_width - w - wsb - 10);
 }
 
 void MainWindow::istart(const QString &data)

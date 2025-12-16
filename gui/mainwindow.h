@@ -47,11 +47,12 @@ private:
     QSettings *settings;
     Ui::MainWindow *ui;
     void closeEvent(QCloseEvent *e) override;
-    void resizeEvent(QResizeEvent *) override;
     void init2();
-    void resizeColumns();
-    void init_progress_table();
-    void setup_progress_table();
+    void reset_display();
+    void init_ttgen_tables();    // at start of program
+    void setup_progress_table(); // when starting ttgen run
+    void setup_instance_table(); // when starting ttgen run
+    void tableProgress();
 
     bool quit_requested{false};
     bool thread_running{false};
@@ -64,6 +65,7 @@ private:
     RunThreadController threadrunner;
     QString timeTicks{};
     QHash<int, instance_row> instance_row_map;
+    int instance_table_fixed_width;
 
     QString hard_count;
     QString soft_count;
