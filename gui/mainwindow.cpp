@@ -3,7 +3,6 @@
 #include <QMessageBox>
 #include <QTimer>
 #include "backend.h"
-#include "progress_delegate.h"
 #include "ui_mainwindow.h"
 
 Backend *backend;
@@ -297,21 +296,26 @@ void MainWindow::ticker(const QString &data)
 
     // Go through instance rows, removing "ended" ones
     // which have not been "accepted".
-    struct rempair
+    struct rmdata
     {
         int key;
+        int state;
         QTableWidgetItem *item;
     };
-    QList<rempair> to_remove;    
+    QList<rmdata> to_remove;
     for (auto it = instance_row_map.cbegin(); it != instance_row_map.cend(); ++it) {
         auto val = it.value();
-        if (val.state < 0 && val.item != nullptr)
-            to_remove.append({it.key(), val.item});
+        if (val.state != 0 && val.item != nullptr)
+            to_remove.append({it.key(), val.state, val.item});
     }
     for (const auto &rp : to_remove) {
         //qDebug() << "?removeRow" << row << rp.key;
-        auto row = rp.item->row();
-        ui->instance_table->removeRow(row);
+        if (rp.state == 1) {
+            rp.item->setText("+++");
+        } else {
+            auto row = rp.item->row();
+            ui->instance_table->removeRow(row);
+        }
         instance_row_map.remove(rp.key);
     }
 }
@@ -333,37 +337,7 @@ void MainWindow::iprogress(const QString &data)
         ui->progress_unconstrained->setText(slist[1] + "% @ " + slist[2]);
         break;
     default:
-        // The entry must be in the map!
-        auto irow = instance_row_map.value(key);
-        int row;
-        if (irow.item == nullptr) {
-            auto item0 = new QTableWidgetItem(irow.data[1]); // constraint type
-            auto item1 = new QTableWidgetItem(irow.data[2]); // number of constraints
-            item1->setTextAlignment(Qt::AlignCenter);
-            auto item2 = new QTableWidgetItem(irow.data[3]); // timeout
-            item2->setTextAlignment(Qt::AlignCenter);
-            auto item3 = new QTableWidgetItem(); // @ time
-            item3->setTextAlignment(Qt::AlignCenter);
-            auto item4 = new QTableWidgetItem(); // progress (%)
-            row = ui->instance_table->rowCount();
-            ui->instance_table->insertRow(row);
-            ui->instance_table->setItem(row, 0, item1);
-            ui->instance_table->setItem(row, 1, item2);
-            ui->instance_table->setItem(row, 2, item3);
-            ui->instance_table->setItem(row, 3, item4);
-            ui->instance_table->setItem(row, 4, item0);
-            irow.item = item4;
-            instance_row_map[key] = irow;
-
-            QTimer::singleShot(0, [this, item4]() { //
-                this->ui->instance_table->scrollToItem(item4);
-            });
-
-        } else {
-            row = ui->instance_table->row(irow.item);
-        }
-        irow.item->setData(UserRoleInt, slist[1].toInt()); // progress (%)
-        ui->instance_table->item(row, 2)->setText(slist[2]);
+        instanceRowProgress(key, slist);
     }
 }
 
@@ -414,9 +388,9 @@ void MainWindow::iaccept(const QString &data)
     case 2: // "unconstrained" completed
         return;
     default:
-        auto irow = instance_row_map[key];
+        instance_row &irow = instance_row_map[key];
         irow.state = 1;
-        instance_row_map[key] = irow;
-        tableProgress(irow.data[1], irow.data[2], !irow.data[4].isEmpty());
+        tableProgress(irow);
+        //TODO: set "+++" in instance table
     }
 }

@@ -52,10 +52,11 @@ private:
     void init_ttgen_tables();    // at start of program
     void setup_progress_table(); // when starting ttgen run
     void setup_instance_table(); // when starting ttgen run
-    void tableProgress(QString constraint, QString number, bool hard);
+    void tableProgress(instance_row &irow);
     void tableProgressAll();
     void tableProgressHard();
     void tableProgressGroup(QHash<QString, progress_line>);
+    void instanceRowProgress(int key, QStringList parms);
     QString constraint_name(QString name);
 
     bool quit_requested{false};

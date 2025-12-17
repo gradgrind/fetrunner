@@ -126,12 +126,14 @@ void MainWindow::nconstraints(const QString &data)
     }
 }
 
-void MainWindow::tableProgress(QString constraint, QString number, bool hard)
+void MainWindow::tableProgress(instance_row &irow)
 {
-    if (hard) {
+    auto constraint = irow.data[1];
+    auto number = irow.data[2];
+    if (!irow.data[4].isEmpty()) { // hard constraint
         if (!hard_constraint_map.contains(constraint))
             qFatal() << "hard_constraint_map, no key" << constraint;
-        auto cdata = hard_constraint_map.value(constraint);
+        progress_line &cdata = hard_constraint_map[constraint];
         cdata.progress += number.toInt();
         if (cdata.progress == cdata.total)
             ui->progress_table->item(cdata.index, 0)->setText("+++");
@@ -140,11 +142,10 @@ void MainWindow::tableProgress(QString constraint, QString number, bool hard)
         else
             ui->progress_table->item(cdata.index, 0)->setText(QString::number(cdata.progress));
         ui->progress_table->item(cdata.index, 2)->setText("@ " + timeTicks);
-        hard_constraint_map[constraint] = cdata;
     } else {
         if (!soft_constraint_map.contains(constraint))
             qFatal() << "soft_constraint_map, no key" << constraint;
-        auto cdata = soft_constraint_map.value(constraint);
+        progress_line &cdata = soft_constraint_map[constraint];
         cdata.progress += number.toInt();
         if (cdata.progress == cdata.total)
             ui->progress_table->item(cdata.index, 0)->setText("+++");
@@ -153,7 +154,6 @@ void MainWindow::tableProgress(QString constraint, QString number, bool hard)
         else
             ui->progress_table->item(cdata.index, 0)->setText(QString::number(cdata.progress));
         ui->progress_table->item(cdata.index, 2)->setText("@ " + timeTicks);
-        soft_constraint_map[constraint] = cdata;
     }
 }
 
@@ -178,4 +178,48 @@ void MainWindow::tableProgressGroup(QHash<QString, progress_line> hsmap)
             ui->progress_table->item(cdata.index, 2)->setText("@ " + timeTicks);
         }
     }
+}
+
+void MainWindow::instanceRowProgress(int key, QStringList parms)
+{
+    // If the entry is not in the map, add a new entry.
+    auto irow = instance_row_map.value(key);
+    int row;
+    if (irow.item == nullptr) {
+        auto ctype = irow.data[1]; // constraint type
+        if (!irow.data[4].isEmpty())
+            ctype.prepend("[!] "); // hard constraint
+        auto item0 = new QTableWidgetItem(ctype);
+        auto item1 = new QTableWidgetItem(irow.data[2]); // number of constraints
+        item1->setTextAlignment(Qt::AlignCenter);
+        auto timeout = irow.data[3]; // timeout
+        if (timeout == "0")
+            timeout = "---";
+        else
+            timeout.prepend("/ ");
+        auto item2 = new QTableWidgetItem(timeout);
+        item2->setTextAlignment(Qt::AlignCenter);
+        auto item3 = new QTableWidgetItem(); // @ time
+        item3->setTextAlignment(Qt::AlignCenter);
+        auto item4 = new QTableWidgetItem(); // progress (%)
+        row = ui->instance_table->rowCount();
+        ui->instance_table->insertRow(row);
+        ui->instance_table->setItem(row, 0, item4);
+        ui->instance_table->setItem(row, 1, item1);
+        ui->instance_table->setItem(row, 2, item3);
+        ui->instance_table->setItem(row, 3, item2);
+        ui->instance_table->setItem(row, 4, item0);
+        irow.item = item4;
+        instance_row_map[key] = irow;
+
+        QTimer::singleShot(0, [this, item4]() { //
+            this->ui->instance_table->scrollToItem(item4);
+        });
+
+    } else {
+        row = ui->instance_table->row(irow.item);
+    }
+
+    irow.item->setText(parms[1] + "%");                         // progress (%)
+    ui->instance_table->item(row, 2)->setText("@ " + parms[2]); // @ time
 }
