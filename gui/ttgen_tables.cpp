@@ -135,6 +135,8 @@ void MainWindow::tableProgress(QString constraint, QString number, bool hard)
         cdata.progress += number.toInt();
         if (cdata.progress == cdata.total)
             ui->progress_table->item(cdata.index, 0)->setText("+++");
+        else if (cdata.progress > cdata.total)
+            qFatal() << "cdata.progress > cdata.total" << "(hard)" << constraint;
         else
             ui->progress_table->item(cdata.index, 0)->setText(QString::number(cdata.progress));
         ui->progress_table->item(cdata.index, 2)->setText("@ " + timeTicks);
@@ -146,6 +148,8 @@ void MainWindow::tableProgress(QString constraint, QString number, bool hard)
         cdata.progress += number.toInt();
         if (cdata.progress == cdata.total)
             ui->progress_table->item(cdata.index, 0)->setText("+++");
+        if (cdata.progress > cdata.total)
+            qFatal() << "cdata.progress > cdata.total" << "(soft)" << constraint;
         else
             ui->progress_table->item(cdata.index, 0)->setText(QString::number(cdata.progress));
         ui->progress_table->item(cdata.index, 2)->setText("@ " + timeTicks);
@@ -156,18 +160,22 @@ void MainWindow::tableProgress(QString constraint, QString number, bool hard)
 void MainWindow::tableProgressAll()
 {
     tableProgressHard();
-    for (auto it = soft_constraint_map.begin(); it != soft_constraint_map.end(); ++it) {
-        progress_line &cdata = it.value();
-        if (cdata.progress != cdata.total)
-            ui->progress_table->item(cdata.index, 0)->setText("+++");
-    }
+    tableProgressGroup(soft_constraint_map);
 }
 
 void MainWindow::tableProgressHard()
 {
-    for (auto it = hard_constraint_map.begin(); it != hard_constraint_map.end(); ++it) {
+    tableProgressGroup(hard_constraint_map);
+}
+
+void MainWindow::tableProgressGroup(QHash<QString, progress_line> hsmap)
+{
+    for (auto it = hsmap.begin(); it != hsmap.end(); ++it) {
         progress_line &cdata = it.value();
-        if (cdata.progress != cdata.total)
+        if (cdata.progress != cdata.total) {
             ui->progress_table->item(cdata.index, 0)->setText("+++");
+            cdata.progress = cdata.total;
+            ui->progress_table->item(cdata.index, 2)->setText("@ " + timeTicks);
+        }
     }
 }

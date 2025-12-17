@@ -629,6 +629,9 @@
             <property name="editTriggers">
              <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
             </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
             <attribute name="horizontalHeaderVisible">
              <bool>false</bool>
             </attribute>
@@ -794,6 +797,9 @@
            <widget class="QTableWidget" name="instance_table">
             <property name="editTriggers">
              <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
             </property>
             <attribute name="horizontalHeaderVisible">
              <bool>false</bool>

@@ -55,6 +55,7 @@ private:
     void tableProgress(QString constraint, QString number, bool hard);
     void tableProgressAll();
     void tableProgressHard();
+    void tableProgressGroup(QHash<QString, progress_line>);
     QString constraint_name(QString name);
 
     bool quit_requested{false};
