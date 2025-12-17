@@ -52,7 +52,7 @@ private:
     void init_ttgen_tables();    // at start of program
     void setup_progress_table(); // when starting ttgen run
     void setup_instance_table(); // when starting ttgen run
-    void tableProgress();
+    void tableProgress(QString constraint, QString number, bool hard);
 
     bool quit_requested{false};
     bool thread_running{false};
@@ -82,7 +82,7 @@ private slots:
     void push_stop();
     void ticker(const QString &data);
     void nconstraints(const QString &data);
-    void progress(const QString &data);
+    void iprogress(const QString &data);
     void istart(const QString &data);
     void iend(const QString &data);
     void iaccept(const QString &data);

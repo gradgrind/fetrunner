@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>986</width>
-    <height>585</height>
+    <width>1112</width>
+    <height>790</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -21,24 +21,11 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,0,3,0,0">
+    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0,1,0,3">
      <item>
-      <widget class="QLineEdit" name="currentFile"/>
-     </item>
-     <item>
-      <widget class="QLabel" name="label">
+      <widget class="QPushButton" name="pb_open_new">
        <property name="text">
-        <string>in</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="currentDir">
-       <property name="text">
-        <string/>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
+        <string>&amp;Open New</string>
        </property>
       </widget>
      </item>
@@ -59,9 +46,26 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pb_open_new">
+      <widget class="QLineEdit" name="currentFile">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label">
        <property name="text">
-        <string>&amp;Open New</string>
+        <string>in</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="currentDir">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -91,7 +95,7 @@
         <property name="frameShadow">
          <enum>QFrame::Shadow::Raised</enum>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,0,0,0">
+        <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,0,0,0,0">
          <item>
           <widget class="QFrame" name="frame_parameters">
            <layout class="QFormLayout" name="formLayout">
@@ -171,31 +175,87 @@
           </widget>
          </item>
          <item>
-          <widget class="QGroupBox" name="groupBox_2">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+          <widget class="QGroupBox" name="groupBox">
+           <property name="toolTip">
+            <string>Instances (runs) with fixed selections of constraints.</string>
            </property>
            <property name="title">
-            <string>Enabled Constraints</string>
+            <string>Special instances</string>
            </property>
-           <layout class="QFormLayout" name="formLayout_2">
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_2">
-              <property name="text">
-               <string>Hard</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLineEdit" name="c_enabled_h">
+           <layout class="QGridLayout" name="gridLayout">
+            <item row="3" column="1">
+             <widget class="QLineEdit" name="progress_unconstrained">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string/>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="progress_hard_only">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string/>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_15">
+              <property name="toolTip">
+               <string>No constraints are enabled.</string>
+              </property>
+              <property name="text">
+               <string>None</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="progress_complete">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string/>
+              </property>
+              <property name="text">
+               <string>000% @ 0000s</string>
               </property>
               <property name="readOnly">
                <bool>true</bool>
@@ -203,6 +263,67 @@
              </widget>
             </item>
             <item row="1" column="0">
+             <widget class="QLabel" name="label_13">
+              <property name="toolTip">
+               <string>All constraints are enabled.</string>
+              </property>
+              <property name="text">
+               <string>Full</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <spacer name="horizontalSpacer_5">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Policy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>150</width>
+                <height>2</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_14">
+              <property name="toolTip">
+               <string>All hard constraints are enabled, no soft constraints.</string>
+              </property>
+              <property name="text">
+               <string>Hard only</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBox_2">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip">
+            <string>Overall progress, showing percentage of hard and soft constraints which have been &quot;accepted&quot;.</string>
+           </property>
+           <property name="title">
+            <string>Enabled Constraints</string>
+           </property>
+           <layout class="QFormLayout" name="formLayout_2">
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Hard</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
              <widget class="QLabel" name="label_4">
               <property name="text">
                <string>Soft</string>
@@ -210,15 +331,43 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QLineEdit" name="c_enabled_s">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
+             <widget class="QProgressBar" name="progress_hard">
+              <property name="maximum">
+               <number>100</number>
               </property>
-              <property name="readOnly">
+              <property name="value">
+               <number>35</number>
+              </property>
+              <property name="textVisible">
                <bool>true</bool>
+              </property>
+              <property name="format">
+               <string>%p%</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QProgressBar" name="progress_soft">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="minimum">
+               <number>0</number>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+              <property name="value">
+               <number>0</number>
+              </property>
+              <property name="textVisible">
+               <bool>true</bool>
+              </property>
+              <property name="invertedAppearance">
+               <bool>false</bool>
+              </property>
+              <property name="format">
+               <string>%p%</string>
               </property>
              </widget>
             </item>
@@ -318,7 +467,168 @@
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
+           <widget class="QFrame" name="frame">
+            <property name="frameShape">
+             <enum>QFrame::Shape::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Shadow::Raised</enum>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_2">
+             <item row="0" column="3">
+              <widget class="QLabel" name="label_11">
+               <property name="text">
+                <string>@ Time (s)</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QLineEdit" name="soft_naccepted">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignCenter</set>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="hard_naccepted">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignCenter</set>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="2">
+              <widget class="QLineEdit" name="soft_nconstraints">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignCenter</set>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="3">
+              <widget class="QLineEdit" name="hard_tlastchange">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignCenter</set>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2">
+              <widget class="QLineEdit" name="hard_nconstraints">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignCenter</set>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_8">
+               <property name="text">
+                <string>All soft constraints</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QLabel" name="label_9">
+               <property name="text">
+                <string>Number</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="3">
+              <widget class="QLineEdit" name="soft_tlastchange">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignCenter</set>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="2">
+              <widget class="QLabel" name="label_10">
+               <property name="text">
+                <string>/ Total</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_6">
+               <property name="text">
+                <string>[!] All hard constraints</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
            <widget class="QTableWidget" name="progress_table">
+            <property name="editTriggers">
+             <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+            </property>
             <attribute name="horizontalHeaderVisible">
              <bool>false</bool>
             </attribute>
@@ -330,183 +640,147 @@
             </attribute>
             <row>
              <property name="text">
-              <string>Neue Zeile</string>
+              <string>Sizes</string>
              </property>
             </row>
             <row>
              <property name="text">
-              <string>Neue Zeile</string>
+              <string>Finished</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>Running Soft</string>
              </property>
             </row>
             <column>
              <property name="text">
-              <string>Neue Spalte</string>
+              <string>Accepted</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>Neue Spalte</string>
+              <string>Total</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>Neue Spalte</string>
+              <string>Elapsed</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>[Hard] Constraint type</string>
              </property>
             </column>
             <item row="0" column="0">
              <property name="text">
-              <string>Very long constraint name</string>
+              <string notr="true">000000</string>
+             </property>
+             <property name="font">
+              <font>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="textAlignment">
+              <set>AlignCenter</set>
              </property>
             </item>
             <item row="0" column="1">
              <property name="text">
-              <string>34 / 67 @ 24</string>
+              <string notr="true">/ 000000</string>
+             </property>
+             <property name="font">
+              <font>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="textAlignment">
+              <set>AlignCenter</set>
              </property>
             </item>
             <item row="0" column="2">
              <property name="text">
-              <string>Progress bar</string>
+              <string notr="true">@ 000000</string>
+             </property>
+             <property name="font">
+              <font>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="textAlignment">
+              <set>AlignCenter</set>
+             </property>
+            </item>
+            <item row="0" column="3">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="font">
+              <font>
+               <bold>false</bold>
+               <underline>true</underline>
+              </font>
              </property>
             </item>
             <item row="1" column="0">
              <property name="text">
-              <string>Another constraint name</string>
+              <string>+++</string>
+             </property>
+             <property name="textAlignment">
+              <set>AlignCenter</set>
              </property>
             </item>
             <item row="1" column="1">
              <property name="text">
-              <string>0 / 2</string>
+              <string>132</string>
+             </property>
+             <property name="textAlignment">
+              <set>AlignCenter</set>
              </property>
             </item>
             <item row="1" column="2">
              <property name="text">
-              <string>Progress bar</string>
+              <string>@ 41</string>
+             </property>
+             <property name="textAlignment">
+              <set>AlignCenter</set>
              </property>
             </item>
-           </widget>
-          </item>
-          <item>
-           <widget class="QGroupBox" name="groupBox">
-            <property name="title">
-             <string>Special instances</string>
-            </property>
-            <layout class="QGridLayout" name="gridLayout">
-             <item row="1" column="2">
-              <widget class="QProgressBar" name="progress_complete_bar">
-               <property name="value">
-                <number>24</number>
-               </property>
-               <property name="textVisible">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QLineEdit" name="progress_complete">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>100</width>
-                 <height>0</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="1">
-              <widget class="QLineEdit" name="progress_unconstrained">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>100</width>
-                 <height>0</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <spacer name="horizontalSpacer_5">
-               <property name="orientation">
-                <enum>Qt::Orientation::Horizontal</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Policy::Fixed</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>100</width>
-                 <height>2</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_14">
-               <property name="text">
-                <string>All hard constraints</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QLineEdit" name="progress_hard_only">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>100</width>
-                 <height>0</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="2">
-              <widget class="QProgressBar" name="progress_unconstrained_bar">
-               <property name="value">
-                <number>24</number>
-               </property>
-               <property name="textVisible">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="label_15">
-               <property name="text">
-                <string>Unconstrained</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="label_13">
-               <property name="text">
-                <string>Fully constrained</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="2">
-              <widget class="QProgressBar" name="progress_hard_only_bar">
-               <property name="value">
-                <number>24</number>
-               </property>
-               <property name="textVisible">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
+            <item row="1" column="3">
+             <property name="text">
+              <string>[!] A completed hard constraint type</string>
+             </property>
+            </item>
+            <item row="2" column="0">
+             <property name="text">
+              <string>12</string>
+             </property>
+             <property name="textAlignment">
+              <set>AlignCenter</set>
+             </property>
+            </item>
+            <item row="2" column="1">
+             <property name="text">
+              <string>24</string>
+             </property>
+             <property name="textAlignment">
+              <set>AlignCenter</set>
+             </property>
+            </item>
+            <item row="2" column="2">
+             <property name="text">
+              <string>@ 257</string>
+             </property>
+             <property name="textAlignment">
+              <set>AlignCenter</set>
+             </property>
+            </item>
+            <item row="2" column="3">
+             <property name="text">
+              <string>A soft constraint type, not yet complete</string>
+             </property>
+            </item>
            </widget>
           </item>
          </layout>
@@ -521,6 +795,9 @@
             <property name="editTriggers">
              <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
             </property>
+            <attribute name="horizontalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
             <attribute name="horizontalHeaderCascadingSectionResizes">
              <bool>true</bool>
             </attribute>
@@ -530,9 +807,29 @@
             <attribute name="verticalHeaderVisible">
              <bool>false</bool>
             </attribute>
+            <row>
+             <property name="text">
+              <string>Sizes</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>Finished</string>
+             </property>
+            </row>
             <column>
              <property name="text">
-              <string>Number</string>
+              <string>Progress</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Constraints</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Time</string>
              </property>
             </column>
             <column>
@@ -542,19 +839,83 @@
             </column>
             <column>
              <property name="text">
-              <string>@ (secs)</string>
+              <string>[Hard] Constraint type</string>
              </property>
             </column>
-            <column>
+            <item row="0" column="0">
              <property name="text">
-              <string>Progress</string>
+              <string>0000%</string>
              </property>
-            </column>
-            <column>
+             <property name="textAlignment">
+              <set>AlignCenter</set>
+             </property>
+            </item>
+            <item row="0" column="1">
              <property name="text">
-              <string>Constraint Type</string>
+              <string> n = 00000</string>
              </property>
-            </column>
+             <property name="textAlignment">
+              <set>AlignCenter</set>
+             </property>
+            </item>
+            <item row="0" column="2">
+             <property name="text">
+              <string>@ 000000</string>
+             </property>
+             <property name="textAlignment">
+              <set>AlignCenter</set>
+             </property>
+            </item>
+            <item row="0" column="3">
+             <property name="text">
+              <string>/ 00000</string>
+             </property>
+             <property name="textAlignment">
+              <set>AlignCenter</set>
+             </property>
+            </item>
+            <item row="0" column="4">
+             <property name="text">
+              <string>[x] Constraint name</string>
+             </property>
+            </item>
+            <item row="1" column="0">
+             <property name="text">
+              <string>+++</string>
+             </property>
+             <property name="textAlignment">
+              <set>AlignCenter</set>
+             </property>
+            </item>
+            <item row="1" column="1">
+             <property name="text">
+              <string>n = 28</string>
+             </property>
+             <property name="textAlignment">
+              <set>AlignCenter</set>
+             </property>
+            </item>
+            <item row="1" column="2">
+             <property name="text">
+              <string>@ 13</string>
+             </property>
+             <property name="textAlignment">
+              <set>AlignCenter</set>
+             </property>
+            </item>
+            <item row="1" column="3">
+             <property name="text">
+              <string>/ 10</string>
+             </property>
+             <property name="textAlignment">
+              <set>AlignCenter</set>
+             </property>
+            </item>
+            <item row="1" column="4">
+             <property name="text">
+              <string>[x] Some completed instance</string>
+             </property>
+            </item>
            </widget>
           </item>
           <item>

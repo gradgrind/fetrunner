@@ -23,7 +23,7 @@ signals:
     void ticker(const QString &result);
     void nconstraints(const QString &result);
     void istart(const QString &result);
-    void progress(const QString &result);
+    void iprogress(const QString &result);
     void iend(const QString &result);
     void iaccept(const QString &result);
 };

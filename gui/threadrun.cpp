@@ -37,7 +37,7 @@ void RunThreadWorker::ttrun()
                 auto items = kv.val.split(u'.');
                 emit nconstraints(kv.val);
             } else if (kv.key == ".PROGRESS") {
-                emit progress(kv.val);
+                emit iprogress(kv.val);
             } else if (kv.key == ".START") {
                 emit istart(kv.val);
             } else if (kv.key == ".END") {
@@ -84,7 +84,7 @@ void RunThreadController::runTtThread()
             &RunThreadController::nconstraints);
         connect( //
             runThreadWorker,
-            &RunThreadWorker::progress,
+            &RunThreadWorker::iprogress,
             this,
             &RunThreadController::progress);
         connect( //

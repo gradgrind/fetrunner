@@ -79,7 +79,7 @@ MainWindow::MainWindow(QWidget *parent)
         &threadrunner,
         &RunThreadController::progress,
         this,
-        &MainWindow::progress);
+        &MainWindow::iprogress);
     connect( //
         &threadrunner,
         &RunThreadController::istart,
@@ -114,6 +114,8 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::init2()
 {
     // This is run immediately after starting the event loop.
+    ui->progress_table->resizeColumnsToContents();
+    ui->instance_table->resizeColumnsToContents();
     reset_display();
 
     // Check FET
@@ -175,15 +177,23 @@ void MainWindow::nprocesses(
 void MainWindow::reset_display()
 {
     ui->logview->clear();
+
     ui->progress_table->setRowCount(0);
+    ui->hard_naccepted->clear();
+    ui->hard_nconstraints->clear();
+    ui->hard_tlastchange->clear();
+    ui->soft_naccepted->clear();
+    ui->soft_nconstraints->clear();
+    ui->soft_tlastchange->clear();
+
     ui->instance_table->setRowCount(0);
     ui->elapsed_time->setText("0");
     ui->progress_complete->clear();
-    ui->progress_complete_bar->setValue(0);
+    ui->progress_hard->setValue(0);
     ui->progress_hard_only->clear();
-    ui->progress_hard_only_bar->setValue(0);
+    ui->progress_soft->setValue(0);
+    ui->progress_soft->setEnabled(0);
     ui->progress_unconstrained->clear();
-    ui->progress_unconstrained_bar->setValue(0);
     hard_count.clear();
     soft_count.clear();
 }
@@ -203,6 +213,7 @@ void MainWindow::open_file()
         tr("FET / W365 Files (*.fet *_w365.json)"));
 
     if (!filepath.isEmpty()) {
+        reset_display();
         for (const auto &kv : backend->op("SET_FILE", {filepath})) {
             if (kv.key == "SET_FILE") {
                 QDir dir{kv.val};
@@ -215,7 +226,6 @@ void MainWindow::open_file()
                     filedir = fdir;
                     settings->setValue("gui/SourceDir", fdir);
                 }
-                reset_display();
             } else if (kv.key == "DATA_TYPE") {
                 datatype = kv.val;
             }
@@ -242,6 +252,7 @@ void MainWindow::push_go()
     instance_row_map.clear();
     reset_display();
     if (backend->op1("RUN_TT_SOURCE", {}, "OK").val == "true") {
+        setup_progress_table();
         threadRunActivated(true);
         threadrunner.runTtThread();
     }
@@ -302,39 +313,21 @@ void MainWindow::ticker(const QString &data)
     }
 }
 
-void MainWindow::nconstraints(const QString &data)
-{
-    auto slist = data.split(u'.');
-    auto h = slist[0];
-    auto s = slist[2];
-    if (h != hard_count) {
-        ui->c_enabled_h->setText(h + " / " + slist[1] + " @ " + timeTicks);
-        hard_count = h;
-    }
-    if (s != soft_count) {
-        ui->c_enabled_s->setText(s + " / " + slist[3] + " @ " + timeTicks);
-        soft_count = s;
-    }
-}
-
 const int INSTANCE0 = 3;
 
-void MainWindow::progress(const QString &data)
+void MainWindow::iprogress(const QString &data)
 {
     auto slist = data.split(u'.');
     auto key = slist[0].toInt();
     switch (key) {
     case 0:
-        ui->progress_complete->setText("@ " + slist[2]);
-        ui->progress_complete_bar->setValue(slist[1].toInt());
+        ui->progress_complete->setText(slist[1] + "% @ " + slist[2]);
         break;
     case 1:
-        ui->progress_hard_only->setText("@ " + slist[2]);
-        ui->progress_hard_only_bar->setValue(slist[1].toInt());
+        ui->progress_hard_only->setText(slist[1] + "% @ " + slist[2]);
         break;
     case 2:
-        ui->progress_unconstrained->setText("@ " + slist[2]);
-        ui->progress_unconstrained_bar->setValue(slist[1].toInt());
+        ui->progress_unconstrained->setText(slist[1] + "% @ " + slist[2]);
         break;
     default:
         // The entry must be in the map!
@@ -407,4 +400,5 @@ void MainWindow::iaccept(const QString &data)
     auto irow = instance_row_map[key];
     irow.state = 1;
     instance_row_map[key] = irow;
+    tableProgress(irow.data[1], irow.data[2], !irow.data[4].isEmpty());
 }

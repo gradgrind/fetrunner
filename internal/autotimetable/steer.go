@@ -499,6 +499,7 @@ func (attdata *AutoTtData) new_instance(
 		ConstraintEnabled: enabled,
 		ConstraintType:    constraint_type,
 		Constraints:       constraint_indexes,
+		Hard:              attdata.phase == 1,
 
 		// Run time
 		//BackEndData     any

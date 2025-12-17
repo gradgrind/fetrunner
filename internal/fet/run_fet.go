@@ -125,11 +125,16 @@ func (fbe *FetBackend) RunBackend(
 		attdata.Parameters.FETPATH, params...,
 	)
 
-	bdata.Logger.Result(".START", fmt.Sprintf("%d.%s.%d.%d",
+	hard := ""
+	if instance.Hard {
+		hard = "!"
+	}
+	bdata.Logger.Result(".START", fmt.Sprintf("%d.%s.%d.%d.%s",
 		instance.Index,
 		instance.ConstraintType,
 		len(instance.Constraints),
-		instance.Timeout))
+		instance.Timeout,
+		hard))
 
 	go run(fet_data, runCmd)
 	return fet_data
@@ -202,6 +207,7 @@ func (data *FetTtData) DoTick(
 	attdata *autotimetable.AutoTtData,
 	instance *autotimetable.TtInstance,
 ) {
+	logger := bdata.Logger
 	if data.reader == nil {
 		// Await the existence of the log file
 		file, err := os.Open(data.logfile)
@@ -213,6 +219,7 @@ func (data *FetTtData) DoTick(
 	}
 	{
 		var l [][]byte
+		progressed := false
 		for {
 			line, err := data.reader.ReadString('\n')
 			if err == nil {
@@ -228,11 +235,12 @@ func (data *FetTtData) DoTick(
 							percent := (count * 100) / int(attdata.NActivities)
 							if percent > instance.Progress {
 								instance.Progress = percent
-								bdata.Logger.Result(".PROGRESS",
+								logger.Result(".PROGRESS",
 									fmt.Sprintf("%d.%d.%d",
 										instance.Index,
 										instance.Progress,
 										instance.Ticks))
+								progressed = true
 							}
 						}
 					}
@@ -243,7 +251,7 @@ func (data *FetTtData) DoTick(
 				if !data.fet_timeout && instance.LastTime < 2 &&
 					instance.Ticks-instance.LastTime > 10 {
 					data.fet_timeout = true
-					bdata.Logger.Info("FET_Stuck %d @ %d, %d%%",
+					logger.Info("FET_Stuck %d @ %d, %d%%",
 						instance.Index, instance.Ticks, instance.Progress)
 					data.Abort()
 				}
@@ -251,6 +259,12 @@ func (data *FetTtData) DoTick(
 				break
 			}
 			panic(err)
+		}
+		if !progressed {
+			logger.Result(".NOPROGRESS",
+				fmt.Sprintf("%d.%d",
+					instance.Index,
+					instance.Ticks))
 		}
 	}
 exit:
@@ -264,11 +278,11 @@ exit:
 			instance.RunState = 2
 		}
 		//if data.finished < 0 {
-		//	bdata.Logger.Info("FET_Failed: [%d] %s",
+		//	logger.Info("FET_Failed: [%d] %s",
 		//		instance.Index, data.errormsg)
 		//}
 
-		bdata.Logger.Result(".END", fmt.Sprintf("%d.%d",
+		logger.Result(".END", fmt.Sprintf("%d.%d",
 			instance.Index, instance.Progress))
 
 		efile, err := os.ReadFile(filepath.Join(data.odir, "logs", "errors.txt"))

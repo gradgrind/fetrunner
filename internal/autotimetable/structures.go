@@ -69,7 +69,6 @@ type AutoTtData struct {
 	hard_instance   *TtInstance
 	phase           int // 0: initial phase, 1: adding hard constraints,
 	// 2: adding soft constraints, 3: finished
-	//TODO-- cycle int // processing cycle number (in `mainphase`)
 	// The (successful) instance on which current trials are based:
 	current_instance *TtInstance
 	// List of instances adding a constraint type:
@@ -87,6 +86,7 @@ type TtInstance struct {
 	ConstraintEnabled []bool // ConstraintIndex -> enabled
 	// Constraints to be added in this instance:
 	ConstraintType ConstraintType
+	Hard           bool // whether the constraints to be added are "hard"
 	Constraints    []ConstraintIndex
 
 	// Run time ...
