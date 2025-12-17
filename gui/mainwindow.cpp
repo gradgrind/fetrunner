@@ -189,10 +189,13 @@ void MainWindow::reset_display()
     ui->instance_table->setRowCount(0);
     ui->elapsed_time->setText("0");
     ui->progress_complete->clear();
-    ui->progress_hard->setValue(0);
     ui->progress_hard_only->clear();
+    ui->progress_hard->setValue(0);
+    ui->progress_hard->setEnabled(false);
+    ui->label_hard->setEnabled(false);
     ui->progress_soft->setValue(0);
-    ui->progress_soft->setEnabled(0);
+    ui->progress_soft->setEnabled(false);
+    ui->label_soft->setEnabled(false);
     ui->progress_unconstrained->clear();
     hard_count.clear();
     soft_count.clear();
@@ -334,12 +337,7 @@ void MainWindow::iprogress(const QString &data)
         auto irow = instance_row_map.value(key);
         int row;
         if (irow.item == nullptr) {
-            auto text0 = irow.data[1]; // constraint type
-            // FET starts all its constraints with "Constraint",
-            // which doesn't really need to be displayed ...
-            if (text0.startsWith("Constraint"))
-                text0.remove(0, 10);
-            auto item0 = new QTableWidgetItem(text0);
+            auto item0 = new QTableWidgetItem(irow.data[1]); // constraint type
             auto item1 = new QTableWidgetItem(irow.data[2]); // number of constraints
             item1->setTextAlignment(Qt::AlignCenter);
             auto item2 = new QTableWidgetItem(irow.data[3]); // timeout
@@ -375,7 +373,18 @@ void MainWindow::istart(const QString &data)
     auto key = slist[0].toInt();
     if (key < INSTANCE0)
         return;
+    slist[1] = constraint_name(slist[1]);
     instance_row_map[key] = {slist, nullptr, 0};
+}
+
+QString MainWindow::constraint_name(QString name)
+{
+    // FET starts all its constraints with "Constraint",
+    // which doesn't really need to be displayed ...
+    if (name.startsWith("Constraint")) {
+        name.remove(0, 10);
+    }
+    return name;
 }
 
 void MainWindow::iend(const QString &data)
@@ -395,10 +404,19 @@ void MainWindow::iaccept(const QString &data)
 {
     auto slist = data.split(u'.');
     auto key = slist[0].toInt();
-    if (key < INSTANCE0)
+    switch (key) {
+    case 0: // "full" completed
+        tableProgressAll();
+        break;
+    case 1: // "all hard" completed
+        tableProgressHard();
+        break;
+    case 2: // "unconstrained" completed
         return;
-    auto irow = instance_row_map[key];
-    irow.state = 1;
-    instance_row_map[key] = irow;
-    tableProgress(irow.data[1], irow.data[2], !irow.data[4].isEmpty());
+    default:
+        auto irow = instance_row_map[key];
+        irow.state = 1;
+        instance_row_map[key] = irow;
+        tableProgress(irow.data[1], irow.data[2], !irow.data[4].isEmpty());
+    }
 }

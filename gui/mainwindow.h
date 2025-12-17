@@ -53,6 +53,9 @@ private:
     void setup_progress_table(); // when starting ttgen run
     void setup_instance_table(); // when starting ttgen run
     void tableProgress(QString constraint, QString number, bool hard);
+    void tableProgressAll();
+    void tableProgressHard();
+    QString constraint_name(QString name);
 
     bool quit_requested{false};
     bool thread_running{false};

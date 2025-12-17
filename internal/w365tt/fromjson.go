@@ -21,7 +21,6 @@ func ReadJSON(logger *base.Logger, jsonpath string) *W365TopLevel {
     defer jsonFile.Close()
     // read the opened XML file as a byte array.
     byteValue, _ := io.ReadAll(jsonFile)
-    logger.Info("*+ Reading: %s", jsonpath)
     v := W365TopLevel{}
     err = json.Unmarshal(byteValue, &v)
     if err != nil {

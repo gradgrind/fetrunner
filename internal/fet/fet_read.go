@@ -16,7 +16,6 @@ import (
 
 func FetRead(bdata *base.BaseData, fetpath string) *TtRunDataFet {
     logger := bdata.Logger
-    logger.Info("SOURCE: %s", fetpath)
     doc := etree.NewDocument()
     if err := doc.ReadFromFile(fetpath); err != nil {
         logger.Error("%s", err)

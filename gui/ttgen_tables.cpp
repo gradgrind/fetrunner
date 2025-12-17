@@ -1,7 +1,6 @@
 #include <QTimer>
 #include "backend.h"
 #include "mainwindow.h"
-#include "progress_delegate.h"
 #include "ui_mainwindow.h"
 
 void MainWindow::init_ttgen_tables()
@@ -41,8 +40,9 @@ void MainWindow::setup_progress_table()
     soft_constraint_map.clear();
     auto row = ui->progress_table->rowCount();
     for (const auto &kv : backend->op("HARD_CONSTRAINTS")) {
+        auto cname = constraint_name(kv.key);
         // add table line
-        auto item0 = new QTableWidgetItem("[!] " + kv.key); // constraint type
+        auto item0 = new QTableWidgetItem("[!] " + cname);  // constraint type
         auto item1 = new QTableWidgetItem("/ " + kv.val);   // number of constraints
         auto item2 = new QTableWidgetItem("0");             // accepted constraints
         auto item3 = new QTableWidgetItem("@ 0");           // number of constraints
@@ -52,29 +52,38 @@ void MainWindow::setup_progress_table()
         ui->progress_table->setItem(row, 2, item3);
         ui->progress_table->setItem(row, 3, item0);
 
-        hard_constraint_map[kv.key] = {
+        hard_constraint_map[cname] = {
             row++,          // index
             0,              // satisfied constraints
             kv.val.toInt(), // number of constraints
         };
     }
+    if (hard_constraint_map.size() != 0) {
+        ui->label_hard->setEnabled(true);
+        ui->progress_hard->setEnabled(true);
+    }
     for (const auto &kv : backend->op("SOFT_CONSTRAINTS")) {
+        auto cname = constraint_name(kv.key);
         // add table line
-        auto item0 = new QTableWidgetItem("[!] " + kv.key); // constraint type
-        auto item1 = new QTableWidgetItem("/ " + kv.val);   // number of constraints
-        auto item2 = new QTableWidgetItem("0");             // accepted constraints
-        auto item3 = new QTableWidgetItem("@ 0");           // number of constraints
+        auto item0 = new QTableWidgetItem(cname);         // constraint type
+        auto item1 = new QTableWidgetItem("/ " + kv.val); // number of constraints
+        auto item2 = new QTableWidgetItem("0");           // accepted constraints
+        auto item3 = new QTableWidgetItem("@ 0");         // number of constraints
         ui->progress_table->insertRow(row);
         ui->progress_table->setItem(row, 0, item2);
         ui->progress_table->setItem(row, 1, item1);
         ui->progress_table->setItem(row, 2, item3);
         ui->progress_table->setItem(row, 3, item0);
 
-        soft_constraint_map[kv.key] = {
+        soft_constraint_map[cname] = {
             row++,          // index
             0,              // satisfied constraints
             kv.val.toInt(), // number of constraints
         };
+    }
+    if (soft_constraint_map.size() != 0) {
+        ui->label_soft->setEnabled(true);
+        ui->progress_soft->setEnabled(true);
     }
 }
 
@@ -120,16 +129,45 @@ void MainWindow::nconstraints(const QString &data)
 void MainWindow::tableProgress(QString constraint, QString number, bool hard)
 {
     if (hard) {
-        auto cdata = hard_constraint_map[constraint];
+        if (!hard_constraint_map.contains(constraint))
+            qFatal() << "hard_constraint_map, no key" << constraint;
+        auto cdata = hard_constraint_map.value(constraint);
         cdata.progress += number.toInt();
-        ui->progress_table->item(cdata.index, 0)->setText(QString::number(cdata.progress));
+        if (cdata.progress == cdata.total)
+            ui->progress_table->item(cdata.index, 0)->setText("+++");
+        else
+            ui->progress_table->item(cdata.index, 0)->setText(QString::number(cdata.progress));
         ui->progress_table->item(cdata.index, 2)->setText("@ " + timeTicks);
         hard_constraint_map[constraint] = cdata;
     } else {
-        auto cdata = soft_constraint_map[constraint];
+        if (!soft_constraint_map.contains(constraint))
+            qFatal() << "soft_constraint_map, no key" << constraint;
+        auto cdata = soft_constraint_map.value(constraint);
         cdata.progress += number.toInt();
-        ui->progress_table->item(cdata.index, 0)->setText(QString::number(cdata.progress));
+        if (cdata.progress == cdata.total)
+            ui->progress_table->item(cdata.index, 0)->setText("+++");
+        else
+            ui->progress_table->item(cdata.index, 0)->setText(QString::number(cdata.progress));
         ui->progress_table->item(cdata.index, 2)->setText("@ " + timeTicks);
         soft_constraint_map[constraint] = cdata;
+    }
+}
+
+void MainWindow::tableProgressAll()
+{
+    tableProgressHard();
+    for (auto it = soft_constraint_map.begin(); it != soft_constraint_map.end(); ++it) {
+        progress_line &cdata = it.value();
+        if (cdata.progress != cdata.total)
+            ui->progress_table->item(cdata.index, 0)->setText("+++");
+    }
+}
+
+void MainWindow::tableProgressHard()
+{
+    for (auto it = hard_constraint_map.begin(); it != hard_constraint_map.end(); ++it) {
+        progress_line &cdata = it.value();
+        if (cdata.progress != cdata.total)
+            ui->progress_table->item(cdata.index, 0)->setText("+++");
     }
 }

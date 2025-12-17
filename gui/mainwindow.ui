@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1112</width>
+    <width>1222</width>
     <height>790</height>
    </rect>
   </property>
@@ -317,14 +317,14 @@
            </property>
            <layout class="QFormLayout" name="formLayout_2">
             <item row="1" column="0">
-             <widget class="QLabel" name="label_2">
+             <widget class="QLabel" name="label_hard">
               <property name="text">
                <string>Hard</string>
               </property>
              </widget>
             </item>
             <item row="2" column="0">
-             <widget class="QLabel" name="label_4">
+             <widget class="QLabel" name="label_soft">
               <property name="text">
                <string>Soft</string>
               </property>
