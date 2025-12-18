@@ -14,13 +14,14 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     backend.cpp \
-    threadrun.cpp
+    threadrun.cpp \
+    ttgen_tables.cpp
+
 
 HEADERS += \
     mainwindow.h \
     backend.h \
-    threadrun.h \
-    progress_delegate.h
+    threadrun.h
 
 FORMS += \
     mainwindow.ui
@@ -37,6 +38,6 @@ INCLUDEPATH += $$PWD/../libfetrunner
 DEPENDPATH += $$PWD/../libfetrunner
 
 unix {
-	target.path = /usr/bin
-	INSTALLS += target
+    target.path = /usr/bin
+    INSTALLS += target
 }

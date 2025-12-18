@@ -198,6 +198,7 @@ void MainWindow::reset_display()
     ui->progress_unconstrained->clear();
     hard_count.clear();
     soft_count.clear();
+    timeTicks.clear();
 }
 
 void MainWindow::open_file()

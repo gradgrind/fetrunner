@@ -8,7 +8,7 @@ void MainWindow::init_ttgen_tables()
     //ui->instance_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     //ui->instance_table->resizeColumnsToContents();
     QFontMetrics fm(ui->instance_table->font());
-    int w = 0;
+    //int w = 0;
     for (auto col = 0; col < 4; ++col) {
         auto headerItem = ui->instance_table->horizontalHeaderItem(col);
         auto text = headerItem->text();
@@ -18,7 +18,7 @@ void MainWindow::init_ttgen_tables()
             if (col_width < wmin)
                 col_width = wmin;
         }
-        w += col_width;
+        //w += col_width;
         ui->instance_table->setColumnWidth(col, col_width);
     }
 
