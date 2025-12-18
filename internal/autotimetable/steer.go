@@ -178,6 +178,7 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 	// instances should be stopped and the "best" solution at this point
 	// chosen.
 	enabled := make([]bool, attdata.NConstraints)
+	attdata.get_nconstraints(bdata, enabled) // count constraints
 	for i := range attdata.NConstraints {
 		enabled[i] = true
 	}
@@ -205,19 +206,6 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 		Timeout:           0,
 		ConstraintEnabled: enabled,
 	}
-	// Add to run queue
-	runqueue.add(attdata.hard_instance)
-
-	// Unconstrained instance
-	enabled = make([]bool, attdata.NConstraints)
-	attdata.instanceCounter++
-	attdata.null_instance = &TtInstance{
-		Index:             attdata.instanceCounter,
-		ConstraintType:    "_UNCONSTRAINED",
-		Timeout:           attdata.cycle_timeout,
-		ConstraintEnabled: enabled,
-	}
-	attdata.get_nconstraints(bdata, attdata.null_instance) // count constraints
 
 	if attdata.Parameters.SKIP_HARD {
 
@@ -226,6 +214,18 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 		attdata.phase = 1
 
 	} else {
+		// Add "_HARD_ONLY" to run queue
+		runqueue.add(attdata.hard_instance)
+
+		// Unconstrained instance
+		enabled = make([]bool, attdata.NConstraints)
+		attdata.instanceCounter++
+		attdata.null_instance = &TtInstance{
+			Index:             attdata.instanceCounter,
+			ConstraintType:    "_UNCONSTRAINED",
+			Timeout:           attdata.cycle_timeout,
+			ConstraintEnabled: enabled,
+		}
 		// Add to run queue
 		runqueue.add(attdata.null_instance)
 
@@ -360,7 +360,8 @@ tickloop:
 				if attdata.hard_instance.RunState == 1 {
 					// First successful instance.
 					attdata.current_instance = attdata.hard_instance
-					attdata.get_nconstraints(bdata, attdata.current_instance)
+					attdata.get_nconstraints(
+						bdata, attdata.current_instance.ConstraintEnabled)
 				}
 			} else if attdata.hard_instance.RunState < 0 {
 				attdata.abort_instance(attdata.hard_instance)
@@ -370,7 +371,8 @@ tickloop:
 				attdata.current_instance == nil {
 				// First successful instance.
 				attdata.current_instance = attdata.hard_instance
-				attdata.get_nconstraints(bdata, attdata.current_instance)
+				attdata.get_nconstraints(
+					bdata, attdata.current_instance.ConstraintEnabled)
 			}
 		}
 

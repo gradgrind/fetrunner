@@ -36,12 +36,14 @@ func (rq *RunQueue) phase0() int {
 /*
 	Main processing phase(s), accumulating constraints.
 
-In this phase generator instances are run which try to add the (as yet not
+`mainphase()` covers phases 1 (adding hard constraints) and 2 (adding soft
+constraints). Generator instances are run which try to add the (as yet not
 included) constraints of a single type, with a timeout. A certain number of
 these can be run in parallel. If one completes successfully, it is removed
-from the constraint list, all the other instances are stopped and the
-successful instance is used as the base for a new cycle. Depending on the
-time this instance took to complete, the timeout may be increased.
+from the constraint list, all the other instances are stopped (including any
+others that might have completed successfully) and this successful instance
+is used as the base for a new cycle. Depending on the time this instance
+took to complete, the timeout may be increased.
 
 There is some flexibility around the timeouts. If an instance seems to be
 progressing too slowly, it can be halted immediately. On the other hand,
@@ -58,10 +60,11 @@ When the constraint list is empty, the cycle ends. For the next cycle, the
 as yet unincluded constraints are collected again and the timeout is
 adjusted if necessary.
 
-Should it come to pass that all the constraints have been added successfully
-(unlikely, because it is more likely that the overall timeout will have been
-reached or the hard-only or full instance will have completed already), return
-`true`, indicating that there are no more constraints to add.
+Should it come to pass that all the constraints (hard and soft) have been
+added successfully (unlikely, because it is more likely that the overall
+timeout will have been reached or the hard-only or full instance will have
+completed already), return `true`, indicating that there are no more
+constraints to add. Otherwise (the normal case) return `false`.
 */
 func (rq *RunQueue) mainphase() bool {
 	attdata := rq.AutoTtData

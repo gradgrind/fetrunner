@@ -54,7 +54,7 @@ func (attdata *AutoTtData) new_current_instance(
 		Placements:       alist,
 	}
 
-	attdata.get_nconstraints(bdata, instance)
+	attdata.get_nconstraints(bdata, instance.ConstraintEnabled)
 
 	if attdata.Parameters.DEBUG {
 		//b, err := json.Marshal(LastResult)
@@ -77,7 +77,7 @@ func (attdata *AutoTtData) new_current_instance(
 }
 
 func (attdata *AutoTtData) get_nconstraints(
-	bdata *base.BaseData, instance *TtInstance,
+	bdata *base.BaseData, enabled []bool,
 ) {
 	// The discarded hard constraints ...
 	hnall := 0 // count all hard constraints
@@ -87,7 +87,7 @@ func (attdata *AutoTtData) get_nconstraints(
 	for ctype, clist := range attdata.HardConstraintMap {
 		ulist := []ConstraintIndex{}
 		for _, i := range clist {
-			if instance.ConstraintEnabled[i] {
+			if enabled[i] {
 				hn++
 			} else {
 				ulist = append(ulist, i)
@@ -104,7 +104,7 @@ func (attdata *AutoTtData) get_nconstraints(
 	for ctype, clist := range attdata.SoftConstraintMap {
 		ulist := []ConstraintIndex{}
 		for _, i := range clist {
-			if instance.ConstraintEnabled[i] {
+			if enabled[i] {
 				sn++
 			} else {
 				ulist = append(ulist, i)
