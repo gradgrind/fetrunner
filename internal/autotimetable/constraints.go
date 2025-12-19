@@ -1,7 +1,7 @@
 package autotimetable
 
 // Collect the individual constraints by type in the order given by the
-// `ConstraintTypes` list, inclkuding only those which are disabled.
+// `ConstraintTypes` list, including only those which are disabled.
 func (attdata *AutoTtData) get_basic_constraints(
 	instance0 *TtInstance, soft bool,
 ) ([]*TtInstance, int) {

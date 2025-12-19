@@ -193,6 +193,9 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 
 	// Instance without soft constraints (if any, otherwise same as full
 	// instance) – enable only the hard constraints.
+	// This is needed even if SKIP_HARD is set, because it is used as
+	// initial base instance for phase 2. However, with SKIP_HARD set it
+	// will not be run.
 	enabled = make([]bool, attdata.NConstraints)
 	for _, ilist := range attdata.HardConstraintMap {
 		for _, i := range ilist {
@@ -207,14 +210,13 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 		ConstraintEnabled: enabled,
 	}
 
+	attdata.cycle_timeout = 0
+
 	if attdata.Parameters.SKIP_HARD {
-
-		//TODO: Is there any way of starting the constraint instances before
-		// hard_instance completes?
-		attdata.phase = 1
-
+		// Start in phase 1.
+		runqueue.enter_phase(1)
 	} else {
-		// Add "_HARD_ONLY" to run queue
+		// Add "_HARD_ONLY" instance to run queue
 		runqueue.add(attdata.hard_instance)
 
 		// Unconstrained instance
@@ -229,15 +231,9 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 		// Add to run queue
 		runqueue.add(attdata.null_instance)
 
-		// Start phase 0
-		logger.Info("Phase 0 ...")
-		attdata.phase = 0
+		// Start in phase 0.
+		runqueue.enter_phase(0)
 	}
-
-	attdata.cycle_timeout = 0
-	full_progress := 0 // current percentage
-	hard_progress := 0 // current percentage
-	null_progress := 0
 
 	// *** Ticker loop ***
 	ticker := time.NewTicker(time.Second)
@@ -314,112 +310,55 @@ tickloop:
 		attdata.Ticks++
 		logger.Tick(attdata.Ticks)
 
+		// Deal with "tick" updates to the `RunState` of the active instances
+		// and those in the run-queue.
 		runqueue.update_instances()
 
+		// This handling of the "full" instance is independent of the phase.
 		if attdata.full_instance.RunState == 1 {
 			// Cancel all other runs and return this instance as result.
 			attdata.current_instance = attdata.full_instance
-			logger.Info("+A+ All constraints OK +++")
+			logger.Result(".ALL_OK", "All constraints OK")
 			attdata.new_current_instance(bdata, attdata.current_instance)
 			break
-		} else {
-			p := attdata.full_instance.Progress
-			if p > full_progress {
-				full_progress = p
-			}
-		}
-
-		if attdata.phase != 2 {
-			if attdata.hard_instance.RunState == 1 {
-				// Set as current and start processing soft constraints.
-				attdata.current_instance = attdata.hard_instance
-				logger.Info(" +H+ All hard constraints OK +++")
-				attdata.new_current_instance(bdata, attdata.current_instance)
-				// Cancel everything except full instance.
-				if attdata.null_instance.RunState < 0 {
-					attdata.abort_instance(attdata.null_instance)
-				}
-				for _, instance := range attdata.constraint_list {
-					if instance.RunState < 0 {
-						attdata.abort_instance(instance)
-					} else if instance.RunState == 0 {
-						// Indicate that a queued instance is not to be started
-						instance.RunState = 3
-					}
-				}
-				attdata.constraint_list = nil
-				attdata.phase = 1
-			} else {
-				p := attdata.hard_instance.Progress
-				if p > hard_progress {
-					hard_progress = p
-				}
-			}
-		} else if attdata.Parameters.SKIP_HARD {
-			if attdata.current_instance == nil {
-				if attdata.hard_instance.RunState == 1 {
-					// First successful instance.
-					attdata.current_instance = attdata.hard_instance
-					attdata.get_nconstraints(
-						bdata, attdata.current_instance.ConstraintEnabled)
-				}
-			} else if attdata.hard_instance.RunState < 0 {
-				attdata.abort_instance(attdata.hard_instance)
-			}
-
-			if attdata.hard_instance.RunState == 1 &&
-				attdata.current_instance == nil {
-				// First successful instance.
-				attdata.current_instance = attdata.hard_instance
-				attdata.get_nconstraints(
-					bdata, attdata.current_instance.ConstraintEnabled)
-			}
 		}
 
 		if attdata.Ticks == attdata.Parameters.TIMEOUT {
-			logger.Info(
-				"!!! TIMEOUT !!!\n + %s: %d + %s: %d",
-				attdata.full_instance.ConstraintType,
-				full_progress,
-				attdata.hard_instance.ConstraintType,
-				hard_progress,
-			)
+			logger.Info("!!! TIMEOUT !!!")
 			break
 		}
 
-		if attdata.phase == 0 {
-			// During phase 0 only `full_instance`, `hard_instance` and
-			// `null_instance` are running.
-			switch runqueue.phase0() {
+		for {
+			switch attdata.phase {
 			case 0:
-				p := attdata.null_instance.Progress
-				if p > null_progress {
-					null_progress = p
+				if runqueue.phase0() {
+					continue
 				}
-				continue
-
 			case 1:
-
-			case -1:
-				logger.Info("Couldn't process input data!")
-				return
-
-			default:
-				panic("attdata.phase0() -> invalid return value")
+				if runqueue.phase1() {
+					continue
+				}
+			case 2:
+				if runqueue.phase2() {
+					continue
+				}
+			case 3:
+				break tickloop
 			}
-		}
-
-		if runqueue.mainphase() {
 			break
 		}
+
 	} // tickloop: end
-	logger.Info("Phase 3 ... finalizing ...")
+	result := attdata.current_instance
+	if result == nil {
+		return // failed
+	}
+	logger.Info("... finalizing ...")
 
 	hnn := 0
 	hnall := 0
 	snn := 0
 	snall := 0
-	result := attdata.current_instance
 	type constraintinfo struct {
 		c string
 		n int

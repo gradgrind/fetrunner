@@ -31,10 +31,11 @@ func (rq *RunQueue) add(instance *TtInstance) {
 
 // `update_instances` is called – in the tick-loop – just after receiving a
 // tick.
-// The `RunState` field is initially 0, which indicates "not started" (it may
-// or may not have started!). This field is set to a "finished" value, 1
-// (successful, 100%) or 2 (not succussful), in the back-end tick handler
-// `DoTick()`, called at the beginning of this method, and thus in the
+// The `RunState` field is initially 0, which indicates "not started".
+// Unstarted instances in the queue are started in `update_queue`, which
+// also sets `RunState` to -1. `RunState` is set to a "finished" value, 1
+// (successful, 100%) or 2 (not successful), in the back-end tick handler
+// `DoTick()`, called at the beginning of this method, and thus also in the
 // tick-loop thread.
 func (rq *RunQueue) update_instances() {
 	attdata := rq.AutoTtData
