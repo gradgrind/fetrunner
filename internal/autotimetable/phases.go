@@ -25,6 +25,10 @@ func (rq *RunQueue) enter_phase(p int) {
 			attdata.phase = 2 // skip to phase 2
 			rq.BData.Logger.Result(".PHASE", "2")
 		} else {
+			// Queue instances for running
+			for _, bc := range attdata.constraint_list {
+				rq.add(bc)
+			}
 			return
 		}
 	} else if p != 2 {
@@ -42,6 +46,12 @@ func (rq *RunQueue) enter_phase(p int) {
 		}
 		attdata.phase = 3 // skip to phase 3
 		rq.BData.Logger.Result(".PHASE", "3")
+	} else {
+		// Queue instances for running
+		for _, bc := range attdata.constraint_list {
+			rq.add(bc)
+		}
+		return
 	}
 }
 
@@ -93,7 +103,10 @@ func (rq *RunQueue) phase1() bool {
 		rq.enter_phase(2)
 		return true
 	}
-	rq.mainphase()
+	if rq.mainphase() {
+		rq.enter_phase(2)
+		return true
+	}
 	return false
 }
 
@@ -101,14 +114,11 @@ func (rq *RunQueue) phase1() bool {
 // adding individual soft constraint types are running. Return `true` if
 // the phase is changed, otherwise `false`.
 func (rq *RunQueue) phase2() bool {
-	attdata := rq.AutoTtData
-
-	rq.mainphase()
-
-	switch attdata.null_instance.RunState {
+	if rq.mainphase() {
+		rq.enter_phase(3)
+		return true
 	}
-	// TODO
-	return 1
+	return false
 }
 
 /*
@@ -149,11 +159,16 @@ func (rq *RunQueue) mainphase() bool {
 	logger := rq.BData.Logger
 	next_timeout := 0 // non-zero => "restart with new base"
 	base_instance := attdata.current_instance
+	old_ticks := 0
 	if base_instance == nil {
 		// Possible only with SKIP_HARD option, in which case the instance
 		// won't be running, let alone finished!
 		base_instance = attdata.hard_instance
+	} else if base_instance.RunState == 1 {
+		old_ticks = base_instance.Ticks
 	}
+	attdata.cycle_timeout = (max(attdata.cycle_timeout,
+		old_ticks) * attdata.Parameters.NEW_CYCLE_TIMEOUT_FACTOR) / 10
 
 	// See if an instance has completed successfully, setting `next_timeout`
 	// to a non-zero value if one has.
@@ -176,61 +191,8 @@ func (rq *RunQueue) mainphase() bool {
 	}
 
 	if len(attdata.constraint_list) == 0 {
-		// ... all current constraint trials finished.
-
-		//TODO: delete all this stuff? ...
-
-		// Start trials of remaining constraints, hard then soft,
-		// forcing a longer timeout.
-		old_ticks := base_instance.Ticks
-		if base_instance.RunState != 1 {
-			old_ticks = 0
-		}
-		attdata.cycle_timeout = (max(attdata.cycle_timeout,
-			old_ticks) * attdata.Parameters.NEW_CYCLE_TIMEOUT_FACTOR) / 10
-		var n int
-	rpt:
-		switch attdata.phase {
-
-		case 0:
-			logger.Info("Phase 1 ...")
-			attdata.phase = 1
-			attdata.constraint_list, n = attdata.get_basic_constraints(
-				base_instance, false)
-			if n == 0 {
-				logger.Warning("--HARD: No hard constraints")
-				goto rpt
-			}
-
-		case 1:
-			if attdata.hard_instance.RunState == 1 {
-				logger.Info("Phase 2 ... <- %s",
-					attdata.hard_instance.ConstraintType)
-			} else {
-				logger.Info("Phase 2 ... <- (accumulated instance)")
-				// The hard-only instance is no longer needed.
-				if attdata.hard_instance.RunState < 0 {
-					attdata.abort_instance(attdata.hard_instance)
-				}
-			}
-			attdata.phase = 2
-			attdata.constraint_list, n = attdata.get_basic_constraints(
-				base_instance, true)
-			if n == 0 {
-				logger.Info("--SOFT: No soft constraints")
-				goto rpt
-			}
-
-		case 2:
-			return true // end of process
-
-		default:
-			panic(fmt.Sprintf("Bug, invalid phase: %d", attdata.phase))
-		}
-		// Queue instances for running
-		for _, bc := range attdata.constraint_list {
-			rq.add(bc)
-		}
+		// all current constraint trials finished.
+		return true
 	}
 
 	// Seek failed instances, which should be split.

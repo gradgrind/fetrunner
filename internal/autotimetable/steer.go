@@ -368,7 +368,7 @@ tickloop:
 	for c, clist := range attdata.HardConstraintMap {
 		n := 0
 		for _, cix := range clist {
-			if result != nil && result.ConstraintEnabled[cix] {
+			if result.ConstraintEnabled[cix] {
 				n++
 			}
 		}
@@ -383,7 +383,7 @@ tickloop:
 	for c, clist := range attdata.SoftConstraintMap {
 		n := 0
 		for _, cix := range clist {
-			if result != nil && result.ConstraintEnabled[cix] {
+			if result.ConstraintEnabled[cix] {
 				n++
 			}
 		}
