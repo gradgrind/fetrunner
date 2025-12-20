@@ -12,11 +12,21 @@ func (rq *RunQueue) enter_phase(p int) {
 	attdata := rq.AutoTtData
 	attdata.phase = p
 	rq.BData.Logger.Result(".PHASE", strconv.Itoa(p))
+
+	base_instance := attdata.current_instance
+	if base_instance == nil {
+		base_instance = attdata.hard_instance
+	} else {
+		attdata.cycle_timeout = (max(attdata.cycle_timeout,
+			attdata.current_instance.Ticks) *
+			attdata.Parameters.NEW_PHASE_TIMEOUT_FACTOR) / 10
+	}
+
 	if p == 1 {
 		// Initialize constraint list.
 		var n int
 		attdata.constraint_list, n = attdata.get_basic_constraints(
-			attdata.current_instance, false)
+			base_instance, false)
 		if n == 0 {
 			rq.BData.Logger.Warning("--HARD: No hard constraints")
 			if attdata.hard_instance.RunState < 0 {
@@ -38,7 +48,7 @@ func (rq *RunQueue) enter_phase(p int) {
 	// Initialize constraint list.
 	var n int
 	attdata.constraint_list, n = attdata.get_basic_constraints(
-		attdata.current_instance, true)
+		base_instance, true)
 	if n == 0 {
 		rq.BData.Logger.Warning("--SOFT: No soft constraints")
 		if attdata.full_instance.RunState < 0 {
@@ -159,16 +169,11 @@ func (rq *RunQueue) mainphase() bool {
 	logger := rq.BData.Logger
 	next_timeout := 0 // non-zero => "restart with new base"
 	base_instance := attdata.current_instance
-	old_ticks := 0
 	if base_instance == nil {
 		// Possible only with SKIP_HARD option, in which case the instance
 		// won't be running, let alone finished!
 		base_instance = attdata.hard_instance
-	} else if base_instance.RunState == 1 {
-		old_ticks = base_instance.Ticks
 	}
-	attdata.cycle_timeout = (max(attdata.cycle_timeout,
-		old_ticks) * attdata.Parameters.NEW_CYCLE_TIMEOUT_FACTOR) / 10
 
 	// See if an instance has completed successfully, setting `next_timeout`
 	// to a non-zero value if one has.

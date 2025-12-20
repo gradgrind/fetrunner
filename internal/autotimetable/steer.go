@@ -30,7 +30,7 @@ func DefaultParameters() *Parameters {
 		MAXPROCESSES:             MaxProcesses(0),
 		TIMEOUT:                  300, // seconds
 		NEW_BASE_TIMEOUT_FACTOR:  12,  // => 1.2
-		NEW_CYCLE_TIMEOUT_FACTOR: 15,  // => 1.5
+		NEW_PHASE_TIMEOUT_FACTOR: 15,  // => 1.5
 		LAST_TIME_0:              5,
 		LAST_TIME_1:              50,
 		DEBUG:                    false,
@@ -213,8 +213,8 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 	attdata.cycle_timeout = 0
 
 	if attdata.Parameters.SKIP_HARD {
-		// Start in phase 1.
-		runqueue.enter_phase(1)
+		// Start in phase 2.
+		runqueue.enter_phase(2)
 	} else {
 		// Add "_HARD_ONLY" instance to run queue
 		runqueue.add(attdata.hard_instance)
@@ -293,25 +293,24 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 	}()
 
 tickloop:
-	// Start queued instances if there are free processors.
 	for {
+		// Remove completed and aborted instances, start queued instances if
+		// there are free processors.
 		if runqueue.update_queue() == 0 {
 			logger.Info("Run-queue empty")
 		}
 
-		<-ticker.C
+		<-ticker.C // wait for "tick"
 
 		if bdata.StopFlag {
 			logger.Info("!!! INTERRUPTED !!!")
 			break tickloop
-
 		}
 
 		attdata.Ticks++
 		logger.Tick(attdata.Ticks)
 
-		// Deal with "tick" updates to the `RunState` of the active instances
-		// and those in the run-queue.
+		// Deal with "tick" updates to the `RunState` of the active instances.
 		runqueue.update_instances()
 
 		// This handling of the "full" instance is independent of the phase.
