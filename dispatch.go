@@ -128,12 +128,16 @@ func init() {
 // Check path to `fet-cl` and get FET version.
 func get_fet(dsp *Dispatcher, op *DispatchOp) {
 	logger := dsp.BaseData.Logger
-	if CheckArgs(logger, op, 0) {
-		fetpath := dsp.TtParameters.FETPATH
+	if CheckArgs(logger, op, 1) {
+		fetpath := op.Data[0]
+		if fetpath == "-" {
+			fetpath = autotimetable.FET_CL
+		}
+		dsp.TtParameters.FETPATH = fetpath
 		cmd := exec.Command(fetpath, "--version")
 		out, err := cmd.CombinedOutput()
 		if err != nil {
-			logger.Error("FET_NOT_FOUND: %s", err)
+			logger.Warning("FET_NOT_FOUND: %s", err)
 			return
 		}
 		version := regexp.MustCompile(`(?m)version +([0-9.]+)`)
@@ -276,9 +280,6 @@ func ttparameter(dsp *Dispatcher, op *DispatchOp) {
 
 	case "SKIP_HARD":
 		dsp.TtParameters.SKIP_HARD = (val == "true")
-
-	case "FETPATH":
-		dsp.TtParameters.FETPATH = val
 
 	default:
 		logger.Error("UnknownParameter: %s", key)

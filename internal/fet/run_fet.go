@@ -260,7 +260,7 @@ func (data *FetTtData) DoTick(
 			}
 			panic(err)
 		}
-		if !progressed {
+		if !progressed && data.finished == 0 {
 			logger.Result(".NOPROGRESS",
 				fmt.Sprintf("%d.%d",
 					instance.Index,

@@ -213,11 +213,22 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 	attdata.cycle_timeout = 0
 
 	if attdata.Parameters.SKIP_HARD {
-		// Start in phase 2.
-		runqueue.enter_phase(2)
+		if len(attdata.SoftConstraintMap) == 0 {
+			logger.Error("--SOFT_SKIP_HARD: Skipping hard-constraint test," +
+				" but no soft constraints")
+			runqueue.enter_phase(3) // skip to end (phase 3)
+		} else {
+			// Start in phase 2.
+			runqueue.enter_phase(2)
+		}
+
 	} else {
-		// Add "_HARD_ONLY" instance to run queue
-		runqueue.add(attdata.hard_instance)
+		if len(attdata.HardConstraintMap) == 0 {
+			logger.Warning("--HARD: No hard constraints")
+		} else {
+			// Add "_HARD_ONLY" instance to run queue
+			runqueue.add(attdata.hard_instance)
+		}
 
 		// Unconstrained instance
 		enabled = make([]bool, attdata.NConstraints)

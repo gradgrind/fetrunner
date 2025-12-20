@@ -120,18 +120,46 @@ void MainWindow::init2()
     // Check FET
     auto fetpath0 = settings->value("fet/FetPath").toString();
     auto fetpath = fetpath0;
+    QString fetv;
     while (true) {
-        if (!fetpath.isEmpty()) {
-            backend->op("TT_PARAMETER", {"FETPATH", fetpath});
+        if (fetpath.isEmpty()) {
+            fetv = backend->op1("GET_FET", {"-"}, "FET_VERSION").val;
+        } else {
+            fetv = backend->op1("GET_FET", {fetpath}, "FET_VERSION").val;
         }
-        auto fetv = backend->op1("GET_FET", {}, "FET_VERSION").val;
         if (!fetv.isEmpty()) {
             if (fetpath != fetpath0) {
                 settings->setValue("fet/FetPath", fetpath);
             }
             break;
         }
-        // Handle FET executable not found
+
+        // Handle FET executable not found.
+
+        if (!fetpath.isEmpty()) {
+            // Try system PATH.
+            fetv = backend->op1("GET_FET", {"-"}, "FET_VERSION").val;
+            if (!fetv.isEmpty()) {
+                settings->remove("fet/FetPath");
+                break;
+            }
+        }
+
+        // Try in directory of fetrunner executable.
+        auto fdir = QDir(QCoreApplication::applicationDirPath());
+        auto fp1 = fdir.absoluteFilePath(FET_CL);
+        if (fetpath != fp1) {
+            fetv = backend->op1("GET_FET", {fp1}, "FET_VERSION").val;
+            if (!fetv.isEmpty()) {
+                settings->setValue("fet/FetPath", fp1);
+                break;
+            }
+        }
+
+        QMessageBox::warning( //
+            this,
+            tr("FET not found"),
+            tr("Seek 'fet-cl' executable in file system"));
         fetpath = QFileDialog::getOpenFileName( //
             this,
             tr("Seek FET executable"),
@@ -392,6 +420,5 @@ void MainWindow::iaccept(const QString &data)
         instance_row &irow = instance_row_map[key];
         irow.state = 1;
         tableProgress(irow);
-        //TODO: set "+++" in instance table
     }
 }

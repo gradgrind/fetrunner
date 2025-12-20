@@ -28,7 +28,6 @@ func (rq *RunQueue) enter_phase(p int) {
 		attdata.constraint_list, n = attdata.get_basic_constraints(
 			base_instance, false)
 		if n == 0 {
-			rq.BData.Logger.Warning("--HARD: No hard constraints")
 			if attdata.hard_instance.RunState < 0 {
 				attdata.abort_instance(attdata.hard_instance)
 			}

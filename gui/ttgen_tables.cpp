@@ -108,6 +108,10 @@ void MainWindow::nconstraints(const QString &data)
             ui->progress_hard->setValue((h.toInt() * 100) / hi);
         else
             ui->progress_hard->setValue(-1);
+    } else if (h != "0") {
+        // All hard constraints fulfilled, ensure that progress
+        // table reflects this.
+        tableProgressHard();
     }
     if (s != soft_count) {
         // If `sn` is zero ("0"), this will only be run once.
@@ -149,7 +153,7 @@ void MainWindow::tableProgress(instance_row &irow)
         cdata.progress += number.toInt();
         if (cdata.progress == cdata.total)
             ui->progress_table->item(cdata.index, 0)->setText("+++");
-        if (cdata.progress > cdata.total)
+        else if (cdata.progress > cdata.total)
             qFatal() << "cdata.progress > cdata.total" << "(soft)" << constraint;
         else
             ui->progress_table->item(cdata.index, 0)->setText(QString::number(cdata.progress));

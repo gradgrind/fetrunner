@@ -63,6 +63,7 @@ package main
 import (
 	"errors"
 	"fetrunner"
+	"fetrunner/internal/base"
 	"flag"
 	"fmt"
 	"log"
@@ -119,11 +120,24 @@ func main() {
 	do("TT_PARAMETER", "DEBUG", strconv.FormatBool(*debug))
 	do("TT_PARAMETER", "TESTING", strconv.FormatBool(*testing))
 	do("TT_PARAMETER", "SKIP_HARD", strconv.FormatBool(*skip_hard))
-	if *fetpath != "" {
-		do("TT_PARAMETER", "FETPATH", *fetpath)
-	}
 
-	if !do("GET_FET") {
+	// Get the path to `fet-cl`, and its version number.
+	if *fetpath == "" {
+		*fetpath = "-"
+	}
+	strs, ok := fetrunner.Do("GET_FET", *fetpath)
+	okv := false
+	for _, s := range strs {
+		logfile.WriteString(s + "\n")
+		if strings.Contains(s, "FET_VERSION=") {
+			okv = true
+		}
+	}
+	if !ok {
+		return
+	}
+	if !okv {
+		logfile.WriteString(base.ERROR.String() + " NO_FET\n")
 		return
 	}
 
