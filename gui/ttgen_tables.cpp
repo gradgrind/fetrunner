@@ -130,32 +130,45 @@ void MainWindow::nconstraints(const QString &data)
     }
 }
 
+void MainWindow::fail(QString msg)
+{
+    close();
+    qApp->quit();
+    QMessageBox::critical(this, "", msg);
+}
+
 void MainWindow::tableProgress(instance_row &irow)
 {
     auto constraint = irow.data[1];
     auto number = irow.data[2];
     if (!irow.data[4].isEmpty()) { // hard constraint
-        if (!hard_constraint_map.contains(constraint))
-            qFatal() << "hard_constraint_map, no key" << constraint;
+        if (!hard_constraint_map.contains(constraint)) {
+            fail("*BUG* hard_constraint_map, no key " + constraint);
+            return;
+        }
         progress_line &cdata = hard_constraint_map[constraint];
         cdata.progress += number.toInt();
         if (cdata.progress == cdata.total)
             ui->progress_table->item(cdata.index, 0)->setText("+++");
-        else if (cdata.progress > cdata.total)
-            qFatal() << "cdata.progress > cdata.total" << "(hard)" << constraint;
-        else
+        else if (cdata.progress > cdata.total) {
+            fail("*BUG* cdata.progress > cdata.total (hard) " + constraint);
+            return;
+        } else
             ui->progress_table->item(cdata.index, 0)->setText(QString::number(cdata.progress));
         ui->progress_table->item(cdata.index, 2)->setText("@ " + timeTicks);
     } else {
-        if (!soft_constraint_map.contains(constraint))
-            qFatal() << "soft_constraint_map, no key" << constraint;
+        if (!soft_constraint_map.contains(constraint)) {
+            fail("*BUG* soft_constraint_map, no key " + constraint);
+            return;
+        }
         progress_line &cdata = soft_constraint_map[constraint];
         cdata.progress += number.toInt();
         if (cdata.progress == cdata.total)
             ui->progress_table->item(cdata.index, 0)->setText("+++");
-        else if (cdata.progress > cdata.total)
-            qFatal() << "cdata.progress > cdata.total" << "(soft)" << constraint;
-        else
+        else if (cdata.progress > cdata.total) {
+            fail("*BUG* cdata.progress > cdata.total (soft) " + constraint);
+            return;
+        } else
             ui->progress_table->item(cdata.index, 0)->setText(QString::number(cdata.progress));
         ui->progress_table->item(cdata.index, 2)->setText("@ " + timeTicks);
     }

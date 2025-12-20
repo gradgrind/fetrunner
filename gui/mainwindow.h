@@ -47,6 +47,7 @@ private:
     QSettings *settings;
     Ui::MainWindow *ui;
     void closeEvent(QCloseEvent *e) override;
+    void fail(QString msg);
     void init2();
     void reset_display();
     void init_ttgen_tables();    // at start of program
