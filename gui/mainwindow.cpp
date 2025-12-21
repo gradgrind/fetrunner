@@ -46,7 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
         &MainWindow::error_popup);
     connect( //
         ui->tt_processes,
-        &QSpinBox::valueChanged,
+        QOverload<int>::of(&QSpinBox::valueChanged),
         this,
         &MainWindow::nprocesses);
     connect( //

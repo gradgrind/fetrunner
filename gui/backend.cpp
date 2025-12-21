@@ -51,8 +51,8 @@ QList<KeyVal> Backend::op(QString cmd, QStringList data)
                 if (n < 0) {
                     errors.append(QString{"BUG in backend result: "} + t0);
                 } else {
-                    key = val.first(n);
-                    val = val.sliced(n + 1);
+                    key = val.left(n);
+                    val = val.right(val.length() - n - 1);
                     results.append({key, val});
                     //qDebug() << "$$$" << key << "=" << val;
                 }
@@ -68,7 +68,9 @@ QList<KeyVal> Backend::op(QString cmd, QStringList data)
         }
         if (!errors.empty()) {
             if (errors.length() > 5) {
-                errors = errors.first(5);
+                auto elist = errors;
+                errors = QStringList();
+                errors << elist[0] << elist[1] << elist[2] << elist[3] << elist[4];
                 errors << "...";
             }
             emit error(errors.join("\n"));
