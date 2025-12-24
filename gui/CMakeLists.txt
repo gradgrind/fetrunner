@@ -1,15 +1,13 @@
 cmake_minimum_required(VERSION 3.19)
 project(fetrunner-gui LANGUAGES CXX)
 
-find_package(Qt6 6.2 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 find_package(Qt6 REQUIRED COMPONENTS LinguistTools)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
 
-#qt_standard_project_setup(I18N_TRANSLATED_LANGUAGES de) # or these:
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
+qt_standard_project_setup(I18N_TRANSLATED_LANGUAGES de_DE) # or these:
+#set(CMAKE_AUTOMOC ON)
+#set(CMAKE_AUTORCC ON)
+#set(CMAKE_AUTOUIC ON)
 
 add_library(libfetrunner STATIC IMPORTED) # STATIC or SHARED
 set_target_properties(libfetrunner PROPERTIES
@@ -28,10 +26,15 @@ qt_add_executable(fetrunner-gui
     #progress_delegate.h
     #progress_delegate.cpp
     ttgen_tables.cpp
-
 )
 
-qt_add_translations(fetrunner-gui MERGE_QT_TRANSLATIONS)
+qt_add_translations(fetrunner-gui #MERGE_QT_TRANSLATIONS
+    # Do not embed generated .qm files.
+    #QM_FILES_OUTPUT_VARIABLE qm_files
+)
+
+# Install generated .qm files.
+#install(FILES ${qm_files} DESTINATION translations)
 
 target_link_libraries(fetrunner-gui
     PRIVATE
@@ -39,8 +42,6 @@ target_link_libraries(fetrunner-gui
         Qt::Widgets
         libfetrunner
 )
-target_link_libraries(fetrunner-gui PRIVATE Qt6::Core)
-target_link_libraries(fetrunner-gui PRIVATE Qt6::Core)
 
 include(GNUInstallDirs)
 

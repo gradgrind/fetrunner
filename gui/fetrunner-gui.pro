@@ -27,8 +27,7 @@ FORMS += \
     mainwindow.ui
 
 TRANSLATIONS += \
-    fetrunner-gui_de.ts \
-    fetrunner-gui_en.ts
+    translations/fetrunner-gui_de.ts
 CONFIG += lrelease
 CONFIG += embed_translations
 
