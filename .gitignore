@@ -16,6 +16,7 @@ build/
 *.so
 *.dylib
 *.a
+*.qm
 
 # Test binary, built with `go test -c`
 *.test

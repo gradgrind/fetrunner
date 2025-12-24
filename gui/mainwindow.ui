@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>fetrunner</string>
+   <string notr="true">fetrunner</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
@@ -115,7 +115,7 @@
                </sizepolicy>
               </property>
               <property name="text">
-               <string>300</string>
+               <string notr="true">300</string>
               </property>
              </widget>
             </item>
@@ -255,7 +255,7 @@
                <string/>
               </property>
               <property name="text">
-               <string>000% @ 0000s</string>
+               <string notr="true">000% @ 0000s</string>
               </property>
               <property name="readOnly">
                <bool>true</bool>
@@ -342,7 +342,7 @@
                <bool>true</bool>
               </property>
               <property name="format">
-               <string>%p%</string>
+               <string notr="true">%p%</string>
               </property>
              </widget>
             </item>
@@ -367,7 +367,7 @@
                <bool>false</bool>
               </property>
               <property name="format">
-               <string>%p%</string>
+               <string notr="true">%p%</string>
               </property>
              </widget>
             </item>
@@ -617,7 +617,7 @@
              <item row="1" column="0">
               <widget class="QLabel" name="label_6">
                <property name="text">
-                <string>[!] All hard constraints</string>
+                <string>[x] All hard constraints</string>
                </property>
               </widget>
              </item>
@@ -728,7 +728,7 @@
             </item>
             <item row="1" column="0">
              <property name="text">
-              <string>+++</string>
+              <string notr="true">+++</string>
              </property>
              <property name="textAlignment">
               <set>AlignCenter</set>
@@ -736,7 +736,7 @@
             </item>
             <item row="1" column="1">
              <property name="text">
-              <string>132</string>
+              <string notr="true">132</string>
              </property>
              <property name="textAlignment">
               <set>AlignCenter</set>
@@ -744,7 +744,7 @@
             </item>
             <item row="1" column="2">
              <property name="text">
-              <string>@ 41</string>
+              <string notr="true">@ 41</string>
              </property>
              <property name="textAlignment">
               <set>AlignCenter</set>
@@ -752,12 +752,12 @@
             </item>
             <item row="1" column="3">
              <property name="text">
-              <string>[!] A completed hard constraint type</string>
+              <string>[x] A completed hard constraint type</string>
              </property>
             </item>
             <item row="2" column="0">
              <property name="text">
-              <string>12</string>
+              <string notr="true">12</string>
              </property>
              <property name="textAlignment">
               <set>AlignCenter</set>
@@ -765,7 +765,7 @@
             </item>
             <item row="2" column="1">
              <property name="text">
-              <string>24</string>
+              <string notr="true">24</string>
              </property>
              <property name="textAlignment">
               <set>AlignCenter</set>
@@ -773,7 +773,7 @@
             </item>
             <item row="2" column="2">
              <property name="text">
-              <string>@ 257</string>
+              <string notr="true">@ 257</string>
              </property>
              <property name="textAlignment">
               <set>AlignCenter</set>
@@ -850,7 +850,7 @@
             </column>
             <item row="0" column="0">
              <property name="text">
-              <string>0000%</string>
+              <string notr="true">0000%</string>
              </property>
              <property name="textAlignment">
               <set>AlignCenter</set>
@@ -858,7 +858,7 @@
             </item>
             <item row="0" column="1">
              <property name="text">
-              <string> n = 00000</string>
+              <string notr="true">n = 00000</string>
              </property>
              <property name="textAlignment">
               <set>AlignCenter</set>
@@ -866,7 +866,7 @@
             </item>
             <item row="0" column="2">
              <property name="text">
-              <string>@ 000000</string>
+              <string notr="true">@ 000000</string>
              </property>
              <property name="textAlignment">
               <set>AlignCenter</set>
@@ -874,7 +874,7 @@
             </item>
             <item row="0" column="3">
              <property name="text">
-              <string>/ 00000</string>
+              <string notr="true">/ 00000</string>
              </property>
              <property name="textAlignment">
               <set>AlignCenter</set>
@@ -887,7 +887,7 @@
             </item>
             <item row="1" column="0">
              <property name="text">
-              <string>+++</string>
+              <string notr="true">+++</string>
              </property>
              <property name="textAlignment">
               <set>AlignCenter</set>
@@ -895,7 +895,7 @@
             </item>
             <item row="1" column="1">
              <property name="text">
-              <string>n = 28</string>
+              <string notr="true">n = 28</string>
              </property>
              <property name="textAlignment">
               <set>AlignCenter</set>
@@ -903,7 +903,7 @@
             </item>
             <item row="1" column="2">
              <property name="text">
-              <string>@ 13</string>
+              <string notr="true">@ 13</string>
              </property>
              <property name="textAlignment">
               <set>AlignCenter</set>
@@ -911,7 +911,7 @@
             </item>
             <item row="1" column="3">
              <property name="text">
-              <string>/ 10</string>
+              <string notr="true">/ 10</string>
              </property>
              <property name="textAlignment">
               <set>AlignCenter</set>
