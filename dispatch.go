@@ -241,7 +241,9 @@ func stoptt(dsp *Dispatcher, op *DispatchOp) {
 // Get the result data as a JSON string.
 func ttresult(dsp *Dispatcher, op *DispatchOp) {
 	result := dsp.AutoTtData.GetLastResult()
-	//TODO
+	//TODO: At present the JSON result is generated automatically as a
+	// file. It might be preferable to return the data as a string result
+	// instead.
 	_ = result
 }
 
@@ -250,7 +252,6 @@ func ttparameter(dsp *Dispatcher, op *DispatchOp) {
 	logger := dsp.BaseData.Logger
 	key := op.Data[0]
 	val := op.Data[1]
-	//TODO
 	switch key {
 
 	case "TIMEOUT":

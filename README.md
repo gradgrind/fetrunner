@@ -86,6 +86,8 @@ In normal usage, the most useful of these is probably "-t", which sets the overa
 
 If it is known that the hard constraints are all satisfiable, the "-h" option can be used to always include the hard constraints and test the sequential addition of just the soft constraints.
 
+If multiple instances of `fetrunner` are to be run simultaneously – which is generally inadvisable because of the limited processor cores – each should have a unique source file (name).
+
 ### Building the program library
 
 See `libfetrunner/README`.
