@@ -1,3 +1,4 @@
+#include "backend.h"
 #include "mainwindow.h"
 
 #include <QApplication>
@@ -6,7 +7,13 @@
 #include <QTranslator>
 
 // Makes visible only the literal operators declared in StringLiterals
-using namespace Qt::StringLiterals;
+//using namespace Qt::StringLiterals;
+
+#if QT_VERSION < 0x060000
+#define QtLIBLOC QLibraryInfo::location
+#else
+#define QtLIBLOC QLibraryInfo::path
+#endif
 
 int main(
     int argc, char *argv[])
@@ -14,24 +21,18 @@ int main(
     QApplication app(argc, argv);
     QTranslator translator0;
 
-    if (translator0.load(QLocale::system(),
-                         u"qtbase"_s,
-                         u"_"_s,
-                         QLibraryInfo::path(QLibraryInfo::TranslationsPath))) {
+    auto locale = QLocale::system();
+    if (translator0.load(locale,
+                         "qtbase",
+                         "_",
+                         QtLIBLOC(QLibraryInfo::TranslationsPath))) {
         app.installTranslator(&translator0);
     }
 
     QTranslator translator;
-    const QStringList uiLanguages = QLocale::system().uiLanguages();
-    //qDebug() << "???" << uiLanguages;
-    for (const QString &locale : uiLanguages) {
-        //qDebug() << "locale:" << locale;
-        const QString baseName = "fetrunner-gui_" + QLocale(locale).name();
-        //qDebug() << "baseName:" << baseName;
-        if (translator.load(":/i18n/" + baseName)) {
-            app.installTranslator(&translator);
-            break;
-        }
+    const QString baseName = "fetrunner-gui_" + locale.name();
+    if (translator.load(":/i18n/" + baseName)) {
+        app.installTranslator(&translator);
     }
 
     MainWindow w;
