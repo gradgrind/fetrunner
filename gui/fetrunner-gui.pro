@@ -5,10 +5,10 @@ CONFIG += c++17
 DESTDIR = ../..
 TARGET = fetrunner-gui
 
-OBJECTS_DIR = ../../tmp/commandline
-UI_DIR = ../../tmp/commandline
-MOC_DIR = ../../tmp/commandline
-RCC_DIR = ../../tmp/commandline
+OBJECTS_DIR = ../../tmp/fetrunner
+UI_DIR = ../../tmp/fetrunner
+MOC_DIR = ../../tmp/fetrunner
+RCC_DIR = ../../tmp/fetrunner
 
 SOURCES += \
     main.cpp \
@@ -26,10 +26,10 @@ HEADERS += \
 FORMS += \
     mainwindow.ui
 
+CONFIG -= debug_and_release
+CONFIG += warn_on release lrelease embed_translations
 TRANSLATIONS += \
     translations/fetrunner-gui_de.ts
-CONFIG += lrelease
-CONFIG += embed_translations
 
 LIBS += -L$$PWD/../libfetrunner/ -lfetrunner
 
