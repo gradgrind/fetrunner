@@ -159,7 +159,7 @@ void MainWindow::init2()
         QMessageBox::warning( //
             this,
             tr("FET not found"),
-            tr("Seek 'fet-cl' executable in file system"));
+            tr("Seek 'FET' command-line executable in file system"));
         fetpath = QFileDialog::getOpenFileName( //
             this,
             tr("Seek FET executable"),

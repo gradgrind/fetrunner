@@ -8,7 +8,7 @@
 #include "threadrun.h"
 
 #ifdef Q_OS_WIN
-const QString FET_CL = "fet-cl.exe";
+const QString FET_CL = "fet-clw.exe";
 #else
 const QString FET_CL = "fet-cl";
 #endif
