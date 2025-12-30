@@ -125,15 +125,15 @@ func init() {
 	OpHandlerMap["N_PROCESSES"] = nprocesses
 }
 
-// Check path to `fet-cl` and get FET version.
+// Check path to `fet-cl` (Windows: `fet-clw.exe`) and get FET version.
 func get_fet(dsp *Dispatcher, op *DispatchOp) {
 	logger := dsp.BaseData.Logger
 	if CheckArgs(logger, op, 1) {
 		fetpath := op.Data[0]
 		if fetpath == "-" {
-			fetpath = autotimetable.FET_CL
+			fetpath = fet.FET_CL
 		}
-		dsp.TtParameters.FETPATH = fetpath
+		fet.FETPATH = fetpath
 		cmd := exec.Command(fetpath, "--version")
 		out, err := cmd.CombinedOutput()
 		if err != nil {

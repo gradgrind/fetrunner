@@ -15,7 +15,11 @@ import (
 	"strconv"
 )
 
-var TEMPORARY_FOLDER string
+var (
+	TEMPORARY_FOLDER string
+	FETPATH          string
+	FET_CL           string = "fet-cl" // "default" value for `FETPATH`
+)
 
 type FetBackend struct {
 	attdata *autotimetable.AutoTtData
@@ -121,9 +125,7 @@ func (fbe *FetBackend) RunBackend(
 			"--randomseeds22=22")
 	}
 
-	runCmd := exec.CommandContext(ctx,
-		attdata.Parameters.FETPATH, params...,
-	)
+	runCmd := exec.CommandContext(ctx, FETPATH, params...)
 
 	hard := ""
 	if instance.Hard {
