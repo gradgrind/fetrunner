@@ -1,63 +1,60 @@
 /*
-fetrunner_W365 produces a FET configuration file from a supplied Waldorf 365
-data set (JSON). It then runs the `fetrunner` back-end on this file.
+`fetrunner` takes timetable specification data from a FET file (".fet" ending)
+or a Waldorf-365 timetable data set (JSON, ending "_w365.json") and repeatedly
+runs the command-line version of FET with various subsets of the constraints
+enabled.
 
-The name of the input file should end with "_w365.json", for example
-"myfile_w365.json". This allows consistent automatic naming of the
-generated files.
+Waldorf-365 data is not handled directly, but is first read into the internal
+database structures defined in the "base" package, the root element of which
+is `base.DbTopLevel`. This structure is converted to a FET file, using the
+package "makefet", for the timetable generation. The correlation of the
+Walforf-365 elements with their FET equivalents is achieved by placing pairs
+of identifiers/references in the result file (ending "_Result.json").
 
-The correlation of the Walforf 365 elements with their FET equivalents is
-achieved by placing pairs of identifiers/references in the result file
-("myfile_Result.json").
+All processing is done via the `Dispatch` function in the main "fetrunner"
+package. This allows the bulk of the code, and especially the API, to be
+shared with the "libfetrunner" package, which makes `fetrunner` available
+as a C-linked library with a simple JSON interface.
 
 The `autotimetable` package provides the main `fetrunner` algorithm. Its
 basic data is in the structure `autotimetable.AutoTtData`, including the
 run-time parameters, among other things.
 
-After dealing with the parameters and file paths, the input file is read
-and processed so that the data can be stored in a form independent of
-Waldorf 365. This form is managed in the "base" package, the primary data
-structure being `base.DbTopLevel`.
-
-There are some useful pieces of information which are not contained directly
-in the input file, but which can be derived from it. The method
-`base.PrepareDb` performs the first of this processing and also checks for
-certain errors in the data.
-
 Some further preprocessing of the data specifically for timetable purposes
-is performed by `timetable.BasicSetup`, which produces a `timetable.TtData`
-structure.
+is performed in the "timetable" package: `timetable.BasicSetup` produces a
+`timetable.TtData` structure, which is used by the function `makefet.FetTree`
+to produce a `fet.TtRunDataFet` structure. The latter contains information
+specific to the `fetrunner` FET back-end, including the XML structure of the
+FET file.
 
-The function `makefet.FetTree` uses the above structures to produce a
-`fet.TtRunDataFet` structure containing information specific to the
-`fetrunner` FET back-end, including the XML structure of the FET file,
-so that modified versions can be produced easily. Also, further information
-is added to the `autotimetable.AutoTtData` structure.
-
-The `fetrunner` back-end using FET to generate timetables is set up by the
-call to `fet.InitFetBackend` and the actual `fetrunner` algorithm is started
+The back-end using FET to generate timetables is set up by a call to
+`fet.InitFetBackend` and the actual `fetrunner` algorithm is started
 by calling the method `StartGeneration`.
 
 The result-files are saved in the same directory as the input file and are
 based on the stem of the input file name. Using "myfile_w365.json" as
 input:
 
-  - Log file (myfile.log): Contains error messages and warnings as well as
-    information about the steps performed. It can be read continuously
+  - Log file (myfile_w365.log): Contains error messages and warnings as well
+    as information about the steps performed. It can be read continuously
     to monitor progress.
 
-  - Initial FET file (myfile.fet): The file to be fed to FET with all
+  - Initial FET file (_myfile_w365.fet): The file to be fed to FET with all
     constraints active.
 
-  - Successful FET file (myfile_Result.fet): The last FET file to run
+  - Successful FET file (myfile_w365_Result.fet): The last FET file to run
     successfully before the process ended.
 
-  - Result file (myfile_Result.json): A processed view of the results of
+  - Result file (myfile_w365_Result.json): A processed view of the results of
     the last successful FET run (with myfile_Result.fet).
 
   - Other files will be generated temporarily, but removed before the process
     completes.
+
+For FET input files, the process is much simpler, as the data is already
+suitably structured, but the results are similar.
 */
+
 package main
 
 import (
