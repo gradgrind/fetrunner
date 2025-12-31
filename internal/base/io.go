@@ -32,6 +32,7 @@ func (bd *BaseData) SetTmpDir() {
 		TEMPORARY_BASEDIR = ""
 		return
 	}
+	logger.Info("TEMPORARY_DIR: %s", tmpdir)
 	TEMPORARY_DIR = tmpdir
 }
 
