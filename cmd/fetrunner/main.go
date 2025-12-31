@@ -35,7 +35,7 @@ so that modified versions can be produced easily. Also, further information
 is added to the `autotimetable.AutoTtData` structure.
 
 The `fetrunner` back-end using FET to generate timetables is set up by the
-call to `fet.SetFetBackend` and the actual `fetrunner` algorithm is started
+call to `fet.InitFetBackend` and the actual `fetrunner` algorithm is started
 by calling the method `StartGeneration`.
 
 The result-files are saved in the same directory as the input file and are
@@ -84,7 +84,8 @@ func main() {
 	timeout := flag.Int("t", 300, "set timeout")
 	nprocesses := flag.Int("p", 0, "max. parallel processes")
 	debug := flag.Bool("d", false, "debug")
-	fetpath := flag.String("fet", "", "/path/to/fet-cl")
+	fetpath := flag.String("fet", "", "FET executable: /path/to/fet-cl")
+	tmppath := flag.String("tmp", "", "Folder for temporary files (FET): /path/to/tmp")
 
 	flag.Parse()
 
@@ -120,6 +121,21 @@ func main() {
 	do("TT_PARAMETER", "DEBUG", strconv.FormatBool(*debug))
 	do("TT_PARAMETER", "TESTING", strconv.FormatBool(*testing))
 	do("TT_PARAMETER", "SKIP_HARD", strconv.FormatBool(*skip_hard))
+
+	if *tmppath != "" {
+		// Set base directory for temporary files
+		abstmppath, _ := filepath.Abs(*tmppath)
+		if abstmppath != *tmppath {
+			log.Fatalln("Invalid absolute path:", *tmppath)
+		}
+		fileInfo, err := os.Stat(abstmppath)
+		if errors.Is(err, os.ErrNotExist) || !fileInfo.IsDir() {
+			log.Fatalln("Not a directory:", abstmppath)
+		}
+		if !do("TMP_PATH", abstmppath) {
+			return
+		}
+	}
 
 	// Get the path to `fet-cl`, and its version number.
 	if *fetpath == "" {

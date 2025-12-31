@@ -1,6 +1,6 @@
 //go:build linux
 
-package fet
+package base
 
 import (
 	"os"
@@ -9,6 +9,6 @@ import (
 func init() {
 	fsinfo, err := os.Stat("/dev/shm")
 	if err == nil && fsinfo.IsDir() {
-		TEMPORARY_FOLDER = "/dev/shm/fetrunner"
+		TEMPORARY_BASEDIR = "/dev/shm"
 	}
 }

@@ -16,30 +16,26 @@ import (
 )
 
 var (
-	TEMPORARY_FOLDER string
-	FETPATH          string
-	FET_CL           string = "fet-cl" // "default" value for `FETPATH`
+	FETPATH string
+	FET_CL  string = "fet-cl" // "default" value for `FETPATH`
 )
 
 type FetBackend struct {
 	attdata *autotimetable.AutoTtData
+	tmpdir  string
 }
 
-func SetFetBackend(bdata *base.BaseData, attdata *autotimetable.AutoTtData) {
-	if len(TEMPORARY_FOLDER) != 0 {
-		os.RemoveAll(filepath.Join(TEMPORARY_FOLDER,
-			filepath.Base(bdata.SourceDir)))
+func InitBackend(bdata *base.BaseData, attdata *autotimetable.AutoTtData) {
+	if base.TEMPORARY_DIR == "" {
+		bdata.SetTmpDir()
 	}
-	attdata.BackendInterface = &FetBackend{attdata}
+	tmpdir := filepath.Join(base.TEMPORARY_DIR, bdata.Name)
+	os.RemoveAll(tmpdir)
+	attdata.BackendInterface = &FetBackend{attdata, tmpdir}
 }
 
 func (fbe *FetBackend) Tidy(bdata *base.BaseData) {
-	if TEMPORARY_FOLDER == "" {
-		os.RemoveAll(filepath.Join(bdata.SourceDir, "tmp", bdata.Name))
-	} else {
-		os.RemoveAll(filepath.Join(TEMPORARY_FOLDER,
-			filepath.Base(bdata.Name)))
-	}
+	os.RemoveAll(fbe.tmpdir)
 }
 
 func (fbe *FetBackend) RunBackend(
@@ -47,17 +43,10 @@ func (fbe *FetBackend) RunBackend(
 	instance *autotimetable.TtInstance,
 ) autotimetable.TtBackend {
 	attdata := fbe.attdata
-
 	fname := fmt.Sprintf("z%05d~%s", instance.Index, instance.ConstraintType)
 	var odir string
-	if TEMPORARY_FOLDER == "" {
-		odir = filepath.Join(bdata.SourceDir, "tmp", bdata.Name, fname)
-	} else {
-		odir = filepath.Join(TEMPORARY_FOLDER,
-			filepath.Base(bdata.Name),
-			fname)
-	}
-	err := os.MkdirAll(odir, 0755)
+	odir = filepath.Join(fbe.tmpdir, fname)
+	err := os.MkdirAll(odir, 0700)
 	if err != nil {
 		//TODO?
 		panic(err)
@@ -69,7 +58,7 @@ func (fbe *FetBackend) RunBackend(
 	var fet_xml []byte
 	attdata.Source.PrepareRun(instance.ConstraintEnabled, &fet_xml)
 	// Write FET file
-	err = os.WriteFile(fetfile, fet_xml, 0644)
+	err = os.WriteFile(fetfile, fet_xml, 0600)
 	if err != nil {
 		//TODO?
 		panic("Couldn't write fet file to: " + fetfile)
@@ -77,7 +66,7 @@ func (fbe *FetBackend) RunBackend(
 	if instance.ConstraintType == "_COMPLETE" {
 		// Save "complete" fet file with "_" prefix in working directory.
 		cfile := filepath.Join(bdata.SourceDir, "_"+bdata.Name+".fet")
-		err = os.WriteFile(cfile, fet_xml, 0644)
+		err = os.WriteFile(cfile, fet_xml, 0600)
 		if err != nil {
 			panic("Couldn't write fet file to: " + cfile)
 		}

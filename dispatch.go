@@ -122,7 +122,15 @@ func init() {
 	OpHandlerMap["RESULT_TT"] = ttresult
 
 	OpHandlerMap["TT_PARAMETER"] = ttparameter
+	OpHandlerMap["TMP_PATH"] = set_tmp
 	OpHandlerMap["N_PROCESSES"] = nprocesses
+}
+
+func set_tmp(dsp *Dispatcher, op *DispatchOp) {
+	if CheckArgs(dsp.BaseData.Logger, op, 1) {
+		base.TEMPORARY_BASEDIR = op.Data[0]
+		dsp.BaseData.SetTmpDir()
+	}
 }
 
 // Check path to `fet-cl` (Windows: `fet-clw.exe`) and get FET version.
@@ -220,7 +228,7 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 		SoftConstraintMap: ttsource.GetSoftConstraintMap(),
 	}
 	dsp.AutoTtData = attdata
-	fet.SetFetBackend(bdata, attdata)
+	fet.InitBackend(bdata, attdata)
 	logger.Result("OK", "true")
 }
 
