@@ -990,7 +990,7 @@
             <item>
              <widget class="QLabel" name="tmp_dir_name">
               <property name="text">
-               <string>(fetrunner)</string>
+               <string notr="true">(fetrunner)</string>
               </property>
              </widget>
             </item>
