@@ -1,0 +1,11 @@
+To build the `fetrunner` GUI along with `FET`:
+
+Copy the `fetrunner` base directory to the `FET` base directory.
+
+Replace the `fet.pro` in the `FET` base directory by the one in this directory.
+
+Add  `src-clw.pro` from this directory to the `FET` `src` directory.
+
+Compile `libfetrunner` to a static library, as described in `fetrunner/libfetrunner/README`.
+
+Compile `FET` as usual.
