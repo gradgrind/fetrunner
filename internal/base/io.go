@@ -9,15 +9,19 @@ import (
 )
 
 var (
-	TEMPORARY_BASEDIR string
-	TEMPORARY_DIR     string
+	TEMPORARY_BASEDIR0 string
+	TEMPORARY_BASEDIR  string
+	TEMPORARY_DIR      string
 )
 
 func (bd *BaseData) SetTmpDir() {
 	logger := bd.Logger
 	tbdir0 := os.TempDir()
 	if TEMPORARY_BASEDIR == "" {
-		TEMPORARY_BASEDIR = tbdir0
+		TEMPORARY_BASEDIR = TEMPORARY_BASEDIR0
+		if TEMPORARY_BASEDIR == "" {
+			TEMPORARY_BASEDIR = tbdir0
+		}
 	}
 	for {
 		tmpdir := filepath.Join(TEMPORARY_BASEDIR, "fetrunner")

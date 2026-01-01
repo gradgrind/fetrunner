@@ -9,6 +9,6 @@ import (
 func init() {
 	fsinfo, err := os.Stat("/dev/shm")
 	if err == nil && fsinfo.IsDir() {
-		TEMPORARY_BASEDIR = "/dev/shm"
+		TEMPORARY_BASEDIR0 = "/dev/shm"
 	}
 }

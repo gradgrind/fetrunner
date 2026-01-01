@@ -65,6 +65,16 @@ MainWindow::MainWindow(QWidget *parent)
         this,
         &MainWindow::push_stop);
     connect( //
+        ui->select_tmp_dir,
+        &QPushButton::clicked,
+        this,
+        &MainWindow::select_tmp_dir);
+    connect( //
+        ui->default_tmp_dir,
+        &QPushButton::clicked,
+        this,
+        &MainWindow::default_tmp_dir);
+    connect( //
         &threadrunner,
         &RunThreadController::ticker,
         this,
@@ -284,19 +294,24 @@ void MainWindow::push_go()
     reset_display();
     for (const auto &kv : backend->op("RUN_TT_SOURCE")) {
         if (kv.key == "TMP_DIR") {
-            QDir tdir{kv.val};
-            QString d{tdir.dirName()};
-            d.prepend(QDir::separator());
-            tdir.cdUp();
-            QString val{QDir::toNativeSeparators(tdir.absolutePath())};
-            ui->tmp_dir->setText(val);
-            ui->tmp_dir_name->setText(d);
+            set_tmp_dir(kv.val);
         } else if (kv.key == "OK" && kv.val == "true") {
             setup_progress_table();
             threadRunActivated(true);
             threadrunner.runTtThread();
         }
     }
+}
+
+void MainWindow::set_tmp_dir(QString tdir)
+{
+    QDir qtdir{tdir};
+    QString d{qtdir.dirName()};
+    d.prepend(QDir::separator());
+    qtdir.cdUp();
+    QString val{QDir::toNativeSeparators(qtdir.absolutePath())};
+    ui->tmp_dir->setText(val);
+    ui->tmp_dir_name->setText(d);
 }
 
 void MainWindow::push_stop()
@@ -307,6 +322,35 @@ void MainWindow::push_stop()
     closingMessageBox.setIcon(QMessageBox::Information);
     closingMessageBox.setStandardButtons(QMessageBox::NoButton);
     closingMessageBox.exec();
+}
+
+void MainWindow::select_tmp_dir()
+{
+    QString dirpath = QFileDialog::getExistingDirectory( //
+        this,
+        tr("Select base folder for temporary files"),
+        "/",
+        QFileDialog::ShowDirsOnly);
+    if (!dirpath.isEmpty()) {
+        auto kv = backend->op1("TMP_PATH", {dirpath}, "TMP_DIR");
+        if (kv.key == "") {
+            ui->tmp_dir->clear();
+            ui->tmp_dir_name->setText("-");
+        } else {
+            set_tmp_dir(kv.val);
+        }
+    }
+}
+
+void MainWindow::default_tmp_dir()
+{
+    auto kv = backend->op1("TMP_PATH", {""}, "TMP_DIR");
+    if (kv.key == "") {
+        ui->tmp_dir->clear();
+        ui->tmp_dir_name->setText("-");
+    } else {
+        set_tmp_dir(kv.val);
+    }
 }
 
 void MainWindow::runThreadWorkerDone()
