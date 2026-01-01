@@ -203,7 +203,7 @@ func (l *Logger) Bug(s string, a ...any) {
 	} else {
 		p = "Location?: "
 	}
-	l.logEnter(BUG, p+s, a)
+	l.logEnter(BUG, p+s, a...)
 }
 
 func (l *Logger) Tick(n int) {

@@ -251,10 +251,9 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 		// Tidy up
 		r := recover()
 		if r != nil {
-			fmt.Printf("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---\n",
+			logger.Bug("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---",
 				attdata.Ticks, r, debug.Stack())
-			fmt.Printf("??? logger: %v\n", logger)
-			logger.Bug("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---\n",
+			fmt.Printf("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---\n",
 				attdata.Ticks, r, debug.Stack())
 		}
 		for {
