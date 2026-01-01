@@ -18,7 +18,14 @@ func (bd *BaseData) SetTmpDir() {
 	logger := bd.Logger
 	tbdir0 := os.TempDir()
 	if TEMPORARY_BASEDIR == "" {
-		TEMPORARY_BASEDIR = TEMPORARY_BASEDIR0
+		if TEMPORARY_BASEDIR0 != "" {
+			fsinfo, err := os.Stat(TEMPORARY_BASEDIR0)
+			if err == nil && fsinfo.IsDir() {
+				TEMPORARY_BASEDIR = TEMPORARY_BASEDIR0
+			} else {
+				logger.Warning("TMP_DIR_NOT_AVAILABLE: %s", TEMPORARY_BASEDIR0)
+			}
+		}
 		if TEMPORARY_BASEDIR == "" {
 			TEMPORARY_BASEDIR = tbdir0
 		}

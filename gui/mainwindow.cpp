@@ -180,6 +180,9 @@ void MainWindow::init2()
             break;
         }
     }
+
+    // Set/show default temporary directory
+    default_tmp_dir();
 }
 
 MainWindow::~MainWindow()

@@ -2,13 +2,6 @@
 
 package base
 
-import (
-	"os"
-)
-
 func init() {
-	fsinfo, err := os.Stat("/dev/shm")
-	if err == nil && fsinfo.IsDir() {
-		TEMPORARY_BASEDIR0 = "/dev/shm"
-	}
+	TEMPORARY_BASEDIR0 = "/dev/shm"
 }
