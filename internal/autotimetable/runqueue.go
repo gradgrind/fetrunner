@@ -130,9 +130,13 @@ func (rq *RunQueue) update_queue() int {
 		if instance.RunState == 0 {
 			instance.Backend =
 				attdata.BackendInterface.RunBackend(rq.BData, instance)
-			instance.RunState = -1 // indicate started/running
-			rq.Active[instance] = struct{}{}
-			running++
+			if instance.Backend == nil {
+				instance.RunState = 3
+			} else {
+				instance.RunState = -1 // indicate started/running
+				rq.Active[instance] = struct{}{}
+				running++
+			}
 		} else {
 			if instance.RunState != 3 {
 				panic("Bug")

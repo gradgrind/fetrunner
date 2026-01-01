@@ -15,25 +15,35 @@ var (
 
 func (bd *BaseData) SetTmpDir() {
 	logger := bd.Logger
+	tbdir0 := os.TempDir()
 	if TEMPORARY_BASEDIR == "" {
-		TEMPORARY_BASEDIR = os.TempDir()
+		TEMPORARY_BASEDIR = tbdir0
 	}
-	tmpdir := filepath.Join(TEMPORARY_BASEDIR, "fetrunner")
-	fileInfo, err := os.Stat(tmpdir)
-	if errors.Is(err, os.ErrNotExist) {
-		err = os.Mkdir(tmpdir, 0700)
-		if err != nil {
-			logger.Error("CREATE_DIRECTORY_FAILED: %s", tmpdir)
+	for {
+		tmpdir := filepath.Join(TEMPORARY_BASEDIR, "fetrunner")
+		fileInfo, err := os.Stat(tmpdir)
+		if errors.Is(err, os.ErrNotExist) {
+			err = os.Mkdir(tmpdir, 0700)
+			if err != nil {
+				logger.Error("CREATE_TMP_DIR_FAILED: %s", tmpdir)
+				goto fail
+			}
+		} else if !fileInfo.IsDir() {
+			logger.Error("TMP_DIR_NOT_A_DIRECTORY: %s", tmpdir)
+			goto fail
+		}
+		logger.Result("TMP_DIR", tmpdir)
+		TEMPORARY_DIR = tmpdir
+		return
+
+	fail:
+		if TEMPORARY_BASEDIR == tbdir0 {
 			TEMPORARY_BASEDIR = ""
+			TEMPORARY_DIR = ""
 			return
 		}
-	} else if !fileInfo.IsDir() {
-		logger.Error("NOT_A_DIRECTORY: %s", tmpdir)
-		TEMPORARY_BASEDIR = ""
-		return
+		TEMPORARY_BASEDIR = tbdir0
 	}
-	logger.Info("TEMPORARY_DIR: %s", tmpdir)
-	TEMPORARY_DIR = tmpdir
 }
 
 func (bd *BaseData) SaveDb(fpath string) bool {

@@ -48,8 +48,8 @@ func (fbe *FetBackend) RunBackend(
 	odir = filepath.Join(fbe.tmpdir, fname)
 	err := os.MkdirAll(odir, 0700)
 	if err != nil {
-		//TODO?
-		panic(err)
+		bdata.Logger.Error("INVALID_TMP_DIR: %s", odir)
+		return nil
 	}
 	stemfile := filepath.Join(odir, fname)
 	fetfile := stemfile + ".fet"
@@ -60,15 +60,16 @@ func (fbe *FetBackend) RunBackend(
 	// Write FET file
 	err = os.WriteFile(fetfile, fet_xml, 0600)
 	if err != nil {
-		//TODO?
-		panic("Couldn't write fet file to: " + fetfile)
+		bdata.Logger.Error("WRITE_TMP_FET_FILE_FAILED: %s", fetfile)
+		return nil
 	}
 	if instance.ConstraintType == "_COMPLETE" {
 		// Save "complete" fet file with "_" prefix in working directory.
 		cfile := filepath.Join(bdata.SourceDir, "_"+bdata.Name+".fet")
 		err = os.WriteFile(cfile, fet_xml, 0600)
 		if err != nil {
-			panic("Couldn't write fet file to: " + cfile)
+			bdata.Logger.Error("WRITE_FET_FILE_FAILED: %s", cfile)
+			return nil
 		}
 	}
 	logfile := filepath.Join(odir, "logs", "max_placed_activities.txt")

@@ -282,10 +282,20 @@ void MainWindow::push_go()
 
     instance_row_map.clear();
     reset_display();
-    if (backend->op1("RUN_TT_SOURCE", {}, "OK").val == "true") {
-        setup_progress_table();
-        threadRunActivated(true);
-        threadrunner.runTtThread();
+    for (const auto &kv : backend->op("RUN_TT_SOURCE")) {
+        if (kv.key == "TMP_DIR") {
+            QDir tdir{kv.val};
+            QString d{tdir.dirName()};
+            d.prepend(QDir::separator());
+            tdir.cdUp();
+            QString val{QDir::toNativeSeparators(tdir.absolutePath())};
+            ui->tmp_dir->setText(val);
+            ui->tmp_dir_name->setText(d);
+        } else if (kv.key == "OK" && kv.val == "true") {
+            setup_progress_table();
+            threadRunActivated(true);
+            threadrunner.runTtThread();
+        }
     }
 }
 
