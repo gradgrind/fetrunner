@@ -31,7 +31,7 @@ There are some difficult cases with which `fetrunner` can't help much, because t
 
 There are a number of utilities for Windows which can generate RAM-disks. Two free ones which seem to work are [AIMtk](https://sourceforge.net/projects/aim-toolkit) and [OSFMount](https://www.osforensics.com/tools/mount-disk-images.html). Of these OSFMount seems a bit easier to use, but AIMtk can produce a dynamic RAM-disk which only occupies as much memory as is needed – OSFMount allocates a fixed-size block of RAM. However, `fetrunner` would normally need relatively little space, and a few hundred megabytes should be more than enough. When `fetrunner` starts it looks for a "disk" mounted at "R:", so if possible a RAM-disk should be mounted here.
 
-If no such file-system is available and detected, the standard temporary directory for the operating system will be used. With the command-line version of `fetrunner`, it is possible to specify the path to the directory to be used for temporary files using the "-tmp" option. If a Windows system has a RAM-disk mounted at "M:", the option would then be `-tmp M:\`. 
+If no such file-system is available and detected, the standard temporary directory for the operating system will be used. With the command-line version of `fetrunner`, it is possible to specify the path to the directory to be used for temporary files using the "-tmp" option. If a Windows system has a RAM-disk mounted at "M:", the option would then be `-tmp M:\`.
 
 ## Command line / program library / GUI
 
@@ -59,33 +59,33 @@ Important: By default the `FET` command-line executable is expected to be runnab
 
 This will normally run for up to five minutes, placing the results in the same directory, "path/to/":
 
-    fetfile_Result.fet – the fet-file used to produce the result
+    `fetfile_Result.fet` – the `FET` file used to produce the result
 
-    fetfile_Result.json – the results of the run, including the placements of the activities and the constraints which were deactivated
+    `fetfile_Result.json` – the results of the run, including the placements of the activities and the constraints which were deactivated
 
-    fetfile.log – a log file giving information about the run
+    `fetfile.log` – a log file giving information about the run
 
-    _fetfile.fet – should be essentially the same as the original fetfile.fet
+    `_fetfile.fet` – should be essentially the same as the original `fetfile.fet`
 
-The log-file is updated continuously during the run.
+The log-file is updated continually during the run.
 
 There are a few command-line options:
 
 ```
 fetrunner -help
  ->
-  -T	run in testing mode
-  -d	debug
+  -T    run in testing mode
+  -d    debug
   -fet string
-    	FET executable: /path/to/fet-cl
-  -h	skip hard constraint testing phase
+        FET executable: /path/to/fet-cl
+  -h    skip hard constraint testing phase
   -p int
-    	max. parallel processes
+        max. parallel processes
   -t int
-    	set timeout (default 300)
+        set timeout (default 300)
   -tmp string
-    	Folder for temporary files (FET): /path/to/tmp
-  -v	print version and exit
+        Folder for temporary files (FET): /path/to/tmp
+  -v    print version and exit
 ```
 
 In normal usage, the most useful of these is probably "-t", which sets the overall timeout in seconds.
@@ -107,13 +107,13 @@ As this is written in `C++` this is more difficult. Perhaps the easiest way is t
 The `fet-cl.exe` built when `FET` is built normally is compiled as a console application. This can be used by the command-line `fetrunner`, but if it is used by `fetrunner-gui` a new console will be popped up every time it is called – which is a lot. This makes a real mess! Thus a custom build of `fet-cl` without console output is required. I have given the executable a new name, `fet-clw.exe` to distinguish it; it can be generated as follows:
 
  - Copy `src/src-cl` to `src/src-clw` and remove `cmdline` from CONFIG in `src/src-clw.pro`.
- 
+
  - Change TARGET in `src/src-clw` to `fet-clw`.
 
  - Add `src/src-clw.pro` to SUBDIRS in `fet.pro`.
- 
+
  - If `fet` and `fet-cl` don't need to be compiled, `src/src.pro` and `src/src-cl.pro` can be removed from SUBDIRS in `fet.pro`.
- 
+
  - Compile `FET` as usual.
 
 ### Building the GUI together with `FET`

@@ -30,7 +30,7 @@ qt_add_executable(fetrunner-gui
     ttgen_tables.cpp
 )
 
-qt_add_translations(fetrunner-gui #MERGE_QT_TRANSLATIONS
+qt_add_translations(fetrunner-gui MERGE_QT_TRANSLATIONS
     TS_FILE_DIR translations
     # Do not embed generated .qm files.
     #QM_FILES_OUTPUT_VARIABLE qm_files

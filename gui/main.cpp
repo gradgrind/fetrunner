@@ -19,15 +19,17 @@ int main(
     int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    QTranslator translator0;
 
     auto locale = QLocale::system();
+    /*
+    QTranslator translator0;
     if (translator0.load(locale,
                          "qtbase",
                          "_",
                          QtLIBLOC(QLibraryInfo::TranslationsPath))) {
         app.installTranslator(&translator0);
     }
+    */
 
     QTranslator translator;
     const QString baseName = "fetrunner-gui_" + locale.name();

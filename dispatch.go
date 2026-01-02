@@ -48,7 +48,7 @@ var DispatcherMap map[string]*Dispatcher = map[string]*Dispatcher{}
 var OpHandlerMap map[string]func(*Dispatcher, *DispatchOp) = map[string]func(
 	*Dispatcher, *DispatchOp){}
 
-// Read a command from JSON, logs a STARTOP for it, look up the corresponding
+// Read a command from JSON, log a STARTOP for it, look up the corresponding
 // function in `OpHandlerMap` and call it. On return log an ENDOP and return
 // the data from the result channel. Each logger has a mutex to avoid calling
 // Dispatch on it from more than one thread simultaneously (which should not
