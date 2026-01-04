@@ -1,0 +1,24 @@
+Linux
+=====
+
+In FET root folder:
+
+Copy in the folders/files from src and src-cl in this directory.
+
+Copy in the fetrunner folder (precompile libfetrunner).
+
+The latest CMakeLists.txt for fetrunner-gui is also here (fetrunner).
+
+mkdir build
+cd build
+
+cmake -DCMAKE_PREFIX_PATH=$HOME/Qt/6.10.1/gcc_64 .. --install-prefix $PWD/usr
+
+cmake --build . --target install -j 4
+
+Copy the result (usr/ from build/) into the fet binary tree. It should enable native file dialogs and Wayland support. But overwrites (incl. usr/bin/qt.conf) should probably be skipped.
+
+Windows
+=======
+
+TODO
