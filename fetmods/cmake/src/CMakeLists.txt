@@ -1,6 +1,8 @@
 project(fet-gui)
 
-find_package(Qt6 6.3 REQUIRED COMPONENTS Core Gui Network Widgets)
+# The INCLUDE_PLUGINS option to qt_generate_deploy_app_script needs at
+# least Qt6.10.
+find_package(Qt6 6.10 REQUIRED COMPONENTS Core Gui Network Widgets)
 #find_package(Qt6 REQUIRED COMPONENTS LinguistTools)
 find_package(Qt6 OPTIONAL_COMPONENTS PrintSupport)
 

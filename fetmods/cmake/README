@@ -7,8 +7,6 @@ Copy in the folders/files from src and src-cl in this directory.
 
 Copy in the fetrunner folder (precompile libfetrunner).
 
-The latest CMakeLists.txt for fetrunner-gui is also here (fetrunner).
-
 mkdir build
 cd build
 
