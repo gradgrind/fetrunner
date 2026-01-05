@@ -326,12 +326,22 @@ install(DIRECTORY ../translations/ DESTINATION bin/translations
 #    MESSAGE(STATUS "+++ ${n}")
 #endforeach()
 
-# Qt >= 6.3.
-qt_generate_deploy_app_script(
-    TARGET fet
-    OUTPUT_SCRIPT deploy_script
-    NO_TRANSLATIONS
-    NO_UNSUPPORTED_PLATFORM_ERROR
-    INCLUDE_PLUGINS wayland xcb
-)
+# Qt >= 6.3. Qt >= 6.10 for INCLUDE_PLUGINS
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    qt_generate_deploy_app_script(
+        TARGET fet
+        OUTPUT_SCRIPT deploy_script
+        NO_TRANSLATIONS
+        NO_UNSUPPORTED_PLATFORM_ERROR
+        INCLUDE_PLUGINS wayland xcb
+    )
+else()
+    qt_generate_deploy_app_script(
+        TARGET fet
+        OUTPUT_SCRIPT deploy_script
+        NO_TRANSLATIONS
+        NO_UNSUPPORTED_PLATFORM_ERROR
+    )
+endif()
+
 install(SCRIPT ${deploy_script})

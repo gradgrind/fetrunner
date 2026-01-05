@@ -20,7 +20,7 @@ endif()
 MESSAGE(STATUS "Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 
 if(WIN32)
-add_subdirectory(src-cl)
+  add_subdirectory(src-clw)
 endif()
 #add_subdirectory(src)
 add_subdirectory(fetrunner/gui)

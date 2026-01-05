@@ -56,11 +56,21 @@ install(TARGETS fetrunner-gui
 )
 
 # Qt >= 6.3. Qt >= 6.10 for INCLUDE_PLUGINS
-qt_generate_deploy_app_script(
-    TARGET fetrunner-gui
-    OUTPUT_SCRIPT deploy_script
-    NO_TRANSLATIONS
-    NO_UNSUPPORTED_PLATFORM_ERROR
-    INCLUDE_PLUGINS wayland xcb
-)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    qt_generate_deploy_app_script(
+        TARGET fetrunner-gui
+        OUTPUT_SCRIPT deploy_script
+        NO_TRANSLATIONS
+        NO_UNSUPPORTED_PLATFORM_ERROR
+        INCLUDE_PLUGINS wayland xcb
+    )
+else()
+    qt_generate_deploy_app_script(
+        TARGET fetrunner-gui
+        OUTPUT_SCRIPT deploy_script
+        NO_TRANSLATIONS
+        NO_UNSUPPORTED_PLATFORM_ERROR
+    )
+endif()
+
 install(SCRIPT ${deploy_script})
