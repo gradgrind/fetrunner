@@ -73,7 +73,17 @@ MainWindow::MainWindow(QWidget *parent)
         ui->default_tmp_dir,
         &QPushButton::clicked,
         this,
-        &MainWindow::default_tmp_dir);
+        &MainWindow::select_default_tmp_dir);
+    connect( //
+        ui->select_fet_path,
+        &QPushButton::clicked,
+        this,
+        &MainWindow::select_fet_path);
+    connect( //
+        ui->default_fet_path,
+        &QPushButton::clicked,
+        this,
+        &MainWindow::select_default_fet_path);
     connect( //
         &threadrunner,
         &RunThreadController::ticker,
@@ -128,61 +138,13 @@ void MainWindow::init2()
     reset_display();
 
     // Check FET
-    auto fetpath0 = settings->value("fet/FetPath").toString();
-    auto fetpath = fetpath0;
-    QString fetv;
-    while (true) {
-        if (fetpath.isEmpty()) {
-            fetv = backend->op1("GET_FET", {"-"}, "FET_VERSION").val;
-        } else {
-            fetv = backend->op1("GET_FET", {fetpath}, "FET_VERSION").val;
-        }
-        if (!fetv.isEmpty()) {
-            if (fetpath != fetpath0) {
-                settings->setValue("fet/FetPath", fetpath);
-            }
-            break;
-        }
-
-        // Handle FET executable not found.
-
-        if (!fetpath.isEmpty()) {
-            // Try system PATH.
-            fetv = backend->op1("GET_FET", {"-"}, "FET_VERSION").val;
-            if (!fetv.isEmpty()) {
-                settings->remove("fet/FetPath");
-                break;
-            }
-        }
-
-        // Try in directory of fetrunner executable.
-        auto fdir = QDir(QCoreApplication::applicationDirPath());
-        auto fp1 = fdir.absoluteFilePath(FET_CL);
-        if (fetpath != fp1) {
-            fetv = backend->op1("GET_FET", {fp1}, "FET_VERSION").val;
-            if (!fetv.isEmpty()) {
-                settings->setValue("fet/FetPath", fp1);
-                break;
-            }
-        }
-
-        QMessageBox::warning( //
-            this,
-            tr("FET not found"),
-            tr("Seek 'FET' command-line executable in file system"));
-        fetpath = QFileDialog::getOpenFileName( //
-            this,
-            tr("Seek FET executable"),
-            QDir::homePath(),
-            tr("FET executable") + " (" + FET_CL + ")");
-        if (fetpath.isEmpty()) {
-            QApplication::exit(1);
-            break;
-        }
+    if (!set_fet_path(settings->value("fet/FetPath").toString())) {
+        QApplication::exit(1);
+        return;
     }
 
     // Set/show default temporary directory
-    default_tmp_dir();
+    select_default_tmp_dir();
 }
 
 MainWindow::~MainWindow()
@@ -317,6 +279,53 @@ void MainWindow::set_tmp_dir(QString tdir)
     ui->tmp_dir_name->setText(d);
 }
 
+bool MainWindow::set_fet_path(QString fetpath0)
+{
+    auto fetpath = fetpath0;
+    QString fetv;
+    QString fetp;
+    while (true) {
+        if (fetpath == "?") {
+            fetpath = QFileDialog::getOpenFileName( //
+                this,
+                tr("Seek FET executable"),
+                QDir::homePath(),
+                tr("FET executable") + " (" + FET_CL + ")");
+            if (fetpath.isEmpty()) {
+                return false;
+            }
+        }
+        for (const auto &kv : backend->op("GET_FET", {fetpath, "W"})) {
+            if (kv.key == "FET_PATH")
+                fetp = kv.val;
+            else if (kv.key == "FET_VERSION")
+                fetv = kv.val;
+        }
+        if (!fetp.isEmpty()) {
+            settings->setValue("fet/FetPath", fetpath);
+            // Set GUI
+            ui->fet_path->setText(fetp);
+            ui->fet_version->setText(fetv);
+            break;
+        }
+
+        // Handle FET executable not found.
+
+        if (!fetpath.isEmpty()) {
+            // Try the default.
+            fetpath.clear();
+            continue;
+        }
+
+        QMessageBox::warning( //
+            this,
+            tr("FET not found"),
+            tr("Seek 'FET' command-line executable in file system"));
+        fetpath = "?";
+    }
+    return true;
+}
+
 void MainWindow::push_stop()
 {
     ui->pb_stop->setEnabled(false);
@@ -345,7 +354,7 @@ void MainWindow::select_tmp_dir()
     }
 }
 
-void MainWindow::default_tmp_dir()
+void MainWindow::select_default_tmp_dir()
 {
     auto kv = backend->op1("TMP_PATH", {""}, "TMP_DIR");
     if (kv.key == "") {
@@ -354,6 +363,16 @@ void MainWindow::default_tmp_dir()
     } else {
         set_tmp_dir(kv.val);
     }
+}
+
+void MainWindow::select_fet_path()
+{
+    set_fet_path("?");
+}
+
+void MainWindow::select_default_fet_path()
+{
+    set_fet_path("");
 }
 
 void MainWindow::runThreadWorkerDone()
@@ -365,8 +384,7 @@ void MainWindow::runThreadWorkerDone()
         close();
 }
 
-void MainWindow::threadRunActivated(
-    bool active)
+void MainWindow::threadRunActivated(bool active)
 {
     thread_running = active;
     ui->pb_go->setDisabled(active);

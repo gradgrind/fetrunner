@@ -1,4 +1,3 @@
-#include "backend.h"
 #include "mainwindow.h"
 
 #include <QApplication>

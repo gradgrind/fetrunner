@@ -135,10 +135,7 @@ func main() {
 	}
 
 	// Get the path to `fet-cl`, and its version number.
-	if *fetpath == "" {
-		*fetpath = "-"
-	}
-	strs, ok := fetrunner.Do("GET_FET", *fetpath)
+	strs, ok := fetrunner.Do("GET_FET", *fetpath, "")
 	okv := false
 	for _, s := range strs {
 		logfile.WriteString(s + "\n")

@@ -60,6 +60,7 @@ private:
     void instanceRowProgress(int key, QStringList parms);
     QString constraint_name(QString name);
     void set_tmp_dir(QString tdir);
+    bool set_fet_path(QString fetpath);
 
     bool quit_requested{false};
     bool thread_running{false};
@@ -88,7 +89,9 @@ private slots:
     void push_go();
     void push_stop();
     void select_tmp_dir();
-    void default_tmp_dir();
+    void select_default_tmp_dir();
+    void select_fet_path();
+    void select_default_fet_path();
     void ticker(const QString &data);
     void nconstraints(const QString &data);
     void iprogress(const QString &data);

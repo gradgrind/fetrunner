@@ -9,6 +9,7 @@ import (
 	"fetrunner/internal/timetable"
 	"fetrunner/internal/w365tt"
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
@@ -133,27 +134,53 @@ func set_tmp(dsp *Dispatcher, op *DispatchOp) {
 	}
 }
 
-// Check path to `fet-cl` (Windows: `fet-clw.exe`) and get FET version.
+func check_fet(logger *base.Logger, fetpath string) bool {
+	cmd := exec.Command(fetpath, "--version")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		logger.Warning("FET_NOT_FOUND: %s", err)
+		return false
+	}
+	logger.Result("FET_PATH", fetpath)
+	version := regexp.MustCompile(`(?m)version +([0-9.]+)`)
+	match := version.FindSubmatch(out)
+	if match == nil {
+		logger.Result("FET_VERSION", "?")
+	} else {
+		logger.Result("FET_VERSION", string(match[1]))
+	}
+	return true
+}
+
+// Check path to FET command-line executable and get FET version.
 func get_fet(dsp *Dispatcher, op *DispatchOp) {
 	logger := dsp.BaseData.Logger
-	if CheckArgs(logger, op, 1) {
+	if CheckArgs(logger, op, 2) {
 		fetpath := op.Data[0]
-		if fetpath == "-" {
-			fetpath = fet.FET_CL
+		if fetpath == "" {
+			// Get the bare command without path.
+			if op.Data[1] == "" {
+				fetpath = fet.FET_CL // command-line version
+			} else {
+				fetpath = fet.FET_CLW // GUI version
+			}
+			// First try the directory containing the running executable.
+			p, err := os.Executable()
+			if err == nil {
+				// Sanitize path
+				p, err = filepath.EvalSymlinks(p)
+				if err == nil {
+					fetpath0 := filepath.Join(filepath.Dir(p), fetpath)
+					if check_fet(logger, fetpath0) {
+						fet.FETPATH = fetpath0
+						return
+					}
+				}
+			}
+			// Otherwise, try the bare command in case it is in the PATH.
 		}
-		fet.FETPATH = fetpath
-		cmd := exec.Command(fetpath, "--version")
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			logger.Warning("FET_NOT_FOUND: %s", err)
-			return
-		}
-		version := regexp.MustCompile(`(?m)version +([0-9.]+)`)
-		match := version.FindSubmatch(out)
-		if match == nil {
-			logger.Result("FET_VERSION", "?")
-		} else {
-			logger.Result("FET_VERSION", string(match[1]))
+		if check_fet(logger, fetpath) {
+			fet.FETPATH = fetpath
 		}
 	}
 }

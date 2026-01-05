@@ -17,7 +17,8 @@ import (
 
 var (
 	FETPATH string
-	FET_CL  string = "fet-cl" // "default" value for `FETPATH`
+	FET_CL  string = "fet-cl" // "default" value for `FETPATH`, command-line version
+	FET_CLW string = "fet-cl" // "default" value for `FETPATH`, GUI version
 )
 
 type FetBackend struct {
