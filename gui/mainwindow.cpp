@@ -246,17 +246,17 @@ void MainWindow::error_popup(const QString &msg)
 
 void MainWindow::push_go()
 {
-    // Clear log
-    ui->logview->clear();
+    instance_row_map.clear();
+    reset_display();
 
     // Set parameters
     auto t = ui->tt_timeout->text();
     backend->op("TT_PARAMETER", {"TIMEOUT", t});
     auto sh = ui->tt_skip_hard->isChecked();
     backend->op("TT_PARAMETER", {"SKIP_HARD", sh ? "true" : "false"});
+    auto wff = ui->write_fet_file->isChecked();
+    backend->op("TT_PARAMETER", {"WRITE_FET_FILE", wff ? "true" : "false"});
 
-    instance_row_map.clear();
-    reset_display();
     for (const auto &kv : backend->op("RUN_TT_SOURCE")) {
         if (kv.key == "TMP_DIR") {
             set_tmp_dir(kv.val);

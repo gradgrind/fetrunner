@@ -30,6 +30,10 @@ type Parameters struct {
 
 	DEBUG bool
 
+	// If true, write fully constrained FET-file with "_" prefix to source
+	// directory:
+	WRITE_FET_FILE bool
+
 	// Tick count limits for testing whether an instance with no timeout
 	// has got stuck. See `(*RunQueue).update_instances()` method.
 	LAST_TIME_0 int

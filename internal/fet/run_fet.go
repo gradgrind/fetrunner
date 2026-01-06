@@ -19,6 +19,7 @@ var (
 	FETPATH string
 	FET_CL  string = "fet-cl" // "default" value for `FETPATH`, command-line version
 	FET_CLW string = "fet-cl" // "default" value for `FETPATH`, GUI version
+	// FET_CLW and FET_CL are the same except on Windows: see fet/platform_windows.go.
 )
 
 type FetBackend struct {
@@ -64,7 +65,8 @@ func (fbe *FetBackend) RunBackend(
 		bdata.Logger.Error("WRITE_TMP_FET_FILE_FAILED: %s", fetfile)
 		return nil
 	}
-	if instance.ConstraintType == "_COMPLETE" {
+	if instance.ConstraintType == "_COMPLETE" &&
+		attdata.Parameters.WRITE_FET_FILE {
 		// Save "complete" fet file with "_" prefix in working directory.
 		cfile := filepath.Join(bdata.SourceDir, "_"+bdata.Name+".fet")
 		err = os.WriteFile(cfile, fet_xml, 0600)

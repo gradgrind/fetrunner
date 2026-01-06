@@ -12,7 +12,7 @@ It is possible to build an installation package using functions within `CMake`, 
 
 ### Notes
 
-It seems the current `FET` distribution doesn't include `Wayland` support on Linux. Apparently it still runs on a `Wayland` system (I tested it on a recent Fedora), perhaps using `XWayland`, but using a recent feature of `CMake` on `Qt` it is possible to include direct support for `Wayland` in the `FET` package.
+It seems the current `FET` distribution doesn't include `Wayland` support on Linux. Apparently it still runs on a `Wayland` system (I tested it on a recent Fedora) using `XWayland`, but using a recent feature of `CMake` on `Qt` it is possible to include direct support for `Wayland` in the `FET` package.
 
 Running `FET` on Linux, the file system is accessed using `Qt`'s own file dialogs, rather than the native ones, at least where I have tested it. This seems to have something to do with the packaging using `linuxdeploy`. With a `CMake`-built package, the native file dialogs are used.
 

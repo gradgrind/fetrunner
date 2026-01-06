@@ -308,6 +308,9 @@ func ttparameter(dsp *Dispatcher, op *DispatchOp) {
 			val = strconv.Itoa(dsp.TtParameters.MAXPROCESSES)
 		}
 
+	case "WRITE_FET_FILE":
+		dsp.TtParameters.WRITE_FET_FILE = (val == "true")
+
 	case "DEBUG":
 		dsp.TtParameters.DEBUG = (val == "true")
 
