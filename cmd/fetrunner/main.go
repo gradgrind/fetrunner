@@ -81,7 +81,7 @@ func main() {
 	nprocesses := flag.Int("p", 0, "max. parallel processes")
 	fetpath := flag.String("fet", "", "FET executable: /path/to/fet-cl")
 	tmppath := flag.String("tmp", "", "Folder for temporary files (FET): /path/to/tmp")
-	write_fet_file := flag.Bool("xf", false, "write fully-constrained fet file")
+	write_fet_file := flag.Bool("xf", false, "write fully-constrained FET file")
 	testing := flag.Bool("xt", false, "run in testing mode")
 	debug := flag.Bool("xd", false, "run in debug mode")
 

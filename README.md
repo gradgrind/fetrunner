@@ -88,6 +88,8 @@ fetrunner -help
   -v	print version and exit
   -xd
     	run in debug mode
+  -xf
+    	write fully-constrained FET file
   -xt
     	run in testing mode
 ```
