@@ -237,34 +237,44 @@
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="974"/>
+        <location filename="../mainwindow.ui" line="1001"/>
         <source>Temporary files</source>
         <translation>Zwischendateien</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="981"/>
+        <location filename="../mainwindow.ui" line="1089"/>
         <source>Folder for temporary files, preferably RAM-drive (or other in-memory &quot;device&quot;)</source>
         <translation>Ordner für Zwischendateien, idealerweise RAM-Drive (oder Ähnliches)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="998"/>
-        <location filename="../mainwindow.ui" line="1035"/>
+        <location filename="../mainwindow.ui" line="1122"/>
+        <source>... with &quot;_&quot; prefix, in the folder containing the source file</source>
+        <translation>... mit vorangestelltem „_“, im Ordner der Quelldatei</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1125"/>
+        <source>Generate fully-constrained FET file</source>
+        <translation>FET-Datei mit allen Bedingungen erstellen</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1055"/>
+        <location filename="../mainwindow.ui" line="1082"/>
         <source>Select</source>
         <translation>Wählen</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1005"/>
-        <location filename="../mainwindow.ui" line="1042"/>
+        <location filename="../mainwindow.ui" line="981"/>
+        <location filename="../mainwindow.ui" line="1099"/>
         <source>Default</source>
         <translation>Voreinstellung</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1028"/>
+        <location filename="../mainwindow.ui" line="1062"/>
         <source>FET command</source>
         <translation>FET-Befehl</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1049"/>
+        <location filename="../mainwindow.ui" line="1032"/>
         <source>FET version</source>
         <translation>FET-Version</translation>
     </message>
