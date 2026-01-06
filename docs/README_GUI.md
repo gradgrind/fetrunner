@@ -1,37 +1,19 @@
 # Building `fetrunner` together with `FET`
 
-Although the GUI for `fetrunner` was developed using CMake, I have constructed a `.pro` file so that it can be integrated in the `FET` build process.
+The GUI for `fetrunner` has been developed using `CMake`. `FET` is built with `qmake`. I have written some `CMakeLists.txt` files for `FET` so that it is possible to build part or all of `FET` with `CMake`, which is the current standard build system for `Qt`.
 
-The `fetrunner` GUI can be built alongside `FET` by adding the `fetrunner` source directory to the `FET` source:
+On Windows, the GUI version of `fetrunner` requires a special build, `fet-clw.exe`, of the `FET` command-line program which doesn't pop up a console with every run. This can be done by slightly modifying the `FET` sources, as described in the main [README](../README.md#special-note-for-windows-users). By using the supplied `CMake` files in `fetrunner/fet-cmake` it is, however, possible to build this together with `fetrunner`. For build instructions see [README-Cmake](../fet-cmake/README.md).
 
- - Copy (or unpack) the `fetrunner` source tree to the base of the `FET` source tree.
+The `CMake` build has some advantages, but requires a recent version of `Qt` ( `Qt6.10` for one feature).
 
- - In `fet.pro`, add the fetrunner .pro file to SUBDIRS:
+`fetrunner` includes the basic structures for GUI-translation, with the possibility of embedding the translations in the binary, including `Qt`'s own translations. A German translation is provided as an example. This is all managed within the `CMakeLists.txt` file.
 
-    SUBDIRS = src/src.pro src/src-cl.pro fetrunner/gui/fetrunner-gui.pro
+It is possible to build an installation package using functions within `CMake`, possibly making `linuxdeploy` unnecessary on Linux (except for producing an `AppImage`). Unlike the `FET` standard binary distributions these would only include the required `Qt` libraries, not the system libraries these depend on, but in many cases that should be enough – if the build system is not too new.
 
-On Windows, further changes are necessary. To prevent a console being popped up every time `fet-cl` is run, the command-line version must be modified:
+### Notes
 
- - Copy `src/src-cl.pro` to `src/src-clw.pro` and remove cmdline from CONFIG in the new file:
+It seems the current `FET` distribution doesn't include `Wayland` support on Linux. Apparently it still runs on a `Wayland` system (I tested it on a recent Fedora), perhaps using `XWayland`, but using a recent feature of `CMake` on `Qt` it is possible to include direct support for `Wayland` in the `FET` package.
 
-    CONFIG += release warn_on c++17 no_keywords
+Running `FET` on Linux, the file system is accessed using `Qt`'s own file dialogs, rather than the native ones, at least where I have tested it. This seems to have something to do with the packaging using `linuxdeploy`. With a `CMake`-built package, the native file dialogs are used.
 
- - Also change the target in the new pro file:
-
-    TARGET = fet-clw
-
- - Add the new file to `fet.pro`:
-
-    SUBDIRS = src/src.pro src/src-cl.pro src/src-clw.pro fetrunner/gui/fetrunner-gui.pro
-
-In `fetrunner/fetmods` the files `fet.pro` and `src-clw.pro` have been adapted from `FET` version 7.6.4 and should be ready to copy into the `FET` tree.
-
-## Compiling the Go library
-
-To compile the `fetrunner` back-end, the `Go` language must be installed. The compilation of this back-end is easy. In directory `fetrunner/libfetrunner` run:
-
-    CGO_ENABLED=1 go build -buildmode=c-archive libfetrunner.go
-
-## Build FET
-
-Finally, build `FET` as in its README file, for example. At the end there should be an additional executable, `fetrunner-gui`. On Windows there should also be `fet-clw.exe`.
+`FET` doesn't use `Qt`'s own translations. This is occasionally visible in a dialog (only in Linux, only the file dialogs?). It is probably a very minor issue. However, to use these, the language-loading code would need to be adapted and the translations included in the distribution package.

@@ -76,13 +76,13 @@ var (
 
 func main() {
 	v := flag.Bool("v", false, "print version and exit")
-	testing := flag.Bool("T", false, "run in testing mode")
 	skip_hard := flag.Bool("h", false, "skip hard constraint testing phase")
-	timeout := flag.Int("t", 300, "set timeout")
+	timeout := flag.Int("t", 300, "set timeout, s")
 	nprocesses := flag.Int("p", 0, "max. parallel processes")
-	debug := flag.Bool("d", false, "debug")
 	fetpath := flag.String("fet", "", "FET executable: /path/to/fet-cl")
 	tmppath := flag.String("tmp", "", "Folder for temporary files (FET): /path/to/tmp")
+	testing := flag.Bool("xt", false, "run in testing mode")
+	debug := flag.Bool("xd", false, "run in debug mode")
 
 	flag.Parse()
 

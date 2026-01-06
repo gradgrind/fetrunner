@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(fet VERSION 7.6.4 LANGUAGES C CXX)
+project(fet VERSION 7.6.4 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -22,6 +22,7 @@ MESSAGE(STATUS "Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 if(WIN32)
   add_subdirectory(src-clw)
 endif()
+#add_subdirectory(src-cl)
 #add_subdirectory(src)
 add_subdirectory(fetrunner/gui)
 

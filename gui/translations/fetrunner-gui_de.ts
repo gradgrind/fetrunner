@@ -237,62 +237,74 @@
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="976"/>
+        <location filename="../mainwindow.ui" line="974"/>
         <source>Temporary files</source>
         <translation>Zwischendateien</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="983"/>
+        <location filename="../mainwindow.ui" line="981"/>
         <source>Folder for temporary files, preferably RAM-drive (or other in-memory &quot;device&quot;)</source>
         <translation>Ordner für Zwischendateien, idealerweise RAM-Drive (oder Ähnliches)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1000"/>
+        <location filename="../mainwindow.ui" line="998"/>
+        <location filename="../mainwindow.ui" line="1035"/>
         <source>Select</source>
         <translation>Wählen</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1007"/>
+        <location filename="../mainwindow.ui" line="1005"/>
+        <location filename="../mainwindow.ui" line="1042"/>
         <source>Default</source>
         <translation>Voreinstellung</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="171"/>
+        <location filename="../mainwindow.ui" line="1028"/>
+        <source>FET command</source>
+        <translation>FET-Befehl</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1049"/>
+        <source>FET version</source>
+        <translation>FET-Version</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="322"/>
         <source>FET not found</source>
         <translation>FET nicht gefunden</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="172"/>
+        <location filename="../mainwindow.cpp" line="323"/>
         <source>Seek &apos;FET&apos; command-line executable in file system</source>
         <translation>Suche &apos;FET&apos;-Kommandozeilenbefehl im Dateisystem</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="175"/>
+        <location filename="../mainwindow.cpp" line="291"/>
         <source>Seek FET executable</source>
         <translation>Suche FET-Befehl</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="177"/>
+        <location filename="../mainwindow.cpp" line="293"/>
         <source>FET executable</source>
         <translation>FET-Befehl</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="255"/>
+        <location filename="../mainwindow.cpp" line="217"/>
         <source>Open Timetable Specification File</source>
         <translation>Öffne Stundenplanungsdatei</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="257"/>
+        <location filename="../mainwindow.cpp" line="219"/>
         <source>FET / W365 Files (*.fet *_w365.json)</source>
         <translation>FET- / W365- Dateien (*.fet *_w365.json)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="324"/>
+        <location filename="../mainwindow.cpp" line="333"/>
         <source>Finishing ...</source>
         <translation>Prozesse werden abgeschlossen ...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="334"/>
+        <location filename="../mainwindow.cpp" line="343"/>
         <source>Select base folder for temporary files</source>
         <translation>Basis-Ordner für Zwischendateien wählen</translation>
     </message>

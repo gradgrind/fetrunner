@@ -29,13 +29,15 @@ There are some difficult cases with which `fetrunner` can't help much, because t
 
 `fetrunner` starts many `FET` (`fet-cl`) instances, each of which produces a number of output files. Only a fraction of these are needed by `fetrunner`, and none of them are retained. To reduce wear on SSD storage, these should probably be stored in an in-memory file system (RAM-disk, etc.). Linux has such a file-system "built-in" (at `/dev/shm`), and `fetrunner` uses it for these temporary files. On other operating systems it may be possible to provide something like this, but perhaps only with third-party software.
 
-There are a number of utilities for Windows which can generate RAM-disks. Two free ones which seem to work are [AIMtk](https://sourceforge.net/projects/aim-toolkit) and [OSFMount](https://www.osforensics.com/tools/mount-disk-images.html). Of these OSFMount seems a bit easier to use, but AIMtk can produce a dynamic RAM-disk which only occupies as much memory as is needed – OSFMount allocates a fixed-size block of RAM. However, `fetrunner` would normally need relatively little space, and a few hundred megabytes should be more than enough. When `fetrunner` starts it looks for a "disk" mounted at "R:", so if possible a RAM-disk should be mounted here.
+There are a number of utilities for Windows which can generate RAM-disks. Two free ones which seem to work are [AIMtk](https://sourceforge.net/projects/aim-toolkit) and [OSFMount](https://www.osforensics.com/tools/mount-disk-images.html). Of these OSFMount seems a bit easier to use, but AIMtk can produce a dynamic RAM-disk which only occupies as much memory as is needed – OSFMount allocates a fixed-size block of RAM. However, `fetrunner` would normally need relatively little space, and a few hundred megabytes should be more than enough. When `fetrunner` starts it looks for a drive mounted at "R:", so if possible a RAM-disk should be mounted here.
 
-If no such file-system is available and detected, the standard temporary directory for the operating system will be used. With the command-line version of `fetrunner`, it is possible to specify the path to the directory to be used for temporary files using the "-tmp" option. If a Windows system has a RAM-disk mounted at "M:", the option would then be `-tmp M:\`.
+If no such file-system is available and detected, the standard temporary directory for the operating system will be used. With the command-line version of `fetrunner`, it is possible to specify the path to the directory to be used for temporary files using the "-tmp" option. If a Windows system has a RAM-disk mounted at "M:", the option would then be `-tmp M:\`. In the GUI version of `fetrunner` the path is shown and can be changed on the "Settings" tab.
+
+Within this temporary folder, each run of `fet-cl` gets its own sub-directory for its files. The name of this sub-directory is derived from the source file by removing the extension. If multiple instances of `fetrunner` are to be run simultaneously – which is generally inadvisable because of the limited processor cores – each must have a unique source file name.
 
 ## Command line / program library / GUI
 
-`fetrunner` started life as a command-line tool, written in `Go`. Subsequently `libfetrunner` was added, which makes the functionality available as a program library, using a JSON-based API. There is now also a GUI, written in `C++/Qt`, which uses `libfetrunner` as its back-end.
+`fetrunner` started life as a command-line tool, written in `Go`. Subsequently `libfetrunner` was added, which makes the functionality available as a program library (C-library), using a JSON-based API. There is now also a GUI, written in `C++/Qt`, which uses `libfetrunner` as its back-end.
 
 ### Building the command-line tool
 
@@ -49,7 +51,7 @@ An executable should be produced in the same directory.
 
 ### Running the command-line tool
 
-Important: By default the `FET` command-line executable is expected to be runnable by calling `fet-cl` (`fet-clw.exe` on Windows – see below), i.e. it must be in the user's `PATH`. There is, however, a command line option ("-fet") to specify a different location. The value must be a full, absolute path.
+Important: By default the `FET` command-line executable is expected to be in the same directory as the `fetrunner` executable, or else runnable by calling `fet-cl` (on Windows the executable is `fet-cl.exe`), i.e. in the user's `PATH`. There is, however, a command line option ("-fet") to specify a different location – the value must be a full, absolute path.
 
 `fetrunner` can be run with just the source file as argument:
 
@@ -57,7 +59,7 @@ Important: By default the `FET` command-line executable is expected to be runnab
 ./fetrunner path/to/fetfile.fet
 ```
 
-This will normally run for up to five minutes, placing the results in the same directory, "path/to/":
+This will normally run for up to five minutes, placing the results in the same directory as the source file, "path/to/" in the case of the above command:
 
     `fetfile_Result.fet` – the `FET` file used to produce the result
 
@@ -74,41 +76,41 @@ There are a few command-line options:
 ```
 fetrunner -help
  ->
-  -T    run in testing mode
-  -d    debug
   -fet string
-        FET executable: /path/to/fet-cl
-  -h    skip hard constraint testing phase
+    	FET executable: /path/to/fet-cl
+  -h	skip hard constraint testing phase
   -p int
-        max. parallel processes
+    	max. parallel processes
   -t int
-        set timeout (default 300)
+    	set timeout, s (default 300)
   -tmp string
-        Folder for temporary files (FET): /path/to/tmp
-  -v    print version and exit
+    	Folder for temporary files (FET): /path/to/tmp
+  -v	print version and exit
+  -xd
+    	run in debug mode
+  -xt
+    	run in testing mode
 ```
 
-In normal usage, the most useful of these is probably "-t", which sets the overall timeout in seconds.
-
-If it is known that the hard constraints are all satisfiable, the "-h" option can be used to always include the hard constraints and test the sequential addition of just the soft constraints.
-
-If multiple instances of `fetrunner` are to be run simultaneously – which is generally inadvisable because of the limited processor cores – each should have a unique source file (name).
+If it is known that the hard constraints are all satisfiable, the "-h" option can be used to always include the hard constraints (the unconstrained instance is not run) and test the sequential addition of just the soft constraints.
 
 ### Building the program library
 
-See `libfetrunner/README`.
+See [Build `libfetrunner`](libfetrunner/README.md).
 
 ### Building the GUI
 
 As this is written in `C++` this is more difficult. Perhaps the easiest way is to install the Qt development kit from the Qt website (qt.io). Then run Qt Creator and open the project in the subdirectory `gui` by loading the `CMakeLists.txt` file. See the Qt Creator documentation for further details. Note that `libfetrunner` must be built (as a static library) before building the GUI.
 
-**Special note for Windows users**
+If the `Qt` libraries are compatible, it should be possible just to copy the `fetrunner-gui` binary into the same directory as `fet-cl` in the `FET` binary distribution.
 
-The `fet-cl.exe` built when `FET` is built normally is compiled as a console application. This can be used by the command-line `fetrunner`, but if it is used by `fetrunner-gui` a new console will be popped up every time it is called – which is a lot. This makes a real mess! Thus a custom build of `fet-cl` without console output is required. I have given the executable a new name, `fet-clw.exe` to distinguish it; it can be generated as follows:
+#### Special note for Windows users
 
- - Copy `src/src-cl` to `src/src-clw` and remove `cmdline` from CONFIG in `src/src-clw.pro`.
+The `fet-cl.exe` built when `FET` is built normally is compiled as a console application. This can be used by the command-line `fetrunner`, but if it is used by `fetrunner-gui` a new console will be popped up every time it is called – which is a lot and makes a real mess! Thus a custom build of `fet-cl` without console output is required. I have given the executable a new name, `fet-clw.exe` to distinguish it; it can be generated from the `FET` sources as follows:
 
- - Change TARGET in `src/src-clw` to `fet-clw`.
+ - Copy `src/src-cl.pro` to `src/src-clw.pro` and remove `cmdline` from CONFIG in `src/src-clw.pro`.
+
+ - Change TARGET in `src/src-clw.pro` to `fet-clw`.
 
  - Add `src/src-clw.pro` to SUBDIRS in `fet.pro`.
 
@@ -116,6 +118,8 @@ The `fet-cl.exe` built when `FET` is built normally is compiled as a console app
 
  - Compile `FET` as usual.
 
-### Building the GUI together with `FET`
+It may, however, be more convenient to use the `CMake` build described below.
 
-It may be more convenient to build `fetrunner` together with `FET`, especially on Windows, where a custom build of `fet-cl` is required anyway. By adding a `qmake` build file to `fetrunner`, this can be achieved in a fairly straightforward way, see `docs/README_GUI.md`.
+### Building the GUI within `FET`
+
+It may be more convenient to build `fetrunner` inside the `FET` source tree, especially on Windows, where a custom build of `fet-cl` (`fet-clw`) is required anyway. To this end there are `CMakeLists.txt` files (in `fetrunner/fet-cmake`) which can be added to the `FET` sources. See [README_GUI](docs/README_GUI.md) for further details. Basic `CMakeLists.txt` files are also provided for `fet-cl` and `fet`, so that the whole of `FET` could be built together with `fetrunner`. This works and has some advantages, but requires a recent `Qt` version. See [CMake_FET](docs/CMake_FET.md) for the current state.
