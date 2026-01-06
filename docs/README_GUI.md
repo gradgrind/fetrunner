@@ -2,7 +2,7 @@
 
 The GUI for `fetrunner` has been developed using `CMake`. `FET` is built with `qmake`. I have written some `CMakeLists.txt` files for `FET` so that it is possible to build part or all of `FET` with `CMake`, which is the current standard build system for `Qt`.
 
-On Windows, the GUI version of `fetrunner` requires a special build, `fet-clw.exe`, of the `FET` command-line program which doesn't pop up a console with every run. This can be done by slightly modifying the `FET` sources, as described in the main [README](../README.md#special-note-for-windows-users). By using the supplied `CMake` files in `fetrunner/fet-cmake` it is, however, possible to build this together with `fetrunner`. For build instructions see [README-Cmake](../fet-cmake/README.md).
+On Windows, the GUI version of `fetrunner` requires a special build, `fet-clw.exe`, of the `FET` command-line program which doesn't pop up a console with every run. This can be done by slightly modifying the `FET` sources, as described in the main [README](../README.md#special-note-for-windows-users). By using the supplied `CMake` files in `fetrunner/fet-cmake` it is, however, possible to build this together with `fetrunner`. For build instructions see [README-Cmake](../fet-cmake/README-FET-CMake.md).
 
 The `CMake` build has some advantages, but requires a recent version of `Qt` ( `Qt6.10` for one feature).
 

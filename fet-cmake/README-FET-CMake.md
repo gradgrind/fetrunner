@@ -2,6 +2,8 @@
 
 In the `FET` root folder:
 
+ - Copy in `CMakeLists.txt` from this directory.
+ 
  - Copy in the folders/files from `src`, `src-cl` and `src-clw` in this directory.
 
  - Copy in the complete `fetrunner` folder.

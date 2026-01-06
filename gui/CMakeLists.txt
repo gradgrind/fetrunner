@@ -18,8 +18,8 @@ qt_standard_project_setup(I18N_TRANSLATED_LANGUAGES de)
 
 add_library(libfetrunner STATIC IMPORTED) # STATIC or SHARED
 set_target_properties(libfetrunner PROPERTIES
-  IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/../libfetrunner/libfetrunner.a"
-  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/../libfetrunner"
+  IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/../libfetrunner/libfetrunner.a"
+  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/../libfetrunner"
 )
 
 qt_add_executable(fetrunner-gui
