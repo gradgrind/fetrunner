@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 
 #include <QApplication>
+#include <QDir>
 #include <QLibraryInfo>
 #include <QLocale>
 #include <QTranslator>
@@ -37,6 +38,15 @@ int main(
     }
 
     MainWindow w;
+    QDir xdir{app.applicationDirPath()};
+    QString iconpath{"../../icons/fetrunner.svg"};
+    if (!xdir.exists(iconpath)) {
+        iconpath = "icons/fetrunner.svg";
+        if (!xdir.exists(iconpath))
+            goto noicon;
+    }
+    w.setWindowIcon(QIcon(xdir.filePath(iconpath)));
+noicon:
 
     w.show();
     return app.exec();
