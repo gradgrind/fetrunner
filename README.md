@@ -75,7 +75,7 @@ This will normally run for up to five minutes, placing the results in the same d
 
     `fetfile.log` – a log file giving information about the run
 
-    `_fetfile.fet` – should be essentially the same as the original `fetfile.fet`
+    `_fetfile.fet` – (optional, primarily for test purposes, with -xf option) should be essentially the same as the original `fetfile.fet`
 
 The log-file is updated continually during the run.
 
@@ -110,9 +110,9 @@ See [Build `libfetrunner`](libfetrunner/README.md).
 
 ### Building the GUI
 
-As this is written in `C++` this is more difficult. Perhaps the easiest way is to install the Qt development kit from the Qt website (qt.io). Then run Qt Creator and open the project in the subdirectory `gui` by loading the `CMakeLists.txt` file. See the Qt Creator documentation for further details. Note that `libfetrunner` must be built (as a static library) before building the GUI.
+As this is written in `C++` this is more difficult. Perhaps the easiest way is to install the Qt development kit from the Qt website (qt.io). Then run Qt Creator and open the project in the subdirectory `gui` by loading the `CMakeLists.txt` file. See the Qt Creator documentation for further details. Note that `libfetrunner` must be built (as a static library) before building the GUI. It should be possible just to copy the `fetrunner-gui` binary into the same directory as `fet-cl` in the `FET` binary distribution.
 
-If the `Qt` libraries are compatible, it should be possible just to copy the `fetrunner-gui` binary into the same directory as `fet-cl` in the `FET` binary distribution.
+For more portable use, it is probably better to build using the method described [below](#building-the-gui-within-fet).
 
 #### Special note for Windows users
 
