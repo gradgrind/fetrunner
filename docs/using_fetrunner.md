@@ -36,7 +36,7 @@ This will normally run for up to five minutes, placing the results in the same d
 
     `fetfile.log` – a log file giving information about the run
 
-    `_fetfile.fet` – (optional, primarily for test purposes, with -xf option) should be essentially the same as the original `fetfile.fet`
+    `_fetfile.fet` – (optional, primarily for test purposes, with -xf option) should be essentially the same as the original `fetfile.fet`, but the constraints are indexed (in their "Comments" field) and the soft constraints are made "hard" (a derived weight, not the same as the original `FET` "Weight_Percentage" is added to the "Comments" field)
 
 The log-file is updated continually during the run, so it is possible to monitor progress by reading this file.
 

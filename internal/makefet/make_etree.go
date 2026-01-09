@@ -104,8 +104,8 @@ func FetTree(
 				hard_constraint_map[c.Ctype], i)
 		} else {
 			// Soft constraint
-			soft_constraint_map[c.Ctype] = append(
-				soft_constraint_map[c.Ctype], i)
+			wctype := fmt.Sprintf("%02d:%s", c.Weight, c.Ctype)
+			soft_constraint_map[wctype] = append(soft_constraint_map[wctype], i)
 		}
 	}
 	rundata.NConstraints = len(rundata.Constraints)
@@ -163,7 +163,12 @@ func (fetbuild *FetBuild) add_time_constraint(e *etree.Element, c Constraint) {
 
 	// Make a tag for the constraint
 	fetbuild.constraint_counter++
-	c.Backend = fmt.Sprintf("[%d]", fetbuild.constraint_counter)
+	if c.Weight == 100 {
+		c.Backend = fmt.Sprintf("[%d]", fetbuild.constraint_counter)
+	} else {
+		c.Backend = fmt.Sprintf("[%d:%02d]", fetbuild.constraint_counter, c.Weight)
+		e.SelectElement("Weight_Percentage").SetText("100")
+	}
 	e.CreateElement("Comments").SetText(c.Backend)
 
 	rundata.Constraints = append(rundata.Constraints, c)
@@ -177,7 +182,12 @@ func (fetbuild *FetBuild) add_space_constraint(e *etree.Element, c Constraint) {
 
 	// Make a tag for the constraint
 	fetbuild.constraint_counter++
-	c.Backend = fmt.Sprintf("[%d]", fetbuild.constraint_counter)
+	if c.Weight == 100 {
+		c.Backend = fmt.Sprintf("[%d]", fetbuild.constraint_counter)
+	} else {
+		c.Backend = fmt.Sprintf("[%d:%02d]", fetbuild.constraint_counter, c.Weight)
+		e.SelectElement("Weight_Percentage").SetText("100")
+	}
 	e.CreateElement("Comments").SetText(c.Backend)
 
 	rundata.Constraints = append(rundata.Constraints, c)

@@ -26,7 +26,9 @@ There are essentially two things that need dealing with. Perhaps the simplest is
 
 A constraint is categorised as "hard" if it *must* be satisfied in an acceptable timetable. `fetrunner` loosens this requirement a bit in order to get all the activities placed in a given time. The resulting timetable is then presumably not yet acceptable, but may be helpful. A "soft" constraint is one which should be satisfied "if possible", but a resulting timetable may be acceptable even if the constraint is not satisfied. In FET, hard constraints have "Weight" 100 (%), Anything less and the constraint is considered soft (even if, say, 99.99% is not particularly soft).
 
-`fetrunner` takes the distinction between hard and soft constraints into account in that it doesn't touch the soft constraints (it leaves them deactivated) until all the hard constraints have been satisfied. Thus, it is possible that the soft constraints never get tested.
+`fetrunner` takes the distinction between hard and soft constraints into account in that it doesn't touch the soft constraints (it leaves them deactivated) until all the hard constraints have been satisfied (or rejected as "impossible"). Thus, it is possible that the soft constraints never get tested.
+
+Because of the way `fetrunner` works, it doesn't make much sense to actually use soft constraints in their original form. In `FET` a soft constraint is rejected if a number (dependent on the weight) of placement attempts conflict with it. `fetrunner` does something vaguely similar, in that it tries to use the constraint, only accepting it if a run completes. So, when `fetrunner` enables a soft constraint, it is actually turned into a hard constraint. **TODO**: This is experimental, it may be less efficient?
 
 ### Handling "difficult" constraint types
 
