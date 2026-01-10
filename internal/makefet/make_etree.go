@@ -5,8 +5,6 @@ import (
 	"fetrunner/internal/fet"
 	"fetrunner/internal/timetable"
 	"fmt"
-	"math"
-	"strconv"
 
 	"github.com/beevik/etree"
 )
@@ -23,6 +21,7 @@ const VIRTUAL_ROOM_PREFIX = "!"
 // some fields of the `autotimetable.BasicData` are initialized.
 func FetTree(
 	bdata *base.BaseData,
+	soft_as_hard bool,
 	tt_data *timetable.TtData,
 ) *fet.TtRunDataFet {
 	doc := etree.NewDocument()
@@ -38,6 +37,7 @@ func FetTree(
 		rundata:            rundata,
 		fet_virtual_rooms:  map[string]string{},
 		fet_virtual_room_n: map[string]int{},
+		soft_as_hard:       soft_as_hard,
 	}
 
 	fetroot := doc.CreateElement("fet")
@@ -116,6 +116,7 @@ func FetTree(
 	return rundata
 }
 
+/*
 func oldweight2fet(w int) string {
 	if w <= 0 {
 		return "0"
@@ -128,6 +129,7 @@ func oldweight2fet(w int) string {
 	wfet := 100.0 - 100.0/n
 	return strconv.FormatFloat(wfet, 'f', 3, 64)
 }
+*/
 
 func (fetbuild *FetBuild) add_activity_tag(tag string) {
 	atag := fetbuild.activity_tag_list.CreateElement("Activity_Tag")
@@ -166,8 +168,11 @@ func (fetbuild *FetBuild) add_time_constraint(e *etree.Element, c Constraint) {
 	if c.Weight == 100 {
 		c.Backend = fmt.Sprintf("[%d]", fetbuild.constraint_counter)
 	} else {
-		c.Backend = fmt.Sprintf("[%d:%02d]", fetbuild.constraint_counter, c.Weight)
-		e.SelectElement("Weight_Percentage").SetText("100")
+		wfet := e.SelectElement("Weight_Percentage").Text()
+		c.Backend = fmt.Sprintf("[%d:%s]", fetbuild.constraint_counter, wfet)
+		if fetbuild.soft_as_hard {
+			e.SelectElement("Weight_Percentage").SetText("100")
+		}
 	}
 	e.CreateElement("Comments").SetText(c.Backend)
 
@@ -185,8 +190,11 @@ func (fetbuild *FetBuild) add_space_constraint(e *etree.Element, c Constraint) {
 	if c.Weight == 100 {
 		c.Backend = fmt.Sprintf("[%d]", fetbuild.constraint_counter)
 	} else {
-		c.Backend = fmt.Sprintf("[%d:%02d]", fetbuild.constraint_counter, c.Weight)
-		e.SelectElement("Weight_Percentage").SetText("100")
+		wfet := e.SelectElement("Weight_Percentage").Text()
+		c.Backend = fmt.Sprintf("[%d:%s]", fetbuild.constraint_counter, wfet)
+		if fetbuild.soft_as_hard {
+			e.SelectElement("Weight_Percentage").SetText("100")
+		}
 	}
 	e.CreateElement("Comments").SetText(c.Backend)
 

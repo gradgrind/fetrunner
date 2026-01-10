@@ -29,4 +29,6 @@ type FetBuild struct {
 	// Cache for FET virtual rooms, "hash" -> FET-virtual-room tag
 	fet_virtual_rooms  map[string]string
 	fet_virtual_room_n map[string]int // FET-virtual-room tag -> number of room sets
+
+	soft_as_hard bool // if true, give soft constraints weight 100
 }

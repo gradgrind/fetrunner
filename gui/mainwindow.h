@@ -58,7 +58,7 @@ private:
     void tableProgressHard();
     void tableProgressGroup(QHash<QString, progress_line>);
     void instanceRowProgress(int key, QStringList parms);
-    QString constraint_name(QString name);
+    //QString constraint_name(QString name);
     void set_tmp_dir(QString tdir);
     bool set_fet_path(QString fetpath);
 

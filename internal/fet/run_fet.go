@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 var (
@@ -120,16 +121,18 @@ func (fbe *FetBackend) RunBackend(
 
 	runCmd := exec.CommandContext(ctx, FETPATH, params...)
 
-	hard := ""
-	if instance.Hard {
-		hard = "!"
+	// FET's constraints all start with "Constraint", which is rather
+	// superfluous for display purposes, so strip it off
+	ctype := strings.TrimPrefix(instance.ConstraintType, "Constraint")
+	// If the constraint is soft, prefix its weight ("nn:")
+	if instance.Weight != "" {
+		ctype = instance.Weight + ":" + ctype
 	}
-	bdata.Logger.Result(".START", fmt.Sprintf("%d.%s.%d.%d.%s",
+	bdata.Logger.Result(".START", fmt.Sprintf("%d.%s.%d.%d",
 		instance.Index,
-		instance.ConstraintType,
+		ctype,
 		len(instance.Constraints),
-		instance.Timeout,
-		hard))
+		instance.Timeout))
 
 	go run(fet_data, runCmd)
 	return fet_data

@@ -249,6 +249,7 @@ func (rq *RunQueue) mainphase() bool {
 				instance = attdata.new_instance(
 					base_instance,
 					instance.ConstraintType,
+					instance.Weight,
 					instance.Constraints,
 					next_timeout)
 				rq.add(instance)
@@ -274,11 +275,13 @@ func (rq *RunQueue) split_instance(
 		attdata.new_instance(
 			base_instance,
 			instance.ConstraintType,
+			instance.Weight,
 			instance.Constraints[:nhalf],
 			timeout),
 		attdata.new_instance(
 			base_instance,
 			instance.ConstraintType,
+			instance.Weight,
 			instance.Constraints[nhalf:],
 			timeout),
 	}

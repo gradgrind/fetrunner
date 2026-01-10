@@ -380,7 +380,7 @@ tickloop:
 		}
 		if len(clist) != 0 {
 			infolist = append(infolist,
-				constraintinfo{string(c) + " (HARD)", n, len(clist)})
+				constraintinfo{string(c), n, len(clist)})
 			hnn += n
 			hnall += len(clist)
 		}
@@ -395,7 +395,7 @@ tickloop:
 		}
 		if len(clist) != 0 {
 			infolist = append(infolist,
-				constraintinfo{string(c) + " (SOFT)", n, len(clist)})
+				constraintinfo{string(c), n, len(clist)})
 			snn += n
 			snall += len(clist)
 		}
@@ -423,6 +423,7 @@ func (attdata *AutoTtData) abort_instance(instance *TtInstance) {
 func (attdata *AutoTtData) new_instance(
 	instance_0 *TtInstance,
 	constraint_type ConstraintType,
+	weight string,
 	constraint_indexes []ConstraintIndex,
 	timeout int,
 ) *TtInstance {
@@ -446,7 +447,7 @@ func (attdata *AutoTtData) new_instance(
 		ConstraintEnabled: enabled,
 		ConstraintType:    constraint_type,
 		Constraints:       constraint_indexes,
-		Hard:              attdata.phase == 1,
+		Weight:            weight,
 
 		// Run time
 		//BackEndData     any

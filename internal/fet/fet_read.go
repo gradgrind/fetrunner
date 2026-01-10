@@ -14,7 +14,11 @@ import (
 // all lumped together in th `ConstraintElements` list, but their indexes
 // are also recorded in the `TimeConstraints` and `SpaceConstraints` lists.
 
-func FetRead(bdata *base.BaseData, fetpath string) *TtRunDataFet {
+func FetRead(
+	bdata *base.BaseData,
+	soft_as_hard bool,
+	fetpath string,
+) *TtRunDataFet {
 	logger := bdata.Logger
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(fetpath); err != nil {
@@ -117,7 +121,9 @@ func FetRead(bdata *base.BaseData, fetpath string) *TtRunDataFet {
 				wctype := fmt.Sprintf("%02d:%s", wdb, ctype)
 				soft_constraint_map[wctype] = append(soft_constraint_map[wctype],
 					ConstraintIndex(i))
-				e.SelectElement("Weight_Percentage").SetText("100")
+				if soft_as_hard {
+					e.SelectElement("Weight_Percentage").SetText("100")
+				}
 			}
 			constraint_types = append(constraint_types, ctype)
 			// ... duplicates wil be removed in `sort_constraint_types`

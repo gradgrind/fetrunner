@@ -20,8 +20,13 @@ type Parameters struct {
 	// satisfiable – skip the unconstrained instance, basing tests on
 	// the hard-only instance.
 	SKIP_HARD bool
-	// This approach relies on parallel processing. If there are too few
-	// real processors it will be inefficient:
+	// If the SOFT_AS_HARD flag is true, set the weight of soft constraints
+	// to 100, i.e. treat them as hard constraints.
+	SOFT_AS_HARD bool
+	// `fetrunner` relies on parallel processing. If there are too few
+	// real processors it will be inefficient. MAXPROCESSES sets the
+	// maximum number of timetable generations (`FET` processes) which
+	// may run at the same time.
 	MAXPROCESSES int
 
 	TIMEOUT                  int // the overall timeout, secs
@@ -86,7 +91,7 @@ type TtInstance struct {
 	ConstraintEnabled []bool // ConstraintIndex -> enabled
 	// Constraints to be added in this instance:
 	ConstraintType ConstraintType
-	Hard           bool // whether the constraints to be added are "hard"
+	Weight         string // "internal" weight ("00"-"99", or "" if hard)
 	Constraints    []ConstraintIndex
 
 	// Run time ...

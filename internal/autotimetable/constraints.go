@@ -53,6 +53,7 @@ func (attdata *AutoTtData) get_basic_constraints(
 		instance := attdata.new_instance(
 			instance0,
 			wcl.ctype,
+			wcl.weight,
 			cixlist,
 			attdata.cycle_timeout)
 		instances = append(instances, instance)

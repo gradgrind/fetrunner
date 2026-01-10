@@ -77,6 +77,7 @@ var (
 func main() {
 	v := flag.Bool("v", false, "print version and exit")
 	skip_hard := flag.Bool("h", false, "skip hard constraint testing phase")
+	soft_as_hard := flag.Bool("hs", false, "soft constraints are treated as hard")
 	timeout := flag.Int("t", 300, "set timeout, s")
 	nprocesses := flag.Int("p", 0, "max. parallel processes")
 	fetpath := flag.String("fet", "", "FET executable: /path/to/fet-cl")
@@ -119,6 +120,7 @@ func main() {
 	do("TT_PARAMETER", "DEBUG", strconv.FormatBool(*debug))
 	do("TT_PARAMETER", "TESTING", strconv.FormatBool(*testing))
 	do("TT_PARAMETER", "SKIP_HARD", strconv.FormatBool(*skip_hard))
+	do("TT_PARAMETER", "SOFT_AS_HARD", strconv.FormatBool(*soft_as_hard))
 	do("TT_PARAMETER", "WRITE_FET_FILE", strconv.FormatBool(*write_fet_file))
 
 	if *tmppath != "" {

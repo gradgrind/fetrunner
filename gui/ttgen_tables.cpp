@@ -40,9 +40,11 @@ void MainWindow::setup_progress_table()
     soft_constraint_map.clear();
     auto row = ui->progress_table->rowCount();
     for (const auto &kv : backend->op("HARD_CONSTRAINTS")) {
-        auto cname = constraint_name(kv.key);
+        //auto cname = constraint_name(kv.key);
+        auto cname = kv.key;
         // add table line
-        auto item0 = new QTableWidgetItem("[!] " + cname);  // constraint type
+        //auto item0 = new QTableWidgetItem("[!] " + cname);  // constraint type
+        auto item0 = new QTableWidgetItem(cname);           // constraint type
         auto item1 = new QTableWidgetItem("/ " + kv.val);   // number of constraints
         auto item2 = new QTableWidgetItem("0");             // accepted constraints
         auto item3 = new QTableWidgetItem("@ 0");           // number of constraints
@@ -63,7 +65,8 @@ void MainWindow::setup_progress_table()
         ui->progress_hard->setEnabled(true);
     }
     for (const auto &kv : backend->op("SOFT_CONSTRAINTS")) {
-        auto cname = constraint_name(kv.key);
+        //auto cname = constraint_name(kv.key);
+        auto cname = kv.key;
         // add table line
         auto item0 = new QTableWidgetItem(cname);         // constraint type
         auto item1 = new QTableWidgetItem("/ " + kv.val); // number of constraints
@@ -133,15 +136,16 @@ void MainWindow::nconstraints(const QString &data)
 void MainWindow::fail(QString msg)
 {
     close();
-    qApp->quit();
     QMessageBox::critical(this, "", msg);
+    qApp->quit();
 }
 
 void MainWindow::tableProgress(instance_row &irow)
 {
     auto constraint = irow.data[1];
     auto number = irow.data[2];
-    if (!irow.data[4].isEmpty()) { // hard constraint
+    //if (!irow.data[4].isEmpty()) { // hard constraint
+    if (!constraint.contains(':')) { // hard constraint
         if (!hard_constraint_map.contains(constraint)) {
             fail("*BUG* hard_constraint_map, no key " + constraint);
             return;
@@ -204,8 +208,6 @@ void MainWindow::instanceRowProgress(int key, QStringList parms)
     int row;
     if (irow.item == nullptr) {
         auto ctype = irow.data[1]; // constraint type
-        if (!irow.data[4].isEmpty())
-            ctype.prepend("[!] "); // hard constraint
         auto item0 = new QTableWidgetItem(ctype);
         auto item1 = new QTableWidgetItem(irow.data[2]); // number of constraints
         item1->setTextAlignment(Qt::AlignCenter);

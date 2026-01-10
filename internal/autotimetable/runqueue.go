@@ -184,6 +184,7 @@ func (rq *RunQueue) update_queue() int {
 				inew := attdata.new_instance(
 					instance.BaseInstance,
 					instance.ConstraintType,
+					instance.Weight,
 					instance.Constraints[n:nx],
 					instance.Timeout)
 				attdata.constraint_list = append(

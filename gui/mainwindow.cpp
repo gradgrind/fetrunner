@@ -254,6 +254,8 @@ void MainWindow::push_go()
     backend->op("TT_PARAMETER", {"TIMEOUT", t});
     auto sh = ui->tt_skip_hard->isChecked();
     backend->op("TT_PARAMETER", {"SKIP_HARD", sh ? "true" : "false"});
+    auto s2h = ui->tt_soft_as_hard->isChecked();
+    backend->op("TT_PARAMETER", {"SOFT_AS_HARD", s2h ? "true" : "false"});
     auto wff = ui->write_fet_file->isChecked();
     backend->op("TT_PARAMETER", {"WRITE_FET_FILE", wff ? "true" : "false"});
 
@@ -451,10 +453,11 @@ void MainWindow::istart(const QString &data)
     auto key = slist[0].toInt();
     if (key < INSTANCE0)
         return;
-    slist[1] = constraint_name(slist[1]);
+    //slist[1] = constraint_name(slist[1]);
     instance_row_map[key] = {slist, nullptr, 0};
 }
 
+/*
 QString MainWindow::constraint_name(QString name)
 {
     // FET starts all its constraints with "Constraint",
@@ -464,6 +467,7 @@ QString MainWindow::constraint_name(QString name)
     }
     return name;
 }
+*/
 
 void MainWindow::iend(const QString &data)
 {

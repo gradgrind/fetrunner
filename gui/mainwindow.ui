@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1227</width>
-    <height>902</height>
+    <height>969</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,8 +19,8 @@
   <property name="windowTitle">
    <string notr="true">fetrunner</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_4">
-   <item>
+  <layout class="QGridLayout" name="gridLayout_5">
+   <item row="0" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0,1,0,3">
      <item>
       <widget class="QPushButton" name="pb_open_new">
@@ -71,14 +71,14 @@
      </item>
     </layout>
    </item>
-   <item>
+   <item row="1" column="0">
     <widget class="Line" name="line">
      <property name="orientation">
       <enum>Qt::Orientation::Vertical</enum>
      </property>
     </widget>
    </item>
-   <item>
+   <item row="2" column="0">
     <widget class="QFrame" name="frame_3">
      <property name="frameShape">
       <enum>QFrame::Shape::StyledPanel</enum>
@@ -119,7 +119,37 @@
               </property>
              </widget>
             </item>
+            <item row="1" column="0" colspan="2">
+             <widget class="QCheckBox" name="tt_skip_hard">
+              <property name="toolTip">
+               <string>All hard constraints enabled, for testing soft constraints.</string>
+              </property>
+              <property name="text">
+               <string>With all hard constraints</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="tt_soft_as_hard">
+              <property name="toolTip">
+               <string>Make soft constraints hard when generating</string>
+              </property>
+              <property name="text">
+               <string>Soft as hard</string>
+              </property>
+             </widget>
+            </item>
             <item row="3" column="0">
+             <widget class="QLabel" name="label_7">
+              <property name="text">
+               <string>Processes (max.)</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QSpinBox" name="tt_processes"/>
+            </item>
+            <item row="4" column="0">
              <spacer name="verticalSpacer">
               <property name="orientation">
                <enum>Qt::Orientation::Vertical</enum>
@@ -130,12 +160,12 @@
               <property name="sizeHint" stdset="0">
                <size>
                 <width>20</width>
-                <height>40</height>
+                <height>20</height>
                </size>
               </property>
              </spacer>
             </item>
-            <item row="3" column="1">
+            <item row="4" column="1">
              <spacer name="horizontalSpacer_4">
               <property name="orientation">
                <enum>Qt::Orientation::Vertical</enum>
@@ -150,26 +180,6 @@
                </size>
               </property>
              </spacer>
-            </item>
-            <item row="1" column="0" colspan="2">
-             <widget class="QCheckBox" name="tt_skip_hard">
-              <property name="toolTip">
-               <string>All hard constraints enabled, for testing soft constraints.</string>
-              </property>
-              <property name="text">
-               <string>With all hard constraints</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_7">
-              <property name="text">
-               <string>Processes (max.)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QSpinBox" name="tt_processes"/>
             </item>
            </layout>
           </widget>
@@ -617,7 +627,7 @@
              <item row="1" column="0">
               <widget class="QLabel" name="label_6">
                <property name="text">
-                <string>[x] All hard constraints</string>
+                <string>All hard constraints</string>
                </property>
               </widget>
              </item>
@@ -673,7 +683,7 @@
             </column>
             <column>
              <property name="text">
-              <string>[Hard] Constraint type</string>
+              <string>Constraint type</string>
              </property>
             </column>
             <item row="0" column="0">
@@ -752,7 +762,7 @@
             </item>
             <item row="1" column="3">
              <property name="text">
-              <string>[x] A completed hard constraint type</string>
+              <string>A completed hard constraint type</string>
              </property>
             </item>
             <item row="2" column="0">
@@ -781,7 +791,7 @@
             </item>
             <item row="2" column="3">
              <property name="text">
-              <string>A soft constraint type, not yet complete</string>
+              <string>58:A soft constraint type, not yet complete</string>
              </property>
             </item>
            </widget>
@@ -845,7 +855,7 @@
             </column>
             <column>
              <property name="text">
-              <string>[Hard] Constraint type</string>
+              <string>Constraint type</string>
              </property>
             </column>
             <item row="0" column="0">
@@ -882,7 +892,7 @@
             </item>
             <item row="0" column="4">
              <property name="text">
-              <string>[x] Constraint name</string>
+              <string>02:Constraint name</string>
              </property>
             </item>
             <item row="1" column="0">
@@ -919,7 +929,7 @@
             </item>
             <item row="1" column="4">
              <property name="text">
-              <string>[x] Some completed instance</string>
+              <string>Some completed instance</string>
              </property>
             </item>
            </widget>

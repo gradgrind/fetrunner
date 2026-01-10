@@ -195,7 +195,7 @@ func file_loader(dsp *Dispatcher, op *DispatchOp) {
 	fpath := op.Data[0]
 
 	if strings.HasSuffix(strings.ToLower(fpath), ".fet") {
-		ttRunDataFet := fet.FetRead(bd, fpath)
+		ttRunDataFet := fet.FetRead(bd, dsp.TtParameters.SOFT_AS_HARD, fpath)
 		if ttRunDataFet != nil {
 			dsp.TtSource = ttRunDataFet
 			bd.SourceDir = filepath.Dir(fpath)
@@ -234,7 +234,10 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 	ttsource := dsp.TtSource
 	if ttsource == nil {
 		if dsp.BaseData.Db != nil {
-			ttsource = makefet.FetTree(bdata, timetable.BasicSetup(bdata))
+			ttsource = makefet.FetTree(
+				bdata,
+				dsp.TtParameters.SOFT_AS_HARD,
+				timetable.BasicSetup(bdata))
 		} else {
 			logger.Error("No source")
 			logger.Result("OK", "false")
@@ -320,6 +323,9 @@ func ttparameter(dsp *Dispatcher, op *DispatchOp) {
 	case "SKIP_HARD":
 		dsp.TtParameters.SKIP_HARD = (val == "true")
 
+	case "SOFT_AS_HARD":
+		dsp.TtParameters.SOFT_AS_HARD = (val == "true")
+
 	default:
 		logger.Error("UnknownParameter: %s", key)
 		return
@@ -335,12 +341,16 @@ func nprocesses(dsp *Dispatcher, op *DispatchOp) {
 
 func hardConstraints(dsp *Dispatcher, op *DispatchOp) {
 	for c, ilist := range dsp.AutoTtData.HardConstraintMap {
-		dsp.BaseData.Logger.Result(c, strconv.Itoa(len(ilist)))
+		dsp.BaseData.Logger.Result(
+			strings.TrimPrefix(c, "Constraint"),
+			strconv.Itoa(len(ilist)))
 	}
 }
 
 func softConstraints(dsp *Dispatcher, op *DispatchOp) {
 	for c, ilist := range dsp.AutoTtData.SoftConstraintMap {
-		dsp.BaseData.Logger.Result(c, strconv.Itoa(len(ilist)))
+		dsp.BaseData.Logger.Result(
+			strings.Replace(c, ":Constraint", ":", 1),
+			strconv.Itoa(len(ilist)))
 	}
 }

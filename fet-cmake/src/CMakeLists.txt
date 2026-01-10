@@ -333,7 +333,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         OUTPUT_SCRIPT deploy_script
         NO_TRANSLATIONS
         NO_UNSUPPORTED_PLATFORM_ERROR
-        INCLUDE_PLUGINS wayland xcb
+        INCLUDE_PLUGINS wayland
     )
 else()
     qt_generate_deploy_app_script(
