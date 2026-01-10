@@ -195,7 +195,7 @@ func file_loader(dsp *Dispatcher, op *DispatchOp) {
 	fpath := op.Data[0]
 
 	if strings.HasSuffix(strings.ToLower(fpath), ".fet") {
-		ttRunDataFet := fet.FetRead(bd, dsp.TtParameters.SOFT_AS_HARD, fpath)
+		ttRunDataFet := fet.FetRead(bd, fpath)
 		if ttRunDataFet != nil {
 			dsp.TtSource = ttRunDataFet
 			bd.SourceDir = filepath.Dir(fpath)
@@ -243,6 +243,8 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 			logger.Result("OK", "false")
 			return
 		}
+	} else {
+		ttsource.Prepare(dsp.TtParameters.SOFT_AS_HARD)
 	}
 	if logger.Running {
 		panic("Attempt to start generation when already running")

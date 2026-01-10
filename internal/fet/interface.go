@@ -15,9 +15,15 @@ type ConstraintIndex = autotimetable.ConstraintIndex
 type AutoTtData = autotimetable.AutoTtData
 type ConstraintType = autotimetable.ConstraintType
 
+type SoftWeight struct {
+	Index  ConstraintIndex
+	Weight string
+}
+
 type TtRunDataFet struct {
 	Doc                *etree.Document
 	ConstraintElements []*etree.Element
+	SoftWeights        []SoftWeight
 
 	// ActivityElements is currently not used
 	ActivityElements []*etree.Element
@@ -43,6 +49,17 @@ type TtRunDataFet struct {
 	ConstraintTypes   []ConstraintType
 	HardConstraintMap map[ConstraintType][]ConstraintIndex
 	SoftConstraintMap map[ConstraintType][]ConstraintIndex
+}
+
+func (rundata *TtRunDataFet) Prepare(soft_as_hard bool) {
+	for _, cw := range rundata.SoftWeights {
+		e := rundata.ConstraintElements[cw.Index]
+		if soft_as_hard {
+			e.SelectElement("Weight_Percentage").SetText("100")
+		} else {
+			e.SelectElement("Weight_Percentage").SetText(cw.Weight)
+		}
+	}
 }
 
 func (rundata *TtRunDataFet) GetDays() []IdPair            { return rundata.DayIds }

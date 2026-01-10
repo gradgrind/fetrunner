@@ -16,7 +16,6 @@ import (
 
 func FetRead(
 	bdata *base.BaseData,
-	soft_as_hard bool,
 	fetpath string,
 ) *TtRunDataFet {
 	logger := bdata.Logger
@@ -121,9 +120,8 @@ func FetRead(
 				wctype := fmt.Sprintf("%02d:%s", wdb, ctype)
 				soft_constraint_map[wctype] = append(soft_constraint_map[wctype],
 					ConstraintIndex(i))
-				if soft_as_hard {
-					e.SelectElement("Weight_Percentage").SetText("100")
-				}
+				rundata.SoftWeights = append(rundata.SoftWeights,
+					SoftWeight{i, w})
 			}
 			constraint_types = append(constraint_types, ctype)
 			// ... duplicates wil be removed in `sort_constraint_types`
