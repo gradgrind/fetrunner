@@ -4,84 +4,6 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../mainwindow.ui" line="105"/>
-        <source>Time Limit (secs)</source>
-        <translation>Max. Zeit (s)</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="415"/>
-        <source>Elapsed (secs)</source>
-        <translation>Sekundenzähler</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="594"/>
-        <source>Number</source>
-        <translation>Anzahl</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="620"/>
-        <source>/ Total</source>
-        <translation>/ Gesamt</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="656"/>
-        <location filename="../mainwindow.ui" line="828"/>
-        <source>Sizes</source>
-        <translation>Größen</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="661"/>
-        <location filename="../mainwindow.ui" line="833"/>
-        <source>Finished</source>
-        <translation>abgeschlossen</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="666"/>
-        <source>Running Soft</source>
-        <translation>laufende Unverbindlichiche</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="671"/>
-        <source>Accepted</source>
-        <translation>aufgenommen</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="676"/>
-        <source>Total</source>
-        <translation>Gesamt</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="681"/>
-        <source>Elapsed</source>
-        <translation>verstrichen</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="686"/>
-        <location filename="../mainwindow.ui" line="858"/>
-        <source>[Hard] Constraint type</source>
-        <translation>[verbindliche] Bedingung</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="794"/>
-        <source>A soft constraint type, not yet complete</source>
-        <translation>eine unverbindliche Bedingung, noch nicht vollständig</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="803"/>
-        <source>Run State</source>
-        <translation>Prozess-Status</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="838"/>
-        <source>Progress</source>
-        <translation>Stand</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="326"/>
-        <source>Enabled Constraints</source>
-        <translation>Aktuelle Bedingungen</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="28"/>
         <source>&amp;Open New</source>
         <translation>&amp;Datei öffnen</translation>
@@ -90,6 +12,11 @@
         <location filename="../mainwindow.ui" line="58"/>
         <source>in</source>
         <translation>in</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="105"/>
+        <source>Time Limit (secs)</source>
+        <translation>Max. Zeit (s)</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="125"/>
@@ -104,12 +31,12 @@
     <message>
         <location filename="../mainwindow.ui" line="135"/>
         <source>Make soft constraints hard when generating</source>
-        <translation type="unfinished"></translation>
+        <translation>Auch die unverbindlichen Bedingungen werden als verbindlich betrachtet</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="138"/>
         <source>Soft as hard</source>
-        <translation type="unfinished"></translation>
+        <translation>Alle Bedingungen verbindlich</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="145"/>
@@ -119,7 +46,7 @@
     <message>
         <location filename="../mainwindow.ui" line="190"/>
         <source>Instances (runs) with fixed selections of constraints.</source>
-        <translation>Prozesse mit fester Bedingungsauswahl</translation>
+        <translation>Prozesse, die mit festen Bedingungsgruppen laufen</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="193"/>
@@ -159,7 +86,12 @@
     <message>
         <location filename="../mainwindow.ui" line="323"/>
         <source>Overall progress, showing percentage of hard and soft constraints which have been &quot;accepted&quot;.</source>
-        <translation>Gesamtstand – Prozentteil der verbindlichen und unverbindlichen Bedingungen, die bisher „aufgenommen“ wurden</translation>
+        <translation>esamtstand – Prozentteil der verbindlichen und unverbindlichen Bedingungen, die bisher „aufgenommen“ wurden</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="326"/>
+        <source>Enabled Constraints</source>
+        <translation>Aktuelle Bedingungen</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="332"/>
@@ -170,6 +102,11 @@
         <location filename="../mainwindow.ui" line="339"/>
         <source>Soft</source>
         <translation>unverbindliche</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="415"/>
+        <source>Elapsed (secs)</source>
+        <translation>Sekundenzähler</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="427"/>
@@ -197,14 +134,77 @@
         <translation>Alle unverbindlichen Bedingungen</translation>
     </message>
     <message>
+        <location filename="../mainwindow.ui" line="594"/>
+        <source>Number</source>
+        <translation>Anzahl</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="620"/>
+        <source>/ Total</source>
+        <translation>/ Gesamt</translation>
+    </message>
+    <message>
         <location filename="../mainwindow.ui" line="630"/>
-        <source>[x] All hard constraints</source>
-        <translation>[x] alle verbindlichen Bedingungen</translation>
+        <source>All hard constraints</source>
+        <translation>Alle verbindlichen Bedingungen</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="656"/>
+        <location filename="../mainwindow.ui" line="828"/>
+        <source>Sizes</source>
+        <translation>Größen</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="661"/>
+        <location filename="../mainwindow.ui" line="833"/>
+        <source>Finished</source>
+        <translation>abgeschlossen</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="666"/>
+        <source>Running Soft</source>
+        <translation>laufende Unverbindlichiche</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="671"/>
+        <source>Accepted</source>
+        <translation>aufgenommen</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="676"/>
+        <source>Total</source>
+        <translation>Gesamt</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="681"/>
+        <source>Elapsed</source>
+        <translation>verstrichen</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="686"/>
+        <location filename="../mainwindow.ui" line="858"/>
+        <source>Constraint type</source>
+        <translation>Bedingung</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="765"/>
-        <source>[x] A completed hard constraint type</source>
-        <translation>[x] Eine vollständige verbindliche Bedingung</translation>
+        <source>A completed hard constraint type</source>
+        <translation>Eine vollständige verbindliche Bedingung</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="794"/>
+        <source>58:A soft constraint type, not yet complete</source>
+        <translation>58:Eine unverbindliche Bedingungen, noch laufend</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="803"/>
+        <source>Run State</source>
+        <translation>Prozess-Status</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="838"/>
+        <source>Progress</source>
+        <translation>Stand</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="843"/>
@@ -223,13 +223,13 @@
     </message>
     <message>
         <location filename="../mainwindow.ui" line="895"/>
-        <source>[x] Constraint name</source>
-        <translation>Name der Bedingung</translation>
+        <source>02:Constraint name</source>
+        <translation>02:Name der Bedingung</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="932"/>
-        <source>[x] Some completed instance</source>
-        <translation>[x] ein erfolgreich gelaufener Prozess</translation>
+        <source>Some completed instance</source>
+        <translation>ein erfolgreich gelaufener Prozess</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="948"/>
@@ -247,9 +247,31 @@
         <translation>Einstellungen</translation>
     </message>
     <message>
+        <location filename="../mainwindow.ui" line="991"/>
+        <location filename="../mainwindow.ui" line="1109"/>
+        <source>Default</source>
+        <translation>Voreinstellung</translation>
+    </message>
+    <message>
         <location filename="../mainwindow.ui" line="1011"/>
         <source>Temporary files</source>
         <translation>Zwischendateien</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1042"/>
+        <source>FET version</source>
+        <translation>FET-Version</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1065"/>
+        <location filename="../mainwindow.ui" line="1092"/>
+        <source>Select</source>
+        <translation>Wählen</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1072"/>
+        <source>FET command</source>
+        <translation>FET-Befehl</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="1099"/>
@@ -267,36 +289,14 @@
         <translation>FET-Datei mit allen Bedingungen erstellen</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1065"/>
-        <location filename="../mainwindow.ui" line="1092"/>
-        <source>Select</source>
-        <translation>Wählen</translation>
+        <location filename="../mainwindow.cpp" line="217"/>
+        <source>Open Timetable Specification File</source>
+        <translation>Öffne Stundenplanungsdatei</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="991"/>
-        <location filename="../mainwindow.ui" line="1109"/>
-        <source>Default</source>
-        <translation>Voreinstellung</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="1072"/>
-        <source>FET command</source>
-        <translation>FET-Befehl</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="1042"/>
-        <source>FET version</source>
-        <translation>FET-Version</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="324"/>
-        <source>FET not found</source>
-        <translation>FET nicht gefunden</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="325"/>
-        <source>Seek &apos;FET&apos; command-line executable in file system</source>
-        <translation>Suche &apos;FET&apos;-Kommandozeilenbefehl im Dateisystem</translation>
+        <location filename="../mainwindow.cpp" line="219"/>
+        <source>FET / W365 Files (*.fet *_w365.json)</source>
+        <translation>FET- / W365- Dateien (*.fet *_w365.json)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="293"/>
@@ -309,14 +309,14 @@
         <translation>FET-Befehl</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="217"/>
-        <source>Open Timetable Specification File</source>
-        <translation>Öffne Stundenplanungsdatei</translation>
+        <location filename="../mainwindow.cpp" line="324"/>
+        <source>FET not found</source>
+        <translation>FET nicht gefunden</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="219"/>
-        <source>FET / W365 Files (*.fet *_w365.json)</source>
-        <translation>FET- / W365- Dateien (*.fet *_w365.json)</translation>
+        <location filename="../mainwindow.cpp" line="325"/>
+        <source>Seek &apos;FET&apos; command-line executable in file system</source>
+        <translation>Suche &apos;FET&apos;-Kommandozeilenbefehl im Dateisystem</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="335"/>
