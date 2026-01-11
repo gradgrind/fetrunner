@@ -20,9 +20,12 @@ type Parameters struct {
 	// satisfiable – skip the unconstrained instance, basing tests on
 	// the hard-only instance.
 	SKIP_HARD bool
-	// If the SOFT_AS_HARD flag is true, set the weight of soft constraints
-	// to 100, i.e. treat them as hard constraints.
-	SOFT_AS_HARD bool
+	// If the REAL_SOFT flag is true, retain the weight of the soft
+	// constraints, i.e. treat them as hard constraints. Otherwise (the
+	// default) they will be made "hard" by setting the weight to 100.
+	// For instance construction and running order, they will still be
+	// treated as soft constraints.
+	REAL_SOFT bool
 	// `fetrunner` relies on parallel processing. If there are too few
 	// real processors it will be inefficient. MAXPROCESSES sets the
 	// maximum number of timetable generations (`FET` processes) which

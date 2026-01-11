@@ -14,31 +14,6 @@
         <translation>in</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="105"/>
-        <source>Time Limit (secs)</source>
-        <translation>Max. Zeit (s)</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="125"/>
-        <source>All hard constraints enabled, for testing soft constraints.</source>
-        <translation>zum Testen der unverbindlichen Bedingungen (sinnvoll nur, wenn alle verbindlichen erfüllbar sind)</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="128"/>
-        <source>With all hard constraints</source>
-        <translation>Starte mit allen verbindlichen Bedingungen</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="135"/>
-        <source>Make soft constraints hard when generating</source>
-        <translation>Auch die unverbindlichen Bedingungen werden als verbindlich betrachtet</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="138"/>
-        <source>Soft as hard</source>
-        <translation>Alle Bedingungen verbindlich</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="145"/>
         <source>Processes (max.)</source>
         <translation>parallele Prozesse (max.)</translation>
@@ -86,12 +61,7 @@
     <message>
         <location filename="../mainwindow.ui" line="323"/>
         <source>Overall progress, showing percentage of hard and soft constraints which have been &quot;accepted&quot;.</source>
-        <translation>esamtstand – Prozentteil der verbindlichen und unverbindlichen Bedingungen, die bisher „aufgenommen“ wurden</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="326"/>
-        <source>Enabled Constraints</source>
-        <translation>Aktuelle Bedingungen</translation>
+        <translation>Gesamtstand – Prozentteil der verbindlichen und unverbindlichen Bedingungen, die bisher „aufgenommen“ wurden</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="332"/>
@@ -124,27 +94,57 @@
         <translation>Gesamtstand</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="491"/>
+        <location filename="../mainwindow.ui" line="511"/>
         <source>@ Time (s)</source>
         <translation>@ Zeit (s)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="587"/>
+        <location filename="../mainwindow.ui" line="582"/>
         <source>All soft constraints</source>
         <translation>Alle unverbindlichen Bedingungen</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="594"/>
+        <location filename="../mainwindow.ui" line="491"/>
         <source>Number</source>
         <translation>Anzahl</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="620"/>
+        <location filename="../mainwindow.ui" line="105"/>
+        <source>Time limit (secs)</source>
+        <translation>Max. Zeit (s)</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="125"/>
+        <source>All hard constraints enabled, set this only if they are all fulfillable.</source>
+        <translation>Alle verbindlichen Bedingungen werden vorausgesetzt – setzen nur, wenn sie erfüllbar sind.</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="128"/>
+        <source>Test soft constraints</source>
+        <translation>Unverbindliche Bedingungen testen</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="135"/>
+        <source>Soft constraints will retain their original weights (otherwise they are changed to be hard when running an instance).</source>
+        <translation>Unverbindliche Bedingungen behalten ihre ursprünglichen Gewichte (sonst werden sie bei der Ausführung verbindlich).</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="138"/>
+        <source>&quot;Real&quot; soft constraints</source>
+        <translation>Unverbindlichkeit beibehalten</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="326"/>
+        <source>Enabled constraints</source>
+        <translation>Aktuelle Bedingungen</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="501"/>
         <source>/ Total</source>
         <translation>/ Gesamt</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="630"/>
+        <location filename="../mainwindow.ui" line="521"/>
         <source>All hard constraints</source>
         <translation>Alle verbindlichen Bedingungen</translation>
     </message>
@@ -197,11 +197,6 @@
         <translation>58:Eine unverbindliche Bedingungen, noch laufend</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="803"/>
-        <source>Run State</source>
-        <translation>Prozess-Status</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="838"/>
         <source>Progress</source>
         <translation>Stand</translation>
@@ -237,54 +232,54 @@
         <translation>Log</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="970"/>
-        <source>Clear</source>
-        <translation>Löschen</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="978"/>
+        <location filename="../mainwindow.ui" line="971"/>
         <source>Settings</source>
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="991"/>
-        <location filename="../mainwindow.ui" line="1109"/>
+        <location filename="../mainwindow.ui" line="1008"/>
+        <location filename="../mainwindow.ui" line="1045"/>
         <source>Default</source>
         <translation>Voreinstellung</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1011"/>
+        <location filename="../mainwindow.ui" line="977"/>
         <source>Temporary files</source>
         <translation>Zwischendateien</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1042"/>
+        <location filename="../mainwindow.ui" line="1052"/>
         <source>FET version</source>
         <translation>FET-Version</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1065"/>
-        <location filename="../mainwindow.ui" line="1092"/>
+        <location filename="../mainwindow.ui" line="1001"/>
+        <location filename="../mainwindow.ui" line="1038"/>
         <source>Select</source>
         <translation>Wählen</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1072"/>
+        <location filename="../mainwindow.ui" line="1031"/>
         <source>FET command</source>
         <translation>FET-Befehl</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1099"/>
+        <location filename="../mainwindow.ui" line="984"/>
         <source>Folder for temporary files, preferably RAM-drive (or other in-memory &quot;device&quot;)</source>
         <translation>Ordner für Zwischendateien, idealerweise RAM-Drive (oder Ähnliches)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1132"/>
+        <location filename="../mainwindow.ui" line="803"/>
+        <source>Run state</source>
+        <translation>Prozess-Status</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1121"/>
         <source>... with &quot;_&quot; prefix, in the folder containing the source file</source>
         <translation>... mit vorangestelltem „_“, im Ordner der Quelldatei</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1135"/>
+        <location filename="../mainwindow.ui" line="1124"/>
         <source>Generate fully-constrained FET file</source>
         <translation>FET-Datei mit allen Bedingungen erstellen</translation>
     </message>

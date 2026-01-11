@@ -8,7 +8,7 @@ type BackendInterface interface {
 }
 
 type TtSource interface {
-	Prepare(soft_as_hard bool) // set the soft-constraint weights
+	Prepare(real_soft bool) // set the soft-constraint weights
 
 	//TODO?
 	//GetConstraintTypeSets() map[string][]int // ctype -> []constraint-index

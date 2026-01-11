@@ -236,7 +236,7 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 		if dsp.BaseData.Db != nil {
 			ttsource = makefet.FetTree(
 				bdata,
-				dsp.TtParameters.SOFT_AS_HARD,
+				dsp.TtParameters.REAL_SOFT,
 				timetable.BasicSetup(bdata))
 		} else {
 			logger.Error("No source")
@@ -244,7 +244,7 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 			return
 		}
 	} else {
-		ttsource.Prepare(dsp.TtParameters.SOFT_AS_HARD)
+		ttsource.Prepare(dsp.TtParameters.REAL_SOFT)
 	}
 	if logger.Running {
 		panic("Attempt to start generation when already running")
@@ -325,8 +325,8 @@ func ttparameter(dsp *Dispatcher, op *DispatchOp) {
 	case "SKIP_HARD":
 		dsp.TtParameters.SKIP_HARD = (val == "true")
 
-	case "SOFT_AS_HARD":
-		dsp.TtParameters.SOFT_AS_HARD = (val == "true")
+	case "REAL_SOFT":
+		dsp.TtParameters.REAL_SOFT = (val == "true")
 
 	default:
 		logger.Error("UnknownParameter: %s", key)

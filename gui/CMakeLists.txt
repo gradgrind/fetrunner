@@ -37,6 +37,7 @@ qt_add_translations(fetrunner-gui MERGE_QT_TRANSLATIONS
     TS_FILE_DIR translations
     # Do not embed generated .qm files.
     #QM_FILES_OUTPUT_VARIABLE qm_files
+    LUPDATE_OPTIONS -no-obsolete
 )
 
 target_link_libraries(fetrunner-gui

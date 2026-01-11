@@ -51,13 +51,13 @@ type TtRunDataFet struct {
 	SoftConstraintMap map[ConstraintType][]ConstraintIndex
 }
 
-func (rundata *TtRunDataFet) Prepare(soft_as_hard bool) {
+func (rundata *TtRunDataFet) Prepare(real_soft bool) {
 	for _, cw := range rundata.SoftWeights {
 		e := rundata.ConstraintElements[cw.Index]
-		if soft_as_hard {
-			e.SelectElement("Weight_Percentage").SetText("100")
-		} else {
+		if real_soft {
 			e.SelectElement("Weight_Percentage").SetText(cw.Weight)
+		} else {
+			e.SelectElement("Weight_Percentage").SetText("100")
 		}
 	}
 }
