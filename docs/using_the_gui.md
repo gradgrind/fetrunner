@@ -74,9 +74,9 @@ The numeric columns display (for the associated constraint type):
 
     4) the time-out for this process (note that this is handled very flexibly!).
 
-Constraint groups with only one constraint are run without a time-out (shown as "---"), but they can still be terminated if they seems to be "stuck".
+Constraint groups with only one constraint are run without a time-out (shown as "---"), but they may still be terminated if they seem to be "stuck".
 
-When one of these processes reaches 100% it will be "accepted". Its percentage will be changed to "+++" and this group of constraints will be added to the running totals. All the other running instances will be terminated, then restarted after adding the newly accepted constraints. Depending on the time the accepted run took, the time-outs may be adjusted. Note that if more than one of the running instances reach 100% at the same time, only one can be accepted. Rejected instances will be removed from the table.
+When one of these processes reaches 100% it will be "accepted". Its displayed percentage will be changed to "+++" and this group of constraints will be added to the running totals. All the other running instances will be terminated, then restarted after adding the newly accepted constraints. Depending on the time the accepted run took, the time-outs may be adjusted. Note that if more than one of the running instances reach 100% at the same time, only one can be accepted. Rejected instances will be removed from the table.
 
 #### Tab: Log
 

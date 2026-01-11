@@ -1,6 +1,6 @@
 # Using `fetrunner`
 
-The GUI allows selection of `FET` files and processing parameters in a fairly straightforward way. It also shows the progress of a run dynamically. In some cases, however, the command-line tool may be more convenient. To use this, see [Running the command-line tool](#running-the-command-line-tool).
+The GUI ([Using the GUI](./using_the_gui.md)) allows selection of `FET` files and processing parameters in a fairly straightforward way. It also shows the progress of a run dynamically. In some cases, however, the command-line tool may be more convenient. To use this, see [Running the command-line tool](#running-the-command-line-tool).
 
 ## How to understand the results of a `fetrunner` run
 
@@ -52,6 +52,7 @@ fetrunner -help
   -h	skip hard constraint testing phase
   -p int
     	max. parallel processes
+  -s	the weights of soft constraints are retained
   -t int
     	set timeout, s (default 300)
   -tmp string
