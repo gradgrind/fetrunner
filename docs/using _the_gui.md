@@ -4,6 +4,8 @@ The `fetrunner` GUI offers a convenient way of using `fetrunner`, allowing files
 
 To exit the program, click on the window-close button. If a `fetrunner` process is running, `fetrunner` will take a few seconds to tidy up before quitting completely.
 
+![main display](./images/Screenshot_01.png)
+
 ## The display areas
 
 At the top of the window the currently loaded source file is shown, split into file name and folder. There is also a button to load a different one.
@@ -23,6 +25,10 @@ At the top a few of the most useful parameters are shown and can be changed.
  - "Real" soft constraints: Retain the original weights of the soft constraints. Otherwise they are made "hard" for the `FET` runs. 
 
  - Processes (max.): The maximum number of `FET` instances that may be run simultaneously. 6 seems to be a good number, if that number of processor cores are available. More might be wasteful of resources and not necessarily more effective. Fewer than 4 won't allow the algorithm to work properly. If the host computer doesn't have 4 cores, the number of processes should still be set to 4, but `fetrunner` will be much less effective.
+
+The items below this only become relevant when a file has been loaded and a run started.
+
+![main display started](./images/Screenshot_02.png)
 
 Below this the progress of the three "special" instances (`FET` processes) are shown. Note that if the "Test soft constraints" checkbox is ticked, only the "Full" instance is active.
 
@@ -54,6 +60,8 @@ When all the individual constraints of a type have been "accepted" (found to be 
  
 #### Tab: Run state
 
+![run state tab](./images/Screenshot_03.png)
+
 This table shows the progress (in percent) of the currently running single-constraint-type `FET` instances (i.e. excluding the "special" instances), many of which will be terminated before completion.
 
 The numeric columns display (for the associated constraint type):
@@ -72,9 +80,13 @@ When one of these processes reaches 100% it will be "accepted". Its percentage w
 
 #### Tab: Log
 
+![log tab](./images/Screenshot_04.png)
+
 This view is probably of little interest to the normal user. It shows the communication between the GUI and the back-end processor.
 
 #### Tab: Settings
+
+![settings tab](./images/Screenshot_05.png)
 
 This gives access to some settings which will not normally be needed, except perhaps for initial set-up.
 
