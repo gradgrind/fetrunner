@@ -191,7 +191,9 @@ void MainWindow::reset_display()
     ui->instance_table->setRowCount(0);
     ui->elapsed_time->setText("0");
     ui->progress_complete->clear();
+    ui->progress_complete->setEnabled(true);
     ui->progress_hard_only->clear();
+    ui->progress_hard_only->setEnabled(true);
     ui->progress_hard->setValue(0);
     ui->progress_hard->setEnabled(false);
     ui->label_hard->setEnabled(false);
@@ -199,6 +201,7 @@ void MainWindow::reset_display()
     ui->progress_soft->setEnabled(false);
     ui->label_soft->setEnabled(false);
     ui->progress_unconstrained->clear();
+    ui->progress_unconstrained->setEnabled(true);
     hard_count.clear();
     soft_count.clear();
     timeTicks.clear();
@@ -477,12 +480,22 @@ void MainWindow::iend(const QString &data)
 {
     auto slist = data.split(u'.');
     auto key = slist[0].toInt();
-    if (key < INSTANCE0)
-        return;
-    auto irow = instance_row_map[key];
-    if (irow.state == 0) {
-        irow.state = -1;
-        instance_row_map[key] = irow;
+    switch (key) {
+    case 0:
+        ui->progress_complete->setEnabled(false);
+        break;
+    case 1:
+        ui->progress_hard_only->setEnabled(false);
+        break;
+    case 2:
+        ui->progress_unconstrained->setEnabled(false);
+        break;
+    default:
+        auto irow = instance_row_map[key];
+        if (irow.state == 0) {
+            irow.state = -1;
+            instance_row_map[key] = irow;
+        }
     }
 }
 

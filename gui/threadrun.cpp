@@ -8,8 +8,6 @@ void RunThreadWorker::ttrun()
     //connect(timer, &QTimer::timeout, this, &TtRunWorker::tick);
     //timer->start(1000);
 
-    QString result{"Done ..."};
-
     stopFlag = false;
     bool stopped = false; // set this to stop (further) stop commands
 
@@ -27,14 +25,12 @@ void RunThreadWorker::ttrun()
             //qDebug() << kv.key << kv.val;
             if (kv.key == ".TICK") {
                 if (kv.val == "-1") {
-                    // result = kv.val;
                     done = true;
                 } else {
                     //qDebug() << "???" << kv.val;
                     emit ticker(kv.val);
                 }
             } else if (kv.key == ".NCONSTRAINTS") {
-                auto items = kv.val.split(u'.');
                 emit nconstraints(kv.val);
             } else if (kv.key == ".PROGRESS") {
                 emit iprogress(kv.val);
@@ -47,7 +43,7 @@ void RunThreadWorker::ttrun()
             }
         }
     }
-    emit runThreadWorkerDone(result);
+    emit runThreadWorkerDone();
 }
 
 void RunThreadController::runTtThread()

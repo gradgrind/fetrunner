@@ -19,7 +19,7 @@ public slots:
     void ttrun();
 
 signals:
-    void runThreadWorkerDone(const QString &result);
+    void runThreadWorkerDone();
     void ticker(const QString &result);
     void nconstraints(const QString &result);
     void istart(const QString &result);
