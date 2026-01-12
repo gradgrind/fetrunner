@@ -158,6 +158,8 @@ func (rq *RunQueue) update_queue() int {
 	}
 
 	// If not all processors are being used, split one or more instances.
+	//TODO: This is not terribly neat, it also had a couple of bugs, and may
+	// still have some. It should perhaps be replaced by something cleaner.
 	for instance := range rq.Active {
 		np := rq.MaxRunning - running
 		if np <= 0 {

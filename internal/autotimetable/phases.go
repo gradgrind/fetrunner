@@ -239,10 +239,12 @@ func (rq *RunQueue) mainphase() bool {
 			if next_timeout != 0 {
 				// There is a new base instance ...
 				// Cancel existing instance
-				if instance.RunState < 0 {
+				switch instance.RunState {
+				case -2: // already split and aborted, don't build a new instance
+					continue
+				case -1: // running
 					attdata.abort_instance(instance)
-				} else if instance.RunState == 0 {
-					// Indicate that a queued instance is not to be started
+				case 0: // queued, mark it "don't start"
 					instance.RunState = 3
 				}
 				// Build new instance
