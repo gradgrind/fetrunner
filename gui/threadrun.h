@@ -50,11 +50,11 @@ public slots:
 
 signals:
     void startTtRun(const QString &);
-    void ticker(const QString &);
     void runThreadWorkerDone();
+    void ticker(const QString &);
     void nconstraints(const QString &result);
     void istart(const QString &result);
-    void progress(const QString &result);
+    void iprogress(const QString &result);
     void iend(const QString &result);
     void iaccept(const QString &result);
 };

@@ -49,6 +49,8 @@ func (rq *RunQueue) update_instances() {
 		}
 		switch instance.RunState {
 
+		case -2: // running, awaiting completion after "abort", split
+
 		case -1: // running, not finished
 			if instance.Progress == 100 {
 				continue // the state will be changed next time round
@@ -68,9 +70,7 @@ func (rq *RunQueue) update_instances() {
 						instance.Progress,
 						len(instance.Constraints))
 					attdata.abort_instance(instance)
-					if len(instance.Constraints) == 1 {
-						attdata.BlockConstraint[instance.Constraints[0]] = true
-					}
+					attdata.BlockSingleConstraint(instance, logger)
 				}
 				continue
 			}
@@ -102,6 +102,18 @@ func (rq *RunQueue) update_instances() {
 	}
 }
 
+func (attdata *AutoTtData) BlockSingleConstraint(
+	instance *TtInstance,
+	logger *base.Logger,
+) {
+	if len(instance.Constraints) == 1 {
+		c := instance.Constraints[0]
+		attdata.BlockConstraint[c] = true
+		logger.Result(
+			".ELIMINATE", fmt.Sprintf("%s.%d", instance.ConstraintType, c))
+	}
+}
+
 // `update_queue` is called – in the tick-loop – just before waiting for a tick.
 // Clean up finished/discarded instances, try to start new ones.
 func (rq *RunQueue) update_queue() int {
@@ -111,7 +123,7 @@ func (rq *RunQueue) update_queue() int {
 	// Count running instances, remove others
 	running := 0
 	for instance := range rq.Active {
-		if instance.RunState == -1 {
+		if instance.RunState < 0 {
 			running++
 		} else {
 			delete(rq.Active, instance)
@@ -151,11 +163,12 @@ func (rq *RunQueue) update_queue() int {
 		if np <= 0 {
 			break
 		}
-		if instance.RunState < 0 {
+		if instance.RunState == -1 { // instance running, not (yet) split
 			n := len(instance.Constraints)
 			if n <= 1 {
 				continue
 			}
+			instance.RunState = -2 // mark as split
 			attdata.abort_instance(instance)
 			// Remove it from constraint list.
 			attdata.constraint_list = slices.DeleteFunc(

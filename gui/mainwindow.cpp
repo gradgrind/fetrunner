@@ -96,7 +96,7 @@ MainWindow::MainWindow(QWidget *parent)
         &MainWindow::nconstraints);
     connect( //
         &threadrunner,
-        &RunThreadController::progress,
+        &RunThreadController::iprogress,
         this,
         &MainWindow::iprogress);
     connect( //
@@ -336,6 +336,9 @@ void MainWindow::push_stop()
     closingMessageBox.setIcon(QMessageBox::Information);
     closingMessageBox.setStandardButtons(QMessageBox::NoButton);
     closingMessageBox.exec();
+
+    //TODO--
+    //dump_log("dump.log");
 }
 
 void MainWindow::select_tmp_dir()
@@ -424,13 +427,25 @@ void MainWindow::ticker(const QString &data)
         }
         instance_row_map.remove(rp.key);
     }
+    ui->instance_table->scrollToBottom();
+
+    // Changes to progress table
+    for (const auto &update : std::as_const(progress_rows_changed)) {
+        tableProgress(update);
+    }
+    progress_rows_changed.clear();
 }
 
 const int INSTANCE0 = 3;
 
 void MainWindow::iprogress(const QString &data)
 {
-    auto slist = data.split(u'.');
+    QStringList slist = data.split(u'.');
+    // slist: instance index, percent complete, instance run time
+    // Instance 0: fully constrained
+    // Instance 1: all hard constraints
+    // Instance 2: no constraints
+    // Other instances: constraint-type tests
     auto key = slist[0].toInt();
     switch (key) {
     case 0:
@@ -450,6 +465,8 @@ void MainWindow::iprogress(const QString &data)
 void MainWindow::istart(const QString &data)
 {
     auto slist = data.split(u'.');
+    // slist: instance index, constraint type,
+    // number of individual constraints, time-out
     auto key = slist[0].toInt();
     if (key < INSTANCE0)
         return;
@@ -485,6 +502,8 @@ void MainWindow::iaccept(const QString &data)
     default:
         instance_row &irow = instance_row_map[key];
         irow.state = 1;
-        tableProgress(irow);
+        //if (!instance_rows_changed.contains(key))
+        //    instance_rows_changed.append(key);
+        progress_rows_changed.append({irow.data[1], irow.data[2]});
     }
 }

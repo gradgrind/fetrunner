@@ -435,6 +435,8 @@ func (attdata *AutoTtData) new_instance(
 	// Single-constraint instances always have no timeout
 	if len(constraint_indexes) == 1 {
 		timeout = 0
+	} else if timeout < MIN_TIMEOUT && timeout != 0 {
+		timeout = MIN_TIMEOUT
 	}
 
 	// Make a new `TtInstance`

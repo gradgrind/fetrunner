@@ -25,7 +25,7 @@ struct instance_row
 {
     QStringList data;
     QTableWidgetItem *item;
-    int state;
+    int state; // 0: running, -1: stopped, 1: stopped & accepted
 };
 
 struct progress_line
@@ -35,6 +35,12 @@ struct progress_line
     int total;
 };
 
+struct progress_changed
+{
+    QString constraint;
+    QString number;
+};
+
 class MainWindow : public QWidget
 {
     Q_OBJECT
@@ -42,6 +48,8 @@ class MainWindow : public QWidget
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+    bool dump_log(QString fname);
 
 private:
     QSettings *settings;
@@ -53,7 +61,7 @@ private:
     void init_ttgen_tables();    // at start of program
     void setup_progress_table(); // when starting ttgen run
     void setup_instance_table(); // when starting ttgen run
-    void tableProgress(instance_row &irow);
+    void tableProgress(progress_changed update);
     void tableProgressAll();
     void tableProgressHard();
     void tableProgressGroup(QHash<QString, progress_line>);
@@ -79,6 +87,8 @@ private:
     QString soft_count;
     QHash<QString, progress_line> hard_constraint_map;
     QHash<QString, progress_line> soft_constraint_map;
+    //QList<int> instance_rows_changed;
+    QList<progress_changed> progress_rows_changed;
 
 public slots:
     void error_popup(const QString &msg);

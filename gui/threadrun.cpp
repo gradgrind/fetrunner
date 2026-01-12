@@ -86,7 +86,7 @@ void RunThreadController::runTtThread()
             runThreadWorker,
             &RunThreadWorker::iprogress,
             this,
-            &RunThreadController::progress);
+            &RunThreadController::iprogress);
         connect( //
             runThreadWorker,
             &RunThreadWorker::istart,

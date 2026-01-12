@@ -1,3 +1,4 @@
+#include <QDir>
 #include <QTimer>
 #include "backend.h"
 #include "mainwindow.h"
@@ -133,28 +134,55 @@ void MainWindow::nconstraints(const QString &data)
     }
 }
 
+bool MainWindow::dump_log(QString fname)
+{
+    QDir fdir{ui->currentDir->text()};
+    auto log = ui->logview->toPlainText();
+    QFile file(fdir.filePath(fname));
+    // Open the file in WriteOnly mode; Truncate to overwrite existing content; Text for line endings
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+        qDebug() << "Failed to open file for writing:" << file.errorString();
+        return false; // Indicate failure
+    }
+    // Use QTextStream to write content to the file
+    QTextStream out(&file);
+    out << log; // Write the input content
+    // Optional: Explicitly flush the stream (ensures data is written immediately)
+    out.flush();
+    // File is automatically closed when 'file' goes out of scope (RAII), but closing explicitly is safe
+    file.close();
+    return true;
+}
+
 void MainWindow::fail(QString msg)
 {
+    dump_log(ui->currentFile->text() + ".logdump");
+
     close();
     QMessageBox::critical(this, "", msg);
     qApp->quit();
 }
 
-void MainWindow::tableProgress(instance_row &irow)
+void MainWindow::tableProgress(progress_changed update)
 {
-    auto constraint = irow.data[1];
-    auto number = irow.data[2];
-    //if (!irow.data[4].isEmpty()) { // hard constraint
+    auto constraint = update.constraint;
+    auto delta = update.number.toInt();
     if (!constraint.contains(':')) { // hard constraint
         if (!hard_constraint_map.contains(constraint)) {
             fail("*BUG* hard_constraint_map, no key " + constraint);
             return;
         }
         progress_line &cdata = hard_constraint_map[constraint];
-        cdata.progress += number.toInt();
-        if (cdata.progress == cdata.total)
+        cdata.progress += delta;
+        if (cdata.progress == cdata.total) {
             ui->progress_table->item(cdata.index, 0)->setText("+++");
-        else if (cdata.progress > cdata.total) {
+        } else if (cdata.progress > cdata.total) {
+            ui->logview->append(QString{"\n***DUMP*** %1 %2 %3 %4\n"}
+                                    .arg(constraint)
+                                    .arg(cdata.progress)
+                                    .arg(delta)
+                                    .arg(cdata.total));
+
             fail("*BUG* cdata.progress > cdata.total (hard) " + constraint);
             return;
         } else
@@ -166,10 +194,16 @@ void MainWindow::tableProgress(instance_row &irow)
             return;
         }
         progress_line &cdata = soft_constraint_map[constraint];
-        cdata.progress += number.toInt();
+        cdata.progress += delta;
         if (cdata.progress == cdata.total)
             ui->progress_table->item(cdata.index, 0)->setText("+++");
         else if (cdata.progress > cdata.total) {
+            ui->logview->append(QString{"\n***DUMP*** %1 %2 %3 %4\n"}
+                                    .arg(constraint)
+                                    .arg(cdata.progress)
+                                    .arg(delta)
+                                    .arg(cdata.total));
+
             fail("*BUG* cdata.progress > cdata.total (soft) " + constraint);
             return;
         } else
@@ -178,15 +212,25 @@ void MainWindow::tableProgress(instance_row &irow)
     }
 }
 
+//TODO: Do I need to change where this is called from (should
+// probably be from ticker).
 void MainWindow::tableProgressAll()
 {
     tableProgressHard();
     tableProgressGroup(soft_constraint_map);
+    //TODO: set number and progress bar (soft)??
+    // Actually, isn't that done by .NCONSTRAINTS?
+    //ui->progress_soft->setValue(100);
 }
 
+//TODO: Do I need to change where this is called from (should
+// probably be from ticker).
 void MainWindow::tableProgressHard()
 {
     tableProgressGroup(hard_constraint_map);
+    //TODO: set number and progress bar (hard).
+    // Actually, isn't that done by .NCONSTRAINTS?
+    //ui->progress_hard->setValue(100);
 }
 
 void MainWindow::tableProgressGroup(QHash<QString, progress_line> hsmap)
@@ -231,9 +275,8 @@ void MainWindow::instanceRowProgress(int key, QStringList parms)
         irow.item = item4;
         instance_row_map[key] = irow;
 
-        QTimer::singleShot(0, [this, item4]() { //
-            this->ui->instance_table->scrollToItem(item4);
-        });
+        // The table widget is scrolled to the bottom on each tick
+        // (see MainWindow::ticker()).
 
     } else {
         row = ui->instance_table->row(irow.item);
