@@ -37,8 +37,9 @@ void MainWindow::init_ttgen_tables()
 
 void MainWindow::setup_progress_table()
 {
-    hard_constraint_map.clear();
-    soft_constraint_map.clear();
+    //TODO--hard_constraint_map.clear();
+    //TODO--soft_constraint_map.clear();
+    constraint_map.clear();
     auto row = ui->progress_table->rowCount();
     for (const auto &kv : backend->op("HARD_CONSTRAINTS")) {
         //auto cname = constraint_name(kv.key);
@@ -55,13 +56,17 @@ void MainWindow::setup_progress_table()
         ui->progress_table->setItem(row, 2, item3);
         ui->progress_table->setItem(row, 3, item0);
 
-        hard_constraint_map[cname] = {
+        //TODO--hard_constraint_map[cname] = {
+        constraint_map[cname] = {
+            //
             row++,          // index
             0,              // satisfied constraints
             kv.val.toInt(), // number of constraints
         };
     }
-    if (hard_constraint_map.size() != 0) {
+    //TODO--if (hard_constraint_map.size() != 0) {
+    auto hcmapsize = constraint_map.size();
+    if (hcmapsize != 0) {
         ui->label_hard->setEnabled(true);
         ui->progress_hard->setEnabled(true);
     }
@@ -79,13 +84,16 @@ void MainWindow::setup_progress_table()
         ui->progress_table->setItem(row, 2, item3);
         ui->progress_table->setItem(row, 3, item0);
 
-        soft_constraint_map[cname] = {
+        //TODO--soft_constraint_map[cname] = {
+        constraint_map[cname] = {
+            //
             row++,          // index
             0,              // satisfied constraints
             kv.val.toInt(), // number of constraints
         };
     }
-    if (soft_constraint_map.size() != 0) {
+    //TODO--if (soft_constraint_map.size() != 0) {
+    if (constraint_map.size() != hcmapsize) {
         ui->label_soft->setEnabled(true);
         ui->progress_soft->setEnabled(true);
     }
@@ -115,7 +123,8 @@ void MainWindow::nconstraints(const QString &data)
     } else if (h != "0") {
         // All hard constraints fulfilled, ensure that progress
         // table reflects this.
-        tableProgressHard();
+        //TODO--tableProgressHard();
+        tableProgressSet(true);
     }
     if (s != soft_count) {
         // If `sn` is zero ("0"), this will only be run once.
@@ -167,6 +176,30 @@ void MainWindow::tableProgress(progress_changed update)
 {
     auto constraint = update.constraint;
     auto delta = update.number.toInt();
+
+    if (!constraint_map.contains(constraint)) {
+        fail("*BUG* constraint_map, no key " + constraint);
+        return;
+    }
+    progress_line &cdata = constraint_map[constraint];
+    cdata.progress += delta;
+    if (cdata.progress == cdata.total) {
+        ui->progress_table->item(cdata.index, 0)->setText("+++");
+    } else if (cdata.progress > cdata.total) {
+        ui->logview->append(QString{"\n***DUMP*** %1 %2 %3 %4\n"}
+                                .arg(constraint)
+                                .arg(cdata.progress)
+                                .arg(delta)
+                                .arg(cdata.total));
+
+        fail("*BUG* cdata.progress > cdata.total " + constraint);
+        return;
+    } else {
+        ui->progress_table->item(cdata.index, 0)->setText(QString::number(cdata.progress));
+    }
+    ui->progress_table->item(cdata.index, 2)->setText("@ " + timeTicks);
+
+    /*
     if (!constraint.contains(':')) { // hard constraint
         if (!hard_constraint_map.contains(constraint)) {
             fail("*BUG* hard_constraint_map, no key " + constraint);
@@ -210,8 +243,10 @@ void MainWindow::tableProgress(progress_changed update)
             ui->progress_table->item(cdata.index, 0)->setText(QString::number(cdata.progress));
         ui->progress_table->item(cdata.index, 2)->setText("@ " + timeTicks);
     }
+*/
 }
 
+/*
 //TODO: Do I need to change where this is called from (should
 // probably be from ticker).
 void MainWindow::tableProgressAll()
@@ -236,6 +271,21 @@ void MainWindow::tableProgressHard()
 void MainWindow::tableProgressGroup(QHash<QString, progress_line> hsmap)
 {
     for (auto it = hsmap.begin(); it != hsmap.end(); ++it) {
+        progress_line &cdata = it.value();
+        if (cdata.progress != cdata.total) {
+            ui->progress_table->item(cdata.index, 0)->setText("+++");
+            cdata.progress = cdata.total;
+            ui->progress_table->item(cdata.index, 2)->setText("@ " + timeTicks);
+        }
+    }
+}
+*/
+
+void MainWindow::tableProgressSet(bool hard_only)
+{
+    for (auto it = constraint_map.begin(); it != constraint_map.end(); ++it) {
+        if (hard_only && it.key().contains(':'))
+            continue;
         progress_line &cdata = it.value();
         if (cdata.progress != cdata.total) {
             ui->progress_table->item(cdata.index, 0)->setText("+++");

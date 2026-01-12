@@ -431,7 +431,11 @@ void MainWindow::ticker(const QString &data)
         }
         instance_row_map.remove(rp.key);
     }
+
+    //TODO--
     ui->instance_table->scrollToBottom();
+
+    ui->completed_instance_table->scrollToBottom();
 
     // Changes to progress table
     for (const auto &update : std::as_const(progress_rows_changed)) {
@@ -506,10 +510,12 @@ void MainWindow::iaccept(const QString &data)
     auto key = slist[0].toInt();
     switch (key) {
     case 0: // "full" completed
-        tableProgressAll();
+        //TODO--tableProgressAll();
+        tableProgressSet(false);
         break;
     case 1: // "all hard" completed
-        tableProgressHard();
+        //TODO--tableProgressHard();
+        tableProgressSet(true);
         break;
     case 2: // "unconstrained" completed
         return;

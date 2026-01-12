@@ -62,6 +62,7 @@ private:
     void setup_progress_table(); // when starting ttgen run
     void setup_instance_table(); // when starting ttgen run
     void tableProgress(progress_changed update);
+    void tableProgressSet(bool hard_only);
     void tableProgressAll();
     void tableProgressHard();
     void tableProgressGroup(QHash<QString, progress_line>);
@@ -85,8 +86,9 @@ private:
 
     QString hard_count;
     QString soft_count;
-    QHash<QString, progress_line> hard_constraint_map;
-    QHash<QString, progress_line> soft_constraint_map;
+    QHash<QString, progress_line> constraint_map;
+    //TODO--QHash<QString, progress_line> hard_constraint_map;
+    //TODO--QHash<QString, progress_line> soft_constraint_map;
     //QList<int> instance_rows_changed;
     QList<progress_changed> progress_rows_changed;
 
