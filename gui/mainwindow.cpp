@@ -250,6 +250,7 @@ void MainWindow::error_popup(const QString &msg)
 void MainWindow::push_go()
 {
     instance_row_map.clear();
+    progress_rows_changed.clear();
     reset_display();
 
     // Set parameters
