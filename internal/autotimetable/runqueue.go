@@ -166,6 +166,9 @@ func (rq *RunQueue) update_queue() int {
 			break
 		}
 		if instance.RunState == -1 { // instance running, not (yet) split
+			if instance.Stopped {
+				continue
+			}
 			n := len(instance.Constraints)
 			if n <= 1 {
 				continue
