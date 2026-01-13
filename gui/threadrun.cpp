@@ -26,6 +26,7 @@ void RunThreadWorker::ttrun()
             if (kv.key == ".TICK") {
                 if (kv.val == "-1") {
                     done = true;
+                    emit ticker("");
                 } else {
                     //qDebug() << "???" << kv.val;
                     emit ticker(kv.val);

@@ -409,8 +409,12 @@ void MainWindow::threadRunActivated(bool active)
 
 void MainWindow::ticker(const QString &data)
 {
-    ui->elapsed_time->setText(data);
-    timeTicks = data;
+    // The last call here has an empty string, so that things
+    // can be tidied up a bit.
+    if (!data.isEmpty()) {
+        ui->elapsed_time->setText(data);
+        timeTicks = data;
+    }
 
     // Go through instance rows, removing "ended" ones.
     // If accepted (state = 1), add it to the "completed" table.
