@@ -204,12 +204,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="826"/>
-        <location filename="../mainwindow.ui" line="831"/>
-        <source>New Row</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="851"/>
         <source>27</source>
         <translation type="unfinished"></translation>
@@ -254,6 +248,16 @@
         <location filename="../mainwindow.ui" line="937"/>
         <source>Constraints</source>
         <translation>Bedingungen</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="826"/>
+        <source>01</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="831"/>
+        <source>02</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="942"/>
@@ -333,42 +337,42 @@
         <translation>FET-Datei mit allen Bedingungen erstellen</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="220"/>
+        <location filename="../mainwindow.cpp" line="221"/>
         <source>Open Timetable Specification File</source>
         <translation>Öffne Stundenplanungsdatei</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="222"/>
+        <location filename="../mainwindow.cpp" line="223"/>
         <source>FET / W365 Files (*.fet *_w365.json)</source>
         <translation>FET- / W365- Dateien (*.fet *_w365.json)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="297"/>
+        <location filename="../mainwindow.cpp" line="298"/>
         <source>Seek FET executable</source>
         <translation>Suche FET-Befehl</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="299"/>
+        <location filename="../mainwindow.cpp" line="300"/>
         <source>FET executable</source>
         <translation>FET-Befehl</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="328"/>
+        <location filename="../mainwindow.cpp" line="329"/>
         <source>FET not found</source>
         <translation>FET nicht gefunden</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="329"/>
+        <location filename="../mainwindow.cpp" line="330"/>
         <source>Seek &apos;FET&apos; command-line executable in file system</source>
         <translation>Suche &apos;FET&apos;-Kommandozeilenbefehl im Dateisystem</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="339"/>
+        <location filename="../mainwindow.cpp" line="340"/>
         <source>Finishing ...</source>
         <translation>Prozesse werden abgeschlossen ...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="352"/>
+        <location filename="../mainwindow.cpp" line="350"/>
         <source>Select base folder for temporary files</source>
         <translation>Basis-Ordner für Zwischendateien wählen</translation>
     </message>

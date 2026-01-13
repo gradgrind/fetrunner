@@ -24,6 +24,8 @@ QT_END_NAMESPACE
 struct instance_row
 {
     QStringList data;
+    // data: instance index, constraint type,
+    // number of individual constraints, time-out
     QTableWidgetItem *item;
     int state; // 0: running, -1: stopped, 1: stopped & accepted
 };
@@ -62,12 +64,8 @@ private:
     void setup_progress_table(); // when starting ttgen run
     void setup_instance_table(); // when starting ttgen run
     void tableProgress(progress_changed update);
-    void tableProgressSet(bool hard_only);
-    void tableProgressAll();
-    void tableProgressHard();
-    void tableProgressGroup(QHash<QString, progress_line>);
+    void tableProgressGroupDone(bool hard_only);
     void instanceRowProgress(int key, QStringList parms);
-    //QString constraint_name(QString name);
     void set_tmp_dir(QString tdir);
     bool set_fet_path(QString fetpath);
 
@@ -87,8 +85,6 @@ private:
     QString hard_count;
     QString soft_count;
     QHash<QString, progress_line> constraint_map;
-    //TODO--QHash<QString, progress_line> hard_constraint_map;
-    //TODO--QHash<QString, progress_line> soft_constraint_map;
     //QList<int> instance_rows_changed;
     QList<progress_changed> progress_rows_changed;
 

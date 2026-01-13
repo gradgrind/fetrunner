@@ -189,6 +189,7 @@ void MainWindow::reset_display()
     ui->soft_tlastchange->clear();
 
     ui->instance_table->setRowCount(0);
+    ui->completed_instance_table->setRowCount(0);
     ui->elapsed_time->setText("0");
     ui->progress_complete->clear();
     ui->progress_complete->setEnabled(true);
@@ -340,9 +341,6 @@ void MainWindow::push_stop()
     closingMessageBox.setIcon(QMessageBox::Information);
     closingMessageBox.setStandardButtons(QMessageBox::NoButton);
     closingMessageBox.exec();
-
-    //TODO--
-    //dump_log("dump.log");
 }
 
 void MainWindow::select_tmp_dir()
@@ -407,34 +405,49 @@ void MainWindow::ticker(const QString &data)
     ui->elapsed_time->setText(data);
     timeTicks = data;
 
-    // Go through instance rows, removing "ended" ones
-    // which have not been "accepted".
+    // Go through instance rows, removing "ended" ones.
+    // If accepted (state = 1), add it to the "completed" table.
     struct rmdata
     {
         int key;
-        int state;
-        QTableWidgetItem *item;
+        instance_row irow;
+        //TODO--int state;
+        //TODO--QTableWidgetItem *item;
     };
     QList<rmdata> to_remove;
     for (auto it = instance_row_map.cbegin(); it != instance_row_map.cend(); ++it) {
         auto val = it.value();
         if (val.state != 0 && val.item != nullptr)
-            to_remove.append({it.key(), val.state, val.item});
+            to_remove.append({it.key(), val});
     }
     for (const auto &rp : to_remove) {
         //qDebug() << "?removeRow" << row << rp.key;
-        if (rp.state == 1) {
-            rp.item->setText("+++");
-        } else {
-            auto row = rp.item->row();
-            ui->instance_table->removeRow(row);
+        auto irow = rp.irow;
+        if (irow.state == 1) {
+            auto nrow = ui->completed_instance_table->rowCount();
+            ui->completed_instance_table->insertRow(nrow);
+            ui->completed_instance_table->setVerticalHeaderItem( //
+                nrow,
+                new QTableWidgetItem(QString("%1").arg(nrow + 1, 2)));
+            auto ctype = irow.data[1]; // constraint type
+            auto item0 = new QTableWidgetItem(ctype);
+            auto item1 = new QTableWidgetItem(irow.data[2]); // number of constraints
+            auto total = QString{"/ %1"}.arg(constraint_map[ctype].total);
+            auto item2 = new QTableWidgetItem(total);
+            item1->setTextAlignment(Qt::AlignCenter);
+            item2->setTextAlignment(Qt::AlignCenter);
+            ui->completed_instance_table->setItem(nrow, 0, item1);
+            ui->completed_instance_table->setItem(nrow, 1, item2);
+            ui->completed_instance_table->setItem(nrow, 2, item0);
         }
+        auto row = irow.item->row();
+        ui->instance_table->removeRow(row);
         instance_row_map.remove(rp.key);
     }
 
-    //TODO--
-    ui->instance_table->scrollToBottom();
+    //TODO--ui->instance_table->scrollToBottom();
 
+    //TODO: if (new rows)
     ui->completed_instance_table->scrollToBottom();
 
     // Changes to progress table
@@ -510,12 +523,10 @@ void MainWindow::iaccept(const QString &data)
     auto key = slist[0].toInt();
     switch (key) {
     case 0: // "full" completed
-        //TODO--tableProgressAll();
-        tableProgressSet(false);
+        tableProgressGroupDone(false);
         break;
     case 1: // "all hard" completed
-        //TODO--tableProgressHard();
-        tableProgressSet(true);
+        tableProgressGroupDone(true);
         break;
     case 2: // "unconstrained" completed
         return;

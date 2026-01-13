@@ -819,16 +819,16 @@
              <bool>true</bool>
             </attribute>
             <attribute name="verticalHeaderVisible">
-             <bool>false</bool>
+             <bool>true</bool>
             </attribute>
             <row>
              <property name="text">
-              <string>New Row</string>
+              <string>01</string>
              </property>
             </row>
             <row>
              <property name="text">
-              <string>New Row</string>
+              <string>02</string>
              </property>
             </row>
             <column>

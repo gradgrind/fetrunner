@@ -10,9 +10,6 @@ class RunThreadWorker : public QObject
     Q_OBJECT
 
 public:
-    //TODO-- this is just for testing
-    //~RunThreadWorker() { qDebug() << "Delete RunThreadWorker"; }
-
     bool stopFlag;
 
 public slots:
