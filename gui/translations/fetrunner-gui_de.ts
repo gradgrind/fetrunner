@@ -337,42 +337,42 @@
         <translation>FET-Datei mit allen Bedingungen erstellen</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="221"/>
+        <location filename="../mainwindow.cpp" line="226"/>
         <source>Open Timetable Specification File</source>
         <translation>Öffne Stundenplanungsdatei</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="223"/>
+        <location filename="../mainwindow.cpp" line="228"/>
         <source>FET / W365 Files (*.fet *_w365.json)</source>
         <translation>FET- / W365- Dateien (*.fet *_w365.json)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="298"/>
+        <location filename="../mainwindow.cpp" line="303"/>
         <source>Seek FET executable</source>
         <translation>Suche FET-Befehl</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="300"/>
+        <location filename="../mainwindow.cpp" line="305"/>
         <source>FET executable</source>
         <translation>FET-Befehl</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="329"/>
+        <location filename="../mainwindow.cpp" line="334"/>
         <source>FET not found</source>
         <translation>FET nicht gefunden</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="330"/>
+        <location filename="../mainwindow.cpp" line="335"/>
         <source>Seek &apos;FET&apos; command-line executable in file system</source>
         <translation>Suche &apos;FET&apos;-Kommandozeilenbefehl im Dateisystem</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="340"/>
+        <location filename="../mainwindow.cpp" line="345"/>
         <source>Finishing ...</source>
         <translation>Prozesse werden abgeschlossen ...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="350"/>
+        <location filename="../mainwindow.cpp" line="355"/>
         <source>Select base folder for temporary files</source>
         <translation>Basis-Ordner für Zwischendateien wählen</translation>
     </message>

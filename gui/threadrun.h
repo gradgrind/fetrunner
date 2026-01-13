@@ -23,6 +23,7 @@ signals:
     void iprogress(const QString &result);
     void iend(const QString &result);
     void iaccept(const QString &result);
+    void ieliminate(const QString &result);
 };
 
 class RunThreadController : public QObject
@@ -54,6 +55,7 @@ signals:
     void iprogress(const QString &result);
     void iend(const QString &result);
     void iaccept(const QString &result);
+    void ieliminate(const QString &result);
 };
 
 #endif // THREADRUN_H

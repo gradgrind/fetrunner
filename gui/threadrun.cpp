@@ -40,6 +40,8 @@ void RunThreadWorker::ttrun()
                 emit iend(kv.val);
             } else if (kv.key == ".ACCEPT") {
                 emit iaccept(kv.val);
+            } else if (kv.key == ".ELIMINATE") {
+                emit ieliminate(kv.val);
             }
         }
     }
@@ -98,6 +100,11 @@ void RunThreadController::runTtThread()
             &RunThreadWorker::iaccept,
             this,
             &RunThreadController::iaccept);
+        connect( //
+            runThreadWorker,
+            &RunThreadWorker::ieliminate,
+            this,
+            &RunThreadController::ieliminate);
         runThread.start();
     }
     emit startTtRun("GO");

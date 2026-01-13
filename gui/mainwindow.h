@@ -66,6 +66,7 @@ private:
     void tableProgress(progress_changed update);
     void tableProgressGroupDone(bool hard_only);
     void instanceRowProgress(int key, QStringList parms);
+    void add_completed_instance(QString count, QString number, QString ctype);
     void set_tmp_dir(QString tdir);
     bool set_fet_path(QString fetpath);
 
@@ -106,6 +107,7 @@ private slots:
     void istart(const QString &data);
     void iend(const QString &data);
     void iaccept(const QString &data);
+    void ieliminate(const QString &data);
     void runThreadWorkerDone();
 };
 #endif // MAINWINDOW_H

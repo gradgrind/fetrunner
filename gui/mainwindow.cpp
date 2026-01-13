@@ -114,6 +114,11 @@ MainWindow::MainWindow(QWidget *parent)
         &RunThreadController::iaccept,
         this,
         &MainWindow::iaccept);
+    connect( //
+        &threadrunner,
+        &RunThreadController::ieliminate,
+        this,
+        &MainWindow::ieliminate);
     connect(&threadrunner,
             &RunThreadController::runThreadWorkerDone,
             this,
@@ -424,21 +429,11 @@ void MainWindow::ticker(const QString &data)
         //qDebug() << "?removeRow" << row << rp.key;
         auto irow = rp.irow;
         if (irow.state == 1) {
-            auto nrow = ui->completed_instance_table->rowCount();
-            ui->completed_instance_table->insertRow(nrow);
-            ui->completed_instance_table->setVerticalHeaderItem( //
-                nrow,
-                new QTableWidgetItem(QString("%1").arg(nrow + 1, 2)));
             auto ctype = irow.data[1]; // constraint type
-            auto item0 = new QTableWidgetItem(ctype);
-            auto item1 = new QTableWidgetItem(irow.data[2]); // number of constraints
-            auto total = QString{"/ %1"}.arg(constraint_map[ctype].total);
-            auto item2 = new QTableWidgetItem(total);
-            item1->setTextAlignment(Qt::AlignCenter);
-            item2->setTextAlignment(Qt::AlignCenter);
-            ui->completed_instance_table->setItem(nrow, 0, item1);
-            ui->completed_instance_table->setItem(nrow, 1, item2);
-            ui->completed_instance_table->setItem(nrow, 2, item0);
+            add_completed_instance(    //
+                irow.data[2],          // number of constraints
+                QString{"/ %1"}.arg(constraint_map[ctype].total),
+                ctype);
         }
         auto row = irow.item->row();
         ui->instance_table->removeRow(row);
@@ -455,6 +450,26 @@ void MainWindow::ticker(const QString &data)
         tableProgress(update);
     }
     progress_rows_changed.clear();
+}
+
+void MainWindow::add_completed_instance( //
+    QString number,
+    QString total,
+    QString ctype)
+{
+    auto nrow = ui->completed_instance_table->rowCount();
+    ui->completed_instance_table->insertRow(nrow);
+    ui->completed_instance_table->setVerticalHeaderItem( //
+        nrow,
+        new QTableWidgetItem(QString("%1").arg(nrow + 1, 2)));
+    auto item0 = new QTableWidgetItem(ctype);
+    auto item1 = new QTableWidgetItem(number); // number of constraints
+    auto item2 = new QTableWidgetItem(total);
+    item1->setTextAlignment(Qt::AlignCenter);
+    item2->setTextAlignment(Qt::AlignCenter);
+    ui->completed_instance_table->setItem(nrow, 0, item1);
+    ui->completed_instance_table->setItem(nrow, 1, item2);
+    ui->completed_instance_table->setItem(nrow, 2, item0);
 }
 
 const int INSTANCE0 = 3;
@@ -537,4 +552,16 @@ void MainWindow::iaccept(const QString &data)
         //    instance_rows_changed.append(key);
         progress_rows_changed.append({irow.data[1], irow.data[2]});
     }
+}
+
+void MainWindow::ieliminate(const QString &data)
+{
+    auto slist = data.split(u'.');
+    auto ctype = slist[0]; //TODO: Has "Constraint"!
+    //TODO: add to completed instance table
+    add_completed_instance( //
+        QString{"--- [%1]"}.arg(slist[1]),
+        //QString{"/ %1"}.arg(constraint_map[ctype].total),
+        "???",
+        ctype);
 }
