@@ -110,7 +110,10 @@ func (attdata *AutoTtData) BlockSingleConstraint(
 		c := instance.Constraints[0]
 		attdata.BlockConstraint[c] = true
 		logger.Result(
-			".ELIMINATE", fmt.Sprintf("%s.%d", instance.ConstraintType, c))
+			".ELIMINATE", fmt.Sprintf("%s.%d.%s",
+				attdata.BackendInterface.ConstraintName(instance),
+				c,
+				instance.Message))
 	}
 }
 

@@ -5,6 +5,7 @@ import "fetrunner/internal/base"
 type BackendInterface interface {
 	RunBackend(*base.BaseData, *TtInstance) TtBackend
 	Tidy(*base.BaseData)
+	ConstraintName(*TtInstance) string
 }
 
 type TtSource interface {

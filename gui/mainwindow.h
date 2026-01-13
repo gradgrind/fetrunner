@@ -66,7 +66,11 @@ private:
     void tableProgress(progress_changed update);
     void tableProgressGroupDone(bool hard_only);
     void instanceRowProgress(int key, QStringList parms);
-    void add_completed_instance(QString count, QString number, QString ctype);
+    void add_completed_instance( //
+        QString count,
+        QString number,
+        QString ctype,
+        QString message = "");
     void set_tmp_dir(QString tdir);
     bool set_fet_path(QString fetpath);
 

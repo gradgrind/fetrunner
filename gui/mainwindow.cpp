@@ -455,7 +455,8 @@ void MainWindow::ticker(const QString &data)
 void MainWindow::add_completed_instance( //
     QString number,
     QString total,
-    QString ctype)
+    QString ctype,
+    QString message)
 {
     auto nrow = ui->completed_instance_table->rowCount();
     ui->completed_instance_table->insertRow(nrow);
@@ -465,6 +466,9 @@ void MainWindow::add_completed_instance( //
     auto item0 = new QTableWidgetItem(ctype);
     auto item1 = new QTableWidgetItem(number); // number of constraints
     auto item2 = new QTableWidgetItem(total);
+    if (!message.isEmpty()) {
+        item1->setToolTip(message);
+    }
     item1->setTextAlignment(Qt::AlignCenter);
     item2->setTextAlignment(Qt::AlignCenter);
     ui->completed_instance_table->setItem(nrow, 0, item1);
@@ -557,11 +561,10 @@ void MainWindow::iaccept(const QString &data)
 void MainWindow::ieliminate(const QString &data)
 {
     auto slist = data.split(u'.');
-    auto ctype = slist[0]; //TODO: Has "Constraint"!
-    //TODO: add to completed instance table
+    auto ctype = slist[0];  //TODO: Has "Constraint"!
     add_completed_instance( //
         QString{"--- [%1]"}.arg(slist[1]),
-        //QString{"/ %1"}.arg(constraint_map[ctype].total),
-        "???",
-        ctype);
+        QString{"/ %1"}.arg(constraint_map[ctype].total),
+        ctype,
+        slist[2]);
 }

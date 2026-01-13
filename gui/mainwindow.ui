@@ -812,6 +812,9 @@
           </item>
           <item>
            <widget class="QTableWidget" name="completed_instance_table">
+            <property name="editTriggers">
+             <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+            </property>
             <attribute name="horizontalHeaderVisible">
              <bool>false</bool>
             </attribute>
