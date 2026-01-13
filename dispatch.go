@@ -112,6 +112,7 @@ func CheckArgs(l *base.Logger, op *DispatchOp, n int) bool {
 }
 
 func init() {
+	OpHandlerMap["VERSION"] = fetrunner_version
 	OpHandlerMap["GET_FET"] = get_fet
 	OpHandlerMap["SET_FILE"] = file_loader
 	OpHandlerMap["RUN_TT_SOURCE"] = runtt_source
@@ -125,6 +126,12 @@ func init() {
 	OpHandlerMap["TT_PARAMETER"] = ttparameter
 	OpHandlerMap["TMP_PATH"] = set_tmp
 	OpHandlerMap["N_PROCESSES"] = nprocesses
+}
+
+func fetrunner_version(dsp *Dispatcher, op *DispatchOp) {
+	if CheckArgs(dsp.BaseData.Logger, op, 0) {
+		dsp.BaseData.Logger.Result("FETRUNNER_VERSION", VERSION)
+	}
 }
 
 func set_tmp(dsp *Dispatcher, op *DispatchOp) {

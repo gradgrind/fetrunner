@@ -149,23 +149,6 @@
         <translation>Alle verbindlichen Bedingungen</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="656"/>
-        <location filename="../mainwindow.ui" line="925"/>
-        <source>Sizes</source>
-        <translation>Größen</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="661"/>
-        <location filename="../mainwindow.ui" line="930"/>
-        <source>Finished</source>
-        <translation>abgeschlossen</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="666"/>
-        <source>Running Soft</source>
-        <translation>laufende Unverbindlichiche</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="671"/>
         <source>Accepted</source>
         <translation>aufgenommen</translation>
@@ -189,54 +172,14 @@
         <translation>Bedingung</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="765"/>
-        <source>A completed hard constraint type</source>
-        <translation>Eine vollständige verbindliche Bedingung</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="794"/>
-        <source>58:A soft constraint type, not yet complete</source>
-        <translation>58:Eine unverbindliche Bedingungen, noch laufend</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="809"/>
         <source>Completed:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="854"/>
-        <source>27</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="862"/>
-        <source>54</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="870"/>
-        <source>Some constraint</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="875"/>
-        <source>--- [124]</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="883"/>
-        <source>15</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="891"/>
-        <source>Rejected constraint</source>
-        <translation type="unfinished"></translation>
+        <translation>Abgeschlossen:</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="899"/>
         <source>Currently running:</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktuelle Prozesse:</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="935"/>
@@ -244,20 +187,15 @@
         <translation>Stand</translation>
     </message>
     <message>
+        <location filename="../mainwindow.ui" line="1198"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;fetrunner&lt;/span&gt; version&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;fetrunner&lt;/span&gt;-Version&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
         <location filename="../mainwindow.ui" line="839"/>
         <location filename="../mainwindow.ui" line="940"/>
         <source>Constraints</source>
         <translation>Bedingungen</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="829"/>
-        <source>01</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="834"/>
-        <source>02</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="945"/>
@@ -270,16 +208,6 @@
         <translation>Timeout</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="992"/>
-        <source>02:Constraint name</source>
-        <translation>02:Name der Bedingung</translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.ui" line="1029"/>
-        <source>Some completed instance</source>
-        <translation>ein erfolgreich gelaufener Prozess</translation>
-    </message>
-    <message>
         <location filename="../mainwindow.ui" line="1038"/>
         <source>Log</source>
         <translation>Log</translation>
@@ -290,8 +218,8 @@
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1098"/>
-        <location filename="../mainwindow.ui" line="1135"/>
+        <location filename="../mainwindow.ui" line="1088"/>
+        <location filename="../mainwindow.ui" line="1125"/>
         <source>Default</source>
         <translation>Voreinstellung</translation>
     </message>
@@ -301,23 +229,23 @@
         <translation>Zwischendateien</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1142"/>
+        <location filename="../mainwindow.ui" line="1132"/>
         <source>FET version</source>
         <translation>FET-Version</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1091"/>
-        <location filename="../mainwindow.ui" line="1128"/>
+        <location filename="../mainwindow.ui" line="1081"/>
+        <location filename="../mainwindow.ui" line="1118"/>
         <source>Select</source>
         <translation>Wählen</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1121"/>
+        <location filename="../mainwindow.ui" line="1111"/>
         <source>FET command</source>
         <translation>FET-Befehl</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1074"/>
+        <location filename="../mainwindow.ui" line="1188"/>
         <source>Folder for temporary files, preferably RAM-drive (or other in-memory &quot;device&quot;)</source>
         <translation>Ordner für Zwischendateien, idealerweise RAM-Drive (oder Ähnliches)</translation>
     </message>
@@ -327,52 +255,52 @@
         <translation>Prozess-Status</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1211"/>
+        <location filename="../mainwindow.ui" line="1155"/>
         <source>... with &quot;_&quot; prefix, in the folder containing the source file</source>
         <translation>... mit vorangestelltem „_“, im Ordner der Quelldatei</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1214"/>
+        <location filename="../mainwindow.ui" line="1158"/>
         <source>Generate fully-constrained FET file</source>
         <translation>FET-Datei mit allen Bedingungen erstellen</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="226"/>
+        <location filename="../mainwindow.cpp" line="228"/>
         <source>Open Timetable Specification File</source>
         <translation>Öffne Stundenplanungsdatei</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="228"/>
+        <location filename="../mainwindow.cpp" line="230"/>
         <source>FET / W365 Files (*.fet *_w365.json)</source>
         <translation>FET- / W365- Dateien (*.fet *_w365.json)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="303"/>
+        <location filename="../mainwindow.cpp" line="305"/>
         <source>Seek FET executable</source>
         <translation>Suche FET-Befehl</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="305"/>
+        <location filename="../mainwindow.cpp" line="307"/>
         <source>FET executable</source>
         <translation>FET-Befehl</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="334"/>
+        <location filename="../mainwindow.cpp" line="336"/>
         <source>FET not found</source>
         <translation>FET nicht gefunden</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="335"/>
+        <location filename="../mainwindow.cpp" line="337"/>
         <source>Seek &apos;FET&apos; command-line executable in file system</source>
         <translation>Suche &apos;FET&apos;-Kommandozeilenbefehl im Dateisystem</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="345"/>
+        <location filename="../mainwindow.cpp" line="347"/>
         <source>Finishing ...</source>
         <translation>Prozesse werden abgeschlossen ...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="355"/>
+        <location filename="../mainwindow.cpp" line="357"/>
         <source>Select base folder for temporary files</source>
         <translation>Basis-Ordner für Zwischendateien wählen</translation>
     </message>

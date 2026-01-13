@@ -15,6 +15,8 @@ MainWindow::MainWindow(QWidget *parent)
     backend = new Backend();
     init_ttgen_tables();
 
+    ui->fetrunner_version->setText(backend->op1("VERSION", {}, "FETRUNNER_VERSION").val);
+
     // Get range for number of processes.
     // Do this before connecting the "valueChanged" signal, to
     // avoid triggering this before any actual change.
