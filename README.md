@@ -89,4 +89,6 @@ It may, however, be more convenient to use the `CMake` build described below.
 
 ### Building the GUI within `FET`
 
+**TODO**: This has not yet been updated for `FET` versions from 7.7.0 (which use `CMake`).
+
 It may be more convenient to build `fetrunner` inside the `FET` source tree, especially on Windows, where a custom build of `fet-cl` (`fet-clw`) is required anyway. To this end there are `CMakeLists.txt` files (in `fetrunner/fet-cmake`) which can be added to the `FET` sources. See [README_GUI](docs/README_GUI.md) for further details. Basic `CMakeLists.txt` files are also provided for `fet-cl` and `fet`, so that the whole of `FET` could be built together with `fetrunner`. This works and has some advantages, but requires a recent `Qt` version.

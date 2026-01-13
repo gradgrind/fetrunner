@@ -62,7 +62,23 @@ When all the individual constraints of a type have been "accepted" (found to be 
 
 ![run state tab](./images/Screenshot_03.png)
 
-This table shows the progress (in percent) of the currently running single-constraint-type `FET` instances (i.e. excluding the "special" instances), many of which will be terminated before completion.
+On this page there are two tables. At the top, all the single-constraint-type `FET` instances are shown which completed successfully _and_ which were "accepted", i.e. whose constraints have been added to the running collection.
+
+The numeric columns display (for the associated constraint type):
+
+	1) a simple line number, showing acceptance order;
+
+    2) the number of individual constraints being tested in this instance;
+
+    3) the total number of individual constraints;
+
+This table also shows single constraints which have been "rejected" (because they may be impossible), as can be seen in the following screenshot:
+
+![run state tab, some eliminated](./images/Screenshot_03a.png)
+
+Instead of the number of constraints, "--- [n]" is shown. The number in square brackets is the index given to the rejected constraint in the "xxx_Result.fet" file produced by this run. This should help to find exactly which constraint this line refers to. These entries also have a tool-tip, which can indicate why the constraint was rejected.
+
+At the bottom of the page, the currently running instances are shown together with their progress (in percent) (excluding the "special" instances). Many of these will be terminated before completion. Even if one reaches 100%, it will only be "accepted" (and this transferred to the upper table) if it is the first one in the current group to do so.
 
 The numeric columns display (for the associated constraint type):
 
@@ -75,8 +91,6 @@ The numeric columns display (for the associated constraint type):
     4) the time-out for this process (note that this is handled very flexibly!).
 
 Constraint groups with only one constraint are run without a time-out (shown as "---"), but they may still be terminated if they seem to be "stuck".
-
-When one of these processes reaches 100% it will be "accepted". Its displayed percentage will be changed to "+++" and this group of constraints will be added to the running totals. All the other running instances will be terminated, then restarted after adding the newly accepted constraints. Depending on the time the accepted run took, the time-outs may be adjusted. Note that if more than one of the running instances reach 100% at the same time, only one can be accepted. Rejected instances will be removed from the table.
 
 #### Tab: Log
 
@@ -97,3 +111,5 @@ This gives access to some settings which will not normally be needed, except per
  - Fet version: The version of the selected `FET` program will be shown here.
 
  - Generate fully constrained FET file. This causes a slightly modified version of the original `FET` file to be written to the folder containing the source file. It is given a "_" prefix and contains some additional information added by `fetrunner`. Unless the "Real" soft constraints option is set, any soft constraints will now have "Weight_Percentage" 100, i.e. have become "hard". The original weight is added to the "Comments" field, along with a constraint index.
+
+Also the `fetrunner` version is shown.
