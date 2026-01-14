@@ -49,7 +49,7 @@ Within this temporary folder, each run of `fet-cl` gets its own sub-directory fo
 
 `fetrunner` started life as a command-line tool, written in `Go`. Subsequently `libfetrunner` was added, which makes the functionality available as a program library (C library, shared or static), using simple JSON structures for communication. There is also a GUI, written in `C++/Qt`, which uses `libfetrunner` as its back-end.
 
-For usage information, including help with interpreting the results of a `fetrunner` run, see [Using `fetrunner`](./docs/using_fetrunner).
+For usage information, including help with interpreting the results of a `fetrunner` run, see [Using `fetrunner`](./docs/using_fetrunner.md).
 
 ### Building the command-line tool
 
