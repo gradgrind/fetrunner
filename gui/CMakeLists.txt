@@ -25,12 +25,14 @@ set_target_properties(libfetrunner PROPERTIES
 qt_add_executable(fetrunner-gui
     WIN32 MACOSX_BUNDLE
     main.cpp
-    mainwindow.cpp
-    mainwindow.h
-    mainwindow.ui
+    fetrunner.cpp
+    fetrunner.h
+    fetrunner.ui
     backend.h backend.cpp
     threadrun.h threadrun.cpp
     ttgen_tables.cpp
+    mainwindow.h mainwindow.cpp mainwindow.ui
+    globals.h
 )
 
 qt_add_translations(fetrunner-gui MERGE_QT_TRANSLATIONS
