@@ -308,14 +308,42 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="80"/>
+        <location filename="../mainwindow.cpp" line="81"/>
         <source>Open Timetable Specification File</source>
         <translation type="unfinished">Öffne Stundenplanungsdatei</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="82"/>
+        <location filename="../mainwindow.cpp" line="83"/>
         <source>FET / W365 Files (*.fet *_w365.json)</source>
         <translation type="unfinished">FET- / W365- Dateien (*.fet *_w365.json)</translation>
+    </message>
+</context>
+<context>
+    <name>TtView</name>
+    <message>
+        <location filename="../ttview.ui" line="14"/>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ttview.ui" line="32"/>
+        <source>View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ttview.ui" line="50"/>
+        <source>Class</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ttview.ui" line="57"/>
+        <source>Teacher</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ttview.ui" line="64"/>
+        <source>Room</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

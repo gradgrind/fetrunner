@@ -33,6 +33,7 @@ qt_add_executable(fetrunner-gui
     ttgen_tables.cpp
     mainwindow.h mainwindow.cpp mainwindow.ui
     globals.h
+    ttview.h ttview.cpp ttview.ui
 )
 
 qt_add_translations(fetrunner-gui MERGE_QT_TRANSLATIONS
