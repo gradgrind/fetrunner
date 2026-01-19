@@ -45,6 +45,18 @@ If no such file-system is available and detected, the standard temporary directo
 
 Within this temporary folder, each run of `fet-cl` gets its own sub-directory for its files. The name of this sub-directory is derived from the source file by removing the extension. If multiple instances of `fetrunner` are to be run simultaneously – which is generally inadvisable because of the limited processor cores – each must have a unique source file name.
 
+## Getting `fetrunner`
+
+There are binary packages on the "Releases" page. These need to be unpacked in the root folder of a recent `FET` installation.
+
+**Important Note for Windows**
+
+On Windows, `fetrunner-gui` needs a special build of the `FET` command-line program. It can't use `fet-cl.exe`, as that would pop up a console window every time it was run (and that would be a *lot* of console windows ...).
+
+The binary package for Windows contains the necessary `fet-clw.exe` program, but it may not match the version of your `FET` installation. If you need a newer `FET` feature, you may need to [recompile it](#special-fet-command-line-program-for-windows).
+
+Note that `fet-clw.exe` is not my software and has a different, more restrictive license: AGPL Version 3. This usage is perhaps not strictly in compliance with the license, but it is used here with the agreement of its author. For further details, source code, etc. see the [FET website](https://lalescu.ro/liviu/fet/).
+
 ## Command line / program library / GUI
 
 `fetrunner` started life as a command-line tool, written in `Go`. Subsequently `libfetrunner` was added, which makes the functionality available as a program library (C library, shared or static), using simple JSON structures for communication. There is also a GUI, written in `C++/Qt`, which uses `libfetrunner` as its back-end.
@@ -67,28 +79,55 @@ See [Build `libfetrunner`](./libfetrunner/README.md).
 
 ### Building the GUI
 
-As this is written in `C++` this is more difficult. Perhaps the easiest way is to install the Qt development kit from the Qt website (qt.io). Then run Qt Creator and open the project in the subdirectory `gui` by loading the `CMakeLists.txt` file. See the Qt Creator documentation for further details. Note that `libfetrunner` must be built (as a static library) before building the GUI. It should be possible just to copy the `fetrunner-gui` binary into the same directory as `fet-cl` in the `FET` binary distribution.
+As this is written in `C++` this is more difficult. The recommended approach is to use the Qt libraries from the `FET` binary installation which will be used by `fetrunner`. This should work if the `FET` binary installation uses a Qt version equal to or newer than that with which `fetrunner` is compiled.
 
-For more portable use, it is probably better to build using the method described [below](#building-the-gui-within-fet).
+The following instructions assume you are using the Qt development kit from the [Qt website](https://www.qt.io/development/download-qt-installer-oss), installed to the standard location.
 
-#### Special note for Windows users
+ 1) Compile `libfetrunner` as a [*static* library](./libfetrunner/README.md).
 
-The `fet-cl.exe` built when `FET` is built normally is compiled as a console application. This can be used by the command-line `fetrunner`, but if it is used by `fetrunner-gui` a new console will be popped up every time it is called – which is a lot and makes a real mess! Thus a custom build of `fet-cl` without console output is required. I have given the executable a new name, `fet-clw.exe` to distinguish it; it can be generated from the `FET` sources as follows:
+ 2) Make a new directory `build` in the `fetrunner/gui` directory.
 
- - Copy `src/src-cl.pro` to `src/src-clw.pro` and remove `cmdline` from CONFIG in `src/src-clw.pro`.
+ 3) Open the terminal (Linux) or Powershell (Windows) in this `build` directory.
 
- - Change TARGET in `src/src-clw.pro` to `fet-clw`.
+ 4) Compilation and "installation" is then platform-dependent.
 
- - Add `src/src-clw.pro` to SUBDIRS in `fet.pro`.
+#### Compilation on Linux
 
- - If `fet` and `fet-cl` don't need to be compiled, `src/src.pro` and `src/src-cl.pro` can be removed from SUBDIRS in `fet.pro`.
+```
+$HOME/Qt/Tools/CMake/bin/cmake .. -DCMAKE_PREFIX_PATH=$HOME/Qt/6.10.1/gcc_64 -DCMAKE_INSTALL_PREFIX=install
 
- - Compile `FET` as usual.
+$HOME/Qt/Tools/CMake/bin/cmake --build . --target install -j 4
+```
 
-It may, however, be more convenient to use the `CMake` build described below.
+Copy the resulting `fetrunner-gui` executable from `install/bin` to the `bin` directory of your `FET` installation.
 
-### Building the GUI within `FET`
+Optionally copy the `icons` directory from `fetrunner\gui` to  the `bin` directory of your `FET` installation.
 
-**TODO**: This has not yet been updated for `FET` versions from 7.7.0 (which use `CMake`).
+#### Compilation on Windows
 
-It may be more convenient to build `fetrunner` inside the `FET` source tree, especially on Windows, where a custom build of `fet-cl` (`fet-clw`) is required anyway. To this end there are `CMakeLists.txt` files (in `fetrunner/fet-cmake`) which can be added to the `FET` sources. See [README_GUI](./docs/README_GUI.md) for further details. Basic `CMakeLists.txt` files are also provided for `fet-cl` and `fet`, so that the whole of `FET` could be built together with `fetrunner`. This works and has some advantages, but requires a recent `Qt` version.
+```
+C:\Qt\Tools\CMake_64\bin\cmake.exe .. -DCMAKE_PREFIX_PATH=C:\Qt\6.10.1\mingw_64 -DCMAKE_GENERATOR="MinGW Makefiles"
+
+C:\Qt\Tools\CMake_64\bin\cmake.exe --build . -j 4
+```
+
+Copy the resulting `fetrunner-gui.exe` executable from `build` to the root directory of your `FET` installation.
+
+Optionally copy the `icons` directory from `fetrunner\gui` to  the root directory of your `FET` installation.
+
+#### Special `FET` command-line program for Windows
+
+To build the necessary `fet-clw.exe` program you need to download the `FET` source package and unpack this somewhere convenient.
+
+ - Make a new directory, `build-clw`, in the root directory of the `FET` source code.
+
+ -  Open `Powershell` in this `build-clw` directory.
+
+ - Compile:
+
+```
+C:\Qt\Tools\CMake_64\bin\cmake.exe .. -DCMAKE_PREFIX_PATH=C:\Qt\6.10.1\mingw_64 -DCMAKE_GENERATOR="MinGW Makefiles" -DCOMMAND_LINE_ONLY=ON -DNO_WINDOWS_CONSOLE=ON
+
+C:\Qt\Tools\CMake_64\bin\cmake.exe --build . -j 4
+```
+ - Copy the resulting `fet-clw.exe` executable from `build` to the root directory of your `FET` installation.

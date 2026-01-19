@@ -1,6 +1,6 @@
 # Build `libfetrunner`
 
-These commands should be run within the `libfetrunner` directory.
+The Go compiler must be [installed](https://go.dev/doc/install). These commands should then be run within the `libfetrunner` directory.
 
 ## To build a static library
 
@@ -14,10 +14,10 @@ This will normally set CGO_ENABLED=1 automatically, but under some circumstances
 CGO_ENABLED=1 go build -buildmode=c-archive libfetrunner.go
 ```
 
-or, on Windows:
+or, on Windows (Powershell):
 
 ```
-set CGO_ENABLED=1
+$Env:CGO_ENABLED=1
 
 go build -buildmode=c-archive libfetrunner.go
 ```
