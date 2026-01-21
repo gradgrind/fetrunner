@@ -223,6 +223,8 @@ func get_teachers(fetroot *etree.Element) []IdPair {
 func get_classes(fetroot *etree.Element) []IdPair {
 	items := []IdPair{}
 	for _, e := range fetroot.SelectElement("Students_List").SelectElements("Year") {
+		read_groups(e)
+
 		id := e.SelectElement("Name").Text()
 		items = append(items, IdPair{
 			Backend: id,
@@ -290,4 +292,16 @@ func jsonElement(e *etree.Element) (string, any) {
 		}
 	}
 	return e.FullTag(), m
+}
+
+// TODO:
+// Read groups and subgroups of a class.
+func read_groups(class *etree.Element) {
+	fmt.Printf("Class: %s\n", class.SelectElement("Name").Text())
+	for _, g := range class.SelectElements("Group") {
+		fmt.Printf("  Group: %s\n", g.SelectElement("Name").Text())
+		for _, subg := range g.SelectElements("Subgroup") {
+			fmt.Printf("    Subgroup: %s\n", subg.SelectElement("Name").Text())
+		}
+	}
 }

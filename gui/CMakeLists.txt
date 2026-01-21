@@ -34,6 +34,7 @@ qt_add_executable(fetrunner-gui
     mainwindow.h mainwindow.cpp mainwindow.ui
     globals.h
     ttview.h ttview.cpp ttview.ui
+    ttlayout.h ttlayout.cpp
 )
 
 qt_add_translations(fetrunner-gui MERGE_QT_TRANSLATIONS
