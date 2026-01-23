@@ -22,7 +22,17 @@ The complete data for an activity could be provided when the mouse hovers over a
 
 This primary view would show the timetable for a single class, a single teacher or a single room. It would be nice to also have **overview** displays, showing the timetable for all classes, all teachers or all rooms. The possibility of showing (legible) text in such a view is of course very limited, but colour coding might help somewhat.
 
-**TODO** As the question of which information to show, and how, is such a tricky one, it would probably be sensible to start simple (e.g. show a minimum of data per cell), but provide for later extension. For vertical days, the divisions would be vertical, so the data could be shown in a line; for horizontal days, the data could be shown in a column. From this a minimum size requirement could be determined (based on text height and width). A later step might involve a certain degree of text shrinkage. What constitutes "a minimum" needs to be determined. One possibility is not to show all items, another is to abbreviate lists to the first item + comma.
+**TODO**: As the question of which information to show, and how, is such a tricky one, it would probably be sensible to start simple (e.g. show a minimum of data per cell), but provide for later extension. For vertical days, the divisions would be vertical, so the data could be shown in a line; for horizontal days, the data could be shown in a column. From this a minimum size requirement could be determined (based on text height and width). A later step might involve a certain degree of text shrinkage. What constitutes "a minimum" needs to be determined. One possibility is not to show all items, another is to abbreviate lists to the first item + comma.
+
+**A FET difficulty**: The Groups, and especially Subgroups, in FET tend to be a bit long as they tend to include their "parents". This happens when using the dialog for automatic Categories/Divisions. It is, indeed, quite reasonable behaviour because it is the Year/Group/Subgroup Name field which is used as reference in activities and constraints. Sometimes even the Name fields themselves are rather long (where it might have been better to use the Long_Name field). The user decides rather freely what to put there.
+
+Also, there is no guarantee that the Category and Division information will be there. I suppose if it is there it could be used, but it may not reflect the actual divisions specified by the Group and Subgroup elements..
+
+One possibility would be to simply accept the given names, so that there would be no separate tile field for class (when relevant). However, as activities (etc.) are allocated to Years, Groups or Subgroups, without any extra tagging for Year in the case of the latter two, the Year would need to be got from the Group or Subgroup somehow, either lexically or by look-up table. By using this information, it might be possible – given appropriate name structures – to split off the Year part to get the Group or Subgroup. That could be to try trimming the class from the front and then to remove the (first) separator, if any.
+
+A further possibility would be to use the Code field to provide the display tag. But perhaps there is here no further gain over judicious use of the Long_Name field, if the class is being trimmed off anyway. Make the use of the Code field an option?
+
+In any case, there would need to be a mechanism for handling overlong names (maybe a combination of shrink and ellipsis?).
 
 ## Placement of tiles representing divisions
 

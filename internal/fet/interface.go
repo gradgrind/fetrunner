@@ -20,6 +20,13 @@ type SoftWeight struct {
 	Weight string
 }
 
+type GroupComponents struct {
+	Class string
+	Group string // class prefix stripped
+	//TODO: Do I need to distinguish subgroups?
+	Subgroup bool
+}
+
 type TtRunDataFet struct {
 	Doc                *etree.Document
 	ConstraintElements []*etree.Element
@@ -42,6 +49,9 @@ type TtRunDataFet struct {
 	RoomIds    []IdPair
 	SubjectIds []IdPair
 	ClassIds   []IdPair
+
+	// FET-group-name (Year, Group or Subgroup) -> GroupComponents
+	GroupData map[string]GroupComponents
 
 	WeightTable []float64
 

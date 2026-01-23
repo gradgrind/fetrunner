@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/beevik/etree"
 )
 
 // In FET there are "time" constraints and "space" constraints. They are
-// all lumped together in th `ConstraintElements` list, but their indexes
+// all lumped together in the `ConstraintElements` list, but their indexes
 // are also recorded in the `TimeConstraints` and `SpaceConstraints` lists.
 
 func FetRead(
@@ -65,7 +66,9 @@ func FetRead(
 	rundata.RoomIds = get_rooms(fetroot)
 	rundata.TeacherIds = get_teachers(fetroot)
 	rundata.SubjectIds = get_subjects(fetroot)
-	rundata.ClassIds = get_classes(fetroot)
+
+	rundata.GroupData = map[string]GroupComponents{}
+	rundata.ClassIds = get_classes(fetroot, rundata.GroupData)
 
 	// Collect the constraints, dividing into soft and hard groups.
 	// Inactive constraints will be removed.
@@ -220,10 +223,13 @@ func get_teachers(fetroot *etree.Element) []IdPair {
 	return items
 }
 
-func get_classes(fetroot *etree.Element) []IdPair {
+func get_classes(
+	fetroot *etree.Element,
+	group_components map[string]GroupComponents,
+) []IdPair {
 	items := []IdPair{}
 	for _, e := range fetroot.SelectElement("Students_List").SelectElements("Year") {
-		read_groups(e)
+		read_groups(e, group_components)
 
 		id := e.SelectElement("Name").Text()
 		items = append(items, IdPair{
@@ -294,14 +300,38 @@ func jsonElement(e *etree.Element) (string, any) {
 	return e.FullTag(), m
 }
 
-// TODO:
 // Read groups and subgroups of a class.
-func read_groups(class *etree.Element) {
-	fmt.Printf("Class: %s\n", class.SelectElement("Name").Text())
+func read_groups(
+	class *etree.Element,
+	group_components map[string]GroupComponents,
+) {
+	sep := class.SelectElement("Separator").Text()
+	className := class.SelectElement("Name").Text()
+	//fmt.Printf("Class: %s\n", className)
+	group_components[className] = GroupComponents{Class: className}
+	//fmt.Printf("  +++ %+v\n", group_components[className])
+
 	for _, g := range class.SelectElements("Group") {
-		fmt.Printf("  Group: %s\n", g.SelectElement("Name").Text())
+		groupName := g.SelectElement("Name").Text()
+		groupTag := strings.TrimPrefix(groupName, className)
+		if groupTag != groupName {
+			groupTag = strings.TrimPrefix(groupTag, sep)
+		}
+		//fmt.Printf("  Group: %s\n", groupName)
+		group_components[groupName] = GroupComponents{
+			Class: className, Group: groupTag}
+		//fmt.Printf("    +++ %+v\n", group_components[groupName])
+
 		for _, subg := range g.SelectElements("Subgroup") {
-			fmt.Printf("    Subgroup: %s\n", subg.SelectElement("Name").Text())
+			subgroupName := subg.SelectElement("Name").Text()
+			subgroupTag := strings.TrimPrefix(subgroupName, className)
+			if subgroupTag != subgroupName {
+				subgroupTag = strings.TrimPrefix(subgroupTag, sep)
+			}
+			//fmt.Printf("    Subgroup: %s\n", subgroupName)
+			group_components[subgroupName] = GroupComponents{
+				Class: className, Group: subgroupTag, Subgroup: true}
+			//fmt.Printf("      +++ %+v\n", group_components[subgroupName])
 		}
 	}
 }
