@@ -143,6 +143,13 @@ which constraints were dropped and any error messages for them which may have
 been produced by the generator back-end).
 */
 
+const (
+	PHASE_BASIC = iota
+	PHASE_HARD
+	PHASE_SOFT
+	PHASE_FINISHED
+)
+
 func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 	logger := bdata.Logger
 	bdata.StopFlag = false
@@ -191,7 +198,7 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 	// Instance without soft constraints (if any, otherwise same as full
 	// instance) – enable only the hard constraints.
 	// This is needed even if SKIP_HARD is set, because it is used as
-	// initial base instance for phase 2. However, with SKIP_HARD set it
+	// initial base instance for PHASE_SOFT. However, with SKIP_HARD set it
 	// will not be run.
 	enabled = make([]bool, attdata.NConstraints)
 	for _, ilist := range attdata.HardConstraintMap {
@@ -213,10 +220,10 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 		if len(attdata.SoftConstraintMap) == 0 {
 			logger.Error("--SOFT_SKIP_HARD: Skipping hard-constraint test," +
 				" but no soft constraints")
-			runqueue.enter_phase(3) // skip to end (phase 3)
+			runqueue.enter_phase(PHASE_FINISHED) // skip to end phase
 		} else {
-			// Start in phase 2.
-			runqueue.enter_phase(2)
+			// Start handling soft constraints.
+			runqueue.enter_phase(PHASE_SOFT)
 		}
 
 	} else {
@@ -239,8 +246,8 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 		// Add to run queue
 		runqueue.add(attdata.null_instance)
 
-		// Start in phase 0.
-		runqueue.enter_phase(0)
+		// Start in basic phase with only special instances.
+		runqueue.enter_phase(PHASE_BASIC)
 	}
 
 	// *** Ticker loop ***
@@ -336,19 +343,19 @@ tickloop:
 
 		for {
 			switch attdata.phase {
-			case 0:
-				if runqueue.phase0() {
+			case PHASE_BASIC:
+				if runqueue.phase_basic() {
 					continue
 				}
-			case 1:
-				if runqueue.phase1() {
+			case PHASE_HARD:
+				if runqueue.phase_hard() {
 					continue
 				}
-			case 2:
-				if runqueue.phase2() {
+			case PHASE_SOFT:
+				if runqueue.phase_soft() {
 					continue
 				}
-			case 3:
+			case PHASE_FINISHED:
 				break tickloop
 			}
 			break
