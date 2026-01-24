@@ -115,6 +115,7 @@ func main() {
 	}
 	defer logfile.Close()
 
+	do("VERSION")
 	do("TT_PARAMETER", "TIMEOUT", strconv.Itoa(*timeout))
 	do("TT_PARAMETER", "MAXPROCESSES", strconv.Itoa(*nprocesses))
 	do("TT_PARAMETER", "DEBUG", strconv.FormatBool(*debug))
