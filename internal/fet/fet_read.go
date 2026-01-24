@@ -5,6 +5,7 @@ import (
 	"fetrunner/internal/base"
 	"fmt"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -308,9 +309,8 @@ func read_groups(
 	sep := class.SelectElement("Separator").Text()
 	className := class.SelectElement("Name").Text()
 	//fmt.Printf("Class: %s\n", className)
-	group_components[className] = GroupComponents{Class: className}
-	//fmt.Printf("  +++ %+v\n", group_components[className])
 
+	glist := []string{}
 	for _, g := range class.SelectElements("Group") {
 		groupName := g.SelectElement("Name").Text()
 		groupTag := strings.TrimPrefix(groupName, className)
@@ -318,20 +318,33 @@ func read_groups(
 			groupTag = strings.TrimPrefix(groupTag, sep)
 		}
 		//fmt.Printf("  Group: %s\n", groupName)
-		group_components[groupName] = GroupComponents{
-			Class: className, Group: groupTag}
-		//fmt.Printf("    +++ %+v\n", group_components[groupName])
 
+		subglist := []string{}
 		for _, subg := range g.SelectElements("Subgroup") {
 			subgroupName := subg.SelectElement("Name").Text()
+			subglist = append(subglist, subgroupName)
 			subgroupTag := strings.TrimPrefix(subgroupName, className)
 			if subgroupTag != subgroupName {
 				subgroupTag = strings.TrimPrefix(subgroupTag, sep)
 			}
 			//fmt.Printf("    Subgroup: %s\n", subgroupName)
 			group_components[subgroupName] = GroupComponents{
-				Class: className, Group: subgroupTag, Subgroup: true}
-			//fmt.Printf("      +++ %+v\n", group_components[subgroupName])
+				Class: className, Group: subgroupTag}
+			fmt.Printf("      +++ %+v\n", group_components[subgroupName])
+		}
+
+		group_components[groupName] = GroupComponents{
+			Class: className, Group: groupTag, Parts: subglist}
+		fmt.Printf("    +++ %+v\n", group_components[groupName])
+
+		if len(subglist) == 0 {
+			glist = append(glist, groupName)
+		} else {
+			glist = append(glist, subglist...)
 		}
 	}
+	slices.Sort(glist)
+	group_components[className] = GroupComponents{
+		Class: className, Parts: slices.Compact(glist)}
+	fmt.Printf("  +++ %+v\n", group_components[className])
 }

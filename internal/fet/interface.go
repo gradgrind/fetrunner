@@ -22,9 +22,8 @@ type SoftWeight struct {
 
 type GroupComponents struct {
 	Class string
-	Group string // class prefix stripped
-	//TODO: Do I need to distinguish subgroups?
-	Subgroup bool
+	Group string   // class prefix stripped
+	Parts []string // list of component (sub)groups
 }
 
 type TtRunDataFet struct {
