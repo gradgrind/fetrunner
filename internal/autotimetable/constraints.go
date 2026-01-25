@@ -1,6 +1,7 @@
 package autotimetable
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 )
@@ -15,12 +16,15 @@ type weighted_constraint_list struct {
 // are disabled. Hard constraints are ordered as in the `ConstraintTypes`
 // list. Soft constraints are ordered according to weight.
 func (attdata *AutoTtData) get_basic_constraints(
-	instance0 *TtInstance, soft bool,
+	instance0 *TtInstance,
 ) ([]*TtInstance, int) {
 	instances := []*TtInstance{} // one instance per constraint type
 	nconstraints := 0            // count constraints
 	wlist := []weighted_constraint_list{}
-	if soft {
+	p := attdata.phase
+	switch p {
+	case PHASE_SOFT:
+
 		for k, v := range attdata.SoftConstraintMap {
 			w, c, ok := strings.Cut(k, ":")
 			if !ok {
@@ -31,12 +35,30 @@ func (attdata *AutoTtData) get_basic_constraints(
 		slices.SortFunc(wlist, func(a, b weighted_constraint_list) int {
 			return strings.Compare(a.weight, b.weight)
 		})
-	} else {
+
+	case PHASE_FINISHED:
+
+		fmt.Println("!! get_basic_constraints ... FINISHED!")
+
+	default:
+
 		emap := attdata.HardConstraintMap
 		for _, ctype := range attdata.ConstraintTypes {
+			if strings.Contains(ctype, "NotAvailable") {
+				if p != PHASE_NA {
+					continue
+				}
+			} else if strings.HasSuffix(ctype, "StartingTime") {
+				if p != PHASE_EXTRAHARD {
+					continue
+				}
+			} else if p != PHASE_HARD {
+				continue
+			}
 			wlist = append(wlist,
 				weighted_constraint_list{"", ctype, emap[ctype]})
 		}
+
 	}
 	for _, wcl := range wlist {
 		cixlist := []ConstraintIndex{}

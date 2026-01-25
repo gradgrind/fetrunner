@@ -145,6 +145,8 @@ been produced by the generator back-end).
 
 const (
 	PHASE_BASIC = iota
+	PHASE_NA
+	PHASE_EXTRAHARD
 	PHASE_HARD
 	PHASE_SOFT
 	PHASE_FINISHED
@@ -347,8 +349,8 @@ tickloop:
 				if runqueue.phase_basic() {
 					continue
 				}
-			case PHASE_HARD:
-				if runqueue.phase_hard() {
+			case PHASE_NA, PHASE_EXTRAHARD, PHASE_HARD:
+				if runqueue.phase_hard(attdata.phase) {
 					continue
 				}
 			case PHASE_SOFT:

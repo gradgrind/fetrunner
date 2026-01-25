@@ -10,8 +10,6 @@ import (
 // Enter new phase.
 func (rq *RunQueue) enter_phase(p int) {
 	attdata := rq.AutoTtData
-	attdata.phase = p
-	rq.BData.Logger.Result(".PHASE", strconv.Itoa(p))
 
 	base_instance := attdata.current_instance
 	if base_instance == nil {
@@ -22,45 +20,38 @@ func (rq *RunQueue) enter_phase(p int) {
 			attdata.Parameters.NEW_PHASE_TIMEOUT_FACTOR) / 10
 	}
 
-	if p == PHASE_HARD {
-		// Initialize constraint list.
-		var n int
-		attdata.constraint_list, n = attdata.get_basic_constraints(
-			base_instance, false)
-		if n == 0 {
-			if attdata.hard_instance.RunState < 0 {
-				attdata.abort_instance(attdata.hard_instance)
-			}
-			attdata.phase = PHASE_SOFT // skip to soft constraint phase
-			rq.BData.Logger.Result(".PHASE", strconv.Itoa(PHASE_SOFT))
-		} else {
-			// Queue instances for running
-			for _, bc := range attdata.constraint_list {
-				rq.add(bc)
-			}
-			return
-		}
-	} else if p != PHASE_SOFT {
+	attdata.phase = p
+	rq.BData.Logger.Result(".PHASE", strconv.Itoa(p))
+	if p == PHASE_BASIC {
 		return
 	}
-	// From here, soft constraint phase only.
-	// Initialize constraint list.
+
 	var n int
+new_phase:
+	// Initialize constraint list.
 	attdata.constraint_list, n = attdata.get_basic_constraints(
-		base_instance, true)
+		base_instance)
+	if p == PHASE_FINISHED {
+		return
+	}
 	if n == 0 {
-		rq.BData.Logger.Warning("--SOFT: No soft constraints")
-		if attdata.full_instance.RunState < 0 {
+		if p == PHASE_SOFT && attdata.full_instance.RunState < 0 {
+			// The fully constrained instance is no longer required
 			attdata.abort_instance(attdata.full_instance)
 		}
-		attdata.phase = PHASE_FINISHED // skip to finalizing phase
-		rq.BData.Logger.Result(".PHASE", strconv.Itoa(PHASE_FINISHED))
-	} else {
-		// Queue instances for running
-		for _, bc := range attdata.constraint_list {
-			rq.add(bc)
+		if p == PHASE_HARD && attdata.hard_instance.RunState < 0 {
+			// The hard-only instance is no longer required
+			attdata.abort_instance(attdata.hard_instance)
 		}
-		return
+		// Skip to next phase
+		p++
+		attdata.phase = p
+		rq.BData.Logger.Result(".PHASE", strconv.Itoa(p))
+		goto new_phase
+	}
+	// Queue instances for running
+	for _, bc := range attdata.constraint_list {
+		rq.add(bc)
 	}
 }
 
@@ -86,7 +77,7 @@ func (rq *RunQueue) phase_basic() bool {
 		attdata.current_instance = attdata.null_instance
 		attdata.new_current_instance(rq.BData, attdata.current_instance)
 		// Start trials of single constraint types.
-		rq.enter_phase(PHASE_HARD)
+		rq.enter_phase(PHASE_NA)
 		return true
 	default:
 		// The null instance failed.
@@ -99,10 +90,10 @@ func (rq *RunQueue) phase_basic() bool {
 	return false
 }
 
-// During the "hard" phase, `full_instance`, `hard_instance` and various
+// During the "hard" phases, `full_instance`, `hard_instance` and various
 // instances adding individual hard constraint types are running. Return `true`
 // if the phase is changed, otherwise `false`.
-func (rq *RunQueue) phase_hard() bool {
+func (rq *RunQueue) phase_hard(phase int) bool {
 	attdata := rq.AutoTtData
 	if attdata.ticked_hard_only(rq.BData) {
 		// All hard constraints OK, skip to trials of soft constraints.
@@ -110,7 +101,7 @@ func (rq *RunQueue) phase_hard() bool {
 		return true
 	}
 	if rq.mainphase() {
-		rq.enter_phase(PHASE_SOFT)
+		rq.enter_phase(phase + 1)
 		return true
 	}
 	return false
@@ -130,14 +121,15 @@ func (rq *RunQueue) phase_soft() bool {
 /*
 	Main processing phase(s), accumulating constraints.
 
-`mainphase()` is run in phases PHASE_HARD (adding hard constraints) and
-PHASE_SOFT (adding soft constraints). Generator instances are run which try
-to add the (as yet not included) constraints of a single type, with a timeout.
-A certain number of these can be run in parallel. If one completes
-successfully, it is removed from the constraint list, all the other instances
-are stopped (including any others that might have completed successfully) and
-this successful instance is used as the base for a new cycle. Depending on
-the time this instance took to complete, the timeout may be increased.
+`mainphase()` is run in phases PHASE_NA, PHASE_EXTRAHARD and PHASE_HARD
+(adding hard constraints) and also PHASE_SOFT (adding soft constraints).
+Generator instances are run which try to add the (as yet not included)
+constraints of a single type, with a timeout. A certain number of these can
+be run in parallel. If one completes successfully, it is removed from the
+constraint list, all the other instances are stopped (including any others
+that might have completed successfully) and this successful instance is used
+as the base for a new cycle. Depending on the time this instance took to
+complete, the timeout may be increased.
 
 There is some flexibility around the timeouts. If an instance seems to be
 progressing too slowly, it can be halted immediately. On the other hand,
