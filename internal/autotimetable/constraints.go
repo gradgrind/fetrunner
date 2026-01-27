@@ -1,7 +1,6 @@
 package autotimetable
 
 import (
-	"fmt"
 	"slices"
 	"strings"
 )
@@ -38,7 +37,7 @@ func (attdata *AutoTtData) get_basic_constraints(
 
 	case PHASE_FINISHED:
 
-		fmt.Println("!! get_basic_constraints ... FINISHED!")
+		panic("Bug: get_basic_constraints ... FINISHED!")
 
 	default:
 

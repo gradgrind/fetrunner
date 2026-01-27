@@ -233,7 +233,6 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 			// Add "_HARD_ONLY" instance to run queue
 			runqueue.add(attdata.hard_instance)
 
-			//+++++
 			// Instance with only "NotAvailable" (hard) constraints – if any,
 			// otherwise skip this instance.
 			ok := false
@@ -257,7 +256,6 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 				// Add "_NA_ONLY" instance to run queue
 				runqueue.add(attdata.na_instance)
 			}
-			//-----
 
 		}
 

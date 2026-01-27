@@ -13,7 +13,11 @@ func (rq *RunQueue) enter_phase(p int) {
 
 	base_instance := attdata.current_instance
 	if base_instance == nil {
-		base_instance = attdata.hard_instance
+		if p == PHASE_BASIC {
+			base_instance = attdata.null_instance
+		} else {
+			base_instance = attdata.hard_instance
+		}
 	} else {
 		attdata.cycle_timeout = (max(attdata.cycle_timeout,
 			attdata.current_instance.Ticks) *
