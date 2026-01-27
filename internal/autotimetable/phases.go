@@ -22,18 +22,14 @@ func (rq *RunQueue) enter_phase(p int) {
 
 	attdata.phase = p
 	rq.BData.Logger.Result(".PHASE", strconv.Itoa(p))
-	if p == PHASE_BASIC {
-		return
-	}
-
 	var n int
 new_phase:
-	// Initialize constraint list.
-	attdata.constraint_list, n = attdata.get_basic_constraints(
-		base_instance)
 	if p == PHASE_FINISHED {
 		return
 	}
+	// Initialize constraint list.
+	attdata.constraint_list, n = attdata.get_basic_constraints(
+		base_instance)
 	if n == 0 {
 		if p == PHASE_SOFT && attdata.full_instance.RunState < 0 {
 			// The fully constrained instance is no longer required
@@ -42,6 +38,16 @@ new_phase:
 		if p == PHASE_HARD && attdata.hard_instance.RunState < 0 {
 			// The hard-only instance is no longer required
 			attdata.abort_instance(attdata.hard_instance)
+		}
+		if p == PHASE_BASIC {
+			if attdata.null_instance.RunState < 0 {
+				// The unconstrained instance is no longer required
+				attdata.abort_instance(attdata.null_instance)
+			}
+			if attdata.na_instance.RunState < 0 {
+				// The "na" instance is no longer required
+				attdata.abort_instance(attdata.na_instance)
+			}
 		}
 		// Skip to next phase
 		p++
@@ -65,6 +71,11 @@ func (rq *RunQueue) phase_basic() bool {
 		rq.enter_phase(PHASE_SOFT)
 		return true
 	}
+	if attdata.ticked_na_only(rq.BData) {
+		// All "na" constraints OK, skip to trials of hard constraints.
+		rq.enter_phase(PHASE_HARD)
+		return true
+	}
 	switch attdata.null_instance.RunState {
 	case -1:
 		if attdata.null_instance.Ticks ==
@@ -76,9 +87,6 @@ func (rq *RunQueue) phase_basic() bool {
 		// The null instance completed successfully.
 		attdata.current_instance = attdata.null_instance
 		attdata.new_current_instance(rq.BData, attdata.current_instance)
-		// Start trials of single constraint types.
-		rq.enter_phase(PHASE_NA)
-		return true
 	default:
 		// The null instance failed.
 		rq.BData.Logger.Error(
@@ -91,9 +99,9 @@ func (rq *RunQueue) phase_basic() bool {
 }
 
 // During the "hard" phases, `full_instance`, `hard_instance` and various
-// instances adding individual hard constraint types are running. Return `true`
-// if the phase is changed, otherwise `false`.
-func (rq *RunQueue) phase_hard(phase int) bool {
+// instances adding individual hard constraint types are running. Return
+// `true` if the phase is changed, otherwise `false`.
+func (rq *RunQueue) phase_hard() bool {
 	attdata := rq.AutoTtData
 	if attdata.ticked_hard_only(rq.BData) {
 		// All hard constraints OK, skip to trials of soft constraints.
@@ -101,7 +109,7 @@ func (rq *RunQueue) phase_hard(phase int) bool {
 		return true
 	}
 	if rq.mainphase() {
-		rq.enter_phase(phase + 1)
+		rq.enter_phase(PHASE_SOFT)
 		return true
 	}
 	return false
@@ -288,6 +296,36 @@ func (attdata *AutoTtData) ticked_hard_only(bdata *base.BaseData) bool {
 		bdata.Logger.Result(".HARD_OK", "All hard constraints OK")
 		attdata.new_current_instance(bdata, attdata.current_instance)
 		// Cancel everything except full instance.
+		if attdata.null_instance.RunState < 0 {
+			attdata.abort_instance(attdata.null_instance)
+		}
+		if attdata.na_instance != nil && attdata.na_instance.RunState < 0 {
+			attdata.abort_instance(attdata.na_instance)
+		}
+		for _, instance := range attdata.constraint_list {
+			if instance.RunState < 0 {
+				attdata.abort_instance(instance)
+			} else if instance.RunState == 0 {
+				// Indicate that a queued instance is not to be started
+				instance.RunState = 3
+			}
+		}
+		attdata.constraint_list = nil
+		return true
+	}
+	return false
+}
+
+// Handle "tick-updates" for the special NA_ONLY instance.
+// This is called in the PHASE_BASIC. Return `true` if the
+// NA_ONLY instance has completed successfully, otherwise `false`.
+func (attdata *AutoTtData) ticked_na_only(bdata *base.BaseData) bool {
+	if attdata.na_instance.RunState == 1 {
+		// Set as current.
+		attdata.current_instance = attdata.na_instance
+		bdata.Logger.Result(".NA_OK", "All hard NotAvailable constraints OK")
+		attdata.new_current_instance(bdata, attdata.current_instance)
+		// Cancel everything except full and hard-only instances.
 		if attdata.null_instance.RunState < 0 {
 			attdata.abort_instance(attdata.null_instance)
 		}

@@ -145,8 +145,6 @@ been produced by the generator back-end).
 
 const (
 	PHASE_BASIC = iota
-	PHASE_NA
-	PHASE_EXTRAHARD
 	PHASE_HARD
 	PHASE_SOFT
 	PHASE_FINISHED
@@ -234,6 +232,33 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 		} else {
 			// Add "_HARD_ONLY" instance to run queue
 			runqueue.add(attdata.hard_instance)
+
+			//+++++
+			// Instance with only "NotAvailable" (hard) constraints – if any,
+			// otherwise skip this instance.
+			ok := false
+			enabled = make([]bool, attdata.NConstraints)
+			for ctype, ilist := range attdata.HardConstraintMap {
+				if strings.Contains(ctype, "NotAvailable") {
+					ok = true
+					for _, i := range ilist {
+						enabled[i] = true
+					}
+				}
+			}
+			if ok {
+				attdata.instanceCounter++
+				attdata.na_instance = &TtInstance{
+					Index:             attdata.instanceCounter,
+					ConstraintType:    "_NA_ONLY",
+					Timeout:           0,
+					ConstraintEnabled: enabled,
+				}
+				// Add "_NA_ONLY" instance to run queue
+				runqueue.add(attdata.na_instance)
+			}
+			//-----
+
 		}
 
 		// Unconstrained instance
@@ -349,8 +374,8 @@ tickloop:
 				if runqueue.phase_basic() {
 					continue
 				}
-			case PHASE_NA, PHASE_EXTRAHARD, PHASE_HARD:
-				if runqueue.phase_hard(attdata.phase) {
+			case PHASE_HARD:
+				if runqueue.phase_hard() {
 					continue
 				}
 			case PHASE_SOFT:

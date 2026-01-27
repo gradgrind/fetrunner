@@ -45,11 +45,7 @@ func (attdata *AutoTtData) get_basic_constraints(
 		emap := attdata.HardConstraintMap
 		for _, ctype := range attdata.ConstraintTypes {
 			if strings.Contains(ctype, "NotAvailable") {
-				if p != PHASE_NA {
-					continue
-				}
-			} else if strings.HasSuffix(ctype, "StartingTime") {
-				if p != PHASE_EXTRAHARD {
+				if p != PHASE_BASIC {
 					continue
 				}
 			} else if p != PHASE_HARD {
