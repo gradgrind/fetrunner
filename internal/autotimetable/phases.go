@@ -7,52 +7,132 @@ import (
 	"strconv"
 )
 
+const (
+	PHASE_BASIC = iota
+	PHASE_HARD
+	PHASE_SOFT
+	PHASE_FINISHED
+)
+
+/* On entering each phase, all running instances except the special
+processes appropriate to the new phase are aborted.
+
+## In PHASE_BASIC all the special constraints are running initially:
+
+- _UNCONSTRAINED
+- _NA_ONLY (if there are any hard NotAvailable constraints)
+- _HARD_ONLY
+- _COMPLETE
+
+There is no `current_instance` (== `nil`) until a run has completed
+successfully, so for building new instances the unconstrained instance
+is used as a base.
+
+If _NA_ONLY completes successfully the PHASE_HARD is entered.
+
+If _HARD_ONLY completes successfully PHASE_SOFT is entered.
+
+If _COMPLETE completes successfully PHASE_FINISHED is entered.
+
+Also if there are no remaining constraint-addition processes running,
+PHASE_HARD is entered.
+
+If SKIP_HARD is set, processing starts in PHASE_SOFT, so PHASE_BASIC
+will not be entered.
+
+## In PHASE_HARD the only special constraints which may be running are:
+
+- _HARD_ONLY
+- _COMPLETE
+
+If _HARD_ONLY completes successfully PHASE_SOFT is entered.
+
+If _COMPLETE completes successfully PHASE_FINISHED is entered.
+
+Also if there are no remaining constraint-addition processes running,
+PHASE_SOFT is entered.
+
+If SKIP_HARD is set, processing starts in PHASE_SOFT, so PHASE_HARD
+will not be entered.
+
+## In PHASE_SOFT the only special constraint which may be running is:
+
+- _COMPLETE
+
+If _COMPLETE completes successfully PHASE_FINISHED is entered.
+
+Also if there are no remaining constraint-addition processes running,
+PHASE_FINISHED is entered.
+
+## In PHASE_FINISHED no instances may be running. After they have finished
+the processing is finished.
+*/
+
 // Enter new phase.
+
 func (rq *RunQueue) enter_phase(p int) {
 	attdata := rq.AutoTtData
 
 	base_instance := attdata.current_instance
 	if base_instance == nil {
-		if p == PHASE_BASIC {
+		switch p {
+		case PHASE_BASIC:
 			base_instance = attdata.null_instance
-		} else {
-			base_instance = attdata.hard_instance
+		case PHASE_SOFT:
+			if attdata.Parameters.SKIP_HARD {
+				base_instance = attdata.hard_instance
+				break
+			}
+			fallthrough
+		default:
+			panic(fmt.Sprintf(
+				"Bug, no current_instance at enter_phase(%d)\n", p))
 		}
 	} else {
+		// Adjust the initial time-out.
 		attdata.cycle_timeout = (max(attdata.cycle_timeout,
 			attdata.current_instance.Ticks) *
 			attdata.Parameters.NEW_PHASE_TIMEOUT_FACTOR) / 10
 	}
 
-	attdata.phase = p
-	rq.BData.Logger.Result(".PHASE", strconv.Itoa(p))
 	var n int
 new_phase:
+	attdata.phase = p
+	rq.BData.Logger.Result(".PHASE", strconv.Itoa(p))
+
+	// Abort all processes except appropriate specials
+	for _, instance := range attdata.constraint_list {
+		if instance.RunState < 0 {
+			attdata.abort_instance(instance)
+		}
+	}
+	if p >= PHASE_HARD {
+		if attdata.null_instance.RunState < 0 {
+			// The unconstrained instance is no longer required
+			attdata.abort_instance(attdata.null_instance)
+		}
+		if attdata.na_instance.RunState < 0 {
+			// The "na" instance is no longer required
+			attdata.abort_instance(attdata.na_instance)
+		}
+	}
+	if p >= PHASE_SOFT {
+		if attdata.hard_instance.RunState < 0 {
+			// The hard-only instance is no longer required
+			attdata.abort_instance(attdata.hard_instance)
+		}
+	}
 	if p == PHASE_FINISHED {
+		if attdata.full_instance.RunState < 0 {
+			// The fully constrained instance is no longer required
+			attdata.abort_instance(attdata.full_instance)
+		}
 		return
 	}
 	// Initialize constraint list.
 	attdata.constraint_list, n = attdata.get_basic_constraints(
 		base_instance)
 	if n == 0 {
-		if p == PHASE_SOFT && attdata.full_instance.RunState < 0 {
-			// The fully constrained instance is no longer required
-			attdata.abort_instance(attdata.full_instance)
-		}
-		if p == PHASE_HARD && attdata.hard_instance.RunState < 0 {
-			// The hard-only instance is no longer required
-			attdata.abort_instance(attdata.hard_instance)
-		}
-		if p == PHASE_BASIC {
-			if attdata.null_instance.RunState < 0 {
-				// The unconstrained instance is no longer required
-				attdata.abort_instance(attdata.null_instance)
-			}
-			if attdata.na_instance.RunState < 0 {
-				// The "na" instance is no longer required
-				attdata.abort_instance(attdata.na_instance)
-			}
-		}
 		// Skip to next phase
 		p++
 		attdata.phase = p
@@ -68,6 +148,7 @@ new_phase:
 // During the basic phase only `full_instance`, `hard_instance` and
 // `null_instance` are running. Return `true` if the phase is changed,
 // otherwise `false`.
+
 func (rq *RunQueue) phase_basic() bool {
 	attdata := rq.AutoTtData
 	if attdata.ticked_hard_only(rq.BData) {
@@ -99,12 +180,17 @@ func (rq *RunQueue) phase_basic() bool {
 		rq.enter_phase(PHASE_FINISHED)
 		return true
 	}
+	if rq.mainphase() {
+		rq.enter_phase(PHASE_HARD)
+		return true
+	}
 	return false
 }
 
 // During the "hard" phases, `full_instance`, `hard_instance` and various
 // instances adding individual hard constraint types are running. Return
 // `true` if the phase is changed, otherwise `false`.
+
 func (rq *RunQueue) phase_hard() bool {
 	attdata := rq.AutoTtData
 	if attdata.ticked_hard_only(rq.BData) {
@@ -122,6 +208,7 @@ func (rq *RunQueue) phase_hard() bool {
 // During the "soft" phase, `full_instance` and various instances
 // adding individual soft constraint types are running. Return `true` if
 // the phase is changed, otherwise `false`.
+
 func (rq *RunQueue) phase_soft() bool {
 	if rq.mainphase() {
 		rq.enter_phase(PHASE_FINISHED)
@@ -133,8 +220,7 @@ func (rq *RunQueue) phase_soft() bool {
 /*
 	Main processing phase(s), accumulating constraints.
 
-`mainphase()` is run in phases PHASE_NA, PHASE_EXTRAHARD and PHASE_HARD
-(adding hard constraints) and also PHASE_SOFT (adding soft constraints).
+`mainphase()` is run in all phases except PHASE_FINISHED.
 Generator instances are run which try to add the (as yet not included)
 constraints of a single type, with a timeout. A certain number of these can
 be run in parallel. If one completes successfully, it is removed from the
@@ -170,9 +256,13 @@ func (rq *RunQueue) mainphase() bool {
 	next_timeout := 0 // non-zero => "restart with new base"
 	base_instance := attdata.current_instance
 	if base_instance == nil {
-		// Possible only with SKIP_HARD option, in which case the instance
-		// won't be running, let alone finished!
-		base_instance = attdata.hard_instance
+		if attdata.Parameters.SKIP_HARD {
+			// The instance won't be running, let alone finished!
+			base_instance = attdata.hard_instance
+		} else {
+			// No successful run yet
+			base_instance = attdata.null_instance
+		}
 	}
 
 	// See if an instance has completed successfully, setting `next_timeout`

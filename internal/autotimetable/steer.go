@@ -143,13 +143,6 @@ which constraints were dropped and any error messages for them which may have
 been produced by the generator back-end).
 */
 
-const (
-	PHASE_BASIC = iota
-	PHASE_HARD
-	PHASE_SOFT
-	PHASE_FINISHED
-)
-
 func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 	logger := bdata.Logger
 	bdata.StopFlag = false
