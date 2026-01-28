@@ -501,6 +501,8 @@ void MainWindow::iprogress(const QString &data)
         ui->progress_hard_only->setText(slist[1] + "% @ " + slist[2]);
         break;
     case 2:
+        break;
+    case 3:
         ui->progress_unconstrained->setText(slist[1] + "% @ " + slist[2]);
         break;
     default:
@@ -548,13 +550,16 @@ void MainWindow::iaccept(const QString &data)
     auto key = slist[0].toInt();
     switch (key) {
     case 0: // "full" completed
-        tableProgressGroupDone(false);
+        tableProgressGroupDone(-1);
         break;
     case 1: // "all hard" completed
-        tableProgressGroupDone(true);
+        tableProgressGroupDone(0);
         break;
-    case 2: // "unconstrained" completed
-        return;
+    case 2: // hard "not available" completed
+        tableProgressGroupDone(1);
+        break;
+    case 3: // "unconstrained" completed
+        break;
     default:
         instance_row &irow = instance_row_map[key];
         irow.state = 1;

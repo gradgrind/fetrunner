@@ -165,11 +165,15 @@ void MainWindow::tableProgress(progress_changed update)
     ui->progress_table->item(cdata.index, 2)->setText("@ " + timeTicks);
 }
 
-void MainWindow::tableProgressGroupDone(bool hard_only)
+void MainWindow::tableProgressGroupDone(int hard_only)
 {
     for (auto it = constraint_map.begin(); it != constraint_map.end(); ++it) {
-        if (hard_only && it.key().contains(':'))
-            continue;
+        if (hard_only >= 0) {
+            if (it.key().contains(':'))
+                continue;
+            if (hard_only != 0 && !it.key().contains("NotAvailable"))
+                continue;
+        }
         progress_line &cdata = it.value();
         if (cdata.progress != cdata.total) {
             ui->progress_table->item(cdata.index, 0)->setText("+++");

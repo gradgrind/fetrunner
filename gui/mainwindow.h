@@ -64,7 +64,7 @@ private:
     void setup_progress_table(); // when starting ttgen run
     void setup_instance_table(); // when starting ttgen run
     void tableProgress(progress_changed update);
-    void tableProgressGroupDone(bool hard_only);
+    void tableProgressGroupDone(int hard_only);
     void instanceRowProgress(int key, QStringList parms);
     void add_completed_instance( //
         QString count,
