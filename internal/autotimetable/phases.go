@@ -170,12 +170,15 @@ func (rq *RunQueue) tick_phase() bool {
 		if attdata.null_instance.RunState < 0 {
 			attdata.abort_instance(attdata.null_instance)
 		}
+		attdata.null_instance.RunState = 3
 		if attdata.na_instance != nil && attdata.na_instance.RunState < 0 {
 			attdata.abort_instance(attdata.na_instance)
 		}
+		attdata.na_instance.RunState = 3
 		if attdata.hard_instance != nil && attdata.hard_instance.RunState < 0 {
 			attdata.abort_instance(attdata.hard_instance)
 		}
+		attdata.hard_instance.RunState = 3
 		attdata.abort_constraint_list()
 		rq.enter_phase(PHASE_FINISHED)
 		return true
@@ -191,9 +194,11 @@ func (rq *RunQueue) tick_phase() bool {
 		if attdata.null_instance.RunState < 0 {
 			attdata.abort_instance(attdata.null_instance)
 		}
+		attdata.null_instance.RunState = 3
 		if attdata.na_instance != nil && attdata.na_instance.RunState < 0 {
 			attdata.abort_instance(attdata.na_instance)
 		}
+		attdata.na_instance.RunState = 3
 		attdata.abort_constraint_list()
 		rq.enter_phase(PHASE_SOFT)
 		return true
@@ -209,6 +214,7 @@ func (rq *RunQueue) tick_phase() bool {
 		if attdata.null_instance.RunState < 0 {
 			attdata.abort_instance(attdata.null_instance)
 		}
+		attdata.null_instance.RunState = 3
 		attdata.abort_constraint_list()
 		rq.enter_phase(PHASE_HARD)
 		return true

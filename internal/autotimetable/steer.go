@@ -207,9 +207,43 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 		ConstraintEnabled: enabled,
 	}
 
+	// Instance with only "NotAvailable" (hard) constraints – if any,
+	// otherwise skip this instance.
+	notAvailableRunState := 3
+	enabled = make([]bool, attdata.NConstraints)
+	for ctype, ilist := range attdata.HardConstraintMap {
+		if strings.Contains(ctype, "NotAvailable") {
+			notAvailableRunState = 0
+			for _, i := range ilist {
+				enabled[i] = true
+			}
+		}
+	}
+	attdata.instanceCounter++
+	attdata.na_instance = &TtInstance{
+		Index:          attdata.instanceCounter,
+		ConstraintType: "_NA_ONLY",
+		//Timeout:           0,
+		ConstraintEnabled: enabled,
+		RunState:          notAvailableRunState,
+	}
+
+	// Unconstrained instance
+	enabled = make([]bool, attdata.NConstraints)
+	attdata.instanceCounter++
+	attdata.null_instance = &TtInstance{
+		Index:          attdata.instanceCounter,
+		ConstraintType: "_UNCONSTRAINED",
+		//Timeout:           0 ... attdata.cycle_timeout?,
+		ConstraintEnabled: enabled,
+	}
+
 	attdata.cycle_timeout = 0
 
 	if attdata.Parameters.SKIP_HARD {
+		attdata.null_instance.RunState = 3
+		attdata.na_instance.RunState = 3
+		attdata.hard_instance.RunState = 3
 		if len(attdata.SoftConstraintMap) == 0 {
 			logger.Error("--SOFT_SKIP_HARD: Skipping hard-constraint test," +
 				" but no soft constraints")
@@ -225,44 +259,9 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 		} else {
 			// Add "_HARD_ONLY" instance to run queue
 			runqueue.add(attdata.hard_instance)
-
-			// Instance with only "NotAvailable" (hard) constraints – if any,
-			// otherwise skip this instance.
-			ok := false
-			enabled = make([]bool, attdata.NConstraints)
-			for ctype, ilist := range attdata.HardConstraintMap {
-				if strings.Contains(ctype, "NotAvailable") {
-					ok = true
-					for _, i := range ilist {
-						enabled[i] = true
-					}
-				}
-			}
-			attdata.instanceCounter++
-			attdata.na_instance = &TtInstance{
-				Index:          attdata.instanceCounter,
-				ConstraintType: "_NA_ONLY",
-				//Timeout:           0,
-				ConstraintEnabled: enabled,
-			}
-			if ok {
-				// Add "_NA_ONLY" instance to run queue
-				runqueue.add(attdata.na_instance)
-			} else {
-				attdata.na_instance.RunState = 3
-			}
 		}
-
-		// Unconstrained instance
-		enabled = make([]bool, attdata.NConstraints)
-		attdata.instanceCounter++
-		attdata.null_instance = &TtInstance{
-			Index:          attdata.instanceCounter,
-			ConstraintType: "_UNCONSTRAINED",
-			//Timeout:           0 ... attdata.cycle_timeout?,
-			ConstraintEnabled: enabled,
-		}
-		// Add to run queue
+		// Add basic special instances to run queue
+		runqueue.add(attdata.na_instance)
 		runqueue.add(attdata.null_instance)
 
 		// Start in basic phase with only special instances.
