@@ -42,10 +42,6 @@ func (rq *RunQueue) update_instances() {
 	logger := rq.BData.Logger
 	// First increment the ticks of active instances.
 	for instance := range rq.Active {
-
-		//TODO--
-		logger.Info("update_instances...%d: %d", instance.Index, instance.RunState)
-
 		if instance.RunState < 0 {
 			instance.Ticks++
 			// Among other things, update the state:
