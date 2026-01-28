@@ -1,7 +1,6 @@
 package autotimetable
 
 import (
-	"fetrunner/internal/base"
 	"fmt"
 	"slices"
 	"strconv"
@@ -69,7 +68,6 @@ the processing is finished.
 */
 
 // Enter new phase.
-
 func (rq *RunQueue) enter_phase(p int) {
 	attdata := rq.AutoTtData
 
@@ -101,11 +99,8 @@ new_phase:
 	rq.BData.Logger.Result(".PHASE", strconv.Itoa(p))
 
 	// Abort all processes except appropriate specials
-	for _, instance := range attdata.constraint_list {
-		if instance.RunState < 0 {
-			attdata.abort_instance(instance)
-		}
-	}
+	attdata.abort_constraint_list()
+
 	if p >= PHASE_HARD {
 		if attdata.null_instance.RunState < 0 {
 			// The unconstrained instance is no longer required
@@ -145,73 +140,106 @@ new_phase:
 	}
 }
 
-// During the basic phase only `full_instance`, `hard_instance` and
-// `null_instance` are running. Return `true` if the phase is changed,
-// otherwise `false`.
+func (attdata *AutoTtData) abort_constraint_list() {
+	for _, instance := range attdata.constraint_list {
+		if instance.RunState < 0 {
+			attdata.abort_instance(instance)
+		} else if instance.RunState == 0 {
+			// Indicate that a queued instance is not to be started
+			instance.RunState = 3
+		}
+	}
+	attdata.constraint_list = nil
+}
 
-func (rq *RunQueue) phase_basic() bool {
+func (rq *RunQueue) tick_phase() bool {
 	attdata := rq.AutoTtData
-	if attdata.ticked_hard_only(rq.BData) {
-		// All hard constraints OK, skip to trials of soft constraints.
+	bdata := rq.BData
+	logger := bdata.Logger
+	p := attdata.phase
+	if p >= PHASE_FINISHED {
+		panic("Bug, tick_phase in PHASE_FINISHED+")
+	}
+	if attdata.full_instance.RunState == 1 {
+		attdata.full_instance.RunState = 3
+		// Set as current.
+		attdata.current_instance = attdata.full_instance
+		logger.Result(".COMPLETE_OK", "All constraints OK")
+		attdata.new_current_instance(bdata, attdata.current_instance)
+		// Abort all instances.
+		if attdata.null_instance.RunState < 0 {
+			attdata.abort_instance(attdata.null_instance)
+		}
+		if attdata.na_instance != nil && attdata.na_instance.RunState < 0 {
+			attdata.abort_instance(attdata.na_instance)
+		}
+		if attdata.hard_instance != nil && attdata.hard_instance.RunState < 0 {
+			attdata.abort_instance(attdata.hard_instance)
+		}
+		attdata.abort_constraint_list()
+		rq.enter_phase(PHASE_FINISHED)
+		return true
+	}
+
+	if attdata.hard_instance.RunState == 1 {
+		attdata.hard_instance.RunState = 3
+		// Set as current and prepare for processing soft constraints.
+		attdata.current_instance = attdata.hard_instance
+		logger.Result(".HARD_OK", "All hard constraints OK")
+		attdata.new_current_instance(bdata, attdata.current_instance)
+		// Cancel everything except full instance.
+		if attdata.null_instance.RunState < 0 {
+			attdata.abort_instance(attdata.null_instance)
+		}
+		if attdata.na_instance != nil && attdata.na_instance.RunState < 0 {
+			attdata.abort_instance(attdata.na_instance)
+		}
+		attdata.abort_constraint_list()
 		rq.enter_phase(PHASE_SOFT)
 		return true
 	}
-	if attdata.ticked_na_only(rq.BData) {
-		// All "na" constraints OK, skip to trials of hard constraints.
+
+	if attdata.na_instance.RunState == 1 {
+		attdata.na_instance.RunState = 3
+		// Set as current.
+		attdata.current_instance = attdata.na_instance
+		bdata.Logger.Result(".NA_OK", "All hard NotAvailable constraints OK")
+		attdata.new_current_instance(bdata, attdata.current_instance)
+		// Cancel everything except full and hard-only instances.
+		if attdata.null_instance.RunState < 0 {
+			attdata.abort_instance(attdata.null_instance)
+		}
+		attdata.abort_constraint_list()
 		rq.enter_phase(PHASE_HARD)
 		return true
 	}
+
 	switch attdata.null_instance.RunState {
 	case -1:
-		if attdata.null_instance.Ticks ==
-			attdata.null_instance.Timeout {
-			attdata.abort_instance(attdata.null_instance)
-			// The failure will be caught next time round ...
-		}
+		//if attdata.null_instance.Ticks ==
+		//	attdata.null_instance.Timeout {
+		//	attdata.abort_instance(attdata.null_instance)
+		//	// The failure will be caught next time round ...
+		//}
 	case 1:
 		// The null instance completed successfully.
+		attdata.null_instance.RunState = 3
 		attdata.current_instance = attdata.null_instance
+		logger.Result(".NULL_OK", "Without constraints OK")
 		attdata.new_current_instance(rq.BData, attdata.current_instance)
+	case 3:
+		// instance no longer relevant
 	default:
 		// The null instance failed.
-		rq.BData.Logger.Error(
+		logger.Error(
 			"Unconstrained instance failed:\n:::+\n%s\n:::-",
 			attdata.null_instance.Message)
 		rq.enter_phase(PHASE_FINISHED)
 		return true
 	}
-	if rq.mainphase() {
-		rq.enter_phase(PHASE_HARD)
-		return true
-	}
-	return false
-}
 
-// During the "hard" phases, `full_instance`, `hard_instance` and various
-// instances adding individual hard constraint types are running. Return
-// `true` if the phase is changed, otherwise `false`.
-
-func (rq *RunQueue) phase_hard() bool {
-	attdata := rq.AutoTtData
-	if attdata.ticked_hard_only(rq.BData) {
-		// All hard constraints OK, skip to trials of soft constraints.
-		rq.enter_phase(PHASE_SOFT)
-		return true
-	}
-	if rq.mainphase() {
-		rq.enter_phase(PHASE_SOFT)
-		return true
-	}
-	return false
-}
-
-// During the "soft" phase, `full_instance` and various instances
-// adding individual soft constraint types are running. Return `true` if
-// the phase is changed, otherwise `false`.
-
-func (rq *RunQueue) phase_soft() bool {
-	if rq.mainphase() {
-		rq.enter_phase(PHASE_FINISHED)
+	if rq.phase_main() {
+		rq.enter_phase(p + 1)
 		return true
 	}
 	return false
@@ -250,7 +278,7 @@ timeout will have been reached or the hard-only or full instance will have
 completed already), return `true`, indicating that there are no more
 constraints to add. Otherwise (the normal case) return `false`.
 */
-func (rq *RunQueue) mainphase() bool {
+func (rq *RunQueue) phase_main() bool {
 	attdata := rq.AutoTtData
 	logger := rq.BData.Logger
 	next_timeout := 0 // non-zero => "restart with new base"
@@ -378,61 +406,4 @@ func (rq *RunQueue) split_instance(
 			instance.Constraints[nhalf:],
 			timeout),
 	}
-}
-
-// Handle "tick-updates" for the special HARD_ONLY instance.
-// This is called in basic and hard phases. Return `true` if the
-// HARD_ONLY instance has completed successfully, otherwise `false`.
-func (attdata *AutoTtData) ticked_hard_only(bdata *base.BaseData) bool {
-	if attdata.hard_instance.RunState == 1 {
-		// Set as current and prepare for processing soft constraints.
-		attdata.current_instance = attdata.hard_instance
-		bdata.Logger.Result(".HARD_OK", "All hard constraints OK")
-		attdata.new_current_instance(bdata, attdata.current_instance)
-		// Cancel everything except full instance.
-		if attdata.null_instance.RunState < 0 {
-			attdata.abort_instance(attdata.null_instance)
-		}
-		if attdata.na_instance != nil && attdata.na_instance.RunState < 0 {
-			attdata.abort_instance(attdata.na_instance)
-		}
-		for _, instance := range attdata.constraint_list {
-			if instance.RunState < 0 {
-				attdata.abort_instance(instance)
-			} else if instance.RunState == 0 {
-				// Indicate that a queued instance is not to be started
-				instance.RunState = 3
-			}
-		}
-		attdata.constraint_list = nil
-		return true
-	}
-	return false
-}
-
-// Handle "tick-updates" for the special NA_ONLY instance.
-// This is called in the PHASE_BASIC. Return `true` if the
-// NA_ONLY instance has completed successfully, otherwise `false`.
-func (attdata *AutoTtData) ticked_na_only(bdata *base.BaseData) bool {
-	if attdata.na_instance.RunState == 1 {
-		// Set as current.
-		attdata.current_instance = attdata.na_instance
-		bdata.Logger.Result(".NA_OK", "All hard NotAvailable constraints OK")
-		attdata.new_current_instance(bdata, attdata.current_instance)
-		// Cancel everything except full and hard-only instances.
-		if attdata.null_instance.RunState < 0 {
-			attdata.abort_instance(attdata.null_instance)
-		}
-		for _, instance := range attdata.constraint_list {
-			if instance.RunState < 0 {
-				attdata.abort_instance(instance)
-			} else if instance.RunState == 0 {
-				// Indicate that a queued instance is not to be started
-				instance.RunState = 3
-			}
-		}
-		attdata.constraint_list = nil
-		return true
-	}
-	return false
 }

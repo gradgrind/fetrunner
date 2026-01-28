@@ -180,9 +180,9 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 		enabled[i] = true
 	}
 	attdata.full_instance = &TtInstance{
-		Index:             0,
-		ConstraintType:    "_COMPLETE",
-		Timeout:           0,
+		Index:          0,
+		ConstraintType: "_COMPLETE",
+		//Timeout:           0,
 		ConstraintEnabled: enabled,
 	}
 	// Add to run queue
@@ -201,9 +201,9 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 	}
 	attdata.instanceCounter++
 	attdata.hard_instance = &TtInstance{
-		Index:             attdata.instanceCounter,
-		ConstraintType:    "_HARD_ONLY",
-		Timeout:           0,
+		Index:          attdata.instanceCounter,
+		ConstraintType: "_HARD_ONLY",
+		//Timeout:           0,
 		ConstraintEnabled: enabled,
 	}
 
@@ -238,27 +238,28 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 					}
 				}
 			}
+			attdata.instanceCounter++
+			attdata.na_instance = &TtInstance{
+				Index:          attdata.instanceCounter,
+				ConstraintType: "_NA_ONLY",
+				//Timeout:           0,
+				ConstraintEnabled: enabled,
+			}
 			if ok {
-				attdata.instanceCounter++
-				attdata.na_instance = &TtInstance{
-					Index:             attdata.instanceCounter,
-					ConstraintType:    "_NA_ONLY",
-					Timeout:           0,
-					ConstraintEnabled: enabled,
-				}
 				// Add "_NA_ONLY" instance to run queue
 				runqueue.add(attdata.na_instance)
+			} else {
+				attdata.na_instance.RunState = 3
 			}
-
 		}
 
 		// Unconstrained instance
 		enabled = make([]bool, attdata.NConstraints)
 		attdata.instanceCounter++
 		attdata.null_instance = &TtInstance{
-			Index:             attdata.instanceCounter,
-			ConstraintType:    "_UNCONSTRAINED",
-			Timeout:           attdata.cycle_timeout,
+			Index:          attdata.instanceCounter,
+			ConstraintType: "_UNCONSTRAINED",
+			//Timeout:           0 ... attdata.cycle_timeout?,
 			ConstraintEnabled: enabled,
 		}
 		// Add to run queue
@@ -360,23 +361,13 @@ tickloop:
 		}
 
 		for {
-			switch attdata.phase {
-			case PHASE_BASIC:
-				if runqueue.phase_basic() {
-					continue
+			if runqueue.tick_phase() {
+				if attdata.phase == PHASE_FINISHED {
+					break tickloop
 				}
-			case PHASE_HARD:
-				if runqueue.phase_hard() {
-					continue
-				}
-			case PHASE_SOFT:
-				if runqueue.phase_soft() {
-					continue
-				}
-			case PHASE_FINISHED:
-				break tickloop
+			} else {
+				break
 			}
-			break
 		}
 
 	} // tickloop: end
