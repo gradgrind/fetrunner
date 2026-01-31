@@ -1,6 +1,7 @@
 package autotimetable
 
 import (
+	"cmp"
 	"slices"
 	"strings"
 )
@@ -42,7 +43,7 @@ func (attdata *AutoTtData) get_basic_constraints(
 	default:
 
 		emap := attdata.HardConstraintMap
-		for _, ctype := range attdata.ConstraintTypes {
+		for _, ctype := range attdata.Constraint_Types {
 			if strings.Contains(ctype, "NotAvailable") {
 				if p != PHASE_BASIC {
 					continue
@@ -76,4 +77,17 @@ func (attdata *AutoTtData) get_basic_constraints(
 		instances = append(instances, instance)
 	}
 	return instances, nconstraints
+}
+
+func SortConstraintTypes(
+	constraint_types []ConstraintType,
+	priority map[string]int,
+) []ConstraintType {
+	slices.Sort(constraint_types)
+	l := slices.Compact(constraint_types)
+	slices.SortFunc(l,
+		func(a, b ConstraintType) int {
+			return cmp.Compare(priority[b], priority[a])
+		})
+	return l
 }

@@ -29,7 +29,7 @@ type TtSource interface {
 
 	GetNActivities() int
 	GetNConstraints() ConstraintIndex
-	GetConstraintTypes() []ConstraintType // ordered list of constraint types
+	GetConstraint_Types() []ConstraintType // ordered list of constraint types
 	GetHardConstraintMap() map[ConstraintType][]ConstraintIndex
 	GetSoftConstraintMap() map[ConstraintType][]ConstraintIndex
 

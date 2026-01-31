@@ -262,7 +262,7 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 		Source:            ttsource,
 		NActivities:       ttsource.GetNActivities(),
 		NConstraints:      ttsource.GetNConstraints(),
-		ConstraintTypes:   ttsource.GetConstraintTypes(),
+		Constraint_Types:  ttsource.GetConstraint_Types(),
 		HardConstraintMap: ttsource.GetHardConstraintMap(),
 		SoftConstraintMap: ttsource.GetSoftConstraintMap(),
 	}

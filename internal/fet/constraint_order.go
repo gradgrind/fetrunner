@@ -1,10 +1,5 @@
 package fet
 
-import (
-	"cmp"
-	"slices"
-)
-
 // Constraint "priority", used for making an ordered list of the constraint
 // types in use.
 // Note that the absolute values are not important, it is the relative
@@ -30,14 +25,16 @@ var ConstraintPriority = map[ConstraintType]int{
 	"ConstraintStudentsSetMaxGapsPerWeek": -100,
 }
 
+/*
 func SortConstraintTypes(
-	constraint_types []ConstraintType,
+    constraint_types []ConstraintType,
 ) []ConstraintType {
-	slices.Sort(constraint_types)
-	l := slices.Compact(constraint_types)
-	slices.SortFunc(l,
-		func(a, b ConstraintType) int {
-			return cmp.Compare(ConstraintPriority[b], ConstraintPriority[a])
-		})
-	return l
+    slices.Sort(constraint_types)
+    l := slices.Compact(constraint_types)
+    slices.SortFunc(l,
+        func(a, b ConstraintType) int {
+            return cmp.Compare(ConstraintPriority[b], ConstraintPriority[a])
+        })
+    return l
 }
+*/

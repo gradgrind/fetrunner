@@ -2,6 +2,7 @@ package fet
 
 import (
 	"encoding/json"
+	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
 	"fmt"
 	"regexp"
@@ -163,7 +164,8 @@ func FetRead(
 	}
 
 	rundata.NConstraints = ConstraintIndex(constraint_counter)
-	rundata.ConstraintTypes = SortConstraintTypes(constraint_types)
+	rundata.ConstraintTypes = autotimetable.SortConstraintTypes(
+		constraint_types, ConstraintPriority)
 	rundata.HardConstraintMap = hard_constraint_map
 	rundata.SoftConstraintMap = soft_constraint_map
 

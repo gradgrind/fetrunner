@@ -37,6 +37,36 @@ var (
 	C_SetRooms        = "SetRooms"
 )
 
+// Constraint "priority", used for making an ordered list of the constraint
+// types in use.
+// Note that the absolute values are not important, it is the relative
+// values which determine the order. Constraint types not listed here
+// have priority 0.
+var ConstraintPriority = map[string]int{
+	C_RoomNotAvailable:    100,
+	C_ClassNotAvailable:   99,
+	C_TeacherNotAvailable: 98,
+
+	C_SetStartingTime: 91,
+	//???C_ActivityStartTime: 90,
+
+	C_ClassMinActivitiesPerDay: 5,
+	//C_ClassMaxActivitiesPerDay: ,
+	C_ClassMaxGapsPerDay:  -97,
+	C_ClassMaxGapsPerWeek: -98,
+	C_ClassMaxAfternoons:  -99,
+	//C_ClassLunchBreak: ,
+	//C_ClassForceFirstHour: ,
+
+	//C_TeacherMinActivitiesPerDay: ,
+	//C_TeacherMaxActivitiesPerDay: ,
+	//C_TeacherMaxDays: ,
+	C_TeacherMaxGapsPerDay:  -93,
+	C_TeacherMaxGapsPerWeek: -94,
+	//C_TeacherMaxAfternoons: ,
+	//C_TeacherLunchBreak: ,
+}
+
 // ++ ActivitiesEndDay
 
 func (db *DbTopLevel) NewActivitiesEndDay(
