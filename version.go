@@ -1,3 +1,3 @@
 package fetrunner
 
-const VERSION = "0.10.3"
+const VERSION = "0.10.4"
