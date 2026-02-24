@@ -55,8 +55,8 @@ type Parameters struct {
 type AutoTtData struct {
 	Parameters *Parameters
 
-	Source           TtSource
-	BackendInterface BackendInterface
+	Source  TtSource
+	Backend TtBackend
 
 	NActivities       int
 	NConstraints      ConstraintIndex
@@ -103,9 +103,9 @@ type TtInstance struct {
 	Constraints    []ConstraintIndex
 
 	// Run time ...
-	Backend TtBackend // interface to generator back-end
-	Ticks   int       // run time of this instance
-	Stopped bool      // `abort_instance()` has been called on this instance
+	Backend TtInstanceBackend // interface to generator back-end
+	Ticks   int               // run time of this instance
+	Stopped bool              // `abort_instance()` has been called on this instance
 
 	// `RunState` is used in the tick-loop, but the "finished" states are set
 	// using the back-end `DoTick` method (though still in the thread of the
@@ -119,7 +119,7 @@ type TtInstance struct {
 	Message  string // "" or error message
 }
 
-type TtBackend interface {
+type TtInstanceBackend interface {
 	Abort()
 	DoTick(*base.BaseData, *AutoTtData, *TtInstance)
 	Clear()

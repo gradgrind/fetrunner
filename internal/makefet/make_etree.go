@@ -24,10 +24,10 @@ func FetTree(
 	bdata *base.BaseData,
 	real_soft bool,
 	tt_data *timetable.TtData,
-) *fet.TtRunDataFet {
+) *fet.TtSourceFet {
 	doc := etree.NewDocument()
 	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
-	rundata := &fet.TtRunDataFet{
+	rundata := &fet.TtSourceFet{
 		Doc:         doc,
 		WeightTable: fet.MakeFetWeights(),
 	}

@@ -72,9 +72,9 @@ type ClassDivision struct {
 	Divisions [][]NodeRef
 }
 
-// BasicSetup performs the initialization of a TtData structure, collecting
+// MakeTimetableData performs the initialization of a TtData structure, collecting
 // "resources" (atomic student groups, teachers and rooms) and "activities".
-func BasicSetup(bd *base.BaseData) *TtData {
+func MakeTimetableData(bd *base.BaseData) *TtData {
 	db := bd.Db
 	days := len(db.Days)
 	hours := len(db.Hours)

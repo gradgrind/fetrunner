@@ -18,7 +18,7 @@ func (fetbuild *FetBuild) set_days_hours() {
 
 		ids = append(ids, IdPair{Source: string(n.GetRef()), Backend: id})
 	}
-	fetbuild.rundata.DayIds = ids
+	fetbuild.rundata.DayList = ids
 
 	ids = []IdPair{}
 	fethours := fetbuild.fetroot.CreateElement("Hours_List")
@@ -31,7 +31,7 @@ func (fetbuild *FetBuild) set_days_hours() {
 
 		ids = append(ids, IdPair{Source: string(n.GetRef()), Backend: id})
 	}
-	fetbuild.rundata.HourIds = ids
+	fetbuild.rundata.HourList = ids
 }
 
 func (fetbuild *FetBuild) set_teachers() {
@@ -47,7 +47,7 @@ func (fetbuild *FetBuild) set_teachers() {
 
 		ids = append(ids, IdPair{Source: string(n.GetRef()), Backend: id})
 	}
-	fetbuild.rundata.TeacherIds = ids
+	fetbuild.rundata.TeacherList = ids
 }
 
 func (fetbuild *FetBuild) set_subjects() {
@@ -62,7 +62,7 @@ func (fetbuild *FetBuild) set_subjects() {
 
 		ids = append(ids, IdPair{Source: string(n.GetRef()), Backend: id})
 	}
-	fetbuild.rundata.SubjectIds = ids
+	fetbuild.rundata.SubjectList = ids
 }
 
 func (fetbuild *FetBuild) set_rooms() {
@@ -80,5 +80,5 @@ func (fetbuild *FetBuild) set_rooms() {
 
 		ids = append(ids, IdPair{Source: string(n.GetRef()), Backend: id})
 	}
-	fetbuild.rundata.RoomIds = ids
+	fetbuild.rundata.RoomList = ids
 }

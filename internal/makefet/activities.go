@@ -71,7 +71,7 @@ func (fetbuild *FetBuild) set_activities() {
 		fetactivity.CreateElement("Activity_Group_Id").
 			SetText(agid)
 
-		rundata.ActivityIds = append(rundata.ActivityIds, IdPair{
+		rundata.ActivityList = append(rundata.ActivityList, IdPair{
 			Source: string(a.GetRef()), Backend: aid})
 	}
 }

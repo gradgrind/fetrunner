@@ -98,8 +98,8 @@ func (fetbuild *FetBuild) before_after_hour() {
 		for d := 0; d < tt_data.NDays; d++ {
 			for h := data.Hour + 1; h < tt_data.NHours; h++ {
 				timeslots = append(timeslots, preferred_time{
-					Preferred_Day:  rundata.DayIds[d].Backend,
-					Preferred_Hour: rundata.HourIds[h].Backend,
+					Preferred_Day:  rundata.DayList[d].Backend,
+					Preferred_Hour: rundata.HourList[h].Backend,
 				})
 			}
 		}
@@ -112,8 +112,8 @@ func (fetbuild *FetBuild) before_after_hour() {
 		for d := 0; d < tt_data.NDays; d++ {
 			for h := 0; h < data.Hour; h++ {
 				timeslots = append(timeslots, preferred_time{
-					Preferred_Day:  rundata.DayIds[d].Backend,
-					Preferred_Hour: rundata.HourIds[h].Backend,
+					Preferred_Day:  rundata.DayList[d].Backend,
+					Preferred_Hour: rundata.HourList[h].Backend,
 				})
 			}
 		}
@@ -183,8 +183,8 @@ func (fetbuild *FetBuild) double_no_break() {
 			for h, bl := range doubleBlocked {
 				if !bl {
 					timeslots = append(timeslots, preferred_time{
-						Preferred_Day:  rundata.DayIds[d].Backend,
-						Preferred_Hour: rundata.HourIds[h].Backend,
+						Preferred_Day:  rundata.DayList[d].Backend,
+						Preferred_Hour: rundata.HourList[h].Backend,
 					})
 				}
 			}

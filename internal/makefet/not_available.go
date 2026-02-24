@@ -30,8 +30,8 @@ func (fetbuild *FetBuild) blocked_slots() map[NodeRef][]base.TimeSlot {
 				SetText(strconv.Itoa(len(data.NotAvailable)))
 			for _, slot := range data.NotAvailable {
 				nat := cna.CreateElement("Not_Available_Time")
-				nat.CreateElement("Day").SetText(rundata.DayIds[slot.Day].Backend)
-				nat.CreateElement("Hour").SetText(rundata.HourIds[slot.Hour].Backend)
+				nat.CreateElement("Day").SetText(rundata.DayList[slot.Day].Backend)
+				nat.CreateElement("Hour").SetText(rundata.HourList[slot.Hour].Backend)
 			}
 			cna.CreateElement("Active").SetText("true")
 
@@ -57,8 +57,8 @@ func (fetbuild *FetBuild) blocked_slots() map[NodeRef][]base.TimeSlot {
 				SetText(strconv.Itoa(len(data.NotAvailable)))
 			for _, slot := range data.NotAvailable {
 				nat := cna.CreateElement("Not_Available_Time")
-				nat.CreateElement("Day").SetText(rundata.DayIds[slot.Day].Backend)
-				nat.CreateElement("Hour").SetText(rundata.HourIds[slot.Hour].Backend)
+				nat.CreateElement("Day").SetText(rundata.DayList[slot.Day].Backend)
+				nat.CreateElement("Hour").SetText(rundata.HourList[slot.Hour].Backend)
 			}
 			cna.CreateElement("Active").SetText("true")
 
@@ -84,8 +84,8 @@ func (fetbuild *FetBuild) blocked_slots() map[NodeRef][]base.TimeSlot {
 				SetText(strconv.Itoa(len(data.NotAvailable)))
 			for _, slot := range data.NotAvailable {
 				nat := cna.CreateElement("Not_Available_Time")
-				nat.CreateElement("Day").SetText(rundata.DayIds[slot.Day].Backend)
-				nat.CreateElement("Hour").SetText(rundata.HourIds[slot.Hour].Backend)
+				nat.CreateElement("Day").SetText(rundata.DayList[slot.Day].Backend)
+				nat.CreateElement("Hour").SetText(rundata.HourList[slot.Hour].Backend)
 			}
 			cna.CreateElement("Active").SetText("true")
 

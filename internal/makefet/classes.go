@@ -53,7 +53,7 @@ func (fetbuild *FetBuild) set_classes() {
 			}
 		}
 	}
-	fetbuild.rundata.ClassIds = ids
+	fetbuild.rundata.ClassList = ids
 }
 
 // In FET the group identifier is constructed from the class tag,

@@ -1,9 +1,27 @@
 The notions of front-end and back-end are rather hazy and confusing at the moment. This needs clarifying, hence the branch name "clarify". It is derived from the "notavailable" branch and is focussed on the Go code implementing the actual fetrunner algorithms.
 
 My hope is that it will be possible to handle the possible input structures (currently "DB" and `FET`) via the `TtSource` interface and the possible output structures (currently only `FET`) via the `TtBackend` interface. This should work in a way independent of the actual implementations of these interfaces.
- 
+
 Currently, `TtSource` seems to be something like what it should be, but `TtBackend` is possibly incomplete, some of its functions being elsewhere. Whether this is really the case needs to be investigated.
 
-`TtSource` is defined in "autotimetable/interface.go" .`TtBackend` is defined in "autotimetable/structures.go". Perhaps they should be in the same file, presumably "interface.go"?
+`TtSource` is defined in "autotimetable/interface.go". `TtBackend` is defined in "autotimetable/structures.go". Perhaps they should be in the same file, presumably "interface.go"?
+
+Actually, `TtSource` methods shouldn't be able to return `IdPair` items, because it should be independent of the back-end data.
+
+The method `PrepareRun()` seems to have been incorrectly placed in the `TtSource` interface as it is clearly dealing with the back-end generator.
+
+The `Dispatcher` structure contains a `TtSource` item, but also a `TtAutoData` item, which also has a `TtSource` item. Having two references to `TtSource` is probably not such a good idea. It might be better to keep the source information out of `TtAutoData`, as it is really only dealing with the back-end, which will somehow encapsulate the prepared and translated source. However, having looked at the code, it seems that the source interface is used in generating result data. It might be better to remove `TtSource` from the `Dispatcher` structure, maybe `TtParameters` too, because also that is only relevant to "autotimetable".
 
 The selected implementation of `TtBackend` seems to be only stored in the `TtInstance` structures, which means the actual selection is done somewhere else, which is a bit confusing. It suggests that I am using `TtBackend` as something a bit different from what I specified above. This version is just the instance-bound functionality, so it should perhaps be called something like `TtInstanceBackend`. The actual back-end interface is perhaps rather what is currently `BackendInterface`, but currently, in `runtt_source()` (in "dispatch.go") the back-end is assumed to be `FET`.
+
+Maybe I should outline how I think it _should_ work!
+
+Basically there should be a place to specify the source (currently `FET` or "DB") and the back-end "engine" (currently only `FET`). Probably the `AutoTtData` structure is most appropriate – it already has something like this.
+
+Then the timetable data will need to be prepared for use in the back-end generator. This would probably be done by having back-end functions use the source interface. For the `fetrunner` algorithm in "autotimetable" the preparation and categorisation of the constraints is particularly important. The source constraints would need to be transformed into and associated with back-end constraints. It is possible that a source constraint might be implemented as multiple back-end constraints. It is also possible that a source constraint not be completely representable in the back-end, but there's not much we can do about those ...
+
+It looks like I might only be supporting one-to-one mappings at present. One possibility for a one-to-many mapping would be to use the same back-end index for multiple back-end constraints. This would show the grouping in the back-end more clearly. Another way would be to map to lists of back-end constraints, which might make the activation logic clearer.
+
+A many-to-one constraint mapping is likely to be rather unmanageable, so I probably won't consider it.
+
+Perhaps it would be conceptually helpful to get rid of the `TtData` structure, or to adapt it to be the "DB" equivalent of reading a `FET` file.

@@ -111,7 +111,7 @@ func (attdata *AutoTtData) BlockSingleConstraint(
 		attdata.BlockConstraint[c] = true
 		logger.Result(
 			".ELIMINATE", fmt.Sprintf("%s.%d.%s",
-				attdata.BackendInterface.ConstraintName(instance),
+				attdata.Backend.ConstraintName(instance),
 				c,
 				instance.Message))
 	}
@@ -144,7 +144,7 @@ func (rq *RunQueue) update_queue() int {
 
 		if instance.RunState == 0 {
 			instance.Backend =
-				attdata.BackendInterface.RunBackend(rq.BData, instance)
+				attdata.Backend.RunBackend(rq.BData, instance)
 			if instance.Backend == nil {
 				instance.RunState = 3
 			} else {

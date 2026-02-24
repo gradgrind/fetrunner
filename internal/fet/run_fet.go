@@ -6,6 +6,7 @@ import (
 	"encoding/xml"
 	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
+	"fetrunner/internal/timetable"
 	"fmt"
 	"io"
 	"os"
@@ -14,6 +15,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/beevik/etree"
 )
 
 var (
@@ -24,8 +27,10 @@ var (
 )
 
 type FetBackend struct {
-	attdata *autotimetable.AutoTtData
-	tmpdir  string
+	attdata            *autotimetable.AutoTtData
+	tmpdir             string
+	doc                *etree.Document
+	constraintElements []*etree.Element
 }
 
 func InitBackend(bdata *base.BaseData, attdata *autotimetable.AutoTtData) {
@@ -34,7 +39,29 @@ func InitBackend(bdata *base.BaseData, attdata *autotimetable.AutoTtData) {
 	}
 	tmpdir := filepath.Join(base.TEMPORARY_DIR, bdata.Name)
 	os.RemoveAll(tmpdir)
-	attdata.BackendInterface = &FetBackend{attdata, tmpdir}
+	fetbackend := &FetBackend{
+		attdata: attdata,
+		tmpdir:  tmpdir}
+	attdata.Backend = fetbackend
+	{
+		if source, ok := attdata.Source.(*TtSourceFet); ok {
+			// With a FET source, the existing structures can be used for the backend.
+			fetbackend.doc = source.Doc
+			fetbackend.constraintElements = source.ConstraintElements
+			return
+		}
+	}
+	{
+		//TODO
+		// With "DB" as source, the FET structures must be built from scratch.
+		if source, ok := attdata.Source.(*timetable.TtData); ok {
+
+			return
+		}
+	}
+
+	panic("Unsupported timetable source type: " + attdata.Source.SourceType())
+
 }
 
 func (fbe *FetBackend) Tidy(bdata *base.BaseData) {
@@ -44,7 +71,7 @@ func (fbe *FetBackend) Tidy(bdata *base.BaseData) {
 func (fbe *FetBackend) RunBackend(
 	bdata *base.BaseData,
 	instance *autotimetable.TtInstance,
-) autotimetable.TtBackend {
+) autotimetable.TtInstanceBackend {
 	attdata := fbe.attdata
 	fname := fmt.Sprintf("z%05d~%s", instance.Index, instance.ConstraintType)
 	var odir string
@@ -58,8 +85,21 @@ func (fbe *FetBackend) RunBackend(
 	fetfile := stemfile + ".fet"
 
 	// Construct the FET-file
-	var fet_xml []byte
-	attdata.Source.PrepareRun(instance.ConstraintEnabled, &fet_xml)
+	enabled := instance.ConstraintEnabled
+	for i, c := range fbe.constraintElements {
+		active := c.SelectElement("Active")
+		if enabled[i] {
+			active.SetText("true")
+		} else {
+			active.SetText("false")
+		}
+	}
+	fbe.doc.Indent(2)
+	fet_xml, err := fbe.doc.WriteToBytes()
+	if err != nil {
+		panic(err)
+	}
+
 	// Write FET file
 	err = os.WriteFile(fetfile, fet_xml, 0600)
 	if err != nil {
@@ -341,28 +381,28 @@ func (data *FetTtData) Results(
 		logger.Bug("XML error in %s:\n %v\n", xmlpath, err)
 		return nil
 	}
-	// Need to prepare the `ActivityPlacment` fields: activities, days,
+	// Need to prepare the `ActivityPlacement` fields: activities, days,
 	// hours and rooms ...
 	// ... room conversion
 	room2index := map[string]int{}
-	for i, r := range attdata.Source.GetRooms() {
-		room2index[r.Backend] = i
+	for _, r := range attdata.Source.GetRooms() {
+		room2index[r.Tag] = r.Index
 
 	}
 	// ... day conversion
 	day2index := map[string]int{}
-	for i, d := range attdata.Source.GetDays() {
-		day2index[d.Backend] = i
+	for _, d := range attdata.Source.GetDays() {
+		day2index[d.Tag] = d.Index
 	}
 	// ... hour conversion
 	hour2index := map[string]int{}
-	for i, h := range attdata.Source.GetHours() {
-		hour2index[h.Backend] = i
+	for _, h := range attdata.Source.GetHours() {
+		hour2index[h.Tag] = h.Index
 	}
 	// ... activity conversion
 	activity2index := map[string]int{}
-	for i, a := range attdata.Source.GetActivities() {
-		activity2index[a.Backend] = i
+	for _, a := range attdata.Source.GetActivities() {
+		activity2index[a.Tag] = a.Index
 	}
 
 	// Gather the activities

@@ -300,7 +300,7 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 		}
 		if !attdata.Parameters.DEBUG {
 			// Remove all remaining temporary files
-			attdata.BackendInterface.Tidy(bdata)
+			attdata.Backend.Tidy(bdata)
 		}
 
 		if attdata.current_instance == nil {

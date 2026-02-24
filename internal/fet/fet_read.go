@@ -12,20 +12,20 @@ import (
 )
 
 // In FET there are "time" constraints and "space" constraints. They are
-// all lumped together in th `ConstraintElements` list, but their indexes
+// all lumped together in the `ConstraintElements` list, but their indexes
 // are also recorded in the `TimeConstraints` and `SpaceConstraints` lists.
 
 func FetRead(
 	bdata *base.BaseData,
 	fetpath string,
-) *TtRunDataFet {
+) *TtSourceFet {
 	logger := bdata.Logger
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(fetpath); err != nil {
 		logger.Error("%s", err)
 		return nil
 	}
-	rundata := &TtRunDataFet{Doc: doc, WeightTable: MakeFetWeights()}
+	rundata := &TtSourceFet{Doc: doc, WeightTable: MakeFetWeights()}
 	//fmt.Printf("rundata.WeightTable = %+v\n\n", rundata.WeightTable)
 	fetroot := doc.Root()
 
@@ -40,15 +40,16 @@ func FetRead(
 	// Get active activities, count inactive ones
 	{
 		activities := []*etree.Element{}
-		aidlist := []IdPair{}
+		aidlist := []TtSourceItem{}
 		ael := fetroot.SelectElement("Activities_List")
 		inactive := 0
+		i := 0
 		for _, a := range ael.ChildElements() {
 			if a.SelectElement("Active").Text() == "true" {
 				activities = append(activities, a)
 				id := a.SelectElement("Id").Text()
-				// In this case both source and back-end are FET:
-				aidlist = append(aidlist, IdPair{Source: id, Backend: id})
+				aidlist = append(aidlist, TtSourceItem{Index: i, Tag: id})
+				i++
 			} else {
 				inactive++
 			}
@@ -57,16 +58,16 @@ func FetRead(
 			logger.Result("INACTIVE_ACTIVITIES", strconv.Itoa(inactive))
 		}
 		rundata.ActivityElements = activities
-		rundata.ActivityIds = aidlist
+		rundata.ActivityList = aidlist
 	}
 
 	// Get resource lists, etc.
-	rundata.DayIds = get_days(fetroot)
-	rundata.HourIds = get_hours(fetroot)
-	rundata.RoomIds = get_rooms(fetroot)
-	rundata.TeacherIds = get_teachers(fetroot)
-	rundata.SubjectIds = get_subjects(fetroot)
-	rundata.ClassIds = get_classes(fetroot)
+	rundata.DayList = get_days(fetroot)
+	rundata.HourList = get_hours(fetroot)
+	rundata.RoomList = get_rooms(fetroot)
+	rundata.TeacherList = get_teachers(fetroot)
+	rundata.SubjectList = get_subjects(fetroot)
+	rundata.ClassList = get_classes(fetroot)
 
 	// Collect the constraints, dividing into soft and hard groups.
 	// Inactive constraints will be removed.
@@ -141,18 +142,20 @@ func FetRead(
 					comment = parts[1]
 				}
 			}
-			constraint_counter++
 			wtag := ""
 			if w != "100" {
 				wtag = ":" + w
 			}
+			// In FET, the constraints have no identifiers/tags, so one is
+			// added in the "Comments"  field.
 			cid := fmt.Sprintf("[%d%s]", constraint_counter, wtag)
 			comments.SetText(cid + comment)
 			rundata.Constraints = append(rundata.Constraints, Constraint{
-				IdPair: IdPair{Backend: cid},
-				Ctype:  ctype,
-				Weight: wdb,
+				TtSourceItem: TtSourceItem{Index: constraint_counter, Tag: cid},
+				Ctype:        ctype,
+				Weight:       wdb,
 			})
+			constraint_counter++
 		}
 		if inactive != 0 {
 			if timespace == 0 {
@@ -172,76 +175,60 @@ func FetRead(
 	return rundata
 }
 
-func get_days(fetroot *etree.Element) []IdPair {
-	items := []IdPair{}
-	for _, e := range fetroot.SelectElement("Days_List").SelectElements("Day") {
+func get_days(fetroot *etree.Element) []TtSourceItem {
+	items := []TtSourceItem{}
+	for i, e := range fetroot.SelectElement("Days_List").SelectElements("Day") {
 		id := e.SelectElement("Name").Text()
-		items = append(items, IdPair{
-			Backend: id,
-			Source:  id,
-		})
+		items = append(items, TtSourceItem{Index: i, Tag: id})
 	}
 	return items
 }
 
-func get_hours(fetroot *etree.Element) []IdPair {
-	hours := []IdPair{}
-	for _, e := range fetroot.SelectElement("Hours_List").SelectElements("Hour") {
+func get_hours(fetroot *etree.Element) []TtSourceItem {
+	hours := []TtSourceItem{}
+	for i, e := range fetroot.SelectElement("Hours_List").SelectElements("Hour") {
 		id := e.SelectElement("Name").Text()
-		hours = append(hours, IdPair{
-			Backend: id,
-			Source:  id,
-		})
+		hours = append(hours, TtSourceItem{Index: i, Tag: id})
 	}
 	return hours
 }
 
-func get_rooms(fetroot *etree.Element) []IdPair {
-	rooms := []IdPair{}
+func get_rooms(fetroot *etree.Element) []TtSourceItem {
+	rooms := []TtSourceItem{}
+	i := 0
 	for _, e := range fetroot.SelectElement("Rooms_List").SelectElements("Room") {
 		if e.SelectElement("Virtual").Text() == "false" {
 			id := e.SelectElement("Name").Text()
-			rooms = append(rooms, IdPair{
-				Backend: id,
-				Source:  id,
-			})
+			rooms = append(rooms, TtSourceItem{Index: i, Tag: id})
+			i++
 		}
 	}
 	return rooms
 }
 
-func get_teachers(fetroot *etree.Element) []IdPair {
-	items := []IdPair{}
-	for _, e := range fetroot.SelectElement("Teachers_List").SelectElements("Teacher") {
+func get_teachers(fetroot *etree.Element) []TtSourceItem {
+	items := []TtSourceItem{}
+	for i, e := range fetroot.SelectElement("Teachers_List").SelectElements("Teacher") {
 		id := e.SelectElement("Name").Text()
-		items = append(items, IdPair{
-			Backend: id,
-			Source:  id,
-		})
+		items = append(items, TtSourceItem{Index: i, Tag: id})
 	}
 	return items
 }
 
-func get_classes(fetroot *etree.Element) []IdPair {
-	items := []IdPair{}
-	for _, e := range fetroot.SelectElement("Students_List").SelectElements("Year") {
+func get_classes(fetroot *etree.Element) []TtSourceItem {
+	items := []TtSourceItem{}
+	for i, e := range fetroot.SelectElement("Students_List").SelectElements("Year") {
 		id := e.SelectElement("Name").Text()
-		items = append(items, IdPair{
-			Backend: id,
-			Source:  id,
-		})
+		items = append(items, TtSourceItem{Index: i, Tag: id})
 	}
 	return items
 }
 
-func get_subjects(fetroot *etree.Element) []IdPair {
-	items := []IdPair{}
-	for _, e := range fetroot.SelectElement("Subjects_List").SelectElements("Subject") {
+func get_subjects(fetroot *etree.Element) []TtSourceItem {
+	items := []TtSourceItem{}
+	for i, e := range fetroot.SelectElement("Subjects_List").SelectElements("Subject") {
 		id := e.SelectElement("Name").Text()
-		items = append(items, IdPair{
-			Backend: id,
-			Source:  id,
-		})
+		items = append(items, TtSourceItem{Index: i, Tag: id})
 	}
 	return items
 }

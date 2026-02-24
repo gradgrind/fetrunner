@@ -202,9 +202,9 @@ func file_loader(dsp *Dispatcher, op *DispatchOp) {
 	fpath := op.Data[0]
 
 	if strings.HasSuffix(strings.ToLower(fpath), ".fet") {
-		ttRunDataFet := fet.FetRead(bd, fpath)
-		if ttRunDataFet != nil {
-			dsp.TtSource = ttRunDataFet
+		tt_source_fet := fet.FetRead(bd, fpath)
+		if tt_source_fet != nil {
+			dsp.TtSource = tt_source_fet
 			bd.SourceDir = filepath.Dir(fpath)
 			n := filepath.Base(fpath)
 			bd.Name = strings.TrimSuffix(n, filepath.Ext(n))
@@ -244,7 +244,7 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 			ttsource = makefet.FetTree(
 				bdata,
 				dsp.TtParameters.REAL_SOFT,
-				timetable.BasicSetup(bdata))
+				timetable.MakeTimetableData(bdata))
 		} else {
 			logger.Error("No source")
 			logger.Result("OK", "false")
