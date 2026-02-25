@@ -43,19 +43,23 @@ func InitBackend(bdata *base.BaseData, attdata *autotimetable.AutoTtData) {
 		attdata: attdata,
 		tmpdir:  tmpdir}
 	attdata.Backend = fetbackend
+	if bdata.Db != nil {
+		//TODO
+		// With "DB" as source, the FET structures must be built from scratch.
+		source := timetable.MakeTimetableData(bdata)
+
+		ttsource := FetTree(
+			bdata,
+			attdata.Parameters.REAL_SOFT,
+			source)
+
+		return
+	}
 	{
 		if source, ok := attdata.Source.(*TtSourceFet); ok {
 			// With a FET source, the existing structures can be used for the backend.
 			fetbackend.doc = source.Doc
 			fetbackend.constraintElements = source.ConstraintElements
-			return
-		}
-	}
-	{
-		//TODO
-		// With "DB" as source, the FET structures must be built from scratch.
-		if source, ok := attdata.Source.(*timetable.TtData); ok {
-
 			return
 		}
 	}

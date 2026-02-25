@@ -1,9 +1,8 @@
-package makefet
+package fet
 
 import (
 	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
-	"fetrunner/internal/fet"
 	"fetrunner/internal/timetable"
 	"fmt"
 
@@ -24,18 +23,18 @@ func FetTree(
 	bdata *base.BaseData,
 	real_soft bool,
 	tt_data *timetable.TtData,
-) *fet.TtSourceFet {
+) *TtSourceFet {
 	doc := etree.NewDocument()
 	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
-	rundata := &fet.TtSourceFet{
+	rundata := &TtSourceFet{
 		Doc:         doc,
-		WeightTable: fet.MakeFetWeights(),
+		WeightTable: MakeFetWeights(),
 	}
 
 	fetbuild := &FetBuild{
-		basedata:           bdata,
-		ttdata:             tt_data,
-		rundata:            rundata,
+		basedata: bdata,
+		ttdata:   tt_data,
+		//?? rundata:            rundata,
 		fet_virtual_rooms:  map[string]string{},
 		fet_virtual_room_n: map[string]int{},
 		real_soft:          real_soft,

@@ -1,9 +1,8 @@
-package makefet
+package fet
 
 import (
 	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
-	"fetrunner/internal/fet"
 	"fetrunner/internal/timetable"
 
 	"github.com/beevik/etree"
@@ -12,12 +11,11 @@ import (
 const fet_version = "7.5.5"
 
 type IdPair = autotimetable.IdPair
-type Constraint = autotimetable.Constraint
 
 type FetBuild struct {
-	basedata               *base.BaseData
-	ttdata                 *timetable.TtData
-	rundata                *fet.TtSourceFet // the structure to be built
+	basedata *base.BaseData
+	ttdata   *timetable.TtData
+	//?? rundata                *fet.TtSourceFet // the structure to be built
 	fetroot                *etree.Element
 	room_list              *etree.Element // needed for adding virtual rooms
 	activity_tag_list      *etree.Element // in case these are needed
