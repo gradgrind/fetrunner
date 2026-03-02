@@ -3,16 +3,17 @@
 package timetable
 
 import (
+	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
 )
 
 type NodeRef = base.NodeRef // node reference (UUID)
 
-type ActivityIndex = int
-type TeacherIndex = int
-type RoomIndex = int
-type ClassIndex = int
-type AtomicIndex = int
+type ActivityIndex = autotimetable.ActivityIndex
+type TeacherIndex = autotimetable.TeacherIndex
+type RoomIndex = autotimetable.RoomIndex
+type ClassIndex = autotimetable.ClassIndex
+type AtomicIndex = autotimetable.AtomicIndex
 
 type TtData struct {
 	NDays        int
@@ -35,9 +36,15 @@ type TtData struct {
 	// list of its divisions ([][]NodeRef).
 	ClassDivisions []ClassDivision
 
+	// Sorted list of constraint names (only those presently used in the data)
+	ConstraintTypes []autotimetable.ConstraintType
+
 	// Set up by `CollectCourses`, which calls `makeActivities`
+
+	//TODO: Still valid? I think it is confusing and error prone! All other
+	// indexes are 0-based.
 	// Note that activity 0 is invalid, the first activity has index 1.
-	Activities        []*TtActivity
+	TtActivities      []*TtActivity
 	Ref2ActivityIndex map[NodeRef]ActivityIndex
 	CourseInfoList    []*CourseInfo
 	Ref2CourseInfo    map[NodeRef]*CourseInfo
@@ -62,6 +69,7 @@ type CourseInfo struct {
 	Activities   []ActivityIndex
 }
 
+// TODO: Add node id field? And where is the other info, like duration?
 type TtActivity struct {
 	CourseInfo     int            // index to `TtData.CourseInfoList`
 	FixedStartTime *base.TimeSlot // needed for days-between preparation
@@ -122,12 +130,27 @@ func (tt_data *TtData) RoomResources(db *base.DbTopLevel) {
 	}
 }
 
-// This structure is used to return the placement results from the
-// timetable back-end. It differs from `base.ActivityPlacement` in that it
-// uses indexes rather than NodeRefs.
-type TtActivityPlacement struct {
-	Activity ActivityIndex
-	Day      int
-	Hour     int
-	Rooms    []RoomIndex
+type TtSourceItem = autotimetable.TtSourceItem
+
+func (tt_data *TtData) GetActivities() []TtSourceItem {
+	alist := make([]TtSourceItem, len(tt_data.TtActivities))
+	for i := range tt_data.TtActivities {
+		alist[i] = TtSourceItem{Index: i}
+	}
+	return alist
 }
+
+func (tt_data *TtData) GetClasses() []TtSourceItem {
+	clist := make([]TtSourceItem, len(tt_data.ClassDivisions))
+	for i, c := range tt_data.ClassDivisions {
+		clist[i] = TtSourceItem{Index: i, Tag: c.Class.Tag}
+	}
+	return clist
+}
+
+func (tt_data *TtData) GetConstraint_Types() []autotimetable.ConstraintType {
+	return tt_data.ConstraintTypes
+}
+
+//TODO: tt_data should have lists of all the indexed things, providing the source ids,
+// as these are not directly relevant to autotimetable.

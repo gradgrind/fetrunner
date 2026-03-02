@@ -26,12 +26,15 @@ func FetTree(
 ) *TtSourceFet {
 	doc := etree.NewDocument()
 	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
+
+	//TODO: Surely this must build on tt_data and create a new back-end structure for FET.
+	//  TtSourceFet is for FET source!
 	rundata := &TtSourceFet{
 		Doc:         doc,
 		WeightTable: MakeFetWeights(),
 	}
 
-	fetbuild := &FetBuild{
+	fetbuild := &fet_build{
 		basedata: bdata,
 		ttdata:   tt_data,
 		//?? rundata:            rundata,
@@ -109,7 +112,7 @@ func FetTree(
 		}
 	}
 	rundata.NConstraints = len(rundata.Constraints)
-	rundata.ConstraintTypes = autotimetable.SortConstraintTypes(
+	tt_data.ConstraintTypes = autotimetable.SortConstraintTypes(
 		constraint_types, base.ConstraintPriority)
 	rundata.HardConstraintMap = hard_constraint_map
 	rundata.SoftConstraintMap = soft_constraint_map
@@ -132,7 +135,8 @@ func oldweight2fet(w int) string {
 }
 */
 
-func (fetbuild *FetBuild) add_activity_tag(tag string) {
+// Currently unused
+func (fetbuild *fet_build) add_activity_tag(tag string) {
 	atag := fetbuild.activity_tag_list.CreateElement("Activity_Tag")
 	atag.CreateElement("Name").SetText(tag)
 	atag.CreateElement("Printable").SetText("false")
@@ -158,7 +162,7 @@ func params_constraint(
 		Weight:     weight}
 }
 
-func (fetbuild *FetBuild) add_time_constraint(e *etree.Element, c Constraint) {
+func (fetbuild *fet_build) add_time_constraint(e *etree.Element, c Constraint) {
 	rundata := fetbuild.rundata
 	i := len(rundata.ConstraintElements)
 	rundata.ConstraintElements = append(rundata.ConstraintElements, e)
@@ -180,7 +184,7 @@ func (fetbuild *FetBuild) add_time_constraint(e *etree.Element, c Constraint) {
 	rundata.Constraints = append(rundata.Constraints, c)
 }
 
-func (fetbuild *FetBuild) add_space_constraint(e *etree.Element, c Constraint) {
+func (fetbuild *fet_build) add_space_constraint(e *etree.Element, c Constraint) {
 	rundata := fetbuild.rundata
 	i := len(rundata.ConstraintElements)
 	rundata.ConstraintElements = append(rundata.ConstraintElements, e)

@@ -76,10 +76,12 @@ func (attdata *AutoTtData) new_current_instance(
 	}
 }
 
+// Count the constraints (fulfilled and total), placing infos
+// including the unfulfilled indexes in the "last" result item.
 func (attdata *AutoTtData) get_nconstraints(
 	bdata *base.BaseData, enabled []bool,
 ) {
-	// The discarded hard constraints ...
+	// Collect the unfulfilled hard constraints ...
 	hnall := 0 // count all hard constraints
 	hn := 0    // count fulfilled hard constraints
 	// Gather constraint indexes:
@@ -96,7 +98,7 @@ func (attdata *AutoTtData) get_nconstraints(
 		hunfulfilled[ctype] = ulist
 		hnall += len(clist)
 	}
-	// The discarded soft constraints ...
+	// Collect the unfulfilled soft constraints ...
 	snall := 0 // count all soft constraints
 	sn := 0    // count fulfilled soft constraints
 	// Gather constraint indexes:

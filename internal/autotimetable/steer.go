@@ -67,10 +67,10 @@ within a given time, it may be necessary to drop some of them in order to
 place all the activities within this time. However, if it is possible
 to satisfy all the constraints within this time, that should be done.
 
-If constraints need to be dropped, these should give an indication as to which
+If constraints need to be dropped, there should be an indication of which
 ones are difficult. Perhaps more time would help, or a modification of some of
 the constraints. Among the difficult ones there may also be constraints which
-block the completion of the task and thus must be changed or dropped.
+block the completion of the task and thus _must_ be changed or dropped.
 
 A certain degree of parallel processing is assumed – too few (less than four?)
 processor cores is likely to result in a very significant slowdown.
@@ -98,7 +98,7 @@ instance and handles the actions resulting from their completion, whether
 successful or not.
 
 Should the fully constrained instance complete successfully within the
-allotted time, its result will be saved and all other instances are terminated.
+allotted time, its result will be saved and all other instances terminated.
 
 When the unconstrained instance completes successfully, a series of further
 instances is queued for running, each specifying the addition of a list of
@@ -118,22 +118,20 @@ a new base (`current_instance`) for the addition of further constraints. All
 the remaining constraint-type instances are stopped and restarted with this
 new base. If a constraint-type instance is timed out, it is stopped and split
 into two halves, which then run in its place. If there are no halves (only
-one constraint being added) there is no successor, the constraint is dropped
-(from this accumulation round).
+one constraint being added) there is no successor and the instance will run
+without timeout; should it fail (because of an error or some other halting
+criterion, such as "too slow"), the constraint is dropped.
 
-When an instance completes successfully within the allotted time, its result
-is saved as a `Result` structure, the best result so far gradually
-encompassing more of the constraints. When all the constraints have been
-tested with a certain timeout, a new round is entered and the rejected ones
-are tried again, but this time with longer timeouts. Note that instances
-which are trying to add just one constraint are started without a timeout
+Also when an instance completes successfully within the allotted time, its
+result is saved as a `Result` structure, the best result so far gradually
+encompassing more of the constraints.
 
-When all the hard constraints have been included, the soft constraints are
-added in basically the same way. If the initial instance with all hard
-constraints and no soft constraints completes, this instance will be used as
-the new base for adding the soft constraints and the accumulation loop will
-be cancelled. If the accumulation loop should finish first (somewhat unlikely,
-but possible), the initial instance with all hard constraints may be
+When all the hard constraints have been included or rejected, the soft
+constraints are added in basically the same way. If the initial instance with
+all hard constraints and no soft constraints completes, this instance will be
+used as the new base for adding the soft constraints and the accumulation
+loop will be cancelled. If the accumulation loop should finish first (somewhat
+unlikely, but possible), the initial instance with all hard constraints may be
 terminated.
 
 When everything has been added that can be in the given time, the latest
@@ -171,12 +169,13 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 	// First run: all constraints enabled.
 	// On successful completion, all other instances should be stopped.
 	// If it fails, just this instance should be wound up. Otherwise it
-	// should run until it times out, at which point any other active
+	// should run until the overall time-out, at which point any other active
 	// instances should be stopped and the "best" solution at this point
 	// chosen.
 	enabled := make([]bool, attdata.NConstraints)
 	attdata.get_nconstraints(bdata, enabled) // count constraints
 	for i := range attdata.NConstraints {
+		// Enable all constraints
 		enabled[i] = true
 	}
 	attdata.full_instance = &TtInstance{
@@ -195,6 +194,7 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 	// will not be run.
 	enabled = make([]bool, attdata.NConstraints)
 	for _, ilist := range attdata.HardConstraintMap {
+		// Enable all hard constraints
 		for _, i := range ilist {
 			enabled[i] = true
 		}
@@ -209,6 +209,9 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 
 	// Instance with only "NotAvailable" (hard) constraints – if any,
 	// otherwise skip this instance.
+	// Note that the selection of the constraints to be enabled relies on
+	// the substring "NotAvailable" being present in (only) these constraints.
+	// For `FET` and "DB" inputs this works, but seems a bit fragile.
 	notAvailableRunState := 3
 	enabled = make([]bool, attdata.NConstraints)
 	for ctype, ilist := range attdata.HardConstraintMap {

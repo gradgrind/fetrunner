@@ -50,7 +50,7 @@ func (tt_data *TtData) preprocessConstraints(bdata *base.BaseData) {
 		if c.IsHard() {
 			data := c.Data.(base.ActivityStartTime)
 			aix := tt_data.Ref2ActivityIndex[data.Activity]
-			tt_data.Activities[aix].FixedStartTime = &base.TimeSlot{
+			tt_data.TtActivities[aix].FixedStartTime = &base.TimeSlot{
 				Day: data.Day, Hour: data.Hour}
 		}
 	}
@@ -199,7 +199,7 @@ func (tt_data *TtData) days_between_activities(
 	fixeds := []ActivityIndex{}
 	unfixeds := []ActivityIndex{}
 	for _, ai := range cinfo.Activities {
-		if tt_data.Activities[ai].FixedStartTime != nil {
+		if tt_data.TtActivities[ai].FixedStartTime != nil {
 			fixeds = append(fixeds, ai)
 		} else {
 			unfixeds = append(unfixeds, ai)
@@ -255,9 +255,9 @@ func (tt_data *TtData) days_between_join_activities(
 	cinfo1 := tt_data.Ref2CourseInfo[course1]
 	cinfo2 := tt_data.Ref2CourseInfo[course2]
 	for _, ai1 := range cinfo1.Activities {
-		f1 := tt_data.Activities[ai1].FixedStartTime != nil
+		f1 := tt_data.TtActivities[ai1].FixedStartTime != nil
 		for _, ai2 := range cinfo2.Activities {
-			f2 := tt_data.Activities[ai2].FixedStartTime != nil
+			f2 := tt_data.TtActivities[ai2].FixedStartTime != nil
 			if f1 && f2 {
 				// both fixed => no constraint
 				continue

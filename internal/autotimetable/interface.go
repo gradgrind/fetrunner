@@ -8,6 +8,11 @@ type TtBackend interface {
 	ConstraintName(*TtInstance) string
 }
 
+//TODO: Make autotimetable use only indexes (instead of TtSourceItem structs)
+// for the elements, all 0-based (including the activities!). If some other
+// sort of reference is needed (distinguish node-ref and tag) it should be
+// available in the source and/or back-end interfaces.
+
 type TtSource interface {
 	//TODO?
 	Prepare(real_soft bool) // set the soft-constraint weights

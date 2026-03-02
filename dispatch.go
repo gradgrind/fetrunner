@@ -5,7 +5,6 @@ import (
 	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
 	"fetrunner/internal/fet"
-	"fetrunner/internal/makefet"
 	"fetrunner/internal/timetable"
 	"fetrunner/internal/w365tt"
 	"fmt"
@@ -241,10 +240,13 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 	ttsource := dsp.TtSource
 	if ttsource == nil {
 		if dsp.BaseData.Db != nil {
-			ttsource = makefet.FetTree(
-				bdata,
-				dsp.TtParameters.REAL_SOFT,
-				timetable.MakeTimetableData(bdata))
+			//TODO: was
+			//ttsource = fet.FetTree(
+			//	bdata,
+			//	dsp.TtParameters.REAL_SOFT,
+			//	timetable.MakeTimetableData(bdata))
+			//TODO: is now?
+			ttsource = timetable.MakeTimetableData(bdata)
 		} else {
 			logger.Error("No source")
 			logger.Result("OK", "false")

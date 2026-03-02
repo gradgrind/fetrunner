@@ -12,7 +12,7 @@ const fet_version = "7.5.5"
 
 type IdPair = autotimetable.IdPair
 
-type FetBuild struct {
+type fet_build struct {
 	basedata *base.BaseData
 	ttdata   *timetable.TtData
 	//?? rundata                *fet.TtSourceFet // the structure to be built

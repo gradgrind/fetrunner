@@ -31,7 +31,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 	tt_data.Ref2CourseInfo = map[NodeRef]*CourseInfo{}
 
 	// The list of `TtActivity` items shadows the list of `Activity` items.
-	tt_data.Activities = make([]*TtActivity, len(db.Activities))
+	tt_data.TtActivities = make([]*TtActivity, len(db.Activities))
 	tt_data.Ref2ActivityIndex = map[NodeRef]ActivityIndex{}
 	for i, a := range db.Activities {
 		tt_data.Ref2ActivityIndex[a.Id] = ActivityIndex(i)
@@ -145,7 +145,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 		for _, a := range spc.Activities {
 			aix := tt_data.Ref2ActivityIndex[a.Id]
 			cinfo.Activities = append(cinfo.Activities, aix)
-			tt_data.Activities[aix] = &TtActivity{
+			tt_data.TtActivities[aix] = &TtActivity{
 				CourseInfo: len(tt_data.CourseInfoList),
 				//FixedStartTime: , // will be set later
 			}
@@ -254,7 +254,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 		for _, a := range c.Activities {
 			aix := tt_data.Ref2ActivityIndex[a.Id]
 			cinfo.Activities = append(cinfo.Activities, aix)
-			tt_data.Activities[aix] = &TtActivity{
+			tt_data.TtActivities[aix] = &TtActivity{
 				CourseInfo: len(tt_data.CourseInfoList),
 				//FixedStartTime: , // will be set later
 			}

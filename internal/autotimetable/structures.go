@@ -2,7 +2,6 @@ package autotimetable
 
 import (
 	"fetrunner/internal/base"
-	"fetrunner/internal/timetable"
 )
 
 // Structures and global variables used in connection with automation of the
@@ -127,4 +126,18 @@ type TtInstanceBackend interface {
 	FinalizeResult(*base.BaseData, *AutoTtData)
 }
 
-type TtActivityPlacement = timetable.TtActivityPlacement
+type ActivityIndex = int
+type TeacherIndex = int
+type RoomIndex = int
+type ClassIndex = int
+type AtomicIndex = int
+
+// This structure is used to return the placement results from the
+// timetable back-end. It differs from `base.ActivityPlacement` in that it
+// uses indexes rather than NodeRefs.
+type TtActivityPlacement struct {
+	Activity ActivityIndex
+	Day      int
+	Hour     int
+	Rooms    []RoomIndex
+}
