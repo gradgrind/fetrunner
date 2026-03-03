@@ -17,27 +17,28 @@ const VIRTUAL_ROOM_PREFIX = "!"
 // const LUNCH_BREAK_TAG = "-lb-"
 // const LUNCH_BREAK_NAME = "Lunch Break"
 
-// Use a `FetBuild` as basis for constructing a `fet.TtRunDataFet`. In addition,
+// Construct a `fet_build` from the timetable data in a `timetable.TtData`.
+// This `fet_build` needs to contain all the information for generating a
+// `FET` file with a subset of constraints. The constraints are determined
+// by the source (here `timetable.TtData`) and the possibility to map to
+// a variable number of `FET` constraints should be supported.
+// as basis for constructing a `TtSourceFet`. In addition,
 // some fields of the `autotimetable.BasicData` are initialized.
 func FetTree(
 	bdata *base.BaseData,
 	real_soft bool,
 	tt_data *timetable.TtData,
-) *TtSourceFet {
+) *fet_build {
 	doc := etree.NewDocument()
 	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
-
-	//TODO: Surely this must build on tt_data and create a new back-end structure for FET.
-	//  TtSourceFet is for FET source!
-	rundata := &TtSourceFet{
-		Doc:         doc,
-		WeightTable: MakeFetWeights(),
-	}
 
 	fetbuild := &fet_build{
 		basedata: bdata,
 		ttdata:   tt_data,
-		//?? rundata:            rundata,
+
+		Doc:         doc,
+		WeightTable: MakeFetWeights(),
+
 		fet_virtual_rooms:  map[string]string{},
 		fet_virtual_room_n: map[string]int{},
 		real_soft:          real_soft,
@@ -96,7 +97,7 @@ func FetTree(
 	hard_constraint_map := map[string][]int{}
 	soft_constraint_map := map[string][]int{}
 	constraint_types := []string{}
-	for i, c := range rundata.Constraints {
+	for i, c := range fetbuild.Constraints {
 
 		constraint_types = append(constraint_types, c.Ctype)
 		// ... duplicates wil be removed in `sort_constraint_types`
@@ -111,13 +112,13 @@ func FetTree(
 			soft_constraint_map[wctype] = append(soft_constraint_map[wctype], i)
 		}
 	}
-	rundata.NConstraints = len(rundata.Constraints)
+	fetbuild.NConstraints = len(fetbuild.Constraints)
 	tt_data.ConstraintTypes = autotimetable.SortConstraintTypes(
 		constraint_types, base.ConstraintPriority)
-	rundata.HardConstraintMap = hard_constraint_map
-	rundata.SoftConstraintMap = soft_constraint_map
+	fetbuild.HardConstraintMap = hard_constraint_map
+	fetbuild.SoftConstraintMap = soft_constraint_map
 
-	return rundata
+	return fetbuild
 }
 
 /*
@@ -142,31 +143,31 @@ func (fetbuild *fet_build) add_activity_tag(tag string) {
 	atag.CreateElement("Printable").SetText("false")
 }
 
+// TODO: Where to record the node ref?
 func param_constraint(
 	ctype string, id NodeRef, index int, weight int,
 ) Constraint {
 	return Constraint{
-		IdPair:     IdPair{Source: string(id)},
-		Ctype:      ctype,
-		Parameters: []int{index},
-		Weight:     weight}
+		TtSourceItem: TtSourceItem{Source: string(id)},
+		Ctype:        ctype,
+		Parameters:   []int{index},
+		Weight:       weight}
 }
 
 func params_constraint(
 	ctype string, id NodeRef, indexlist []int, weight int,
 ) Constraint {
 	return Constraint{
-		IdPair:     IdPair{Source: string(id)},
-		Ctype:      ctype,
-		Parameters: indexlist,
-		Weight:     weight}
+		TtSourceItem: TtSourceItem{Source: string(id)},
+		Ctype:        ctype,
+		Parameters:   indexlist,
+		Weight:       weight}
 }
 
 func (fetbuild *fet_build) add_time_constraint(e *etree.Element, c Constraint) {
-	rundata := fetbuild.rundata
-	i := len(rundata.ConstraintElements)
-	rundata.ConstraintElements = append(rundata.ConstraintElements, e)
-	rundata.TimeConstraints = append(rundata.TimeConstraints, i)
+	i := len(fetbuild.ConstraintElements)
+	fetbuild.ConstraintElements = append(fetbuild.ConstraintElements, e)
+	fetbuild.TimeConstraints = append(fetbuild.TimeConstraints, i)
 
 	// Make a tag for the constraint
 	fetbuild.constraint_counter++
@@ -181,14 +182,13 @@ func (fetbuild *fet_build) add_time_constraint(e *etree.Element, c Constraint) {
 	}
 	e.CreateElement("Comments").SetText(c.Backend)
 
-	rundata.Constraints = append(rundata.Constraints, c)
+	fetbuild.Constraints = append(fetbuild.Constraints, c)
 }
 
 func (fetbuild *fet_build) add_space_constraint(e *etree.Element, c Constraint) {
-	rundata := fetbuild.rundata
-	i := len(rundata.ConstraintElements)
-	rundata.ConstraintElements = append(rundata.ConstraintElements, e)
-	rundata.SpaceConstraints = append(rundata.SpaceConstraints, i)
+	i := len(fetbuild.ConstraintElements)
+	fetbuild.ConstraintElements = append(fetbuild.ConstraintElements, e)
+	fetbuild.SpaceConstraints = append(fetbuild.SpaceConstraints, i)
 
 	// Make a tag for the constraint
 	fetbuild.constraint_counter++
@@ -203,5 +203,5 @@ func (fetbuild *fet_build) add_space_constraint(e *etree.Element, c Constraint) 
 	}
 	e.CreateElement("Comments").SetText(c.Backend)
 
-	rundata.Constraints = append(rundata.Constraints, c)
+	fetbuild.Constraints = append(fetbuild.Constraints, c)
 }

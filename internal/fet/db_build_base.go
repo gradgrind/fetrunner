@@ -1,7 +1,6 @@
 package fet
 
 import (
-	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
 	"fetrunner/internal/timetable"
 
@@ -10,12 +9,21 @@ import (
 
 const fet_version = "7.5.5"
 
-type IdPair = autotimetable.IdPair
-
 type fet_build struct {
 	basedata *base.BaseData
 	ttdata   *timetable.TtData
-	//?? rundata                *fet.TtSourceFet // the structure to be built
+
+	Doc                *etree.Document
+	WeightTable        []float64
+	ConstraintElements []*etree.Element
+	TimeConstraints    []int // indexes into `ConstraintElements`
+	SpaceConstraints   []int // indexes into `ConstraintElements`
+	Constraints        []Constraint
+	NConstraints       ConstraintIndex
+	ConstraintTypes    []ConstraintType
+	HardConstraintMap  map[ConstraintType][]ConstraintIndex
+	SoftConstraintMap  map[ConstraintType][]ConstraintIndex
+
 	fetroot                *etree.Element
 	room_list              *etree.Element // needed for adding virtual rooms
 	activity_tag_list      *etree.Element // in case these are needed

@@ -152,5 +152,10 @@ func (tt_data *TtData) GetConstraint_Types() []autotimetable.ConstraintType {
 	return tt_data.ConstraintTypes
 }
 
+// TODO: Is this really an op on the source?
+func (tt_data *TtData) GetConstraints() []autotimetable.Constraint {
+	return tt_data.Constraints
+}
+
 //TODO: tt_data should have lists of all the indexed things, providing the source ids,
 // as these are not directly relevant to autotimetable.
