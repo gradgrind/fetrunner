@@ -5,7 +5,7 @@ package fet
 // Note that the absolute values are not important, it is the relative
 // values which determine the order. Constraint types not listed here
 // have priority 0.
-var ConstraintPriority = map[ConstraintType]int{
+var ConstraintPriority = map[constraintType]int{
 	"ConstraintRoomNotAvailableTimes":        100,
 	"ConstraintStudentsSetNotAvailableTimes": 99,
 	"ConstraintTeacherNotAvailableTimes":     98,

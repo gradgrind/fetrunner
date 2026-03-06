@@ -25,7 +25,7 @@ func FetRead(
 		logger.Error("%s", err)
 		return nil
 	}
-	sourcefet := &TtSourceFet{Doc: doc, WeightTable: MakeFetWeights()}
+	sourcefet := &TtSourceFet{doc: doc, weightTable: MakeFetWeights()}
 	//fmt.Printf("sourcefet.WeightTable = %+v\n\n", sourcefet.WeightTable)
 	fetroot := doc.Root()
 
@@ -52,16 +52,16 @@ func FetRead(
 		if inactive != 0 {
 			logger.Result("INACTIVE_ACTIVITIES", strconv.Itoa(inactive))
 		}
-		sourcefet.ActivityElements = activities
+		sourcefet.activityElements = activities
 	}
 
 	// Collect the constraints, dividing into soft and hard groups.
 	// Inactive constraints will be removed.
 	r_constraint_number := regexp.MustCompile(`^\[[0-9]+\](.*)$`)
 	constraint_counter := 0
-	hard_constraint_map := map[ConstraintType][]ConstraintIndex{}
-	soft_constraint_map := map[ConstraintType][]ConstraintIndex{}
-	constraint_types := []ConstraintType{}
+	hard_constraint_map := map[constraintType][]constraintIndex{}
+	soft_constraint_map := map[constraintType][]constraintIndex{}
+	constraint_types := []constraintType{}
 
 	for timespace := range 2 {
 		// First (timespace == 0) collect active time constraints,
@@ -83,17 +83,17 @@ func FetRead(
 				inactive++ // count inactive constraints
 				continue
 			}
-			ctype := ConstraintType(e.Tag)
+			ctype := constraintType(e.Tag)
 			if ctype == bc {
 				// Basic, non-negotiable constraint
 				continue
 			}
-			i := len(sourcefet.ConstraintElements)
-			sourcefet.ConstraintElements = append(sourcefet.ConstraintElements, e)
+			i := len(sourcefet.constraintElements)
+			sourcefet.constraintElements = append(sourcefet.constraintElements, e)
 			if timespace == 0 {
-				sourcefet.TimeConstraints = append(sourcefet.TimeConstraints, i)
+				sourcefet.timeConstraints = append(sourcefet.timeConstraints, i)
 			} else {
-				sourcefet.SpaceConstraints = append(sourcefet.SpaceConstraints, i)
+				sourcefet.spaceConstraints = append(sourcefet.spaceConstraints, i)
 			}
 
 			w := e.SelectElement("Weight_Percentage").Text()
@@ -102,14 +102,14 @@ func FetRead(
 			if w == "100" {
 				// Hard constraint
 				hard_constraint_map[ctype] = append(hard_constraint_map[ctype],
-					ConstraintIndex(i))
+					constraintIndex(i))
 			} else {
 				// Soft constraint
 				wctype := fmt.Sprintf("%02d:%s", wdb, ctype)
 				soft_constraint_map[wctype] = append(soft_constraint_map[wctype],
-					ConstraintIndex(i))
-				sourcefet.SoftWeights = append(sourcefet.SoftWeights,
-					SoftWeight{i, w})
+					constraintIndex(i))
+				sourcefet.softWeights = append(sourcefet.softWeights,
+					softWeight{i, w})
 			}
 			constraint_types = append(constraint_types, ctype)
 			// ... duplicates wil be removed in `sort_constraint_types`
@@ -136,7 +136,7 @@ func FetRead(
 			// added in the "Comments"  field.
 			cid := fmt.Sprintf("[%d%s]", constraint_counter, wtag)
 			comments.SetText(cid + comment)
-			sourcefet.Constraints = append(sourcefet.Constraints, Constraint{
+			sourcefet.constraints = append(sourcefet.constraints, constraint{
 				TtSourceItem: TtSourceItem{Index: constraint_counter, Tag: cid},
 				Ctype:        ctype,
 				Weight:       wdb,
@@ -152,11 +152,11 @@ func FetRead(
 		}
 	}
 
-	sourcefet.NConstraints = ConstraintIndex(constraint_counter)
-	sourcefet.ConstraintTypes = autotimetable.SortConstraintTypes(
+	sourcefet.nConstraints = constraintIndex(constraint_counter)
+	sourcefet.constraintTypes = autotimetable.SortConstraintTypes(
 		constraint_types, ConstraintPriority)
-	sourcefet.HardConstraintMap = hard_constraint_map
-	sourcefet.SoftConstraintMap = soft_constraint_map
+	sourcefet.hardConstraintMap = hard_constraint_map
+	sourcefet.softConstraintMap = soft_constraint_map
 
 	return sourcefet
 }

@@ -58,8 +58,8 @@ func InitBackend(bdata *base.BaseData, attdata *autotimetable.AutoTtData) {
 	{
 		if source, ok := attdata.Source.(*TtSourceFet); ok {
 			// With a FET source, the existing structures can be used for the backend.
-			fetbackend.doc = source.Doc
-			fetbackend.constraintElements = source.ConstraintElements
+			fetbackend.doc = source.doc
+			fetbackend.constraintElements = source.constraintElements
 			return
 		}
 	}

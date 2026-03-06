@@ -146,8 +146,8 @@ func (fetbuild *fet_build) add_activity_tag(tag string) {
 // TODO: Where to record the node ref?
 func param_constraint(
 	ctype string, id NodeRef, index int, weight int,
-) Constraint {
-	return Constraint{
+) constraint {
+	return constraint{
 		TtSourceItem: TtSourceItem{Source: string(id)},
 		Ctype:        ctype,
 		Parameters:   []int{index},
@@ -156,15 +156,15 @@ func param_constraint(
 
 func params_constraint(
 	ctype string, id NodeRef, indexlist []int, weight int,
-) Constraint {
-	return Constraint{
+) constraint {
+	return constraint{
 		TtSourceItem: TtSourceItem{Source: string(id)},
 		Ctype:        ctype,
 		Parameters:   indexlist,
 		Weight:       weight}
 }
 
-func (fetbuild *fet_build) add_time_constraint(e *etree.Element, c Constraint) {
+func (fetbuild *fet_build) add_time_constraint(e *etree.Element, c constraint) {
 	i := len(fetbuild.ConstraintElements)
 	fetbuild.ConstraintElements = append(fetbuild.ConstraintElements, e)
 	fetbuild.TimeConstraints = append(fetbuild.TimeConstraints, i)
@@ -185,7 +185,7 @@ func (fetbuild *fet_build) add_time_constraint(e *etree.Element, c Constraint) {
 	fetbuild.Constraints = append(fetbuild.Constraints, c)
 }
 
-func (fetbuild *fet_build) add_space_constraint(e *etree.Element, c Constraint) {
+func (fetbuild *fet_build) add_space_constraint(e *etree.Element, c constraint) {
 	i := len(fetbuild.ConstraintElements)
 	fetbuild.ConstraintElements = append(fetbuild.ConstraintElements, e)
 	fetbuild.SpaceConstraints = append(fetbuild.SpaceConstraints, i)

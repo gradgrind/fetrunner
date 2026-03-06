@@ -18,11 +18,11 @@ type fet_build struct {
 	ConstraintElements []*etree.Element
 	TimeConstraints    []int // indexes into `ConstraintElements`
 	SpaceConstraints   []int // indexes into `ConstraintElements`
-	Constraints        []Constraint
-	NConstraints       ConstraintIndex
-	ConstraintTypes    []ConstraintType
-	HardConstraintMap  map[ConstraintType][]ConstraintIndex
-	SoftConstraintMap  map[ConstraintType][]ConstraintIndex
+	Constraints        []constraint
+	NConstraints       constraintIndex
+	ConstraintTypes    []constraintType
+	HardConstraintMap  map[constraintType][]constraintIndex
+	SoftConstraintMap  map[constraintType][]constraintIndex
 
 	ConstraintSourceRefs []string // or []NodeRef TODO???
 
