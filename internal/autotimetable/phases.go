@@ -125,7 +125,7 @@ new_phase:
 		return
 	}
 	// Initialize constraint list.
-	attdata.constraint_list, n = attdata.get_basic_constraints(
+	attdata.constraint_instance_list, n = attdata.get_basic_constraints(
 		base_instance)
 	if n == 0 {
 		// Skip to next phase
@@ -135,13 +135,13 @@ new_phase:
 		goto new_phase
 	}
 	// Queue instances for running
-	for _, bc := range attdata.constraint_list {
+	for _, bc := range attdata.constraint_instance_list {
 		rq.add(bc)
 	}
 }
 
 func (attdata *AutoTtData) abort_constraint_list() {
-	for _, instance := range attdata.constraint_list {
+	for _, instance := range attdata.constraint_instance_list {
 		if instance.RunState < 0 {
 			attdata.abort_instance(instance)
 		} else if instance.RunState == 0 {
@@ -149,7 +149,7 @@ func (attdata *AutoTtData) abort_constraint_list() {
 			instance.RunState = 3
 		}
 	}
-	attdata.constraint_list = nil
+	attdata.constraint_instance_list = nil
 }
 
 func (rq *RunQueue) tick_phase() bool {
@@ -301,7 +301,7 @@ func (rq *RunQueue) phase_main() bool {
 
 	// See if an instance has completed successfully, setting `next_timeout`
 	// to a non-zero value if one has.
-	for i, instance := range attdata.constraint_list {
+	for i, instance := range attdata.constraint_instance_list {
 		if instance.RunState == 1 {
 			// Completed successfully, make this instance the new base.
 			attdata.current_instance = instance
@@ -311,15 +311,15 @@ func (rq *RunQueue) phase_main() bool {
 				(instance.Ticks*attdata.Parameters.NEW_BASE_TIMEOUT_FACTOR)/10,
 				attdata.cycle_timeout)
 			// Remove it from constraint list.
-			attdata.constraint_list = slices.Delete(
-				attdata.constraint_list, i, i+1)
+			attdata.constraint_instance_list = slices.Delete(
+				attdata.constraint_instance_list, i, i+1)
 
 			// next_timeout != 0 and base_instance = current_instance is new
 			break
 		}
 	}
 
-	if len(attdata.constraint_list) == 0 {
+	if len(attdata.constraint_instance_list) == 0 {
 		// all current constraint trials finished.
 		return true
 	}
@@ -329,7 +329,7 @@ func (rq *RunQueue) phase_main() bool {
 	// restart them accordingly.
 	split_instances := []*TtInstance{}
 	new_constraint_list := []*TtInstance{}
-	for _, instance := range attdata.constraint_list {
+	for _, instance := range attdata.constraint_instance_list {
 		if instance.RunState == 2 { // timed out / failed
 			// Split if more than one instance in list
 			if len(instance.Constraints) > 1 {
@@ -385,7 +385,7 @@ func (rq *RunQueue) phase_main() bool {
 				new_constraint_list, instance)
 		}
 	}
-	attdata.constraint_list = append(new_constraint_list,
+	attdata.constraint_instance_list = append(new_constraint_list,
 		split_instances...)
 	for _, instance := range split_instances {
 		rq.add(instance)

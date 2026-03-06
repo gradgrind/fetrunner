@@ -84,7 +84,7 @@ type AutoTtData struct {
 	// The (successful) instance on which current trials are based:
 	current_instance *TtInstance
 	// List of instances adding a constraint type:
-	constraint_list []*TtInstance
+	constraint_instance_list []*TtInstance
 }
 
 type TtInstance struct {
@@ -140,4 +140,22 @@ type TtActivityPlacement struct {
 	Day      int
 	Hour     int
 	Rooms    []RoomIndex
+}
+
+type TtSourceItem struct {
+	Index int    // source reference as index (0-based)
+	Tag   string // short text identifier
+}
+
+// TODO?
+//type IdPair struct {
+//	Source  string // source reference
+//	Backend string // generator back-end id
+//}
+
+type AttConstraint struct {
+	TtSourceItem
+	Ctype      string
+	Parameters []int
+	Weight     int
 }

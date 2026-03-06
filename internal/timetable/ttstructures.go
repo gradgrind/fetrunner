@@ -16,6 +16,9 @@ type ClassIndex = autotimetable.ClassIndex
 type AtomicIndex = autotimetable.AtomicIndex
 
 type TtData struct {
+	db *base.DbTopLevel
+
+	//TODO--?
 	NDays        int
 	NHours       int
 	HoursPerWeek int
@@ -54,6 +57,16 @@ type TtData struct {
 	ParallelActivities       []*TtParallelActivities
 }
 
+func (tt_data *TtData) GetDays() []*base.ElementBase {
+	dlist := []*base.ElementBase{}
+	for _, d := range tt_data.db.Days {
+		dlist = append(dlist, &base.ElementBase{Id: d.Id, Tag: d.Tag})
+	}
+	return dlist
+}
+
+//TODO: further Get... methods.
+
 // A `CourseInfo` is a representation of a course (Course or SuperCourse) for
 // the timetable.
 // Activities within a course are (already) ordered, highest duration first,
@@ -87,6 +100,9 @@ func MakeTimetableData(bd *base.BaseData) *TtData {
 	days := len(db.Days)
 	hours := len(db.Hours)
 	tt_data := &TtData{
+		db: db,
+
+		//TODO--?
 		NDays:        days,
 		NHours:       hours,
 		HoursPerWeek: days * hours,
@@ -153,7 +169,7 @@ func (tt_data *TtData) GetConstraint_Types() []autotimetable.ConstraintType {
 }
 
 // TODO: Is this really an op on the source?
-func (tt_data *TtData) GetConstraints() []autotimetable.Constraint {
+func (tt_data *TtData) GetConstraints() []autotimetable.AttConstraint {
 	return tt_data.Constraints
 }
 

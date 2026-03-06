@@ -6,12 +6,16 @@ type TtBackend interface {
 	RunBackend(*base.BaseData, *TtInstance) TtInstanceBackend
 	Tidy(*base.BaseData)
 	ConstraintName(*TtInstance) string
+
+	//TODO:
+	EnableConstraint(index int)
 }
 
-//TODO: Make autotimetable use only indexes (instead of TtSourceItem structs)
-// for the elements, all 0-based (including the activities!). If some other
-// sort of reference is needed (distinguish node-ref and tag) it should be
-// available in the source and/or back-end interfaces.
+//TODO: In autotimetable primarily indexes should be used to refer to elements
+// of all sorts, including constraints, all 0-based (including
+// the activities!). If some other sort of reference is needed (distinguish
+// node-ref and tag) it should be available in the source and/or back-end
+// interfaces.
 
 type TtSource interface {
 	//TODO?
@@ -20,18 +24,21 @@ type TtSource interface {
 	//TODO?
 	//GetConstraintTypeSets() map[string][]int // ctype -> []constraint-index
 
-	GetDays() []TtSourceItem
-	GetHours() []TtSourceItem
-	GetTeachers() []TtSourceItem
+	GetDays() []base.ElementBase
+	GetHours() []base.ElementBase
+	GetTeachers() []base.ElementBase
 
 	//TODO???
-	GetClasses() []TtSourceItem
-	//GetStudentGroups() []TtSourceItem
+	GetClasses() []base.ElementBase
+	//GetStudentGroups() []base.ElementBase
 
-	GetRooms() []TtSourceItem
-	GetActivities() []TtSourceItem
+	GetRooms() []base.ElementBase
+	GetActivities() []base.ElementBase
 
-	GetConstraints() []Constraint
+	GetConstraints() []AttConstraint
+
+	//TODO:
+	//ConstraintRef(index int) string // get source reference for indexed constraint
 
 	GetNActivities() int
 	GetNConstraints() ConstraintIndex
@@ -42,22 +49,4 @@ type TtSource interface {
 	//TODO: probably not here ...
 	// Prepare the "source" for a run with a set of enabled constraints:
 	PrepareRun([]bool, any)
-}
-
-type TtSourceItem struct {
-	Index int    // source reference as index (0-based)
-	Tag   string // short text identifier
-}
-
-// TODO?
-//type IdPair struct {
-//	Source  string // source reference
-//	Backend string // generator back-end id
-//}
-
-type Constraint struct {
-	TtSourceItem
-	Ctype      string
-	Parameters []int
-	Weight     int
 }

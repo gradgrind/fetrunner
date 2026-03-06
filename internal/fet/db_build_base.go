@@ -24,6 +24,8 @@ type fet_build struct {
 	HardConstraintMap  map[ConstraintType][]ConstraintIndex
 	SoftConstraintMap  map[ConstraintType][]ConstraintIndex
 
+	ConstraintSourceRefs []string // or []NodeRef TODO???
+
 	fetroot                *etree.Element
 	room_list              *etree.Element // needed for adding virtual rooms
 	activity_tag_list      *etree.Element // in case these are needed

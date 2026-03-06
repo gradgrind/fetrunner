@@ -40,7 +40,7 @@ func (c *TtParallelActivities) IsHard() bool {
 
 // `preprocessConstraints` produces the new constraints, which are then
 // accessible in `TtData`. It also adds the fixed activity placements to
-// the `TtAcivity` items.
+// the `TtAcivity` items. TODO: Why?!
 func (tt_data *TtData) preprocessConstraints(bdata *base.BaseData) {
 	db := bdata.Db
 	logger := bdata.Logger

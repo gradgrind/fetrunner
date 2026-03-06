@@ -287,11 +287,11 @@ type ActivityCourse interface {
 // These can be very varied and they may have very little in common. Each
 // implementation must have a distinguishing CType.
 type Constraint struct {
-	CType    string  // constraint type
-	Id       NodeRef // reference to external source
-	Weight   int     // range 0 (inactive) - 100 (hard)
-	Data     any     // contents depend on CType
-	Disabled bool
+	CType  string  // constraint type
+	Id     NodeRef // reference to external source, if there is such a reference
+	Weight int     // range 0 (inactive) - 100 (hard)
+	Data   any     // contents depend on CType
+	//Disabled bool TODO?
 }
 
 func (c *Constraint) IsHard() bool {

@@ -25,8 +25,8 @@ func FetRead(
 		logger.Error("%s", err)
 		return nil
 	}
-	rundata := &TtSourceFet{Doc: doc, WeightTable: MakeFetWeights()}
-	//fmt.Printf("rundata.WeightTable = %+v\n\n", rundata.WeightTable)
+	sourcefet := &TtSourceFet{Doc: doc, WeightTable: MakeFetWeights()}
+	//fmt.Printf("sourcefet.WeightTable = %+v\n\n", sourcefet.WeightTable)
 	fetroot := doc.Root()
 
 	/*
@@ -40,16 +40,11 @@ func FetRead(
 	// Get active activities, count inactive ones
 	{
 		activities := []*etree.Element{}
-		aidlist := []TtSourceItem{}
 		ael := fetroot.SelectElement("Activities_List")
 		inactive := 0
-		i := 0
 		for _, a := range ael.ChildElements() {
 			if a.SelectElement("Active").Text() == "true" {
 				activities = append(activities, a)
-				id := a.SelectElement("Id").Text()
-				aidlist = append(aidlist, TtSourceItem{Index: i, Tag: id})
-				i++
 			} else {
 				inactive++
 			}
@@ -57,17 +52,8 @@ func FetRead(
 		if inactive != 0 {
 			logger.Result("INACTIVE_ACTIVITIES", strconv.Itoa(inactive))
 		}
-		rundata.ActivityElements = activities
-		rundata.ActivityList = aidlist
+		sourcefet.ActivityElements = activities
 	}
-
-	// Get resource lists, etc.
-	rundata.DayList = get_days(fetroot)
-	rundata.HourList = get_hours(fetroot)
-	rundata.RoomList = get_rooms(fetroot)
-	rundata.TeacherList = get_teachers(fetroot)
-	rundata.SubjectList = get_subjects(fetroot)
-	rundata.ClassList = get_classes(fetroot)
 
 	// Collect the constraints, dividing into soft and hard groups.
 	// Inactive constraints will be removed.
@@ -102,16 +88,16 @@ func FetRead(
 				// Basic, non-negotiable constraint
 				continue
 			}
-			i := len(rundata.ConstraintElements)
-			rundata.ConstraintElements = append(rundata.ConstraintElements, e)
+			i := len(sourcefet.ConstraintElements)
+			sourcefet.ConstraintElements = append(sourcefet.ConstraintElements, e)
 			if timespace == 0 {
-				rundata.TimeConstraints = append(rundata.TimeConstraints, i)
+				sourcefet.TimeConstraints = append(sourcefet.TimeConstraints, i)
 			} else {
-				rundata.SpaceConstraints = append(rundata.SpaceConstraints, i)
+				sourcefet.SpaceConstraints = append(sourcefet.SpaceConstraints, i)
 			}
 
 			w := e.SelectElement("Weight_Percentage").Text()
-			wdb := rundata.DbWeight(w)
+			wdb := sourcefet.DbWeight(w)
 			//fmt.Printf(" ++ %02d: %s (%s -> %02d)\n", i, ctype, w, wdb)
 			if w == "100" {
 				// Hard constraint
@@ -122,7 +108,7 @@ func FetRead(
 				wctype := fmt.Sprintf("%02d:%s", wdb, ctype)
 				soft_constraint_map[wctype] = append(soft_constraint_map[wctype],
 					ConstraintIndex(i))
-				rundata.SoftWeights = append(rundata.SoftWeights,
+				sourcefet.SoftWeights = append(sourcefet.SoftWeights,
 					SoftWeight{i, w})
 			}
 			constraint_types = append(constraint_types, ctype)
@@ -150,7 +136,7 @@ func FetRead(
 			// added in the "Comments"  field.
 			cid := fmt.Sprintf("[%d%s]", constraint_counter, wtag)
 			comments.SetText(cid + comment)
-			rundata.Constraints = append(rundata.Constraints, Constraint{
+			sourcefet.Constraints = append(sourcefet.Constraints, Constraint{
 				TtSourceItem: TtSourceItem{Index: constraint_counter, Tag: cid},
 				Ctype:        ctype,
 				Weight:       wdb,
@@ -166,71 +152,13 @@ func FetRead(
 		}
 	}
 
-	rundata.NConstraints = ConstraintIndex(constraint_counter)
-	rundata.ConstraintTypes = autotimetable.SortConstraintTypes(
+	sourcefet.NConstraints = ConstraintIndex(constraint_counter)
+	sourcefet.ConstraintTypes = autotimetable.SortConstraintTypes(
 		constraint_types, ConstraintPriority)
-	rundata.HardConstraintMap = hard_constraint_map
-	rundata.SoftConstraintMap = soft_constraint_map
+	sourcefet.HardConstraintMap = hard_constraint_map
+	sourcefet.SoftConstraintMap = soft_constraint_map
 
-	return rundata
-}
-
-func get_days(fetroot *etree.Element) []TtSourceItem {
-	items := []TtSourceItem{}
-	for i, e := range fetroot.SelectElement("Days_List").SelectElements("Day") {
-		id := e.SelectElement("Name").Text()
-		items = append(items, TtSourceItem{Index: i, Tag: id})
-	}
-	return items
-}
-
-func get_hours(fetroot *etree.Element) []TtSourceItem {
-	hours := []TtSourceItem{}
-	for i, e := range fetroot.SelectElement("Hours_List").SelectElements("Hour") {
-		id := e.SelectElement("Name").Text()
-		hours = append(hours, TtSourceItem{Index: i, Tag: id})
-	}
-	return hours
-}
-
-func get_rooms(fetroot *etree.Element) []TtSourceItem {
-	rooms := []TtSourceItem{}
-	i := 0
-	for _, e := range fetroot.SelectElement("Rooms_List").SelectElements("Room") {
-		if e.SelectElement("Virtual").Text() == "false" {
-			id := e.SelectElement("Name").Text()
-			rooms = append(rooms, TtSourceItem{Index: i, Tag: id})
-			i++
-		}
-	}
-	return rooms
-}
-
-func get_teachers(fetroot *etree.Element) []TtSourceItem {
-	items := []TtSourceItem{}
-	for i, e := range fetroot.SelectElement("Teachers_List").SelectElements("Teacher") {
-		id := e.SelectElement("Name").Text()
-		items = append(items, TtSourceItem{Index: i, Tag: id})
-	}
-	return items
-}
-
-func get_classes(fetroot *etree.Element) []TtSourceItem {
-	items := []TtSourceItem{}
-	for i, e := range fetroot.SelectElement("Students_List").SelectElements("Year") {
-		id := e.SelectElement("Name").Text()
-		items = append(items, TtSourceItem{Index: i, Tag: id})
-	}
-	return items
-}
-
-func get_subjects(fetroot *etree.Element) []TtSourceItem {
-	items := []TtSourceItem{}
-	for i, e := range fetroot.SelectElement("Subjects_List").SelectElements("Subject") {
-		id := e.SelectElement("Name").Text()
-		items = append(items, TtSourceItem{Index: i, Tag: id})
-	}
-	return items
+	return sourcefet
 }
 
 // Generate a JSON version of the given element. Only a simple subset of

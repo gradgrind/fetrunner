@@ -179,8 +179,8 @@ func (rq *RunQueue) update_queue() int {
 			instance.RunState = -2 // mark as split
 			attdata.abort_instance(instance)
 			// Remove it from constraint list.
-			attdata.constraint_list = slices.DeleteFunc(
-				attdata.constraint_list, func(i *TtInstance) bool {
+			attdata.constraint_instance_list = slices.DeleteFunc(
+				attdata.constraint_instance_list, func(i *TtInstance) bool {
 					return i == instance
 				})
 
@@ -208,8 +208,8 @@ func (rq *RunQueue) update_queue() int {
 					instance.Weight,
 					instance.Constraints[n:nx],
 					instance.Timeout)
-				attdata.constraint_list = append(
-					attdata.constraint_list, inew)
+				attdata.constraint_instance_list = append(
+					attdata.constraint_instance_list, inew)
 				rq.add(inew)
 				tags = append(tags,
 					fmt.Sprintf("%d:%s", inew.Index, inew.ConstraintType))

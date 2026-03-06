@@ -17,7 +17,7 @@ type Result struct {
 	Classes                    []IdPair
 	Rooms                      []IdPair
 	Activities                 []IdPair
-	Constraints                []Constraint
+	Constraints                []AttConstraint
 	ConstraintErrors           map[ConstraintIndex]string
 	Placements                 []TtActivityPlacement
 	UnfulfilledHardConstraints map[ConstraintType][]ConstraintIndex

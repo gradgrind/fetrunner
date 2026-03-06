@@ -2,6 +2,7 @@ package fet
 
 import (
 	"fetrunner/internal/autotimetable"
+	"fetrunner/internal/base"
 	"math"
 	"slices"
 	"strconv"
@@ -9,8 +10,13 @@ import (
 	"github.com/beevik/etree"
 )
 
-type TtSourceItem = autotimetable.TtSourceItem
-type Constraint = autotimetable.Constraint
+// In FET the IDs and "tags" (short names) are generally the same, and only
+// unique within the repective category (teacher, room, etc.).
+
+// type TtSourceItem = autotimetable.TtSourceItem
+type element = base.ElementBase
+
+type Constraint = autotimetable.AttConstraint
 type ConstraintIndex = autotimetable.ConstraintIndex
 type AutoTtData = autotimetable.AutoTtData
 type ConstraintType = autotimetable.ConstraintType
@@ -33,15 +39,8 @@ type TtSourceFet struct {
 	TimeConstraints  []int // indexes into `ConstraintElements`
 	SpaceConstraints []int // indexes into `ConstraintElements`
 
-	Constraints  []Constraint
-	ActivityList []TtSourceItem
-
-	DayList     []TtSourceItem
-	HourList    []TtSourceItem
-	TeacherList []TtSourceItem
-	RoomList    []TtSourceItem
-	SubjectList []TtSourceItem
-	ClassList   []TtSourceItem
+	Constraints []Constraint
+	//--ActivityList []TtSourceItem
 
 	WeightTable []float64
 
@@ -51,9 +50,9 @@ type TtSourceFet struct {
 	SoftConstraintMap map[ConstraintType][]ConstraintIndex
 }
 
-func (rundata *TtSourceFet) Prepare(real_soft bool) {
-	for _, cw := range rundata.SoftWeights {
-		e := rundata.ConstraintElements[cw.Index]
+func (sourcefet *TtSourceFet) Prepare(real_soft bool) {
+	for _, cw := range sourcefet.SoftWeights {
+		e := sourcefet.ConstraintElements[cw.Index]
 		if real_soft {
 			e.SelectElement("Weight_Percentage").SetText(cw.Weight)
 		} else {
@@ -62,23 +61,110 @@ func (rundata *TtSourceFet) Prepare(real_soft bool) {
 	}
 }
 
-func (rundata *TtSourceFet) GetDays() []TtSourceItem       { return rundata.DayList }
-func (rundata *TtSourceFet) GetHours() []TtSourceItem      { return rundata.HourList }
-func (rundata *TtSourceFet) GetTeachers() []TtSourceItem   { return rundata.TeacherList }
-func (rundata *TtSourceFet) GetSubjects() []TtSourceItem   { return rundata.SubjectList }
-func (rundata *TtSourceFet) GetRooms() []TtSourceItem      { return rundata.RoomList }
-func (rundata *TtSourceFet) GetClasses() []TtSourceItem    { return rundata.ClassList }
-func (rundata *TtSourceFet) GetActivities() []TtSourceItem { return rundata.ActivityList }
-func (rundata *TtSourceFet) GetConstraints() []Constraint  { return rundata.Constraints }
-
-func (rundata *TtSourceFet) GetNActivities() int                   { return len(rundata.ActivityList) }
-func (rundata *TtSourceFet) GetNConstraints() ConstraintIndex      { return rundata.NConstraints }
-func (rundata *TtSourceFet) GetConstraint_Types() []ConstraintType { return rundata.ConstraintTypes }
-func (rundata *TtSourceFet) GetHardConstraintMap() map[ConstraintType][]ConstraintIndex {
-	return rundata.HardConstraintMap
+func (sourcefet *TtSourceFet) GetDays() []element {
+	items := []element{}
+	for _, e := range sourcefet.Doc.Root().SelectElement("Days_List").SelectElements("Day") {
+		id := e.SelectElement("Name").Text()
+		items = append(items, element{
+			// In FET the ID is also the tag
+			Id: base.NodeRef(id), Tag: id})
+	}
+	return items
 }
-func (rundata *TtSourceFet) GetSoftConstraintMap() map[ConstraintType][]ConstraintIndex {
-	return rundata.SoftConstraintMap
+
+func (sourcefet *TtSourceFet) GetHours() []element {
+	items := []element{}
+	for _, e := range sourcefet.Doc.Root().SelectElement("Hours_List").SelectElements("Hour") {
+		id := e.SelectElement("Name").Text()
+		items = append(items, element{
+			// In FET the ID is also the tag
+			Id: base.NodeRef(id), Tag: id})
+	}
+	return items
+}
+
+func (sourcefet *TtSourceFet) GetTeachers() []element {
+	items := []element{}
+	for _, e := range sourcefet.Doc.Root().SelectElement("Teachers_List").SelectElements("Teacher") {
+		id := e.SelectElement("Name").Text()
+		items = append(items, element{
+			// In FET the ID is also the tag
+			Id: base.NodeRef(id), Tag: id})
+	}
+	return items
+}
+
+func (sourcefet *TtSourceFet) GetSubjects() []element {
+	items := []element{}
+	for _, e := range sourcefet.Doc.Root().SelectElement("Subjects_List").SelectElements("Subject") {
+		id := e.SelectElement("Name").Text()
+		items = append(items, element{
+			// In FET the ID is also the tag
+			Id: base.NodeRef(id), Tag: id})
+	}
+	return items
+}
+
+func (sourcefet *TtSourceFet) GetRooms() []element {
+	items := []element{}
+	for _, e := range sourcefet.Doc.Root().SelectElement("Rooms_List").SelectElements("Room") {
+		// Only include real rooms, skip virtual ones.
+		if e.SelectElement("Virtual").Text() == "false" {
+			id := e.SelectElement("Name").Text()
+			items = append(items, element{
+				// In FET the ID is also the tag
+				Id: base.NodeRef(id), Tag: id})
+		}
+	}
+	return items
+}
+
+func (sourcefet *TtSourceFet) GetClasses() []element {
+	items := []element{}
+	for _, e := range sourcefet.Doc.Root().SelectElement("Students_List").SelectElements("Year") {
+		id := e.SelectElement("Name").Text()
+		items = append(items, element{
+			// In FET the ID is also the tag
+			Id: base.NodeRef(id), Tag: id})
+	}
+	return items
+}
+
+func (sourcefet *TtSourceFet) GetActivities() []element {
+	aidlist := make([]element, len(sourcefet.ActivityElements))
+	for i, a := range sourcefet.ActivityElements {
+		aidlist[i] = element{
+			//No Id
+			Tag: a.SelectElement("Id").Text()}
+	}
+	return aidlist
+}
+
+func (sourcefet *TtSourceFet) GetConstraints() []Constraint { return sourcefet.Constraints }
+
+/*TODO--?
+func (sourcefet *TtSourceFet) ConstraintRef(index int) string {
+    // A `FET` source file doesn't have any particular labelling of constraints.
+    // A representation based on the constraint itself might be constructed, but as –
+    // currently – only the `FET` back-end is under consideration for a `FET` source,
+    // and this has extra comments as labels, it is probably unnecessary.
+    return ""
+}
+*/
+
+func (sourcefet *TtSourceFet) GetNActivities() int {
+	return len(sourcefet.ActivityElements)
+}
+
+func (sourcefet *TtSourceFet) GetNConstraints() ConstraintIndex { return sourcefet.NConstraints }
+func (sourcefet *TtSourceFet) GetConstraint_Types() []ConstraintType {
+	return sourcefet.ConstraintTypes
+}
+func (sourcefet *TtSourceFet) GetHardConstraintMap() map[ConstraintType][]ConstraintIndex {
+	return sourcefet.HardConstraintMap
+}
+func (sourcefet *TtSourceFet) GetSoftConstraintMap() map[ConstraintType][]ConstraintIndex {
+	return sourcefet.SoftConstraintMap
 }
 
 // Rebuild the FET file given an array detailing which constraints are enabled.
@@ -88,8 +174,8 @@ func (rundata *TtSourceFet) GetSoftConstraintMap() map[ConstraintType][]Constrai
 // interface in this form. Also this should be a method on the back-end data.
 // So the back-end data needs ConstraintElements and Doc, presumably also the
 // byte buffer, or the method should handle the file writing.
-func (rundata *TtSourceFet) PrepareRun(enabled []bool, xmlp any) {
-	for i, c := range rundata.ConstraintElements {
+func (sourcefet *TtSourceFet) PrepareRun(enabled []bool, xmlp any) {
+	for i, c := range sourcefet.ConstraintElements {
 		active := c.SelectElement("Active")
 		if enabled[i] {
 			active.SetText("true")
@@ -98,21 +184,21 @@ func (rundata *TtSourceFet) PrepareRun(enabled []bool, xmlp any) {
 		}
 	}
 	/* TODO: What was the point of all this? !!!
-	root := rundata.Doc.Root()
-	et := root.SelectElement("Time_Constraints_List")
-	active := 0
-	n := 0
-	for _, e := range et.ChildElements() {
-		// Count and skip if inactive
-		if e.SelectElement("Active").Text() == "true" {
-			active++ // count active constraints
-		}
-		n++
-	}
+	   root := sourcefet.Doc.Root()
+	   et := root.SelectElement("Time_Constraints_List")
+	   active := 0
+	   n := 0
+	   for _, e := range et.ChildElements() {
+	       // Count and skip if inactive
+	       if e.SelectElement("Active").Text() == "true" {
+	           active++ // count active constraints
+	       }
+	       n++
+	   }
 	*/
-	rundata.Doc.Indent(2)
+	sourcefet.Doc.Indent(2)
 	var err error
-	*(xmlp.(*[]byte)), err = rundata.Doc.WriteToBytes()
+	*(xmlp.(*[]byte)), err = sourcefet.Doc.WriteToBytes()
 	if err != nil {
 		panic(err)
 	}
@@ -130,21 +216,21 @@ func MakeFetWeights() []float64 {
 	return wtable
 }
 
-func (rundata *TtSourceFet) FetWeight(w int) string {
+func (sourcefet *TtSourceFet) FetWeight(w int) string {
 	if w <= 0 {
 		return "0"
 	}
 	if w >= 100 {
 		return "100"
 	}
-	return strconv.FormatFloat(rundata.WeightTable[w], 'f', 3, 64)
+	return strconv.FormatFloat(sourcefet.WeightTable[w], 'f', 3, 64)
 }
 
-func (rundata *TtSourceFet) DbWeight(w string) int {
+func (sourcefet *TtSourceFet) DbWeight(w string) int {
 	wf, err := strconv.ParseFloat(w, 64)
 	if err != nil {
 		panic(err)
 	}
-	wdb, _ := slices.BinarySearch(rundata.WeightTable, wf)
+	wdb, _ := slices.BinarySearch(sourcefet.WeightTable, wf)
 	return wdb
 }
