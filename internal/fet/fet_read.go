@@ -25,7 +25,8 @@ func FetRead(
 		logger.Error("%s", err)
 		return nil
 	}
-	sourcefet := &TtSourceFet{doc: doc, weightTable: MakeFetWeights()}
+	weightTable := MakeFetWeights()
+	sourcefet := &TtSourceFet{doc: doc}
 	//fmt.Printf("sourcefet.WeightTable = %+v\n\n", sourcefet.WeightTable)
 	fetroot := doc.Root()
 
@@ -57,8 +58,11 @@ func FetRead(
 
 	// Collect the constraints, dividing into soft and hard groups.
 	// Inactive constraints will be removed.
-	r_constraint_number := regexp.MustCompile(`^\[[0-9]+\](.*)$`)
-	constraint_counter := 0
+
+	// Regexp to match constraint comment which has a number tag already:
+	// Soft constraints also have a weight.
+	r_constraint_number := regexp.MustCompile(`^\[[0-9]+.*\](.*)$`)
+
 	hard_constraint_map := map[constraintType][]constraintIndex{}
 	soft_constraint_map := map[constraintType][]constraintIndex{}
 	constraint_types := []constraintType{}
@@ -97,7 +101,7 @@ func FetRead(
 			}
 
 			w := e.SelectElement("Weight_Percentage").Text()
-			wdb := sourcefet.DbWeight(w)
+			wdb := FetWeight2Db(w, weightTable)
 			//fmt.Printf(" ++ %02d: %s (%s -> %02d)\n", i, ctype, w, wdb)
 			if w == "100" {
 				// Hard constraint
@@ -134,14 +138,13 @@ func FetRead(
 			}
 			// In FET, the constraints have no identifiers/tags, so one is
 			// added in the "Comments"  field.
-			cid := fmt.Sprintf("[%d%s]", constraint_counter, wtag)
+			cid := fmt.Sprintf("[%d%s]", i, wtag)
 			comments.SetText(cid + comment)
 			sourcefet.constraints = append(sourcefet.constraints, constraint{
-				TtSourceItem: TtSourceItem{Index: constraint_counter, Tag: cid},
-				Ctype:        ctype,
-				Weight:       wdb,
+				TtSourceTag: cid,
+				Ctype:       ctype,
+				Weight:      wdb,
 			})
-			constraint_counter++
 		}
 		if inactive != 0 {
 			if timespace == 0 {
@@ -152,7 +155,7 @@ func FetRead(
 		}
 	}
 
-	sourcefet.nConstraints = constraintIndex(constraint_counter)
+	sourcefet.nConstraints = constraintIndex(len(sourcefet.constraintElements))
 	sourcefet.constraintTypes = autotimetable.SortConstraintTypes(
 		constraint_types, ConstraintPriority)
 	sourcefet.hardConstraintMap = hard_constraint_map

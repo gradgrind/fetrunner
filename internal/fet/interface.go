@@ -13,7 +13,6 @@ import (
 // In FET the IDs and "tags" (short names) are generally the same, and only
 // unique within the repective category (teacher, room, etc.).
 
-// type TtSourceItem = autotimetable.TtSourceItem
 type element = base.ElementBase
 
 type constraint = autotimetable.AttConstraint
@@ -39,9 +38,6 @@ type TtSourceFet struct {
 	spaceConstraints []int // indexes into `ConstraintElements`
 
 	constraints []constraint
-	//--ActivityList []TtSourceItem
-
-	weightTable []float64
 
 	nConstraints      constraintIndex
 	constraintTypes   []constraintType
@@ -215,21 +211,22 @@ func MakeFetWeights() []float64 {
 	return wtable
 }
 
-func (sourcefet *TtSourceFet) FetWeight(w int) string {
+// TODO: Where is this needed?
+func (sourcefet *TtSourceFet) DbWeight2Fet(w int, weightTable []float64) string {
 	if w <= 0 {
 		return "0"
 	}
 	if w >= 100 {
 		return "100"
 	}
-	return strconv.FormatFloat(sourcefet.weightTable[w], 'f', 3, 64)
+	return strconv.FormatFloat(weightTable[w], 'f', 3, 64)
 }
 
-func (sourcefet *TtSourceFet) DbWeight(w string) int {
+func FetWeight2Db(w string, weightTable []float64) int {
 	wf, err := strconv.ParseFloat(w, 64)
 	if err != nil {
 		panic(err)
 	}
-	wdb, _ := slices.BinarySearch(sourcefet.weightTable, wf)
+	wdb, _ := slices.BinarySearch(weightTable, wf)
 	return wdb
 }
