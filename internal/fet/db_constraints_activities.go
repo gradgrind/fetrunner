@@ -20,10 +20,10 @@ func (fetbuild *fet_build) add_activity_constraints() {
 
 func (fetbuild *fet_build) days_between() {
 	tt_data := fetbuild.ttdata
-	rundata := fetbuild.rundata
+	//rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 	for _, c0 := range tt_data.MinDaysBetweenActivities {
-		w := rundata.FetWeight(c0.Weight)
+		w := fetbuild.DbWeight2Fet(c0.Weight)
 		for _, alist := range c0.ActivityLists {
 			cifsd := "false"
 			if c0.ConsecutiveIfSameDay {
@@ -48,10 +48,10 @@ func (fetbuild *fet_build) days_between() {
 func (fetbuild *fet_build) ends_day() {
 	tt_data := fetbuild.ttdata
 	db := fetbuild.basedata.Db
-	rundata := fetbuild.rundata
+	//rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 	for _, c0 := range db.Constraints[base.C_ActivitiesEndDay] {
-		w := rundata.FetWeight(c0.Weight)
+		w := fetbuild.DbWeight2Fet(c0.Weight)
 		course := c0.Data.(NodeRef)
 		cinfo := tt_data.Ref2CourseInfo[course]
 		for _, ai := range cinfo.Activities {
@@ -68,10 +68,10 @@ func (fetbuild *fet_build) ends_day() {
 
 func (fetbuild *fet_build) parallel_activities() {
 	tt_data := fetbuild.ttdata
-	rundata := fetbuild.rundata
+	//rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 	for _, c0 := range tt_data.ParallelActivities {
-		w := rundata.FetWeight(c0.Weight)
+		w := fetbuild.DbWeight2Fet(c0.Weight)
 		for _, alist := range c0.ActivityLists {
 			c := tclist.CreateElement("ConstraintActivitiesSameStartingTime")
 			c.CreateElement("Weight_Percentage").SetText(w)
@@ -126,10 +126,10 @@ func (fetbuild *fet_build) make_before_after_hour(
 ) {
 	tt_data := fetbuild.ttdata
 	logger := fetbuild.basedata.Logger
-	rundata := fetbuild.rundata
+	//rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 	data := c0.Data.(base.BeforeAfterHour)
-	w := rundata.FetWeight(c0.Weight)
+	w := fetbuild.DbWeight2Fet(c0.Weight)
 	for _, course := range data.Courses {
 		cinfo, ok := tt_data.Ref2CourseInfo[course]
 		if !ok {
@@ -158,7 +158,7 @@ func (fetbuild *fet_build) make_before_after_hour(
 func (fetbuild *fet_build) double_no_break() {
 	tt_data := fetbuild.ttdata
 	db := fetbuild.basedata.Db
-	rundata := fetbuild.rundata
+	//rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 
 	var doubleBlocked []bool
@@ -169,7 +169,7 @@ func (fetbuild *fet_build) double_no_break() {
 					" specified more than once")
 			continue
 		}
-		w := rundata.FetWeight(c0.Weight)
+		w := fetbuild.DbWeight2Fet(c0.Weight)
 		timeslots := []preferred_time{}
 		// Note that a double lesson can't start in the last slot of
 		// the day.

@@ -30,14 +30,14 @@ func (fetbuild *fet_build) add_teacher_constraints(
 ) {
 	tt_data := fetbuild.ttdata
 	db := fetbuild.basedata.Db
-	rundata := fetbuild.rundata
+	//rundata := fetbuild.rundata
 	ndays := tt_data.NDays
 	nhours := tt_data.NHours
 	tclist := fetbuild.time_constraints_list
 
 	for _, c0 := range db.Constraints[base.C_TeacherMaxDays] {
 		data := c0.Data.(base.ResourceN)
-		w := rundata.FetWeight(c0.Weight)
+		w := fetbuild.DbWeight2Fet(c0.Weight)
 		n := data.N
 		if n >= 0 && n < ndays {
 			tref := data.Resource
@@ -54,7 +54,7 @@ func (fetbuild *fet_build) add_teacher_constraints(
 
 	for _, c0 := range db.Constraints[base.C_TeacherMinActivitiesPerDay] {
 		data := c0.Data.(base.ResourceN)
-		w := rundata.FetWeight(c0.Weight)
+		w := fetbuild.DbWeight2Fet(c0.Weight)
 		n := data.N
 		if n >= 2 && n <= nhours {
 			tref := data.Resource
@@ -72,7 +72,7 @@ func (fetbuild *fet_build) add_teacher_constraints(
 
 	for _, c0 := range db.Constraints[base.C_TeacherMaxActivitiesPerDay] {
 		data := c0.Data.(base.ResourceN)
-		w := rundata.FetWeight(c0.Weight)
+		w := fetbuild.DbWeight2Fet(c0.Weight)
 		n := data.N
 		if n >= 2 && n <= nhours {
 			tref := data.Resource
@@ -95,7 +95,7 @@ func (fetbuild *fet_build) add_teacher_constraints(
 	if h0 > 0 {
 		for _, c0 := range db.Constraints[base.C_TeacherMaxAfternoons] {
 			data := c0.Data.(base.ResourceN)
-			w := rundata.FetWeight(c0.Weight)
+			w := fetbuild.DbWeight2Fet(c0.Weight)
 			n := data.N
 			if n < ndays {
 				tref := data.Resource
@@ -120,7 +120,7 @@ func (fetbuild *fet_build) add_teacher_constraints(
 	lbmap := map[NodeRef]int{}
 	if mbhours := db.Info.MiddayBreak; len(mbhours) != 0 {
 		for _, c0 := range db.Constraints[base.C_TeacherLunchBreak] {
-			w := rundata.FetWeight(c0.Weight)
+			w := fetbuild.DbWeight2Fet(c0.Weight)
 			tref := c0.Data.(NodeRef)
 			// Generate the constraint unless all days have a blocked
 			// lesson at lunchtime.
@@ -158,7 +158,7 @@ func (fetbuild *fet_build) add_teacher_constraints(
 
 	for _, c0 := range db.Constraints[base.C_TeacherMaxGapsPerDay] {
 		data := c0.Data.(base.ResourceN)
-		w := rundata.FetWeight(c0.Weight)
+		w := fetbuild.DbWeight2Fet(c0.Weight)
 		n := data.N
 		tref := data.Resource
 		// Ensure that a gap is allowed if there are lunch breaks.
@@ -186,7 +186,7 @@ func (fetbuild *fet_build) add_teacher_constraints(
 
 	for _, c0 := range db.Constraints[base.C_TeacherMaxGapsPerWeek] {
 		data := c0.Data.(base.ResourceN)
-		w := rundata.FetWeight(c0.Weight)
+		w := fetbuild.DbWeight2Fet(c0.Weight)
 		n := data.N
 		tref := data.Resource
 		if n >= 0 {

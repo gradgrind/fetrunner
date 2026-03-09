@@ -5,6 +5,7 @@ import (
 	"fetrunner/internal/base"
 	"fetrunner/internal/timetable"
 	"fmt"
+	"strconv"
 
 	"github.com/beevik/etree"
 )
@@ -148,20 +149,20 @@ func param_constraint(
 	ctype string, id NodeRef, index int, weight int,
 ) constraint {
 	return constraint{
-		TtSourceItem: TtSourceItem{Source: string(id)},
-		Ctype:        ctype,
-		Parameters:   []int{index},
-		Weight:       weight}
+		TtSourceTag: string(id),
+		Ctype:       ctype,
+		Parameters:  []int{index},
+		Weight:      weight}
 }
 
 func params_constraint(
 	ctype string, id NodeRef, indexlist []int, weight int,
 ) constraint {
 	return constraint{
-		TtSourceItem: TtSourceItem{Source: string(id)},
-		Ctype:        ctype,
-		Parameters:   indexlist,
-		Weight:       weight}
+		TtSourceTag: string(id),
+		Ctype:       ctype,
+		Parameters:  indexlist,
+		Weight:      weight}
 }
 
 func (fetbuild *fet_build) add_time_constraint(e *etree.Element, c constraint) {
@@ -204,4 +205,14 @@ func (fetbuild *fet_build) add_space_constraint(e *etree.Element, c constraint) 
 	e.CreateElement("Comments").SetText(c.Backend)
 
 	fetbuild.Constraints = append(fetbuild.Constraints, c)
+}
+
+func (fetbuild *fet_build) DbWeight2Fet(w int) string {
+	if w <= 0 {
+		return "0"
+	}
+	if w >= 100 {
+		return "100"
+	}
+	return strconv.FormatFloat(fetbuild.WeightTable[w], 'f', 3, 64)
 }

@@ -27,7 +27,8 @@ type softWeight struct {
 
 type TtSourceFet struct {
 	doc                *etree.Document
-	constraintElements []*etree.Element
+	constraintElements []*etree.Element // ordered constraint elements
+	constraints        []constraint     // ordered constraint info for "autotimetable"
 	softWeights        []softWeight
 
 	activityElements []*etree.Element
@@ -36,8 +37,6 @@ type TtSourceFet struct {
 	// some way to have that information here.
 	timeConstraints  []int // indexes into `ConstraintElements`
 	spaceConstraints []int // indexes into `ConstraintElements`
-
-	constraints []constraint
 
 	nConstraints      constraintIndex
 	constraintTypes   []constraintType
@@ -209,17 +208,6 @@ func MakeFetWeights() []float64 {
 		wtable[w] = 100.0 - 100.0/denom
 	}
 	return wtable
-}
-
-// TODO: Where is this needed?
-func (sourcefet *TtSourceFet) DbWeight2Fet(w int, weightTable []float64) string {
-	if w <= 0 {
-		return "0"
-	}
-	if w >= 100 {
-		return "100"
-	}
-	return strconv.FormatFloat(weightTable[w], 'f', 3, 64)
 }
 
 func FetWeight2Db(w string, weightTable []float64) int {

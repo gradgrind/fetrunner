@@ -43,10 +43,6 @@ type TtData struct {
 	ConstraintTypes []autotimetable.ConstraintType
 
 	// Set up by `CollectCourses`, which calls `makeActivities`
-
-	//TODO: Still valid? I think it is confusing and error prone! All other
-	// indexes are 0-based.
-	// Note that activity 0 is invalid, the first activity has index 1.
 	TtActivities      []*TtActivity
 	Ref2ActivityIndex map[NodeRef]ActivityIndex
 	CourseInfoList    []*CourseInfo
@@ -146,20 +142,21 @@ func (tt_data *TtData) RoomResources(db *base.DbTopLevel) {
 	}
 }
 
-type TtSourceItem = autotimetable.TtSourceItem
+type element = base.ElementBase
 
-func (tt_data *TtData) GetActivities() []TtSourceItem {
-	alist := make([]TtSourceItem, len(tt_data.TtActivities))
-	for i := range tt_data.TtActivities {
-		alist[i] = TtSourceItem{Index: i}
+func (tt_data *TtData) GetActivities() []element {
+	activities := tt_data.db.Activities
+	alist := make([]element, len(activities))
+	for i, a := range activities {
+		alist[i] = element{Id: a.Id} // no Tag field
 	}
 	return alist
 }
 
-func (tt_data *TtData) GetClasses() []TtSourceItem {
-	clist := make([]TtSourceItem, len(tt_data.ClassDivisions))
+func (tt_data *TtData) GetClasses() []element {
+	clist := make([]element, len(tt_data.ClassDivisions))
 	for i, c := range tt_data.ClassDivisions {
-		clist[i] = TtSourceItem{Index: i, Tag: c.Class.Tag}
+		clist[i] = element{Id: c.Class.Id, Tag: c.Class.Tag}
 	}
 	return clist
 }
@@ -168,7 +165,8 @@ func (tt_data *TtData) GetConstraint_Types() []autotimetable.ConstraintType {
 	return tt_data.ConstraintTypes
 }
 
-// TODO: Is this really an op on the source?
+// TODO: This seems to be used only for the result presentation.
+// Is it really necessary? If so, what should it contain?
 func (tt_data *TtData) GetConstraints() []autotimetable.AttConstraint {
 	return tt_data.Constraints
 }

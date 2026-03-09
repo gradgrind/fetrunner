@@ -8,7 +8,7 @@ import (
 func (fetbuild *fet_build) blocked_slots() map[NodeRef][]base.TimeSlot {
 	tt_data := fetbuild.ttdata
 	db := fetbuild.basedata.Db
-	rundata := fetbuild.rundata
+	//TODO-- rundata := fetbuild.rundata
 	sclist := fetbuild.space_constraints_list
 	tclist := fetbuild.time_constraints_list
 	namap := map[NodeRef][]base.TimeSlot{} // needed for lunch-break constraints
@@ -16,7 +16,7 @@ func (fetbuild *fet_build) blocked_slots() map[NodeRef][]base.TimeSlot {
 	// Rooms
 	for _, c0 := range db.Constraints[base.C_RoomNotAvailable] {
 		// The weight is presumably 100% ...
-		w := rundata.FetWeight(c0.Weight)
+		w := fetbuild.DbWeight2Fet(c0.Weight)
 		data := c0.Data.(base.ResourceNotAvailable)
 		rref := data.Resource
 		// `NotAvailable` is an ordered list of time-slots in which the
@@ -43,7 +43,7 @@ func (fetbuild *fet_build) blocked_slots() map[NodeRef][]base.TimeSlot {
 	// Teachers
 	for _, c0 := range db.Constraints[base.C_TeacherNotAvailable] {
 		// The weight is presumably 100% ...
-		w := rundata.FetWeight(c0.Weight)
+		w := fetbuild.DbWeight2Fet(c0.Weight)
 		data := c0.Data.(base.ResourceNotAvailable)
 		tref := data.Resource
 		namap[tref] = data.NotAvailable
@@ -70,7 +70,7 @@ func (fetbuild *fet_build) blocked_slots() map[NodeRef][]base.TimeSlot {
 	// Classes
 	for _, c0 := range db.Constraints[base.C_ClassNotAvailable] {
 		// The weight is presumably 100% ...
-		w := rundata.FetWeight(c0.Weight)
+		w := fetbuild.DbWeight2Fet(c0.Weight)
 		data := c0.Data.(base.ResourceNotAvailable)
 		cref := data.Resource
 		namap[cref] = data.NotAvailable

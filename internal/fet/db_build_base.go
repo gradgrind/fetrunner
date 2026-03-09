@@ -24,15 +24,23 @@ type fet_build struct {
 	HardConstraintMap  map[constraintType][]constraintIndex
 	SoftConstraintMap  map[constraintType][]constraintIndex
 
-	ConstraintSourceRefs []string // or []NodeRef TODO???
-
 	fetroot                *etree.Element
 	room_list              *etree.Element // needed for adding virtual rooms
 	activity_tag_list      *etree.Element // in case these are needed
 	time_constraints_list  *etree.Element
 	space_constraints_list *etree.Element
 
+	//TODO: What is this for?
+	ActivityElementList []*etree.Element
+
 	constraint_counter int // for tagging constraints
+
+	DayList      []string
+	HourList     []string
+	TeacherList  []string
+	SubjectList  []string
+	RoomList     []string
+	ActivityList []string
 
 	// Cache for FET virtual rooms, "hash" -> FET-virtual-room tag
 	fet_virtual_rooms  map[string]string

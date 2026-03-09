@@ -11,12 +11,12 @@ import (
 func (fetbuild *fet_build) add_placement_constraints(without_rooms bool) {
 	tt_data := fetbuild.ttdata
 	db := fetbuild.basedata.Db
-	rundata := fetbuild.rundata
+	//rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 	sclist := fetbuild.space_constraints_list
 
-	// Get the time-placements – not that those available in the `TtActivity`
-	// items are only the hard constraints, so the list from `db0.Constraints`
+	// Get the time-placements – note that those available in the `TtActivity`
+	// items are only the hard constraints, so the list from `db.Constraints`
 	// is used here.
 	type start_time struct {
 		weight0 int
@@ -26,7 +26,7 @@ func (fetbuild *fet_build) add_placement_constraints(without_rooms bool) {
 	}
 	ai2start := map[int]start_time{}
 	for _, c0 := range db.Constraints[base.C_ActivityStartTime] {
-		w := rundata.FetWeight(c0.Weight)
+		w := fetbuild.DbWeight2Fet(c0.Weight)
 		data := c0.Data.(base.ActivityStartTime)
 		ai := tt_data.Ref2ActivityIndex[data.Activity]
 		ai2start[ai] = start_time{
