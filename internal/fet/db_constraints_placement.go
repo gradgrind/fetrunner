@@ -11,7 +11,6 @@ import (
 func (fetbuild *fet_build) add_placement_constraints(without_rooms bool) {
 	tt_data := fetbuild.ttdata
 	db := fetbuild.basedata.Db
-	//rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 	sclist := fetbuild.space_constraints_list
 
@@ -26,11 +25,13 @@ func (fetbuild *fet_build) add_placement_constraints(without_rooms bool) {
 	}
 	ai2start := map[int]start_time{}
 	for _, c0 := range db.Constraints[base.C_ActivityStartTime] {
-		w := fetbuild.DbWeight2Fet(c0.Weight)
 		data := c0.Data.(base.ActivityStartTime)
 		ai := tt_data.Ref2ActivityIndex[data.Activity]
 		ai2start[ai] = start_time{
-			weight0: c0.Weight, weight: w, day: data.Day, hour: data.Hour}
+			weight0: c0.Weight,
+			weight:  fetbuild.DbWeight2Fet(c0.Weight),
+			day:     data.Day,
+			hour:    data.Hour}
 	}
 
 	for _, cinfo := range tt_data.CourseInfoList {

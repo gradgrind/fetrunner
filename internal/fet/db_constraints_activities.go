@@ -90,7 +90,6 @@ func (fetbuild *fet_build) parallel_activities() {
 func (fetbuild *fet_build) before_after_hour() {
 	tt_data := fetbuild.ttdata
 	db := fetbuild.basedata.Db
-	rundata := fetbuild.rundata
 
 	for _, c0 := range db.Constraints[base.C_AfterHour] {
 		data := c0.Data.(base.BeforeAfterHour)
@@ -98,8 +97,8 @@ func (fetbuild *fet_build) before_after_hour() {
 		for d := 0; d < tt_data.NDays; d++ {
 			for h := data.Hour + 1; h < tt_data.NHours; h++ {
 				timeslots = append(timeslots, preferred_time{
-					Preferred_Day:  rundata.DayList[d].Backend,
-					Preferred_Hour: rundata.HourList[h].Backend,
+					Preferred_Day:  fetbuild.DayList[d],
+					Preferred_Hour: fetbuild.HourList[h],
 				})
 			}
 		}
@@ -112,8 +111,8 @@ func (fetbuild *fet_build) before_after_hour() {
 		for d := 0; d < tt_data.NDays; d++ {
 			for h := 0; h < data.Hour; h++ {
 				timeslots = append(timeslots, preferred_time{
-					Preferred_Day:  rundata.DayList[d].Backend,
-					Preferred_Hour: rundata.HourList[h].Backend,
+					Preferred_Day:  fetbuild.DayList[d],
+					Preferred_Hour: fetbuild.HourList[h],
 				})
 			}
 		}
@@ -126,7 +125,6 @@ func (fetbuild *fet_build) make_before_after_hour(
 ) {
 	tt_data := fetbuild.ttdata
 	logger := fetbuild.basedata.Logger
-	//rundata := fetbuild.rundata
 	tclist := fetbuild.time_constraints_list
 	data := c0.Data.(base.BeforeAfterHour)
 	w := fetbuild.DbWeight2Fet(c0.Weight)
@@ -183,8 +181,8 @@ func (fetbuild *fet_build) double_no_break() {
 			for h, bl := range doubleBlocked {
 				if !bl {
 					timeslots = append(timeslots, preferred_time{
-						Preferred_Day:  rundata.DayList[d].Backend,
-						Preferred_Hour: rundata.HourList[h].Backend,
+						Preferred_Day:  fetbuild.DayList[d],
+						Preferred_Hour: fetbuild.HourList[h],
 					})
 				}
 			}

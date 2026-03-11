@@ -8,7 +8,6 @@ import (
 func (fetbuild *fet_build) blocked_slots() map[NodeRef][]base.TimeSlot {
 	tt_data := fetbuild.ttdata
 	db := fetbuild.basedata.Db
-	//TODO-- rundata := fetbuild.rundata
 	sclist := fetbuild.space_constraints_list
 	tclist := fetbuild.time_constraints_list
 	namap := map[NodeRef][]base.TimeSlot{} // needed for lunch-break constraints
@@ -30,8 +29,8 @@ func (fetbuild *fet_build) blocked_slots() map[NodeRef][]base.TimeSlot {
 				SetText(strconv.Itoa(len(data.NotAvailable)))
 			for _, slot := range data.NotAvailable {
 				nat := cna.CreateElement("Not_Available_Time")
-				nat.CreateElement("Day").SetText(rundata.DayList[slot.Day].Backend)
-				nat.CreateElement("Hour").SetText(rundata.HourList[slot.Hour].Backend)
+				nat.CreateElement("Day").SetText(fetbuild.DayList[slot.Day])
+				nat.CreateElement("Hour").SetText(fetbuild.HourList[slot.Hour])
 			}
 			cna.CreateElement("Active").SetText("true")
 
@@ -57,8 +56,8 @@ func (fetbuild *fet_build) blocked_slots() map[NodeRef][]base.TimeSlot {
 				SetText(strconv.Itoa(len(data.NotAvailable)))
 			for _, slot := range data.NotAvailable {
 				nat := cna.CreateElement("Not_Available_Time")
-				nat.CreateElement("Day").SetText(rundata.DayList[slot.Day].Backend)
-				nat.CreateElement("Hour").SetText(rundata.HourList[slot.Hour].Backend)
+				nat.CreateElement("Day").SetText(fetbuild.DayList[slot.Day])
+				nat.CreateElement("Hour").SetText(fetbuild.HourList[slot.Hour])
 			}
 			cna.CreateElement("Active").SetText("true")
 
@@ -84,8 +83,8 @@ func (fetbuild *fet_build) blocked_slots() map[NodeRef][]base.TimeSlot {
 				SetText(strconv.Itoa(len(data.NotAvailable)))
 			for _, slot := range data.NotAvailable {
 				nat := cna.CreateElement("Not_Available_Time")
-				nat.CreateElement("Day").SetText(rundata.DayList[slot.Day].Backend)
-				nat.CreateElement("Hour").SetText(rundata.HourList[slot.Hour].Backend)
+				nat.CreateElement("Day").SetText(fetbuild.DayList[slot.Day])
+				nat.CreateElement("Hour").SetText(fetbuild.HourList[slot.Hour])
 			}
 			cna.CreateElement("Active").SetText("true")
 

@@ -15,8 +15,19 @@ type RoomIndex = autotimetable.RoomIndex
 type ClassIndex = autotimetable.ClassIndex
 type AtomicIndex = autotimetable.AtomicIndex
 
+type constraint = autotimetable.AttConstraint
+type constraintIndex = autotimetable.ConstraintIndex
+type autoTtData = autotimetable.AutoTtData
+type constraintType = autotimetable.ConstraintType
+
 type TtData struct {
 	db *base.DbTopLevel
+
+	constraints       []constraint // ordered constraint info for "autotimetable"
+	nConstraints      constraintIndex
+	constraintTypes   []constraintType
+	hardConstraintMap map[constraintType][]constraintIndex
+	softConstraintMap map[constraintType][]constraintIndex
 
 	//TODO--?
 	NDays        int
@@ -168,7 +179,7 @@ func (tt_data *TtData) GetConstraint_Types() []autotimetable.ConstraintType {
 // TODO: This seems to be used only for the result presentation.
 // Is it really necessary? If so, what should it contain?
 func (tt_data *TtData) GetConstraints() []autotimetable.AttConstraint {
-	return tt_data.Constraints
+	return tt_data.constraints
 }
 
 //TODO: tt_data should have lists of all the indexed things, providing the source ids,
