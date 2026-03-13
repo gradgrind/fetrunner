@@ -87,7 +87,7 @@ func (fetbuild *fet_build) add_class_constraints(
 				c := tclist.CreateElement("ConstraintStudentsSetIntervalMaxDaysPerWeek")
 				c.CreateElement("Weight_Percentage").SetText(w)
 				c.CreateElement("Students").SetText(db.Ref2Tag(cref))
-				c.CreateElement("Interval_Start_Hour").SetText(rundata.HourList[h0].Backend)
+				c.CreateElement("Interval_Start_Hour").SetText(fetbuild.HourList[h0])
 				c.CreateElement("Interval_End_Hour").SetText("")
 				c.CreateElement("Max_Days_Per_Week").SetText(strconv.Itoa(n))
 				c.CreateElement("Active").SetText("true")
@@ -140,9 +140,9 @@ func (fetbuild *fet_build) add_class_constraints(
 				c.CreateElement("Weight_Percentage").SetText(w)
 				c.CreateElement("Students").SetText(db.Ref2Tag(cref))
 				c.CreateElement("Interval_Start_Hour").
-					SetText(rundata.HourList[mbhours[0]].Backend)
+					SetText(fetbuild.HourList[mbhours[0]])
 				c.CreateElement("Interval_End_Hour").
-					SetText(rundata.HourList[mbhours[0]+len(mbhours)].Backend)
+					SetText(fetbuild.HourList[mbhours[0]+len(mbhours)])
 				c.CreateElement("Maximum_Hours_Daily").
 					SetText(strconv.Itoa(len(mbhours) - 1))
 				c.CreateElement("Active").SetText("true")

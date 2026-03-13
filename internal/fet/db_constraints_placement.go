@@ -68,8 +68,8 @@ func (fetbuild *fet_build) add_placement_constraints(without_rooms bool) {
 				c := tclist.CreateElement("ConstraintActivityPreferredStartingTime")
 				c.CreateElement("Weight_Percentage").SetText(start.weight)
 				c.CreateElement("Activity_Id").SetText(aid)
-				c.CreateElement("Preferred_Day").SetText(rundata.DayList[start.day].Backend)
-				c.CreateElement("Preferred_Hour").SetText(rundata.HourList[start.hour].Backend)
+				c.CreateElement("Preferred_Day").SetText(fetbuild.DayList[start.day])
+				c.CreateElement("Preferred_Hour").SetText(fetbuild.HourList[start.hour])
 				c.CreateElement("Permanently_Locked").SetText("true")
 				c.CreateElement("Active").SetText("true")
 

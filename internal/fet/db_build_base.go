@@ -18,11 +18,14 @@ type fet_build struct {
 	ConstraintElements []*etree.Element
 	TimeConstraints    []int // indexes into `ConstraintElements`
 	SpaceConstraints   []int // indexes into `ConstraintElements`
+
+	/*TODO--?
 	Constraints        []constraint
 	NConstraints       constraintIndex
 	ConstraintTypes    []constraintType
 	HardConstraintMap  map[constraintType][]constraintIndex
 	SoftConstraintMap  map[constraintType][]constraintIndex
+	*/
 
 	fetroot                *etree.Element
 	room_list              *etree.Element // needed for adding virtual rooms
