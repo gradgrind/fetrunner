@@ -6,9 +6,7 @@ import (
 )
 
 func (fetbuild *fet_build) set_classes() {
-	//TODO--? ids := []IdPair{}
-	tt_data := fetbuild.ttdata
-	db := fetbuild.basedata.Db
+	//db := fetbuild.basedata.Db
 	fetyears := fetbuild.fetroot.CreateElement("Students_List")
 	for _, cdiv := range tt_data.ClassDivisions {
 		cl := cdiv.Class
@@ -21,8 +19,6 @@ func (fetbuild *fet_build) set_classes() {
 		fetyear := fetyears.CreateElement("Year")
 		fetyear.CreateElement("Name").SetText(cname)
 		fetyear.CreateElement("Long_Name").SetText(cl.Name)
-
-		//TODO--? ids = append(ids, IdPair{Source: string(cl.GetRef()), Backend: cname})
 
 		// Construct the "Categories" (divisions)
 		divs := cdiv.Divisions
@@ -53,7 +49,6 @@ func (fetbuild *fet_build) set_classes() {
 			}
 		}
 	}
-	//TODO--? fetbuild.ClassList = ids
 }
 
 // In FET the group identifier is constructed from the class tag,

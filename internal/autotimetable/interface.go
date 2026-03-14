@@ -32,6 +32,7 @@ type TtSource interface {
 	GetClasses() []base.ElementBase
 	//GetStudentGroups() []base.ElementBase
 
+	GetSubjects() []base.ElementBase
 	GetRooms() []base.ElementBase
 	GetActivities() []base.ElementBase
 

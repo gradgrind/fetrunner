@@ -29,22 +29,19 @@ type TtData struct {
 	hardConstraintMap map[constraintType][]constraintIndex
 	softConstraintMap map[constraintType][]constraintIndex
 
-	//TODO--?
-	NDays        int
-	NHours       int
-	HoursPerWeek int
-	//BackendData  any // available for the generator back-end
+	ndays        int
+	nhours       int
+	hoursperweek int
 
-	//TODO??
 	AtomicGroups []*AtomicGroup
 
-	TeacherIndex map[NodeRef]TeacherIndex
-	RoomIndex    map[NodeRef]RoomIndex
-	ClassIndex   map[NodeRef]ClassIndex
+	Teacher2Index map[NodeRef]TeacherIndex
+	Room2Index    map[NodeRef]RoomIndex
+	Class2Index   map[NodeRef]ClassIndex
 
-	// `AtomicGroupIndex` maps a class or group NodeRef to its list of atomic
+	// `AtomicGroup2Indexes` maps a class or group NodeRef to its list of atomic
 	// group indexes.
-	AtomicGroupIndex map[NodeRef][]AtomicIndex
+	AtomicGroup2Indexes map[NodeRef][]AtomicIndex
 
 	// `ClassDivisions` is a list with an entry for each class, containing a
 	// list of its divisions ([][]NodeRef).
@@ -70,6 +67,48 @@ func (tt_data *TtData) GetDays() []*base.ElementBase {
 		dlist = append(dlist, &base.ElementBase{Id: d.Id, Tag: d.Tag})
 	}
 	return dlist
+}
+
+func (tt_data *TtData) GetClasses() []*TtClass {
+	db := tt_data.db
+	clist := make([]*TtClass, len(tt_data.ClassDivisions))
+	for i, c := range tt_data.ClassDivisions {
+		glist := []*TtGroup{}
+		for _, d := range c.Divisions {
+			for _, g := range d {
+				e := db.GetElement(g)
+				id := e.GetRef()
+				glist = append(glist, &TtGroup{
+					Id:            id,
+					Tag:           e.GetTag(),
+					ClassIndex:    i,
+					AtomicIndexes: tt_data.AtomicGroup2Indexes[id],
+				})
+			}
+		}
+		clist[i] = &TtClass{
+			Id:            c.Class.Id,
+			Tag:           c.Class.Tag,
+			AtomicIndexes: tt_data.AtomicGroup2Indexes[c.Class.Id],
+			Groups:        glist,
+		}
+	}
+	return clist
+
+}
+
+type TtClass struct {
+	Id            NodeRef
+	Tag           string // the (short) name of the class
+	AtomicIndexes []AtomicIndex
+	Groups        []*TtGroup
+}
+
+type TtGroup struct {
+	Id            NodeRef
+	Tag           string // the (short) name of the group (without class)
+	ClassIndex    int
+	AtomicIndexes []AtomicIndex
 }
 
 //TODO: further Get... methods.
@@ -109,10 +148,9 @@ func MakeTimetableData(bd *base.BaseData) *TtData {
 	tt_data := &TtData{
 		db: db,
 
-		//TODO--?
-		NDays:        days,
-		NHours:       hours,
-		HoursPerWeek: days * hours,
+		ndays:        days,
+		nhours:       hours,
+		hoursperweek: days * hours,
 	}
 
 	// Collect ClassDivisions
@@ -140,16 +178,16 @@ func MakeTimetableData(bd *base.BaseData) *TtData {
 }
 
 func (tt_data *TtData) TeacherResources(db *base.DbTopLevel) {
-	tt_data.TeacherIndex = map[NodeRef]TeacherIndex{}
+	tt_data.Teacher2Index = map[NodeRef]TeacherIndex{}
 	for i, t := range db.Teachers {
-		tt_data.TeacherIndex[t.Id] = i
+		tt_data.Teacher2Index[t.Id] = i
 	}
 }
 
 func (tt_data *TtData) RoomResources(db *base.DbTopLevel) {
-	tt_data.RoomIndex = map[NodeRef]RoomIndex{}
+	tt_data.Room2Index = map[NodeRef]RoomIndex{}
 	for i, r := range db.Rooms {
-		tt_data.RoomIndex[r.Id] = i
+		tt_data.Room2Index[r.Id] = i
 	}
 }
 
@@ -164,14 +202,6 @@ func (tt_data *TtData) GetActivities() []element {
 	return alist
 }
 
-func (tt_data *TtData) GetClasses() []element {
-	clist := make([]element, len(tt_data.ClassDivisions))
-	for i, c := range tt_data.ClassDivisions {
-		clist[i] = element{Id: c.Class.Id, Tag: c.Class.Tag}
-	}
-	return clist
-}
-
 func (tt_data *TtData) GetConstraint_Types() []autotimetable.ConstraintType {
 	return tt_data.ConstraintTypes
 }
@@ -181,6 +211,3 @@ func (tt_data *TtData) GetConstraint_Types() []autotimetable.ConstraintType {
 func (tt_data *TtData) GetConstraints() []autotimetable.AttConstraint {
 	return tt_data.constraints
 }
-
-//TODO: tt_data should have lists of all the indexed things, providing the source ids,
-// as these are not directly relevant to autotimetable.

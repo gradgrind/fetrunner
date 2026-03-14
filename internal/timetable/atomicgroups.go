@@ -58,17 +58,17 @@ func (a *AtomicGroup) GetResourceTag() string {
 
 func (tt_data *TtData) MakeAtomicGroups(db *base.DbTopLevel) {
 	// Set up the class index map
-	tt_data.ClassIndex = map[NodeRef]ClassIndex{}
+	tt_data.Class2Index = map[NodeRef]ClassIndex{}
 
 	// An atomic group is an ordered list of single groups, one from each
 	// division.
-	tt_data.AtomicGroupIndex = map[NodeRef][]AtomicIndex{}
+	tt_data.AtomicGroup2Indexes = map[NodeRef][]AtomicIndex{}
 
 	// Go through the classes inspecting their Divisions.
 	// Build a list-basis for the atomic groups based on the Cartesian product.
 	for i, cdivs := range tt_data.ClassDivisions {
 		cl := cdivs.Class
-		tt_data.ClassIndex[cl.Id] = i
+		tt_data.Class2Index[cl.Id] = i
 		if len(cdivs.Divisions) == 0 {
 			// Make an atomic group for the class
 			agix := len(tt_data.AtomicGroups)
@@ -78,7 +78,7 @@ func (tt_data *TtData) MakeAtomicGroups(db *base.DbTopLevel) {
 				Tag:   cl.Tag + ATOMIC_GROUP_SEP1,
 			}
 			tt_data.AtomicGroups = append(tt_data.AtomicGroups, ag)
-			tt_data.AtomicGroupIndex[cl.ClassGroup] = []AtomicIndex{
+			tt_data.AtomicGroup2Indexes[cl.ClassGroup] = []AtomicIndex{
 				AtomicIndex(agix)}
 			continue
 		}
@@ -122,7 +122,7 @@ func (tt_data *TtData) MakeAtomicGroups(db *base.DbTopLevel) {
 			tt_data.AtomicGroups = append(tt_data.AtomicGroups, ag)
 			aglist = append(aglist, AtomicIndex(agix))
 		}
-		tt_data.AtomicGroupIndex[cl.ClassGroup] = aglist
+		tt_data.AtomicGroup2Indexes[cl.ClassGroup] = aglist
 		// Map the individual groups to their atomic groups.
 		count := 1
 		divIndex := len(cdivs.Divisions)
@@ -133,8 +133,8 @@ func (tt_data *TtData) MakeAtomicGroups(db *base.DbTopLevel) {
 			for agi < len(aglist) {
 				for _, g := range divGroups {
 					for j := 0; j < count; j++ {
-						tt_data.AtomicGroupIndex[g] = append(
-							tt_data.AtomicGroupIndex[g], aglist[agi])
+						tt_data.AtomicGroup2Indexes[g] = append(
+							tt_data.AtomicGroup2Indexes[g], aglist[agi])
 						agi++
 					}
 				}

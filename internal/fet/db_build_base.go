@@ -1,8 +1,8 @@
 package fet
 
 import (
+	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
-	"fetrunner/internal/timetable"
 
 	"github.com/beevik/etree"
 )
@@ -11,7 +11,7 @@ const fet_version = "7.5.5"
 
 type fet_build struct {
 	basedata *base.BaseData
-	ttdata   *timetable.TtData
+	ttsource autotimetable.TtSource
 
 	Doc                *etree.Document
 	WeightTable        []float64

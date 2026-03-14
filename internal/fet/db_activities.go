@@ -11,8 +11,12 @@ func fet_activity_index(aix int) string {
 
 // Generate the fet activities.
 func (fetbuild *fet_build) set_activities() {
-	db := fetbuild.basedata.Db
-	tt_data := fetbuild.ttdata
+	//TODO-- db := fetbuild.basedata.Db
+
+	//TODO: All the resources of the activities are needed!
+	alist := fetbuild.ttsource.GetActivities()
+
+	//TODO-- tt_data := fetbuild.ttdata
 
 	fetactivities := fetbuild.fetroot.CreateElement("Activities_List")
 	for ai, tt_activity := range tt_data.TtActivities {

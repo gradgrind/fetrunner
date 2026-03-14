@@ -234,7 +234,7 @@ func (tt_data *TtData) days_between_activities(
 	if weight != 0 || consecutiveIfSameDay {
 		// Add constraint
 		for _, alist := range aidlists {
-			if len(alist) > tt_data.NDays {
+			if len(alist) > tt_data.ndays {
 				//TODO?
 				logger.Warning(
 					"Course has too many activities for DifferentDays constraint:\n  -- %s",

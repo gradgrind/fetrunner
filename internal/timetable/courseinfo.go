@@ -55,12 +55,12 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 				if !slices.Contains(groups, g) {
 					groups = append(groups, g)
 					agroups = append(agroups,
-						tt_data.AtomicGroupIndex[gref]...)
+						tt_data.AtomicGroup2Indexes[gref]...)
 				}
 			}
 			// Add teachers
 			for _, tref := range sbc.Teachers {
-				t, ok := tt_data.TeacherIndex[tref]
+				t, ok := tt_data.Teacher2Index[tref]
 				if !ok {
 					panic("Invalid Teacher ref: " + tref)
 				}
@@ -68,7 +68,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 			}
 			// Add rooms
 			if sbc.Room != "" {
-				r, ok := tt_data.RoomIndex[sbc.Room]
+				r, ok := tt_data.Room2Index[sbc.Room]
 				if ok {
 					rooms = append(rooms, r)
 					continue
@@ -80,7 +80,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 				rg, ok := gr.(*base.RoomGroup)
 				if ok {
 					for _, rr := range rg.Rooms {
-						r, ok = tt_data.RoomIndex[rr]
+						r, ok = tt_data.Room2Index[rr]
 						if !ok {
 							panic(fmt.Sprintf(
 								"Bug: Unknown room in RoomGroup %s: %s",
@@ -95,7 +95,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 				if ok {
 					roomlist := []RoomIndex{}
 					for _, rr := range rcg.Rooms {
-						r, ok = tt_data.RoomIndex[rr]
+						r, ok = tt_data.Room2Index[rr]
 						if !ok {
 							panic(fmt.Sprintf(
 								"Bug: Unknown room in RoomChoiceGroup %s: %s",
@@ -172,13 +172,13 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 				panic("Invalid Group ref: " + gref)
 			}
 			groups = append(groups, g)
-			agroups = append(agroups, tt_data.AtomicGroupIndex[gref]...)
+			agroups = append(agroups, tt_data.AtomicGroup2Indexes[gref]...)
 		}
 
 		// Get teachers
 		teachers := []TeacherIndex{}
 		for _, tref := range c.Teachers {
-			t, ok := tt_data.TeacherIndex[tref]
+			t, ok := tt_data.Teacher2Index[tref]
 			if !ok {
 				panic("Invalid Teacher ref: " + tref)
 			}
@@ -189,7 +189,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 		rooms := []RoomIndex{}
 		crooms := [][]RoomIndex{}
 		if c.Room != "" {
-			r, ok := tt_data.RoomIndex[c.Room]
+			r, ok := tt_data.Room2Index[c.Room]
 			if ok {
 				rooms = append(rooms, r)
 			} else {
@@ -198,7 +198,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 				rg, ok := gr.(*base.RoomGroup)
 				if ok {
 					for _, rr := range rg.Rooms {
-						r, ok = tt_data.RoomIndex[rr]
+						r, ok = tt_data.Room2Index[rr]
 						if !ok {
 							panic(fmt.Sprintf(
 								"Unknown room in RoomGroup %s: %s",
@@ -211,7 +211,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 					if ok {
 						roomlist := []RoomIndex{}
 						for _, rr := range rcg.Rooms {
-							r, ok = tt_data.RoomIndex[rr]
+							r, ok = tt_data.Room2Index[rr]
 							if !ok {
 								panic(fmt.Sprintf(
 									"Unknown room in RoomChoiceGroup %s: %s",
