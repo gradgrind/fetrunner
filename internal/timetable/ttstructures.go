@@ -8,12 +8,15 @@ import (
 )
 
 type NodeRef = base.NodeRef // node reference (UUID)
+type element = base.ElementBase
 
 type ActivityIndex = autotimetable.ActivityIndex
 type TeacherIndex = autotimetable.TeacherIndex
 type RoomIndex = autotimetable.RoomIndex
 type ClassIndex = autotimetable.ClassIndex
 type AtomicIndex = autotimetable.AtomicIndex
+type TtClass = autotimetable.TtClass
+type TtGroup = autotimetable.TtGroup
 
 type constraint = autotimetable.AttConstraint
 type constraintIndex = autotimetable.ConstraintIndex
@@ -36,7 +39,9 @@ type TtData struct {
 	AtomicGroups []*AtomicGroup
 
 	Teacher2Index map[NodeRef]TeacherIndex
+	teachers      []element
 	Room2Index    map[NodeRef]RoomIndex
+	rooms         []element
 	Class2Index   map[NodeRef]ClassIndex
 
 	// `AtomicGroup2Indexes` maps a class or group NodeRef to its list of atomic
@@ -48,7 +53,7 @@ type TtData struct {
 	ClassDivisions []ClassDivision
 
 	// Sorted list of constraint names (only those presently used in the data)
-	ConstraintTypes []autotimetable.ConstraintType
+	ConstraintTypes []constraintType
 
 	// Set up by `CollectCourses`, which calls `makeActivities`
 	TtActivities      []*TtActivity
@@ -61,12 +66,20 @@ type TtData struct {
 	ParallelActivities       []*TtParallelActivities
 }
 
-func (tt_data *TtData) GetDays() []*base.ElementBase {
-	dlist := []*base.ElementBase{}
+func (tt_data *TtData) GetDays() []element {
+	dlist := []element{}
 	for _, d := range tt_data.db.Days {
-		dlist = append(dlist, &base.ElementBase{Id: d.Id, Tag: d.Tag})
+		dlist = append(dlist, element{Id: d.Id, Tag: d.Tag})
 	}
 	return dlist
+}
+
+func (tt_data *TtData) GetHours() []element {
+	hlist := []element{}
+	for _, h := range tt_data.db.Hours {
+		hlist = append(hlist, element{Id: h.Id, Tag: h.Tag})
+	}
+	return hlist
 }
 
 func (tt_data *TtData) GetClasses() []*TtClass {
@@ -94,38 +107,45 @@ func (tt_data *TtData) GetClasses() []*TtClass {
 		}
 	}
 	return clist
-
 }
 
-type TtClass struct {
-	Id            NodeRef
-	Tag           string // the (short) name of the class
-	AtomicIndexes []AtomicIndex
-	Groups        []*TtGroup
+func (tt_data *TtData) GetAtomicGroups() []string {
+	aglist := []string{}
+	for _, ag := range tt_data.AtomicGroups {
+		aglist = append(aglist, ag.Tag)
+	}
+	return aglist
 }
 
-type TtGroup struct {
-	Id            NodeRef
-	Tag           string // the (short) name of the group (without class)
-	ClassIndex    int
-	AtomicIndexes []AtomicIndex
+func (tt_data *TtData) GetRooms() []element {
+	return tt_data.rooms
 }
 
-//TODO: further Get... methods.
+func (tt_data *TtData) GetSubjects() []element {
+	subjects := make([]element, len(tt_data.db.Subjects))
+	for i, s := range tt_data.db.Subjects {
+		subjects[i] = element{Id: s.Id, Tag: s.Tag}
+	}
+	return subjects
+}
+
+func (tt_data *TtData) GetTeachers() []element {
+	return tt_data.teachers
+}
 
 // A `CourseInfo` is a representation of a course (Course or SuperCourse) for
 // the timetable.
 // Activities within a course are (already) ordered, highest duration first,
 // and the Activities field has the same order.
 type CourseInfo struct {
-	Id           NodeRef // Course or SuperCourse
-	Subject      string
-	Groups       []*base.Group // a `Class` is represented by its ClassGroup
-	AtomicGroups []AtomicIndex
-	Teachers     []TeacherIndex
-	FixedRooms   []RoomIndex
-	RoomChoices  [][]RoomIndex
-	Activities   []ActivityIndex
+	Id                 NodeRef // Course or SuperCourse
+	Subject            string
+	Groups             []*base.Group // a `Class` is represented by its ClassGroup
+	AtomicGroupIndexes []AtomicIndex
+	Teachers           []TeacherIndex
+	FixedRooms         []RoomIndex
+	RoomChoices        [][]RoomIndex
+	Activities         []ActivityIndex
 }
 
 // TODO: Add node id field? And where is the other info, like duration?
@@ -154,18 +174,15 @@ func MakeTimetableData(bd *base.BaseData) *TtData {
 	}
 
 	// Collect ClassDivisions
-	tt_data.FilterDivisions(db)
+	tt_data.FilterDivisions()
 
 	// Atomic groups: an atomic group is a "resource", it is an ordered list
 	// of single groups, one from each division.
-	// The atomic groups take the lowest resource indexes (starting at 0).
-	// `AtomicGroups` maps the classes and groups to a list of their resource
-	// indexes.
-	tt_data.MakeAtomicGroups(db)
+	tt_data.MakeAtomicGroups()
 
-	// Add teachers and rooms to resource array
-	tt_data.TeacherResources(db)
-	tt_data.RoomResources(db)
+	// Build maps to convert teacher and room ids to indexes
+	tt_data.TeacherResources()
+	tt_data.RoomResources()
 
 	// Get the courses (-> CourseInfo) and activities for the timetable
 	tt_data.CollectCourses(bd)
@@ -177,21 +194,23 @@ func MakeTimetableData(bd *base.BaseData) *TtData {
 	return tt_data
 }
 
-func (tt_data *TtData) TeacherResources(db *base.DbTopLevel) {
+func (tt_data *TtData) TeacherResources() {
 	tt_data.Teacher2Index = map[NodeRef]TeacherIndex{}
-	for i, t := range db.Teachers {
+	tt_data.teachers = make([]element, len(tt_data.db.Teachers))
+	for i, t := range tt_data.db.Teachers {
 		tt_data.Teacher2Index[t.Id] = i
+		tt_data.teachers[i] = element{Id: t.Id, Tag: t.Tag}
 	}
 }
 
-func (tt_data *TtData) RoomResources(db *base.DbTopLevel) {
+func (tt_data *TtData) RoomResources() {
 	tt_data.Room2Index = map[NodeRef]RoomIndex{}
-	for i, r := range db.Rooms {
+	tt_data.rooms = make([]element, len(tt_data.db.Rooms))
+	for i, r := range tt_data.db.Rooms {
 		tt_data.Room2Index[r.Id] = i
+		tt_data.rooms[i] = element{Id: r.Id, Tag: r.Tag}
 	}
 }
-
-type element = base.ElementBase
 
 func (tt_data *TtData) GetActivities() []element {
 	activities := tt_data.db.Activities
@@ -202,12 +221,30 @@ func (tt_data *TtData) GetActivities() []element {
 	return alist
 }
 
-func (tt_data *TtData) GetConstraint_Types() []autotimetable.ConstraintType {
+// TODO: Is this really needed?
+func (tt_data *TtData) GetNActivities() int {
+	return len(tt_data.TtActivities)
+}
+
+func (tt_data *TtData) GetConstraint_Types() []constraintType {
 	return tt_data.ConstraintTypes
+}
+
+// TODO: Is this really needed?
+func (tt_data *TtData) GetNConstraints() constraintIndex {
+	return len(tt_data.constraints)
+}
+
+func (tt_data *TtData) GetHardConstraintMap() map[constraintType][]constraintIndex {
+	return tt_data.hardConstraintMap
+}
+
+func (tt_data *TtData) GetSoftConstraintMap() map[constraintType][]constraintIndex {
+	return tt_data.softConstraintMap
 }
 
 // TODO: This seems to be used only for the result presentation.
 // Is it really necessary? If so, what should it contain?
-func (tt_data *TtData) GetConstraints() []autotimetable.AttConstraint {
+func (tt_data *TtData) GetConstraints() []constraint {
 	return tt_data.constraints
 }

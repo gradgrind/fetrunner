@@ -253,7 +253,7 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 			return
 		}
 	} else {
-		ttsource.Prepare(dsp.TtParameters.REAL_SOFT)
+		ttsource.SetSoftConstraintWeights(dsp.TtParameters.REAL_SOFT)
 	}
 	if logger.Running {
 		panic("Attempt to start generation when already running")

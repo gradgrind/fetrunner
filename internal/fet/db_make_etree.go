@@ -27,7 +27,6 @@ const VIRTUAL_ROOM_PREFIX = "!"
 func FetTree(
 	bdata *base.BaseData,
 	real_soft bool,
-	//TODO: Use a source interface instead?:
 	tt_source autotimetable.TtSource,
 ) *fet_build {
 	doc := etree.NewDocument()
@@ -82,6 +81,7 @@ func FetTree(
 	// Add "NotAvailable" constraints for all resources, returning a map
 	// linking a resource to its blocked slot list:
 	//   NodeRef -> []db.TimeSlot
+	//TODO: I shouldn't be using NodeRef, but resource types and indexes.
 	namap := fetbuild.blocked_slots()
 
 	//TODO: Handle WITHOUT_ROOM_CONSTRAINTS

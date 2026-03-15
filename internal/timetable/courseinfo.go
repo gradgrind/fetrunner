@@ -130,13 +130,13 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 		}
 
 		cinfo := &CourseInfo{
-			Id:           cref,
-			Subject:      sbj.Tag,
-			Groups:       groups,
-			AtomicGroups: slices.Compact(agroups),
-			Teachers:     slices.Compact(teachers),
-			FixedRooms:   slices.Compact(rooms),
-			RoomChoices:  crooms,
+			Id:                 cref,
+			Subject:            sbj.Tag,
+			Groups:             groups,
+			AtomicGroupIndexes: slices.Compact(agroups),
+			Teachers:           slices.Compact(teachers),
+			FixedRooms:         slices.Compact(rooms),
+			RoomChoices:        crooms,
 			//Activities: set below,
 		}
 
@@ -239,13 +239,13 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 		slices.Sort(teachers) // shouldn't need compacting
 		slices.Sort(rooms)    // shouldn't need compacting
 		cinfo := &CourseInfo{
-			Id:           cref,
-			Subject:      sbj.Tag,
-			Groups:       groups,
-			AtomicGroups: slices.Compact(agroups),
-			Teachers:     teachers,
-			FixedRooms:   rooms,
-			RoomChoices:  crooms,
+			Id:                 cref,
+			Subject:            sbj.Tag,
+			Groups:             groups,
+			AtomicGroupIndexes: slices.Compact(agroups),
+			Teachers:           teachers,
+			FixedRooms:         rooms,
+			RoomChoices:        crooms,
 			//Activities: set below,
 		}
 

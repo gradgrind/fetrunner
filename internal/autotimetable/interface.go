@@ -19,7 +19,7 @@ type TtBackend interface {
 
 type TtSource interface {
 	//TODO?
-	Prepare(real_soft bool) // set the soft-constraint weights
+	//SetSoftConstraintWeights(real_soft bool)
 
 	//TODO?
 	//GetConstraintTypeSets() map[string][]int // ctype -> []constraint-index
@@ -29,7 +29,8 @@ type TtSource interface {
 	GetTeachers() []base.ElementBase
 
 	//TODO???
-	GetClasses() []base.ElementBase
+	GetClasses() []*TtClass
+	GetAtomicGroups() []string
 	//GetStudentGroups() []base.ElementBase
 
 	GetSubjects() []base.ElementBase
@@ -49,5 +50,5 @@ type TtSource interface {
 
 	//TODO: probably not here ...
 	// Prepare the "source" for a run with a set of enabled constraints:
-	PrepareRun([]bool, any)
+	//PrepareRun([]bool, any)
 }

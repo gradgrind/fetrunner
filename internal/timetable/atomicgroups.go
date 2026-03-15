@@ -1,7 +1,6 @@
 package timetable
 
 import (
-	"fetrunner/internal/base"
 	"strings"
 )
 
@@ -10,8 +9,8 @@ const ATOMIC_GROUP_SEP2 = "~"
 
 // Prepare filtered versions of the class Divisions containing only
 // those Divisions which have Groups used in activities.
-func (tt_data *TtData) FilterDivisions(db *base.DbTopLevel) {
-
+func (tt_data *TtData) FilterDivisions() {
+	db := tt_data.db
 	// Collect groups used in courses
 	usedgroups := map[NodeRef]bool{}
 
@@ -56,7 +55,9 @@ func (a *AtomicGroup) GetResourceTag() string {
 	return a.Tag
 }
 
-func (tt_data *TtData) MakeAtomicGroups(db *base.DbTopLevel) {
+func (tt_data *TtData) MakeAtomicGroups() {
+	db := tt_data.db
+
 	// Set up the class index map
 	tt_data.Class2Index = map[NodeRef]ClassIndex{}
 

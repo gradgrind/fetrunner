@@ -132,6 +132,20 @@ type RoomIndex = int
 type ClassIndex = int
 type AtomicIndex = int
 
+type TtClass struct {
+	Id            base.NodeRef
+	Tag           string // the (short) name of the class
+	AtomicIndexes []AtomicIndex
+	Groups        []*TtGroup
+}
+
+type TtGroup struct {
+	Id            base.NodeRef
+	Tag           string // the (short) name of the group (without class)
+	ClassIndex    int
+	AtomicIndexes []AtomicIndex
+}
+
 // This structure is used to return the placement results from the
 // timetable back-end. It differs from `base.ActivityPlacement` in that it
 // uses indexes rather than NodeRefs.
