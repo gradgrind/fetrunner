@@ -239,7 +239,7 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 	logger := bdata.Logger
 	ttsource := dsp.TtSource
 	if ttsource == nil {
-		if dsp.BaseData.Db != nil {
+		if bdata.Db != nil {
 			//TODO: was
 			//ttsource = fet.FetTree(
 			//	bdata,
@@ -253,6 +253,8 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 			return
 		}
 	} else {
+
+		//TODO: This should probably be somewhere else, and done in the back-end.
 		ttsource.SetSoftConstraintWeights(dsp.TtParameters.REAL_SOFT)
 	}
 	if logger.Running {
@@ -261,6 +263,7 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 	// Set up FET back-end and start processing
 	attdata := &autotimetable.AutoTtData{
 		Parameters:        dsp.TtParameters,
+		BaseData:          bdata,
 		Source:            ttsource,
 		NActivities:       ttsource.GetNActivities(),
 		NConstraints:      ttsource.GetNConstraints(),
@@ -269,14 +272,21 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 		SoftConstraintMap: ttsource.GetSoftConstraintMap(),
 	}
 	dsp.AutoTtData = attdata
-	fet.InitBackend(bdata, attdata)
+
 	logger.Result("OK", "true")
 }
 
 func runtt(dsp *Dispatcher, op *DispatchOp) {
+	switch dsp.TtParameters.BACKEND {
+	case "", "FET":
+		dsp.AutoTtData.Backend = fet.InitBackend(attdata)
+	default:
+		panic("Unsupported timetable-generation back-end: " + dsp.TtParameters.BACKEND)
+	}
+
 	// Need an extra goroutine so that this can return immediately.
 	dsp.BaseData.Logger.StartRun()
-	go dsp.AutoTtData.StartGeneration(dsp.BaseData)
+	go dsp.AutoTtData.StartGeneration()
 }
 
 func polltt(dsp *Dispatcher, op *DispatchOp) {

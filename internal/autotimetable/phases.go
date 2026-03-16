@@ -70,6 +70,7 @@ the processing is finished.
 // Enter new phase.
 func (rq *RunQueue) enter_phase(p int) {
 	attdata := rq.AutoTtData
+	bdata := attdata.BaseData
 
 	base_instance := attdata.current_instance
 	if base_instance == nil {
@@ -96,7 +97,7 @@ func (rq *RunQueue) enter_phase(p int) {
 	var n int
 new_phase:
 	attdata.phase = p
-	rq.BData.Logger.Result(".PHASE", strconv.Itoa(p))
+	bdata.Logger.Result(".PHASE", strconv.Itoa(p))
 
 	// Abort all processes except appropriate specials
 	attdata.abort_constraint_list()
@@ -131,7 +132,7 @@ new_phase:
 		// Skip to next phase
 		p++
 		attdata.phase = p
-		rq.BData.Logger.Result(".PHASE", strconv.Itoa(p))
+		bdata.Logger.Result(".PHASE", strconv.Itoa(p))
 		goto new_phase
 	}
 	// Queue instances for running
@@ -154,7 +155,7 @@ func (attdata *AutoTtData) abort_constraint_list() {
 
 func (rq *RunQueue) tick_phase() bool {
 	attdata := rq.AutoTtData
-	bdata := rq.BData
+	bdata := attdata.BaseData
 	logger := bdata.Logger
 	p := attdata.phase
 	if p >= PHASE_FINISHED {
@@ -232,7 +233,7 @@ func (rq *RunQueue) tick_phase() bool {
 		attdata.null_instance.RunState = 3
 		attdata.current_instance = attdata.null_instance
 		logger.Result(".NULL_OK", "Without constraints OK")
-		attdata.new_current_instance(rq.BData, attdata.current_instance)
+		attdata.new_current_instance(bdata, attdata.current_instance)
 	case 3:
 		// instance no longer relevant
 	default:
@@ -286,7 +287,8 @@ constraints to add. Otherwise (the normal case) return `false`.
 */
 func (rq *RunQueue) phase_main() bool {
 	attdata := rq.AutoTtData
-	logger := rq.BData.Logger
+	bdata := attdata.BaseData
+	logger := bdata.Logger
 	next_timeout := 0 // non-zero => "restart with new base"
 	base_instance := attdata.current_instance
 	if base_instance == nil {
@@ -306,7 +308,7 @@ func (rq *RunQueue) phase_main() bool {
 			// Completed successfully, make this instance the new base.
 			attdata.current_instance = instance
 			base_instance = instance
-			attdata.new_current_instance(rq.BData, instance)
+			attdata.new_current_instance(bdata, instance)
 			next_timeout = max(
 				(instance.Ticks*attdata.Parameters.NEW_BASE_TIMEOUT_FACTOR)/10,
 				attdata.cycle_timeout)

@@ -1,7 +1,6 @@
 package autotimetable
 
 import (
-	"fetrunner/internal/base"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -141,9 +140,11 @@ which constraints were dropped and any error messages for them which may have
 been produced by the generator back-end).
 */
 
-func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
+func (attdata *AutoTtData) StartGeneration() {
+	bdata := attdata.BaseData
 	logger := bdata.Logger
 	bdata.StopFlag = false
+
 	attdata.lastResult = nil
 	attdata.ConstraintErrors = map[ConstraintIndex]string{}
 	attdata.BlockConstraint = map[ConstraintIndex]bool{}
@@ -155,7 +156,6 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 	//signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
 	runqueue := &RunQueue{
-		BData:      bdata,
 		AutoTtData: attdata,
 		Queue:      nil,
 		Active:     map[*TtInstance]struct{}{},
@@ -173,7 +173,7 @@ func (attdata *AutoTtData) StartGeneration(bdata *base.BaseData) {
 	// instances should be stopped and the "best" solution at this point
 	// chosen.
 	enabled := make([]bool, attdata.NConstraints)
-	attdata.get_nconstraints(bdata, enabled) // count constraints
+	attdata.log_nconstraints(enabled)
 	for i := range attdata.NConstraints {
 		// Enable all constraints
 		enabled[i] = true

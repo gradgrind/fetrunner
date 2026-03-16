@@ -54,7 +54,7 @@ func (attdata *AutoTtData) new_current_instance(
 		Placements:       alist,
 	}
 
-	attdata.get_nconstraints(bdata, instance.ConstraintEnabled)
+	attdata.log_nconstraints(instance.ConstraintEnabled)
 
 	if attdata.Parameters.DEBUG {
 		//b, err := json.Marshal(LastResult)
@@ -78,9 +78,7 @@ func (attdata *AutoTtData) new_current_instance(
 
 // Count the constraints (fulfilled and total), placing infos
 // including the unfulfilled indexes in the "last" result item.
-func (attdata *AutoTtData) get_nconstraints(
-	bdata *base.BaseData, enabled []bool,
-) {
+func (attdata *AutoTtData) log_nconstraints(enabled []bool) {
 	// Collect the unfulfilled hard constraints ...
 	hnall := 0 // count all hard constraints
 	hn := 0    // count fulfilled hard constraints
@@ -115,7 +113,7 @@ func (attdata *AutoTtData) get_nconstraints(
 		sunfulfilled[ctype] = ulist
 		snall += len(clist)
 	}
-	bdata.Logger.Result(".NCONSTRAINTS", fmt.Sprintf("%d.%d.%d.%d",
+	attdata.BaseData.Logger.Result(".NCONSTRAINTS", fmt.Sprintf("%d.%d.%d.%d",
 		hn, hnall, sn, snall))
 
 	if attdata.lastResult != nil {

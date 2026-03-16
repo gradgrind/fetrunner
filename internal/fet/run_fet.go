@@ -27,40 +27,82 @@ var (
 )
 
 type FetBackend struct {
-	attdata            *autotimetable.AutoTtData
+	//TODO: Note that this sets up a reference loop, attdata -> FetBackend -> attdata!
+	//attdata *autotimetable.AutoTtData
+
 	tmpdir             string
 	doc                *etree.Document
 	constraintElements []*etree.Element
 }
 
-func InitBackend(bdata *base.BaseData, attdata *autotimetable.AutoTtData) {
+func InitBackend(attdata *autotimetable.AutoTtData) *FetBackend {
+	bdata := attdata.BaseData
 	if base.TEMPORARY_DIR == "" {
 		bdata.SetTmpDir()
 	}
 	tmpdir := filepath.Join(base.TEMPORARY_DIR, bdata.Name)
 	os.RemoveAll(tmpdir)
 	fetbackend := &FetBackend{
-		attdata: attdata,
-		tmpdir:  tmpdir}
-	attdata.Backend = fetbackend
+		//attdata: attdata,
+		tmpdir: tmpdir}
+	//attdata.Backend = fetbackend
+
+	if source, ok := attdata.Source.(*TtSourceFet); ok {
+		// With a FET source, the existing structures can be used for the backend.
+		fetbackend.doc = source.doc
+		//TODO: however, the constraints may be modified (soft weights),
+		// so these need resetting for each new run.
+		fetbackend.constraintElements = source.constraintElements
+
+		// When first reading the source file, the original weights are saved in
+		// `TtSourceFet.softWeights` so that they can be restored, if necessary.
+		// New weights should be set according to REAL_SOFT.
+
+		//TODO? I guess the TtSourceFet will already include the fetrunner constraint
+		// indexes (+ soft weights).
+
+		...
+
+	}
+
+	//TODO ...
+	switch stype := attdata.Source.SourceType(); stype {
+	case "DB":
+		ttbe := FetTree(attdata)
+
+		fetbackend.doc = ttbe.Doc
+		fetbackend.constraintElements = ttbe.ConstraintElements
+
+	case "FET":
+
+	default:
+		panic("Unsupported timetable source type: " + stype)
+	}
+
+	//TODO: Move to the switch above ...
 	if bdata.Db != nil {
 		//TODO
 		// With "DB" as source, the FET structures must be built from scratch.
 		source := timetable.MakeTimetableData(bdata)
 
-		ttsource := FetTree(
+		ttbe := FetTree(
 			bdata,
 			attdata.Parameters.REAL_SOFT,
 			source)
 
-		return
+		fetbackend.doc = ttbe.Doc
+		fetbackend.constraintElements = ttbe.ConstraintElements
+		return fetbackend
 	}
 	{
 		if source, ok := attdata.Source.(*TtSourceFet); ok {
-			// With a FET source, the existing structures can be used for the backend.
+			// With a FET source, the existing structures can be copied for the backend.
+
+			//TODO: Copy doc, etc., and set up soft constraint weights.
+
 			fetbackend.doc = source.doc
 			fetbackend.constraintElements = source.constraintElements
-			return
+			return fetbackend
 		}
 	}
 
@@ -73,10 +115,10 @@ func (fbe *FetBackend) Tidy(bdata *base.BaseData) {
 }
 
 func (fbe *FetBackend) RunBackend(
-	bdata *base.BaseData,
+	attdata *autotimetable.AutoTtData,
 	instance *autotimetable.TtInstance,
 ) autotimetable.TtInstanceBackend {
-	attdata := fbe.attdata
+	bdata := attdata.BaseData
 	fname := fmt.Sprintf("z%05d~%s", instance.Index, instance.ConstraintType)
 	var odir string
 	odir = filepath.Join(fbe.tmpdir, fname)

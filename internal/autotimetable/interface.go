@@ -3,7 +3,7 @@ package autotimetable
 import "fetrunner/internal/base"
 
 type TtBackend interface {
-	RunBackend(*base.BaseData, *TtInstance) TtInstanceBackend
+	RunBackend(*AutoTtData, *TtInstance) TtInstanceBackend
 	Tidy(*base.BaseData)
 	ConstraintName(*TtInstance) string
 
@@ -18,6 +18,8 @@ type TtBackend interface {
 // interfaces.
 
 type TtSource interface {
+	SourceType() string
+
 	//TODO?
 	//SetSoftConstraintWeights(real_soft bool)
 

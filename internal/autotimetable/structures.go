@@ -33,6 +33,10 @@ type Parameters struct {
 	// may run at the same time.
 	MAXPROCESSES int
 
+	// A string to select an alternative timetable-generation back-end.
+	// Currently only FET is available, and is the default.
+	BACKEND string
+
 	TIMEOUT                  int // the overall timeout, secs
 	NEW_BASE_TIMEOUT_FACTOR  int // factor * 10
 	NEW_PHASE_TIMEOUT_FACTOR int // factor * 10
@@ -53,6 +57,7 @@ type Parameters struct {
 // timetable data (based on a source file, for example).
 type AutoTtData struct {
 	Parameters *Parameters
+	BaseData   *base.BaseData
 
 	Source  TtSource
 	Backend TtBackend
