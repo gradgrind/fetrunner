@@ -6,7 +6,6 @@ import (
 	"encoding/xml"
 	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
-	"fetrunner/internal/timetable"
 	"fmt"
 	"io"
 	"os"
@@ -50,64 +49,40 @@ func InitBackend(attdata *autotimetable.AutoTtData) *FetBackend {
 	if source, ok := attdata.Source.(*TtSourceFet); ok {
 		// With a FET source, the existing structures can be used for the backend.
 		fetbackend.doc = source.doc
-		//TODO: however, the constraints may be modified (soft weights),
+		// However, the constraints may be modified (soft weights),
 		// so these need resetting for each new run.
 		fetbackend.constraintElements = source.constraintElements
-
 		// When first reading the source file, the original weights are saved in
 		// `TtSourceFet.softWeights` so that they can be restored, if necessary.
 		// New weights should be set according to REAL_SOFT.
+		real_soft := attdata.Parameters.REAL_SOFT
+		for _, cw := range source.softWeights {
+			e := source.constraintElements[cw.Index]
+			if real_soft {
+				e.SelectElement("Weight_Percentage").SetText(cw.Weight)
+			} else {
+				e.SelectElement("Weight_Percentage").SetText("100")
+			}
+		}
 
 		//TODO? I guess the TtSourceFet will already include the fetrunner constraint
-		// indexes (+ soft weights).
+		// indexes?
 
-		...
-
-	}
-
-	//TODO ...
-	switch stype := attdata.Source.SourceType(); stype {
-	case "DB":
-		ttbe := FetTree(attdata)
-
-		fetbackend.doc = ttbe.Doc
-		fetbackend.constraintElements = ttbe.ConstraintElements
-
-	case "FET":
-
-	default:
-		panic("Unsupported timetable source type: " + stype)
-	}
-
-	//TODO: Move to the switch above ...
-	if bdata.Db != nil {
-		//TODO
-		// With "DB" as source, the FET structures must be built from scratch.
-		source := timetable.MakeTimetableData(bdata)
-
-		ttbe := FetTree(
-			bdata,
-			attdata.Parameters.REAL_SOFT,
-			source)
-
-		fetbackend.doc = ttbe.Doc
-		fetbackend.constraintElements = ttbe.ConstraintElements
 		return fetbackend
 	}
-	{
-		if source, ok := attdata.Source.(*TtSourceFet); ok {
-			// With a FET source, the existing structures can be copied for the backend.
+	stype := attdata.Source.SourceType()
+	if stype == "DB" {
+		ttbe := FetTree(attdata)
 
-			//TODO: Copy doc, etc., and set up soft constraint weights.
+		//TODO: Where to deal with REAL_SOFT? In the source transformation?
+		// It could, alternatively, be done on the FET constraint elements.
 
-			fetbackend.doc = source.doc
-			fetbackend.constraintElements = source.constraintElements
-			return fetbackend
-		}
+		fetbackend.doc = ttbe.Doc
+		fetbackend.constraintElements = ttbe.ConstraintElements
+	} else {
+		panic("Unsupported timetable source type: " + stype)
 	}
-
-	panic("Unsupported timetable source type: " + attdata.Source.SourceType())
-
+	return fetbackend
 }
 
 func (fbe *FetBackend) Tidy(bdata *base.BaseData) {

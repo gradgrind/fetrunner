@@ -5,6 +5,12 @@ import (
 	"strconv"
 )
 
+//TODO: I would need methods on the source data to return the constraints in a
+// convenient form.
+//   index, constraint type, weight (0 - 100?), flag for "not available"?,
+//   parameters in an appropriate form (key, value pairs?), all resource
+//   references as indexes?
+
 func (fetbuild *fet_build) blocked_slots() map[NodeRef][]base.TimeSlot {
 	tt_data := fetbuild.ttdata
 	db := fetbuild.basedata.Db

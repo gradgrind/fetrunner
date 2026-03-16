@@ -48,19 +48,6 @@ func (sourcefet *TtSourceFet) SourceType() string {
 	return "FET"
 }
 
-// TODO: Is this the right way of doing this? Surely it shouldn't affect
-// the FET source.
-func (sourcefet *TtSourceFet) SetSoftConstraintWeights(real_soft bool) {
-	for _, cw := range sourcefet.softWeights {
-		e := sourcefet.constraintElements[cw.Index]
-		if real_soft {
-			e.SelectElement("Weight_Percentage").SetText(cw.Weight)
-		} else {
-			e.SelectElement("Weight_Percentage").SetText("100")
-		}
-	}
-}
-
 func (sourcefet *TtSourceFet) GetDays() []element {
 	items := []element{}
 	for _, e := range sourcefet.doc.Root().SelectElement("Days_List").SelectElements("Day") {

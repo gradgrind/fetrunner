@@ -24,32 +24,30 @@ const VIRTUAL_ROOM_PREFIX = "!"
 // a variable number of `FET` constraints should be supported.
 // Some fields of the `timetable.TtData` and the`autotimetable.BasicData`
 // are initialized.
-func FetTree(
-	bdata *base.BaseData,
-	real_soft bool,
-	tt_source autotimetable.TtSource,
-) *fet_build {
+func FetTree(attdata *autotimetable.AutoTtData) *fet_build {
+	source := attdata.Source
 	doc := etree.NewDocument()
 	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
 
 	fetbuild := &fet_build{
-		basedata: bdata,
-		ttsource: tt_source,
+		basedata: attdata.BaseData,
+		ttsource: source,
 
 		Doc:         doc,
 		WeightTable: MakeFetWeights(),
 
 		fet_virtual_rooms:  map[string]string{},
 		fet_virtual_room_n: map[string]int{},
-		real_soft:          real_soft,
+
+		//TODO--?
+		real_soft: real_soft,
 	}
 
 	fetroot := doc.CreateElement("fet")
 	fetbuild.fetroot = fetroot
 	fetroot.CreateAttr("version", fet_version)
 	fetroot.CreateElement("Mode").SetText("Official")
-	fetroot.CreateElement("Institution_Name").SetText(
-		bdata.Db.Info.Institution)
+	//fetroot.CreateElement("Institution_Name").SetText(source.GetInstitution())
 
 	//TODO?
 	source_ref := ""
