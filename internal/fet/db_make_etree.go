@@ -76,6 +76,10 @@ func FetTree(attdata *autotimetable.AutoTtData) *fet_build {
 	bcspace.CreateElement("Weight_Percentage").SetText("100")
 	bcspace.CreateElement("Active").SetText("true")
 
+	// Start handling constraints by fetching the source constraints in a
+	// convenient form.
+	fetbuild.source_constraints = source.GetSourceConstraints()
+
 	// Add "NotAvailable" constraints for all resources, returning a map
 	// linking a resource to its blocked slot list:
 	//   NodeRef -> []db.TimeSlot

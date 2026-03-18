@@ -39,6 +39,9 @@ type TtSource interface {
 	GetRooms() []base.ElementBase
 	GetActivities() []base.ElementBase
 
+	//TODO: temporary name? -> GetConstraints?
+	GetSourceConstraints() []*TtConstraint
+	//TODO--???
 	GetConstraints() []AttConstraint
 
 	//TODO:

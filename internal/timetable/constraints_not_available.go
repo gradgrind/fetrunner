@@ -1,21 +1,22 @@
-package fet
+package timetable
 
 import (
 	"fetrunner/internal/base"
 	"strconv"
 )
 
-// TODO ... some of this is now in timetable package
-func (fetbuild *fet_build) blocked_slots() map[NodeRef][]base.TimeSlot {
-	tt_data := fetbuild.ttdata
-	db := fetbuild.basedata.Db
+// TODO
+// Although the data structures support weights of less than 100%, the input
+// data might well not.
+func (tt_data *TtData) get_blocked_slots() map[NodeRef][]base.TimeSlot {
+	db := tt_data.db
 	sclist := fetbuild.space_constraints_list
 	tclist := fetbuild.time_constraints_list
 	namap := map[NodeRef][]base.TimeSlot{} // needed for lunch-break constraints
 
 	// Rooms
 	for _, c0 := range db.Constraints[base.C_RoomNotAvailable] {
-		// The weight is presumably 100% ...
+		// The weight is presumably 100%?
 		w := fetbuild.DbWeight2Fet(c0.Weight)
 		data := c0.Data.(base.ResourceNotAvailable)
 		rref := data.Resource

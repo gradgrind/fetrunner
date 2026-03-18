@@ -10,8 +10,9 @@ import (
 const fet_version = "7.5.5"
 
 type fet_build struct {
-	basedata *base.BaseData
-	ttsource autotimetable.TtSource
+	basedata           *base.BaseData
+	ttsource           autotimetable.TtSource
+	source_constraints []*autotimetable.TtConstraint
 
 	Doc                *etree.Document
 	WeightTable        []float64

@@ -1,9 +1,44 @@
 package timetable
 
 import (
+	"cmp"
 	"fetrunner/internal/base"
+	"maps"
+	"slices"
 	"strings"
 )
+
+// TODO: Prepare the DB constraints for TtData.
+func (tt_data *TtData) prepare_constraints() {
+	// Set up a sorted list of the constraint types which are actually used in the input data.
+	tt_data.constraintTypes = slices.SortedFunc(maps.Keys(tt_data.db.Constraints),
+		func(a, b constraintType) int {
+			return cmp.Compare(base.ConstraintPriority[b], base.ConstraintPriority[a])
+		})
+
+	for _, ctype := range tt_data.constraintTypes {
+		clist := tt_data.db.Constraints[ctype]
+
+		//TODO
+
+		switch ctype {
+
+		case base.C_RoomNotAvailable:
+
+		case base.C_ClassNotAvailable:
+
+		case base.C_TeacherNotAvailable:
+
+			// ...
+
+		default:
+
+		}
+	}
+
+	//TODO: or should I rather process particular types and remove them from the list?
+	// That might be a bit clearer?
+}
 
 /* The constraints AutomaticDifferentDays, DaysBetween are processed and
  * combined to be replaced by TtDaysBetween constraints. These also gain
