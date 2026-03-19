@@ -23,6 +23,11 @@ number of these lessons and their placement on the correct days right.
 The code here uses max-hours-in-interval constraints and tries to compensate
 for the gaps that are thus created by adjusting the max-gaps constraints.
 
+TODO: It might be better to support different lunch arrangements for each class,
+to increase flexibility. The "timetable" package could convert to "max-lessons-
+in-interval" constraints, the "DB" should specify the available slots for each
+class.
+
 */
 
 // ------------------------------------------------------------------------

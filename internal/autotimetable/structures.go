@@ -168,13 +168,12 @@ type TtActivityPlacement struct {
 //   references as indexes?
 
 type TtConstraint struct {
-	Id base.NodeRef // FET: "[index]" or "[index:weight]" //TODO???
+	Id string // FET: "[index]" or "[index:weight]" //TODO???
 	// DB: NodeRef of the source constraint from which this is derived.
 	// A single NodeRef may be referenced by multiple TtConstraints.
 
 	CType  string // name of constraint type.
 	Weight int    // 0 – 100
-	Flags  int    // bitmap, currently only 1 used (for hard "not available" types)
 	Data   any    // content dependent on constraint type
 }
 

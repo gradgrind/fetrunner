@@ -18,7 +18,7 @@ type AtomicIndex = autotimetable.AtomicIndex
 type TtClass = autotimetable.TtClass
 type TtGroup = autotimetable.TtGroup
 
-type constraint = autotimetable.AttConstraint
+type constraint = autotimetable.TtConstraint
 type constraintIndex = autotimetable.ConstraintIndex
 type autoTtData = autotimetable.AutoTtData
 type constraintType = autotimetable.ConstraintType
@@ -26,11 +26,12 @@ type constraintType = autotimetable.ConstraintType
 type TtData struct {
 	db *base.DbTopLevel
 
-	constraints       []constraint // ordered constraint info for "autotimetable"
-	nConstraints      constraintIndex
-	constraintTypes   []constraintType
-	hardConstraintMap map[constraintType][]constraintIndex
-	softConstraintMap map[constraintType][]constraintIndex
+	constraints        []*constraint     // ordered constraint list for "autotimetable"
+	hard_not_available []constraintIndex // list of hard "not available" constraints
+	nConstraints       constraintIndex
+	constraintTypes    []constraintType
+	hardConstraintMap  map[constraintType][]constraintIndex
+	softConstraintMap  map[constraintType][]constraintIndex
 
 	ndays        int
 	nhours       int
@@ -187,6 +188,9 @@ func MakeTimetableData(bd *base.BaseData) *TtData {
 	// Get the courses (-> CourseInfo) and activities for the timetable
 	tt_data.CollectCourses(bd)
 
+	// Collect constraints
+	tt_data.prepare_constraints()
+
 	//TODO: Perhaps this should be called from the back-end, in preparation
 	// for a generator run?
 	tt_data.preprocessConstraints(bd)
@@ -245,6 +249,6 @@ func (tt_data *TtData) GetSoftConstraintMap() map[constraintType][]constraintInd
 
 // TODO: This seems to be used only for the result presentation.
 // Is it really necessary? If so, what should it contain?
-func (tt_data *TtData) GetConstraints() []constraint {
+func (tt_data *TtData) GetConstraints() []*constraint {
 	return tt_data.constraints
 }

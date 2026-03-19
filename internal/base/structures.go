@@ -39,23 +39,6 @@ type TimeSlot struct {
 	Hour int // index to [DbTopLevel.Hours]
 }
 
-// An Info (of which there will only be one instance) collects general
-// information which doesn't have its own structure.
-type Info struct {
-	// Institution can be the name of the school. It may be used in printed
-	// output, for example.
-	Institution string
-	// FirstAfternoonHour is the first "hour" (0-based index) which is to
-	// be regarded as "afternoon".
-	FirstAfternoonHour int
-	// MiddayBreak specifies the "hours" (0-based indexes) which are to be
-	// regarded as possible lunch breaks. They should be contiguous.
-	MiddayBreak []int
-	// Reference can be used to distinguish this particular data set from
-	// others. It is not used in the code.
-	Reference string
-}
-
 type ElementBase struct {
 	Id NodeRef
 	// Not all elements use the Tag field
@@ -301,9 +284,22 @@ func (c *Constraint) IsHard() bool {
 // A `DbTopLevel` is the root of a data set.
 // In general, the list fields should be ordered, where this is relevant.
 type DbTopLevel struct {
-	Info Info
+	// Institution can be the name of the school. It may be used in printed
+	// output, for example.
+	Institution string
+	// FirstAfternoonHour is the first "hour" (0-based index) which is to
+	// be regarded as "afternoon".
+	FirstAfternoonHour int
+	// Reference can be used to distinguish this particular data set from
+	// others. It is not used in the code.
+	Reference string
+	// Start and end "hour" (0-based index) for the lunch break; if 0
+	// there is no lunch break.
+	MiddayBreak0 int
+	MiddayBreak1 int
 	// ModuleData is for data supplied and managed by other packages
-	ModuleData       map[string]any
+	ModuleData map[string]any
+
 	Days             []*Day
 	Hours            []*Hour
 	Teachers         []*Teacher

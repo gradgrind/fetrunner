@@ -10,6 +10,15 @@ import (
 
 // TODO: Prepare the DB constraints for TtData.
 func (tt_data *TtData) prepare_constraints() {
+	// As the constraint map is modified here, make a copy.
+	constraint_map := maps.Clone(tt_data.db.Constraints)
+	tt_data.get_blocked_slots(constraint_map)
+	tt_data.placement_constraints(constraint_map)
+
+}
+
+// TODO--
+func (tt_data *TtData) OLD_prepare_constraints() {
 	// Set up a sorted list of the constraint types which are actually used in the input data.
 	tt_data.constraintTypes = slices.SortedFunc(maps.Keys(tt_data.db.Constraints),
 		func(a, b constraintType) int {
