@@ -9,8 +9,8 @@ var (
 // TimeSlots in which the room is not available.
 func (db *DbTopLevel) NewRoomNotAvailable(
 	cid NodeRef, weight int, rid NodeRef, notAvailable []TimeSlot,
-) *Constraint {
-	c := &Constraint{
+) *BaseConstraint {
+	c := &BaseConstraint{
 		CType:  C_RoomNotAvailable,
 		Id:     cid,
 		Weight: weight,

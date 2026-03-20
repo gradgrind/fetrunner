@@ -14,8 +14,8 @@ type ActivityStartTime struct {
 
 func (db *DbTopLevel) NewActivityStartTime(
 	id NodeRef, weight int, aid NodeRef, day int, hour int,
-) *Constraint {
-	c := &Constraint{
+) *BaseConstraint {
+	c := &BaseConstraint{
 		CType:  C_ActivityStartTime,
 		Id:     id,
 		Weight: weight,

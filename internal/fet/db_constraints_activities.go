@@ -121,7 +121,7 @@ func (fetbuild *fet_build) before_after_hour() {
 }
 
 func (fetbuild *fet_build) make_before_after_hour(
-	c0 *base.Constraint, timeslots []preferred_time,
+	c0 *base.BaseConstraint, timeslots []preferred_time,
 ) {
 	tt_data := fetbuild.ttdata
 	logger := fetbuild.basedata.Logger

@@ -8,7 +8,7 @@ import (
 // hard ones.
 // Although the data structures support weights of less than 100%, the input
 // data may not.
-func (tt_data *TtData) get_blocked_slots(constraint_map map[string][]*base.Constraint) {
+func (tt_data *TtData) get_blocked_slots(constraint_map map[string][]*base.BaseConstraint) {
 	// Rooms
 	for _, c0 := range constraint_map[base.C_RoomNotAvailable] {
 		i := len(tt_data.constraints)

@@ -2,7 +2,7 @@ package base
 
 const MAXWEIGHT = 100
 
-func (db *DbTopLevel) addConstraint(c *Constraint) {
+func (db *DbTopLevel) addConstraint(c *BaseConstraint) {
 	db.Constraints[c.CType] = append(db.Constraints[c.CType], c)
 }
 
@@ -71,8 +71,8 @@ var ConstraintPriority = map[string]int{
 
 func (db *DbTopLevel) NewActivitiesEndDay(
 	id NodeRef, weight int, course NodeRef,
-) *Constraint {
-	c := &Constraint{
+) *BaseConstraint {
+	c := &BaseConstraint{
 		CType:  C_ActivitiesEndDay,
 		Id:     id,
 		Weight: weight,
@@ -93,8 +93,8 @@ type BeforeAfterHour struct {
 
 func (db *DbTopLevel) NewAfterHour(
 	id NodeRef, weight int, courses []NodeRef, hour int,
-) *Constraint {
-	c := &Constraint{
+) *BaseConstraint {
+	c := &BaseConstraint{
 		CType:  C_AfterHour,
 		Id:     id,
 		Weight: weight,
@@ -106,8 +106,8 @@ func (db *DbTopLevel) NewAfterHour(
 
 func (db *DbTopLevel) NewBeforeHour(
 	id NodeRef, weight int, courses []NodeRef, hour int,
-) *Constraint {
-	c := &Constraint{
+) *BaseConstraint {
+	c := &BaseConstraint{
 		CType:  C_BeforeHour,
 		Id:     id,
 		Weight: weight,
@@ -124,8 +124,8 @@ func (db *DbTopLevel) NewBeforeHour(
 // except for courses which have an overriding DAYS_BETWEEN constraint.
 func (db *DbTopLevel) NewAutomaticDifferentDays(
 	id NodeRef, weight int, consecutiveIfSameDay bool,
-) *Constraint {
-	c := &Constraint{
+) *BaseConstraint {
+	c := &BaseConstraint{
 		CType:  C_AutomaticDifferentDays,
 		Id:     id,
 		Weight: weight,
@@ -149,8 +149,8 @@ type DaysBetween struct {
 func (db *DbTopLevel) NewDaysBetween(
 	id NodeRef, weight int,
 	courses []NodeRef, daysBetween int, consecutiveIfSameDay bool,
-) *Constraint {
-	c := &Constraint{
+) *BaseConstraint {
+	c := &BaseConstraint{
 		CType:  C_DaysBetween,
 		Id:     id,
 		Weight: weight,
@@ -180,8 +180,8 @@ type DaysBetweenJoin struct {
 func (db *DbTopLevel) NewDaysBetweenJoin(
 	id NodeRef, weight int,
 	course1 NodeRef, course2 NodeRef, daysBetween int, consecutiveIfSameDay bool,
-) *Constraint {
-	c := &Constraint{
+) *BaseConstraint {
+	c := &BaseConstraint{
 		CType:  C_DaysBetweenJoin,
 		Id:     id,
 		Weight: weight,
@@ -202,8 +202,8 @@ func (db *DbTopLevel) NewDaysBetweenJoin(
 // activities be the same in each course.
 func (db *DbTopLevel) NewParallelCourses(
 	id NodeRef, weight int, courses []NodeRef,
-) *Constraint {
-	c := &Constraint{
+) *BaseConstraint {
+	c := &BaseConstraint{
 		CType:  C_ParallelCourses,
 		Id:     id,
 		Weight: weight,
@@ -219,8 +219,8 @@ func (db *DbTopLevel) NewParallelCourses(
 // the specified hours.
 func (db *DbTopLevel) NewDoubleActivityNotOverBreaks(
 	id NodeRef, weight int, hours []int,
-) *Constraint {
-	c := &Constraint{
+) *BaseConstraint {
+	c := &BaseConstraint{
 		CType:  C_DoubleActivityNotOverBreaks,
 		Id:     id,
 		Weight: weight,
@@ -243,8 +243,8 @@ type MinHoursFollowing struct {
 func (db *DbTopLevel) NewMinHoursFollowing(
 	id NodeRef, weight int,
 	course1 NodeRef, course2 NodeRef, hours int,
-) *Constraint {
-	c := &Constraint{
+) *BaseConstraint {
+	c := &BaseConstraint{
 		CType:  C_MinHoursFollowing,
 		Id:     id,
 		Weight: weight,

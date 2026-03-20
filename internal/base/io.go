@@ -97,12 +97,12 @@ func (bd *BaseData) testElement(ref NodeRef, element Element) bool {
 		bd.Logger.Error("Element has no Id:\n  -- %+v", element)
 		return false
 	}
-	_, nok := bd.Db.Elements[ref]
+	_, nok := bd.Db.ElementMap[ref]
 	if nok {
 		bd.Logger.Error("Element Id defined more than once:\n  %s", ref)
 		return false
 	}
-	bd.Db.Elements[ref] = element
+	bd.Db.ElementMap[ref] = element
 	return true
 }
 

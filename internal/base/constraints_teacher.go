@@ -16,8 +16,8 @@ var (
 // TimeSlots in which the teacher is not available.
 func (db *DbTopLevel) NewTeacherNotAvailable(
 	id NodeRef, weight int, tid NodeRef, notAvailable []TimeSlot,
-) *Constraint {
-	c := &Constraint{
+) *BaseConstraint {
+	c := &BaseConstraint{
 		CType:  C_TeacherNotAvailable,
 		Id:     id,
 		Weight: weight,
@@ -32,8 +32,8 @@ func (db *DbTopLevel) NewTeacherNotAvailable(
 // Double time-slots count as two activities, etc.
 func (db *DbTopLevel) NewTeacherMinActivitiesPerDay(
 	id NodeRef, weight int, tid NodeRef, n int,
-) *Constraint {
-	c := &Constraint{
+) *BaseConstraint {
+	c := &BaseConstraint{
 		CType:  C_TeacherMinActivitiesPerDay,
 		Id:     id,
 		Weight: weight,
@@ -48,8 +48,8 @@ func (db *DbTopLevel) NewTeacherMinActivitiesPerDay(
 // Double time-slots count as two activities, etc.
 func (db *DbTopLevel) NewTeacherMaxActivitiesPerDay(
 	id NodeRef, weight int, tid NodeRef, n int,
-) *Constraint {
-	c := &Constraint{
+) *BaseConstraint {
+	c := &BaseConstraint{
 		CType:  C_TeacherMaxActivitiesPerDay,
 		Id:     id,
 		Weight: weight,
@@ -64,8 +64,8 @@ func (db *DbTopLevel) NewTeacherMaxActivitiesPerDay(
 // Double time-slots count as two activities, etc.
 func (db *DbTopLevel) NewTeacherMaxDays(
 	id NodeRef, weight int, tid NodeRef, n int,
-) *Constraint {
-	c := &Constraint{
+) *BaseConstraint {
+	c := &BaseConstraint{
 		CType:  C_TeacherMaxDays,
 		Id:     id,
 		Weight: weight,
@@ -79,8 +79,8 @@ func (db *DbTopLevel) NewTeacherMaxDays(
 
 func (db *DbTopLevel) NewTeacherMaxGapsPerDay(
 	id NodeRef, weight int, tid NodeRef, n int,
-) *Constraint {
-	c := &Constraint{
+) *BaseConstraint {
+	c := &BaseConstraint{
 		CType:  C_TeacherMaxGapsPerDay,
 		Id:     id,
 		Weight: weight,
@@ -94,8 +94,8 @@ func (db *DbTopLevel) NewTeacherMaxGapsPerDay(
 
 func (db *DbTopLevel) NewTeacherMaxGapsPerWeek(
 	id NodeRef, weight int, tid NodeRef, n int,
-) *Constraint {
-	c := &Constraint{
+) *BaseConstraint {
+	c := &BaseConstraint{
 		CType:  C_TeacherMaxGapsPerWeek,
 		Id:     id,
 		Weight: weight,
@@ -109,8 +109,8 @@ func (db *DbTopLevel) NewTeacherMaxGapsPerWeek(
 
 func (db *DbTopLevel) NewTeacherMaxAfternoons(
 	id NodeRef, weight int, tid NodeRef, n int,
-) *Constraint {
-	c := &Constraint{
+) *BaseConstraint {
+	c := &BaseConstraint{
 		CType:  C_TeacherMaxAfternoons,
 		Id:     id,
 		Weight: weight,
@@ -124,8 +124,8 @@ func (db *DbTopLevel) NewTeacherMaxAfternoons(
 
 func (db *DbTopLevel) NewTeacherLunchBreak(
 	id NodeRef, weight int, tid NodeRef,
-) *Constraint {
-	c := &Constraint{
+) *BaseConstraint {
+	c := &BaseConstraint{
 		CType:  C_TeacherLunchBreak,
 		Id:     id,
 		Weight: weight,

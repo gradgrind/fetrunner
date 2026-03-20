@@ -177,12 +177,14 @@ type TtConstraint struct {
 	Data   any    // content dependent on constraint type
 }
 
+/*TODO--
 type AttConstraint struct {
 	TtSourceTag string
 	Ctype       string
 	Parameters  []int
 	Weight      int
 }
+*/
 
 /*TODO: How to handle source and back-end constraints?
 

@@ -4,10 +4,9 @@ import (
 	"fetrunner/internal/base"
 )
 
-func (tt_data *TtData) placement_constraints(constraint_map map[string][]*base.Constraint) {
+func (tt_data *TtData) placement_constraints(constraint_map map[string][]*base.BaseConstraint) {
 	for _, c0 := range constraint_map[base.C_ActivityStartTime] {
 		data := c0.Data.(base.ActivityStartTime)
-		i := len(tt_data.constraints)
 		ai := tt_data.Ref2ActivityIndex[data.Activity]
 		tt_data.constraints = append(tt_data.constraints, &constraint{
 			Id:     string(c0.Id),

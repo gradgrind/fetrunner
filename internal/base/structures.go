@@ -2,7 +2,7 @@
 // together with some supporting functions and methods.
 //
 // Initially designed around the data connected with timetabling, it is
-// readily extendable. The root element is the [DbTopLevel] struct, which
+// readily extendable. The root element is the `DbTopLevel` struct, which
 // is sometimes referred to as the "database".
 // No particular method of persistent storage is specified, the data
 // structures can be assembled from and saved to any format for which a
@@ -18,8 +18,7 @@ type BaseData struct {
 	StopFlag bool // used to interrupt long-running processes
 
 	SourceDir string // the directory containing the source file
-	Name      string // the name of this data set, derived from the source
-	// file name
+	Name      string // the name of this data set, derived from the source file name
 
 	Db *DbTopLevel
 }
@@ -35,14 +34,13 @@ type NodeRef string // Element Id
 // periods), which are usually not 60 minutes in length. Each day has the
 // same number of activities.
 type TimeSlot struct {
-	Day  int // index to [DbTopLevel.Days]
-	Hour int // index to [DbTopLevel.Hours]
+	Day  int // index to `DbTopLevel.Days`
+	Hour int // index to `DbTopLevel.Hours`
 }
 
 type ElementBase struct {
-	Id NodeRef
-	// Not all elements use the Tag field
-	Tag string // abbreviation/acronym
+	Id  NodeRef
+	Tag string // abbreviation/acronym, not used by all elements
 }
 
 type Element interface {
@@ -81,7 +79,7 @@ type Hour struct {
 // information relevant for the timetable.
 // It can be specified as a recourse for an activity.
 type Teacher struct {
-	ResourceBase
+	ElementBase
 	Name      string
 	Firstname string
 }
@@ -96,7 +94,7 @@ type Subject struct {
 
 // A Room is a resource which can be specified for an activity.
 type Room struct {
-	ResourceBase
+	ElementBase
 	Name string
 }
 
@@ -130,22 +128,20 @@ func (r *RoomChoiceGroup) IsReal() bool {
 }
 
 // A Class represents a collection of students and will generally correspond
-// to a school class (not "lesson"). It includes various constraint
-// information relevant for the timetable.
-// See type [Group] (representing a subgroup of a class) for the student
-// groups which can be specified as a resourse for an activity.
-// A class often has a name which consists of a number and a letter or two.
-// The number (Year field) represents the class's "year" (A.E. "grade"), the
-// Letter field the text part (it can be more than one letter). The Tag field
-// is the combination, e.g. "11A". The Name field can be used for a longer
-// description of the class.
+// to a school class (not "lesson").
+// See type `Group` (representing a subgroup of a class) for the student
+// groups which can be specified as a resource for an activity.
+// A class often has a name (`Tag` field) which consists of a number and a
+// "year" (A.E. "grade"), the `Letter` field the text part (it can be more
+// than one letter). The `Name` field can be used for a longer description
+// of the class.
 type Class struct {
-	ResourceBase
+	ElementBase
 	Name       string
 	Year       int
 	Letter     string
 	Divisions  []Division
-	ClassGroup NodeRef // the Group representing the whole class
+	ClassGroup NodeRef // the `Group` representing the whole class
 }
 
 type Group struct {
@@ -169,13 +165,13 @@ type Division struct {
 }
 
 // A Course specifies a collection of resources needed for a set of
-// activities ([Activity] elements). The [Subject] field is a sort of label.
+// activities (`Activity` elements). The `Subject` field is a sort of label.
 type Course struct {
 	ElementBase
 	Subject  NodeRef
 	Groups   []NodeRef // always `Group`: class references use the ClassGroup
 	Teachers []NodeRef
-	Room     NodeRef // [Room], [RoomGroup] or [RoomChoiceGroup] element
+	Room     NodeRef // `Room`, `RoomGroup` or `RoomChoiceGroup` element
 	// These fields do not belong in the JSON object:
 	Activities []*Activity `json:"-"`
 }
@@ -192,8 +188,8 @@ func (c *Course) IsSuperCourse() bool {
 	return false
 }
 
-// A SuperCourse specifies a collection of [SubCourse] elements which are
-// associated with a set of activities ([Activity] elements). The [Subject]
+// A SuperCourse specifies a collection of `SubCourse` elements which are
+// associated with a set of activities (`Activity` elements). The `Subject`
 // field is a sort of label.
 type SuperCourse struct {
 	ElementBase
@@ -216,8 +212,8 @@ func (c *SuperCourse) SetActivityList(ll []*Activity) {
 }
 
 // A SubCourse has no activities of its own, but shares those of its parent
-// [SuperCourse] elements. A SubCourse may blong to more than one
-// [SuperCourse]. Otherwise it is much like a [Course], bundling the
+// `SuperCourse` elements. A SubCourse may blong to more than one
+// `SuperCourse`. Otherwise it is much like a `Course`, bundling the
 // necessary resources.
 type SubCourse struct {
 	ElementBase
@@ -225,20 +221,20 @@ type SubCourse struct {
 	Subject      NodeRef
 	Groups       []NodeRef // always `Group`: class references use the ClassGroup
 	Teachers     []NodeRef
-	Room         NodeRef //  [Room], [RoomGroup] or [RoomChoiceGroup] element
+	Room         NodeRef //  `Room`, `RoomGroup` or `RoomChoiceGroup` element
 }
 
-// A GeneralRoom covers  [Room], [RoomGroup] and [RoomChoiceGroup].
+// A GeneralRoom covers  `Room`, `RoomGroup` and `RoomChoiceGroup`.
 type GeneralRoom interface {
 	IsReal() bool
 }
 
 // An Activity is an activity which needs placing in the timetable.
-// Its resources are determined by the course ([Course] or [SuperCourse]) to
+// Its resources are determined by the course (`Course` or `SuperCourse`) to
 // which it belongs.
 type Activity struct {
 	ElementBase
-	Course   NodeRef // [Course] or [SuperCourse] element
+	Course   NodeRef // `Course` or `SuperCourse` element
 	Duration int     // number of "hours" covered
 }
 
@@ -251,13 +247,13 @@ type ActivityPlacement struct {
 }
 
 // ActivityCourse is a type of course which can have activities, i.e. a
-// [Course] or a [SuperCourse].
+// `Course` or a `SuperCourse`.
 type ActivityCourse interface {
-	IsSuperCourse() bool // whether this is a SuperCourse
+	IsSuperCourse() bool // whether this is a `SuperCourse`
 
 	// When the data is initially loaded the courses have no attached
 	// activities.
-	// The activity list is built from the course references in the Activity
+	// The activity list is built from the course references in the `Activity`
 	// elements. The individual activities are inserted such that they are
 	// ordered with the longest (duration) first. The following functions
 	// are used in the building of these lists.
@@ -265,19 +261,18 @@ type ActivityCourse interface {
 	SetActivityList([]*Activity)
 }
 
-// Constraint is a rule used in the construction of a timetable.
-//
+// A constraint is a rule used in the construction of a timetable.
 // These can be very varied and they may have very little in common. Each
-// implementation must have a distinguishing CType.
-type Constraint struct {
+// implementation must have a distinguishing `CType`.
+type BaseConstraint struct {
 	CType  string  // constraint type
 	Id     NodeRef // reference to external source, if there is such a reference
 	Weight int     // range 0 (inactive) - 100 (hard)
-	Data   any     // contents depend on CType
+	Data   any     // contents depend on `CType`
 	//Disabled bool TODO?
 }
 
-func (c *Constraint) IsHard() bool {
+func (c *BaseConstraint) IsHard() bool {
 	return c.Weight == MAXWEIGHT
 }
 
@@ -314,17 +309,17 @@ type DbTopLevel struct {
 	SubCourses       []*SubCourse                    `json:",omitempty"`
 	Activities       []*Activity                     `json:",omitempty"`
 	Placements       map[string][]*ActivityPlacement `json:",omitempty"`
-	Constraints      map[string][]*Constraint        `json:",omitempty"`
+	Constraints      map[string][]*BaseConstraint    `json:",omitempty"`
 
 	// The following fields are not persistent, they are created when a data
 	// set is loaded and the are not saved when the data set is saved.
 
-	Elements map[NodeRef]Element `json:"-"` // a convenience structure
-	// built from other elements of the `DbTopLevel`
+	ElementMap map[NodeRef]Element `json:"-"` // a convenience structure
+	// built from the elements of the `DbTopLevel`
 }
 
 func (db *DbTopLevel) GetElement(ref NodeRef) Element {
-	e, ok := db.Elements[ref]
+	e, ok := db.ElementMap[ref]
 	if !ok {
 		panic("GetElement, unknown Ref: " + ref)
 	}
@@ -332,23 +327,11 @@ func (db *DbTopLevel) GetElement(ref NodeRef) Element {
 }
 
 func (db *DbTopLevel) Ref2Tag(ref NodeRef) string {
-	e, ok := db.Elements[ref]
+	e, ok := db.ElementMap[ref]
 	if !ok {
 		panic("No Ref2Tag for " + ref)
 	}
 	return e.GetTag()
-}
-
-type ResourceBase struct {
-	ElementBase
-}
-
-type Resource interface {
-	GetResourceTag() string
-}
-
-func (r *ResourceBase) GetResourceTag() string {
-	return r.Tag
 }
 
 var CLASS_GROUP_SEPARATOR string = "."

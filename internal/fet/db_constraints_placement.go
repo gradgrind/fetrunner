@@ -89,14 +89,14 @@ func (fetbuild *fet_build) get_fet_rooms(cinfo *timetable.CourseInfo) []string {
 	rtags := []string{}
 	for _, rr := range cinfo.FixedRooms {
 		rtags = append(rtags,
-			rooms[rr].GetResourceTag())
+			rooms[rr].GetTag())
 	}
 	rctags := [][]string{}
 	for _, rc := range cinfo.RoomChoices {
 		rcl := []string{}
 		for _, rr := range rc {
 			rcl = append(rcl,
-				rooms[rr].GetResourceTag())
+				rooms[rr].GetTag())
 		}
 		rctags = append(rctags, rcl)
 	}

@@ -11,8 +11,8 @@ import (
 func NewDb() *DbTopLevel {
 	return &DbTopLevel{
 		Placements:  map[string][]*ActivityPlacement{},
-		Constraints: map[string][]*Constraint{},
-		Elements:    map[NodeRef]Element{},
+		Constraints: map[string][]*BaseConstraint{},
+		ElementMap:  map[NodeRef]Element{},
 	}
 }
 
@@ -29,13 +29,13 @@ func (bd *BaseData) addElement(ref NodeRef, element Element) NodeRef {
 	if ref == "" {
 		ref = NewId()
 	} else {
-		_, known := bd.Db.Elements[ref]
+		_, known := bd.Db.ElementMap[ref]
 		if known {
 			bd.Logger.Error("Element Id defined more than once:  %s", ref)
 			ref = NewId()
 		}
 	}
-	bd.Db.Elements[ref] = element
+	bd.Db.ElementMap[ref] = element
 	return ref
 }
 
@@ -140,7 +140,7 @@ func (bd *BaseData) PrepareDb() {
 	// Collect the SubCourses for each SuperCourse
 	for _, sbc := range db.SubCourses {
 		for _, spcref := range sbc.SuperCourses {
-			spc := db.Elements[spcref].(*SuperCourse)
+			spc := db.ElementMap[spcref].(*SuperCourse)
 			spc.SubCourses = append(spc.SubCourses, sbc)
 		}
 	}
@@ -148,7 +148,7 @@ func (bd *BaseData) PrepareDb() {
 	// Collect the Activities for each Course and SuperCourse, the list being
 	// ordered with the longest durations first
 	for _, l := range db.Activities {
-		c := db.Elements[l.Course].(ActivityCourse)
+		c := db.ElementMap[l.Course].(ActivityCourse)
 		d := l.Duration
 		var i int = 0
 		ll := c.GetActivityList()
@@ -168,10 +168,10 @@ func (bd *BaseData) PrepareDb() {
 			// Not a real class
 			continue
 		}
-		db.Elements[c.ClassGroup].(*Group).Class = c // Tag is empty.
+		db.ElementMap[c.ClassGroup].(*Group).Class = c // Tag is empty.
 		for _, d := range c.Divisions {
 			for _, gref := range d.Groups {
-				db.Elements[gref].(*Group).Class = c
+				db.ElementMap[gref].(*Group).Class = c
 			}
 		}
 	}
@@ -192,7 +192,7 @@ func (bd *BaseData) PrepareDb() {
 	for _, rg := range db.RoomGroups {
 		rlist := []NodeRef{}
 		for _, r := range rg.Rooms {
-			if _, ok := db.Elements[r].(*Room); ok {
+			if _, ok := db.ElementMap[r].(*Room); ok {
 				rlist = append(rlist, r)
 			} else {
 				logger.Error(
@@ -204,7 +204,7 @@ func (bd *BaseData) PrepareDb() {
 	for _, rg := range db.RoomChoiceGroups {
 		rlist := []NodeRef{}
 		for _, r := range rg.Rooms {
-			if _, ok := db.Elements[r].(*Room); ok {
+			if _, ok := db.ElementMap[r].(*Room); ok {
 				rlist = append(rlist, r)
 			} else {
 				logger.Error(

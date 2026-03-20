@@ -51,10 +51,6 @@ type AtomicGroup struct {
 	Tag    string // A constructed tag to represent the atomic group
 }
 
-func (a *AtomicGroup) GetResourceTag() string {
-	return a.Tag
-}
-
 func (tt_data *TtData) MakeAtomicGroups() {
 	db := tt_data.db
 
