@@ -5,18 +5,19 @@ package timetable
 import (
 	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
+	"maps"
 )
 
-type NodeRef = base.NodeRef // node reference (UUID)
+type nodeRef = base.NodeRef // node reference (UUID)
 type element = base.ElementBase
 
-type ActivityIndex = autotimetable.ActivityIndex
-type TeacherIndex = autotimetable.TeacherIndex
-type RoomIndex = autotimetable.RoomIndex
-type ClassIndex = autotimetable.ClassIndex
-type AtomicIndex = autotimetable.AtomicIndex
-type TtClass = autotimetable.TtClass
-type TtGroup = autotimetable.TtGroup
+type activityIndex = autotimetable.ActivityIndex
+type teacherIndex = autotimetable.TeacherIndex
+type roomIndex = autotimetable.RoomIndex
+type classIndex = autotimetable.ClassIndex
+type atomicIndex = autotimetable.AtomicIndex
+type ttClass = autotimetable.TtClass
+type ttGroup = autotimetable.TtGroup
 
 type constraint = autotimetable.TtConstraint
 type constraintIndex = autotimetable.ConstraintIndex
@@ -39,15 +40,15 @@ type TtData struct {
 
 	AtomicGroups []*AtomicGroup
 
-	Teacher2Index map[NodeRef]TeacherIndex
+	Teacher2Index map[nodeRef]teacherIndex
 	teachers      []element
-	Room2Index    map[NodeRef]RoomIndex
+	Room2Index    map[nodeRef]roomIndex
 	rooms         []element
-	Class2Index   map[NodeRef]ClassIndex
+	Class2Index   map[nodeRef]classIndex
 
 	// `AtomicGroup2Indexes` maps a class or group NodeRef to its list of atomic
 	// group indexes.
-	AtomicGroup2Indexes map[NodeRef][]AtomicIndex
+	AtomicGroup2Indexes map[nodeRef][]atomicIndex
 
 	// `ClassDivisions` is a list with an entry for each class, containing a
 	// list of its divisions ([][]NodeRef).
@@ -58,13 +59,13 @@ type TtData struct {
 
 	// Set up by `CollectCourses`, which calls `makeActivities`
 	TtActivities      []*TtActivity
-	Ref2ActivityIndex map[NodeRef]ActivityIndex
+	Ref2ActivityIndex map[nodeRef]activityIndex
 	CourseInfoList    []*CourseInfo
-	Ref2CourseInfo    map[NodeRef]*CourseInfo
+	Ref2CourseInfo    map[nodeRef]*CourseInfo
 
 	// Transformed constraints
-	MinDaysBetweenActivities []*TtDaysBetween
-	ParallelActivities       []*TtParallelActivities
+	minDaysBetweenActivities []*TtDaysBetween
+	parallelActivities       []*TtParallelActivities
 }
 
 func (tt_data *TtData) GetDays() []element {
@@ -83,16 +84,16 @@ func (tt_data *TtData) GetHours() []element {
 	return hlist
 }
 
-func (tt_data *TtData) GetClasses() []*TtClass {
+func (tt_data *TtData) GetClasses() []*ttClass {
 	db := tt_data.db
-	clist := make([]*TtClass, len(tt_data.ClassDivisions))
+	clist := make([]*ttClass, len(tt_data.ClassDivisions))
 	for i, c := range tt_data.ClassDivisions {
-		glist := []*TtGroup{}
+		glist := []*ttGroup{}
 		for _, d := range c.Divisions {
 			for _, g := range d {
 				e := db.GetElement(g)
 				id := e.GetRef()
-				glist = append(glist, &TtGroup{
+				glist = append(glist, &ttGroup{
 					Id:            id,
 					Tag:           e.GetTag(),
 					ClassIndex:    i,
@@ -100,7 +101,7 @@ func (tt_data *TtData) GetClasses() []*TtClass {
 				})
 			}
 		}
-		clist[i] = &TtClass{
+		clist[i] = &ttClass{
 			Id:            c.Class.Id,
 			Tag:           c.Class.Tag,
 			AtomicIndexes: tt_data.AtomicGroup2Indexes[c.Class.Id],
@@ -139,25 +140,25 @@ func (tt_data *TtData) GetTeachers() []element {
 // Activities within a course are (already) ordered, highest duration first,
 // and the Activities field has the same order.
 type CourseInfo struct {
-	Id                 NodeRef // Course or SuperCourse
+	Id                 nodeRef // Course or SuperCourse
 	Subject            string
 	Groups             []*base.Group // a `Class` is represented by its ClassGroup
-	AtomicGroupIndexes []AtomicIndex
-	Teachers           []TeacherIndex
-	FixedRooms         []RoomIndex
-	RoomChoices        [][]RoomIndex
-	Activities         []ActivityIndex
+	AtomicGroupIndexes []atomicIndex
+	Teachers           []teacherIndex
+	FixedRooms         []roomIndex
+	RoomChoices        [][]roomIndex
+	Activities         []activityIndex
 }
 
 // TODO: Add node id field? And where is the other info, like duration?
 type TtActivity struct {
 	CourseInfo     int            // index to `TtData.CourseInfoList`
-	FixedStartTime *base.TimeSlot // needed for days-between preparation
+	fixedStartTime *base.TimeSlot // needed for days-between preparation
 }
 
 type ClassDivision struct {
 	Class     *base.Class
-	Divisions [][]NodeRef
+	Divisions [][]nodeRef
 }
 
 // MakeTimetableData performs the initialization of a TtData structure, collecting
@@ -188,18 +189,28 @@ func MakeTimetableData(bd *base.BaseData) *TtData {
 	// Get the courses (-> CourseInfo) and activities for the timetable
 	tt_data.CollectCourses(bd)
 
-	// Collect constraints
-	tt_data.prepare_constraints()
+	// Use a copy of the constraints map so that it can be used destructively,
+	// deleting entries as they are processed.
+	constraint_map := maps.Clone(db.Constraints)
+	tt_data.get_blocked_slots(constraint_map)
+	tt_data.placement_constraints(constraint_map)
+	// Prepare for the generation of new constraints where these are implied
+	// by certain special constraints. This must be after the call to
+	// `placement_constraints` as that sets up the hard fixed starting times,
+	// which are needed for the generation of the days-between constraints.
+	tt_data.preprocessConstraints(bd, constraint_map)
 
-	//TODO: Perhaps this should be called from the back-end, in preparation
-	// for a generator run?
-	tt_data.preprocessConstraints(bd)
+	// Collect the remaining constraints.
+	tt_data.prepare_constraints(constraint_map)
+	for c := range constraint_map {
+		bd.Logger.Error("UnhandledConstraintType: %s", c)
+	}
 
 	return tt_data
 }
 
 func (tt_data *TtData) TeacherResources() {
-	tt_data.Teacher2Index = map[NodeRef]TeacherIndex{}
+	tt_data.Teacher2Index = map[nodeRef]teacherIndex{}
 	tt_data.teachers = make([]element, len(tt_data.db.Teachers))
 	for i, t := range tt_data.db.Teachers {
 		tt_data.Teacher2Index[t.Id] = i
@@ -208,7 +219,7 @@ func (tt_data *TtData) TeacherResources() {
 }
 
 func (tt_data *TtData) RoomResources() {
-	tt_data.Room2Index = map[NodeRef]RoomIndex{}
+	tt_data.Room2Index = map[nodeRef]roomIndex{}
 	tt_data.rooms = make([]element, len(tt_data.db.Rooms))
 	for i, r := range tt_data.db.Rooms {
 		tt_data.Room2Index[r.Id] = i

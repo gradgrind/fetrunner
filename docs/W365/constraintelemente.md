@@ -24,12 +24,12 @@ Die Activities der Kurse sollten nach der angegebenen Stunde – ausschließlich
 
 ```
 {
-	"Constraint":   "AFTER_HOUR",
-	"Weight":       100,
-	"Courses":      [
+    "Constraint":   "AFTER_HOUR",
+    "Weight":       100,
+    "Courses":      [
         "2edfe663-c62b-4d05-ace2-0bedb0f4b672"
     ],
-	"Hour":         4
+    "Hour":         4
 }
 ```
 
@@ -39,12 +39,12 @@ Die Activities der Kurse sollten vor der angegebenen Stunde – ausschließlich 
 
 ```
 {
-	"Constraint":   "BEFORE_HOUR",
-	"Weight":       100,
-	"Courses":      [
+    "Constraint":   "BEFORE_HOUR",
+    "Weight":       100,
+    "Courses":      [
         "2edfe663-c62b-4d05-ace2-0bedb0f4b672"
     ],
-	"Hour":         4
+    "Hour":         4
 }
 ```
 
@@ -58,9 +58,9 @@ Einzelne Kurse können durch DaysBetween-Constraints anders geregelt werden.
 
 ```
 {
-	"Constraint":           "AUTOMATIC_DIFFERENT_DAYS",
-	"Weight":               100,
-	"ConsecutiveIfSameDay": true
+    "Constraint":           "AUTOMATIC_DIFFERENT_DAYS",
+    "Weight":               100,
+    "ConsecutiveIfSameDay": true
 }
 ```
 
@@ -70,13 +70,13 @@ Dieser Constraint ist wie AutomaticDifferentDays, erlaubt aber andere Tagesabst�
 
 ```
 {
-	"Constraint":           "DAYS_BETWEEN",
-	"Weight":               100,
-	"Courses":              [
+    "Constraint":           "DAYS_BETWEEN",
+    "Weight":               100,
+    "Courses":              [
         "2edfe663-c62b-4d05-ace2-0bedb0f4b672"
     ],
-	"DaysBetween":          2.
-	"ConsecutiveIfSameDay": true
+    "DaysBetween":          2.
+    "ConsecutiveIfSameDay": true
 }
 ```
 
@@ -86,12 +86,12 @@ Anders als DaysBetween wird dieser Constraint zwischen den einzelnen Stunden zwe
 
 ```
 {
-	"Constraint":           "DAYS_BETWEEN_JOIN",
-	"Weight":               100,
-	"Course1":              "2edfe663-c62b-4d05-ace2-0bedb0f4b672",
-	"Course2":              "5fda67de-bbb3-48a2-a098-d957796b7743",
-	"DaysBetween":          1,
-	"ConsecutiveIfSameDay": false
+    "Constraint":           "DAYS_BETWEEN_JOIN",
+    "Weight":               100,
+    "Course1":              "2edfe663-c62b-4d05-ace2-0bedb0f4b672",
+    "Course2":              "5fda67de-bbb3-48a2-a098-d957796b7743",
+    "DaysBetween":          1,
+    "ConsecutiveIfSameDay": false
 }
 ```
 
@@ -101,11 +101,11 @@ Die Activities der Kurse sollen gleichzeitig stattfinden. Die Anzahl und Länge 
 
 ```
 {
-	"Constraint":           "PARALLEL_COURSES",
-	"Weight":               100,
-	"Courses":              [
+    "Constraint":           "PARALLEL_COURSES",
+    "Weight":               100,
+    "Courses":              [
         "2edfe663-c62b-4d05-ace2-0bedb0f4b672",
-	    "5fda67de-bbb3-48a2-a098-d957796b7743"
+        "5fda67de-bbb3-48a2-a098-d957796b7743"
     ],
 }
 ```
@@ -114,26 +114,26 @@ Die Activities der Kurse sollen gleichzeitig stattfinden. Die Anzahl und Länge 
 
 ## DoubleActivityNotOverBreaks
 
-Dieser Constraint sollte höchstens einmal vorkommen. Eine Doppelstunde soll nicht durch eine Pause unterbrochen werden. Die Pause sind unmittelbar vor den angegebenen Stunden.
+Dieser Constraint sollte höchstens einmal vorkommen. Eine Doppelstunde soll nicht durch eine Pause unterbrochen werden. Die Pausen sind unmittelbar vor den angegebenen Stunden.
 
 ```
 {
-	"Constraint":           "DOUBLE_LESSON_NOT_OVER_BREAKS",
-	"Weight":               90,
-	"Hours":                [2, 4]
+    "Constraint":           "DOUBLE_LESSON_NOT_OVER_BREAKS",
+    "Weight":               90,
+    "Hours":                [2, 4]
 }
 ```
 
 ## MinHoursFollowing
 
-Zwischen den Stunden des ersten Kurses und denen des zweiten Kurses sollten (an einem Tag) mindestens die angegebene Zahl an Stunden liegen (die Stunden der zwei Kurse werden nicht mitgezählt). 
+Zwischen den Stunden des ersten Kurses und denen des zweiten Kurses sollten (an einem Tag) mindestens die angegebene Zahl an Stunden liegen (die Stunden der zwei Kurse werden nicht mitgezählt).
 
 ```
 {
-	"Constraint":   "MIN_HOURS_FOLLOWING",
-	"Weight":       90,
-	"Course1":      "2edfe663-c62b-4d05-ace2-0bedb0f4b672",
-	"Course2":      "5fda67de-bbb3-48a2-a098-d957796b7743",
-	"Hours":        4
+    "Constraint":   "MIN_HOURS_FOLLOWING",
+    "Weight":       90,
+    "Course1":      "2edfe663-c62b-4d05-ace2-0bedb0f4b672",
+    "Course2":      "5fda67de-bbb3-48a2-a098-d957796b7743",
+    "Hours":        4
 }
 ```

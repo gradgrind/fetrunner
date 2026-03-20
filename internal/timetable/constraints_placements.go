@@ -16,6 +16,13 @@ func (tt_data *TtData) placement_constraints(constraint_map map[string][]*base.B
 				"Activity": ai, "Time": base.TimeSlot{Day: data.Day, Hour: data.Hour},
 			},
 		})
+
+		// Collect the hard fixed activity placements as these are needed in
+		// the generation of the days-between constraints.
+		if c0.IsHard() {
+			tt_data.TtActivities[ai].fixedStartTime = &base.TimeSlot{
+				Day: data.Day, Hour: data.Hour}
+		}
 	}
 	delete(constraint_map, base.C_ActivityStartTime)
 }

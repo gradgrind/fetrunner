@@ -28,23 +28,23 @@ func (tt_data *TtData) View(cinfo *CourseInfo, db *base.DbTopLevel) string {
 // Build a list of CourseInfo structures.
 func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 	db := bdata.Db
-	tt_data.Ref2CourseInfo = map[NodeRef]*CourseInfo{}
+	tt_data.Ref2CourseInfo = map[nodeRef]*CourseInfo{}
 
 	// The list of `TtActivity` items shadows the list of `Activity` items.
 	tt_data.TtActivities = make([]*TtActivity, len(db.Activities))
-	tt_data.Ref2ActivityIndex = map[NodeRef]ActivityIndex{}
+	tt_data.Ref2ActivityIndex = map[nodeRef]activityIndex{}
 	for i, a := range db.Activities {
-		tt_data.Ref2ActivityIndex[a.Id] = ActivityIndex(i)
+		tt_data.Ref2ActivityIndex[a.Id] = activityIndex(i)
 	}
 
 	// *** Gather the SuperCourses. ***
 	for _, spc := range db.SuperCourses {
 		cref := spc.Id
 		groups := []*base.Group{}
-		agroups := []AtomicIndex{}
-		teachers := []TeacherIndex{}
-		rooms := []RoomIndex{}
-		crooms := [][]RoomIndex{}
+		agroups := []atomicIndex{}
+		teachers := []teacherIndex{}
+		rooms := []roomIndex{}
+		crooms := [][]roomIndex{}
 		for _, sbc := range spc.SubCourses {
 			// Add groups
 			for _, gref := range sbc.Groups {
@@ -93,7 +93,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 
 				rcg, ok := gr.(*base.RoomChoiceGroup)
 				if ok {
-					roomlist := []RoomIndex{}
+					roomlist := []roomIndex{}
 					for _, rr := range rcg.Rooms {
 						r, ok = tt_data.Room2Index[rr]
 						if !ok {
@@ -147,7 +147,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 			cinfo.Activities = append(cinfo.Activities, aix)
 			tt_data.TtActivities[aix] = &TtActivity{
 				CourseInfo: len(tt_data.CourseInfoList),
-				//FixedStartTime: , // will be set later
+				//fixedStartTime: , // will be set later
 			}
 		}
 
@@ -165,7 +165,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 
 		// Get groups
 		groups := []*base.Group{}
-		agroups := []AtomicIndex{}
+		agroups := []atomicIndex{}
 		for _, gref := range c.Groups {
 			g, ok := db.GetElement(gref).(*base.Group)
 			if !ok {
@@ -176,7 +176,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 		}
 
 		// Get teachers
-		teachers := []TeacherIndex{}
+		teachers := []teacherIndex{}
 		for _, tref := range c.Teachers {
 			t, ok := tt_data.Teacher2Index[tref]
 			if !ok {
@@ -186,8 +186,8 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 		}
 
 		// Get rooms
-		rooms := []RoomIndex{}
-		crooms := [][]RoomIndex{}
+		rooms := []roomIndex{}
+		crooms := [][]roomIndex{}
 		if c.Room != "" {
 			r, ok := tt_data.Room2Index[c.Room]
 			if ok {
@@ -209,7 +209,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 				} else {
 					rcg, ok := gr.(*base.RoomChoiceGroup)
 					if ok {
-						roomlist := []RoomIndex{}
+						roomlist := []roomIndex{}
 						for _, rr := range rcg.Rooms {
 							r, ok = tt_data.Room2Index[rr]
 							if !ok {
@@ -256,7 +256,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 			cinfo.Activities = append(cinfo.Activities, aix)
 			tt_data.TtActivities[aix] = &TtActivity{
 				CourseInfo: len(tt_data.CourseInfoList),
-				//FixedStartTime: , // will be set later
+				//fixedStartTime: , // will be set later
 			}
 		}
 

@@ -12,7 +12,7 @@ const ATOMIC_GROUP_SEP2 = "~"
 func (tt_data *TtData) FilterDivisions() {
 	db := tt_data.db
 	// Collect groups used in courses
-	usedgroups := map[NodeRef]bool{}
+	usedgroups := map[nodeRef]bool{}
 
 	// Gather groups from the SuperCourses.
 	for _, spc := range db.SuperCourses {
@@ -31,7 +31,7 @@ func (tt_data *TtData) FilterDivisions() {
 
 	// Filter the class divisions, discarding the division names.
 	for _, c := range db.Classes {
-		divs := [][]NodeRef{}
+		divs := [][]nodeRef{}
 		for _, div := range c.Divisions {
 			for _, gref := range div.Groups {
 				if usedgroups[gref] {
@@ -46,8 +46,8 @@ func (tt_data *TtData) FilterDivisions() {
 }
 
 type AtomicGroup struct {
-	Class  NodeRef
-	Groups []NodeRef
+	Class  nodeRef
+	Groups []nodeRef
 	Tag    string // A constructed tag to represent the atomic group
 }
 
@@ -55,11 +55,11 @@ func (tt_data *TtData) MakeAtomicGroups() {
 	db := tt_data.db
 
 	// Set up the class index map
-	tt_data.Class2Index = map[NodeRef]ClassIndex{}
+	tt_data.Class2Index = map[nodeRef]classIndex{}
 
 	// An atomic group is an ordered list of single groups, one from each
 	// division.
-	tt_data.AtomicGroup2Indexes = map[NodeRef][]AtomicIndex{}
+	tt_data.AtomicGroup2Indexes = map[nodeRef][]atomicIndex{}
 
 	// Go through the classes inspecting their Divisions.
 	// Build a list-basis for the atomic groups based on the Cartesian product.
@@ -75,23 +75,23 @@ func (tt_data *TtData) MakeAtomicGroups() {
 				Tag:   cl.Tag + ATOMIC_GROUP_SEP1,
 			}
 			tt_data.AtomicGroups = append(tt_data.AtomicGroups, ag)
-			tt_data.AtomicGroup2Indexes[cl.ClassGroup] = []AtomicIndex{
-				AtomicIndex(agix)}
+			tt_data.AtomicGroup2Indexes[cl.ClassGroup] = []atomicIndex{
+				atomicIndex(agix)}
 			continue
 		}
 
 		// The atomic groups will be built as a list of lists of Refs.
-		agrefs := [][]NodeRef{{}}
+		agrefs := [][]nodeRef{{}}
 		for _, dglist := range cdivs.Divisions {
 			// Add another division – increases underlying list lengths.
-			agrefsx := [][]NodeRef{}
+			agrefsx := [][]nodeRef{}
 			for _, ag := range agrefs {
 				// Extend each of the old list items by appending each
 				// group of the new division in turn – multiplies the
 				// total number of atomic groups.
 				newlen := len(ag) + 1
 				for _, g := range dglist {
-					gx := make([]NodeRef, newlen)
+					gx := make([]nodeRef, newlen)
 					copy(gx, append(ag, g))
 					agrefsx = append(agrefsx, gx)
 				}
@@ -102,7 +102,7 @@ func (tt_data *TtData) MakeAtomicGroups() {
 		//fmt.Printf("     --> %+v\n", agrefs)
 
 		// Make AtomicGroups
-		aglist := []AtomicIndex{}
+		aglist := []atomicIndex{}
 		for _, ag := range agrefs {
 			glist := []string{}
 			for _, gref := range ag {
@@ -117,7 +117,7 @@ func (tt_data *TtData) MakeAtomicGroups() {
 					strings.Join(glist, ATOMIC_GROUP_SEP2),
 			}
 			tt_data.AtomicGroups = append(tt_data.AtomicGroups, ag)
-			aglist = append(aglist, AtomicIndex(agix))
+			aglist = append(aglist, atomicIndex(agix))
 		}
 		tt_data.AtomicGroup2Indexes[cl.ClassGroup] = aglist
 		// Map the individual groups to their atomic groups.

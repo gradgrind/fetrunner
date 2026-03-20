@@ -16,10 +16,10 @@ func (tt_data *TtData) roomChoiceFilter(cinfo *CourseInfo, bdata *base.BaseData)
 	// They have been ordered while converting to RoomIndexes.
 
 stage1:
-	newlist := [][]RoomIndex{}
+	newlist := [][]roomIndex{}
 	for i, rc0 := range rclist {
 		// Filter out fixed rooms from the choice list
-		rc := []RoomIndex{}
+		rc := []roomIndex{}
 		for _, r := range rc0 {
 			if !slices.Contains(necessary, r) {
 				rc = append(rc, r)
@@ -64,10 +64,10 @@ stage1:
 
 	// Now build the Cartesian product of the choice lists, omitting
 	// values with duplicate rooms and duplicate values generally.
-	cp := [][]RoomIndex{{}} // build Cartesian product values here
+	cp := [][]roomIndex{{}} // build Cartesian product values here
 	for _, rc := range newlist {
 		// Add next choice list, extending the entries in `cp`
-		newcp := [][]RoomIndex{} // build new `cp` here
+		newcp := [][]roomIndex{} // build new `cp` here
 		for _, cp0 := range cp { // for each C-p value
 			for _, r := range rc { // add each room in current choice list
 				if !slices.Contains(cp0, r) { // ... if not a duplicate
@@ -134,7 +134,7 @@ stage1:
 	//fmt.Printf("\n delta: %d\n", delta)
 }
 
-func (tt_data *TtData) errorRCG(cinfo *CourseInfo, rooms []RoomIndex, bdata *base.BaseData) {
+func (tt_data *TtData) errorRCG(cinfo *CourseInfo, rooms []roomIndex, bdata *base.BaseData) {
 	db := bdata.Db
 	rlist := []string{}
 	for _, r := range rooms {
