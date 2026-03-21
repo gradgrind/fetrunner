@@ -15,48 +15,10 @@ func (tt_data *TtData) prepare_constraints(constraint_map map[string][]*base.Bas
 
 }
 
-/*TODO-- The constraints AutomaticDifferentDays, DaysBetween are processed and
- * combined to be replaced by TtDaysBetween constraints. These also gain
- * activity lists to assist in the implementation of the constraint.
- * /
-type TtDaysBetween struct {
-	Id                   nodeRef
-	Weight               int
-	CType                string
-	DaysBetween          int
-	ConsecutiveIfSameDay bool
-	ActivityLists        [][]activityIndex
-}
-
-func (c *TtDaysBetween) IsHard() bool {
-	// Note that "ConsecutiveIfSameDay" is hard regardless of
-	// the weight.
-	return c.Weight == base.MAXWEIGHT || c.ConsecutiveIfSameDay
-}
-*/
-
-/* The ParallelCourses constraints are transformed to TtParallelActivities
- * constraints.
- */
-type TtParallelActivities struct {
-	Id            nodeRef
-	Weight        int
-	CType         string
-	ActivityLists [][]activityIndex
-}
-
-func (c *TtParallelActivities) IsHard() bool {
-	return c.Weight == base.MAXWEIGHT
-}
-
-// `preprocessConstraints` produces new constraints, which are then
-// accessible in `TtData`.
-func (tt_data *TtData) preprocessConstraints(
+func (tt_data *TtData) prepare_days_between(
 	bdata *base.BaseData,
 	constraint_map map[string][]*base.BaseConstraint,
 ) {
-	logger := bdata.Logger
-
 	// If an "AutomaticDifferentDays" constraint is present (at most one is
 	// permitted), the `auto_weight` and `auto_consec` variables will be set
 	// accordingly, otherwise the default weight (`base.MAXWEIGHT`, i.e.
@@ -138,10 +100,16 @@ func (tt_data *TtData) preprocessConstraints(
 		})
 	}
 	delete(constraint_map, base.C_DaysBetweenJoin)
+}
 
-	//TODO ...
+// Parallel courses.
+func (tt_data *TtData) prepare_parallels(
+	bdata *base.BaseData,
+	constraint_map map[string][]*base.BaseConstraint,
+) {
+	logger := bdata.Logger
+	db := bdata.Db
 
-	// Parallel courses.
 cloop:
 	for _, c := range constraint_map[base.C_ParallelCourses] {
 		courses := c.Data.([]nodeRef)
@@ -187,14 +155,19 @@ cloop:
 			}
 		}
 		// `alists` is now a list of lists of parallel activity indexes.
-		tt_data.parallelActivities = append(
-			tt_data.parallelActivities, &TtParallelActivities{
-				Id:            c.Id,
-				Weight:        c.Weight,
-				CType:         base.C_ParallelCourses,
-				ActivityLists: alists,
-			})
+
+		//TODO: Separate constraint for each activity list?
+
+		tt_data.constraints = append(tt_data.constraints, &constraint{
+			Id:     string(c.Id),
+			CType:  base.C_ParallelCourses,
+			Weight: c.Weight,
+			Data: map[string]any{
+				"ActivityLists": alists,
+			},
+		})
 	}
+	delete(constraint_map, base.C_ParallelCourses)
 }
 
 // Construct the activity relationships for a `DaysBetween` constraint.

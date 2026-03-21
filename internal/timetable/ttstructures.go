@@ -62,10 +62,6 @@ type TtData struct {
 	Ref2ActivityIndex map[nodeRef]activityIndex
 	CourseInfoList    []*CourseInfo
 	Ref2CourseInfo    map[nodeRef]*CourseInfo
-
-	// Transformed constraints
-	minDaysBetweenActivities []*TtDaysBetween
-	parallelActivities       []*TtParallelActivities
 }
 
 func (tt_data *TtData) GetDays() []element {
@@ -194,11 +190,13 @@ func MakeTimetableData(bd *base.BaseData) *TtData {
 	constraint_map := maps.Clone(db.Constraints)
 	tt_data.get_blocked_slots(constraint_map)
 	tt_data.placement_constraints(constraint_map)
+
 	// Prepare for the generation of new constraints where these are implied
 	// by certain special constraints. This must be after the call to
 	// `placement_constraints` as that sets up the hard fixed starting times,
 	// which are needed for the generation of the days-between constraints.
-	tt_data.preprocessConstraints(bd, constraint_map)
+	tt_data.prepare_days_between(bd, constraint_map)
+	tt_data.prepare_parallels(bd, constraint_map)
 
 	// Collect the remaining constraints.
 	tt_data.prepare_constraints(constraint_map)

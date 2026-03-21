@@ -8,7 +8,6 @@ import (
 func (tt_data *TtData) activity_constraints(constraint_map map[string][]*base.BaseConstraint) {
 	tt_data.before_after(constraint_map)
 	tt_data.double_unbroken(constraint_map)
-	tt_data.ndays_between(constraint_map)
 
 	//
 
@@ -75,13 +74,6 @@ func (tt_data *TtData) double_unbroken(constraint_map map[string][]*base.BaseCon
 	} else if len(dulist) != 0 {
 		// Multiple entries should not be possible.
 		panic("Multiple constraint type " + base.C_DoubleActivityNotOverBreaks)
-	}
-}
-
-func (tt_data *TtData) ndays_between(constraint_map map[string][]*base.BaseConstraint) {
-	ctype := base.C_AfterHour
-	for _, c0 := range tt_data.minDaysBetweenActivities {
-		//	for _, c0 := range constraint_map[ctype] {
 	}
 }
 
