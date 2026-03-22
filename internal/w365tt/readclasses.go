@@ -89,12 +89,12 @@ func (dbi *W365TopLevel) readClasses(newdb *base.BaseData) {
 
 		// MinActivitiesPerDay
 		if e.MinLessonsPerDay > 0 {
-			ndb.NewClassMinActivitiesPerDay(
+			ndb.NewClassMinHoursPerDay(
 				"", base.MAXWEIGHT, n.Id, e.MinLessonsPerDay)
 		}
 		// MaxActivitiesPerDay
 		if e.MaxLessonsPerDay > 0 {
-			ndb.NewClassMaxActivitiesPerDay(
+			ndb.NewClassMaxHoursPerDay(
 				"", base.MAXWEIGHT, n.Id, e.MaxLessonsPerDay)
 		}
 		// MaxGapsPerDay

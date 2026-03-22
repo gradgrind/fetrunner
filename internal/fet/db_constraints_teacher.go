@@ -52,7 +52,7 @@ func (fetbuild *fet_build) add_teacher_constraints(
 		}
 	}
 
-	for _, c0 := range db.Constraints[base.C_TeacherMinActivitiesPerDay] {
+	for _, c0 := range db.Constraints[base.C_TeacherMinHoursPerDay] {
 		data := c0.Data.(base.ResourceN)
 		w := fetbuild.DbWeight2Fet(c0.Weight)
 		n := data.N
@@ -70,7 +70,7 @@ func (fetbuild *fet_build) add_teacher_constraints(
 		}
 	}
 
-	for _, c0 := range db.Constraints[base.C_TeacherMaxActivitiesPerDay] {
+	for _, c0 := range db.Constraints[base.C_TeacherMaxHoursPerDay] {
 		data := c0.Data.(base.ResourceN)
 		w := fetbuild.DbWeight2Fet(c0.Weight)
 		n := data.N

@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func (tt_data *TtData) roomChoiceFilter(cinfo *CourseInfo, bdata *base.BaseData) {
+func (tt_data *TtData) roomChoiceFilter(cinfo *courseInfo, bdata *base.BaseData) {
 	delta := 0
 
 	necessary := slices.Clone(cinfo.FixedRooms)
@@ -134,7 +134,7 @@ stage1:
 	//fmt.Printf("\n delta: %d\n", delta)
 }
 
-func (tt_data *TtData) errorRCG(cinfo *CourseInfo, rooms []roomIndex, bdata *base.BaseData) {
+func (tt_data *TtData) errorRCG(cinfo *courseInfo, rooms []roomIndex, bdata *base.BaseData) {
 	db := bdata.Db
 	rlist := []string{}
 	for _, r := range rooms {

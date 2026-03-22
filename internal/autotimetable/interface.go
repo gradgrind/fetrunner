@@ -37,12 +37,12 @@ type TtSource interface {
 
 	GetSubjects() []base.ElementBase
 	GetRooms() []base.ElementBase
-	GetActivities() []base.ElementBase
+	GetActivities() []*TtActivity
 
 	//TODO: temporary name? -> GetConstraints?
 	GetSourceConstraints() []*TtConstraint
 	//TODO--???
-	GetConstraints() []AttConstraint
+	//GetConstraints() []AttConstraint
 
 	//TODO:
 	//ConstraintRef(index int) string // get source reference for indexed constraint

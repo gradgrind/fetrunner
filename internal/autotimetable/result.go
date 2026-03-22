@@ -11,13 +11,13 @@ import (
 
 type Result struct {
 	Time                       int
-	Days                       []IdPair
-	Hours                      []IdPair
-	Teachers                   []IdPair
-	Classes                    []IdPair
-	Rooms                      []IdPair
-	Activities                 []IdPair
-	Constraints                []AttConstraint
+	Days                       []base.ElementBase
+	Hours                      []base.ElementBase
+	Teachers                   []base.ElementBase
+	Classes                    []base.ElementBase
+	Rooms                      []base.ElementBase
+	Activities                 []*TtActivity
+	Constraints                []*TtConstraint
 	ConstraintErrors           map[ConstraintIndex]string
 	Placements                 []TtActivityPlacement
 	UnfulfilledHardConstraints map[ConstraintType][]ConstraintIndex
@@ -36,13 +36,13 @@ func (attdata *AutoTtData) new_current_instance(
 	// Read placements
 	alist := instance.Backend.Results(bdata, attdata, instance)
 
-	clist := attdata.Source.GetConstraints()
+	clist := attdata.Source.GetSourceConstraints()
 	attdata.lastResult = &Result{
-		Time:        instance.Ticks,
-		Days:        attdata.Source.GetDays(),
-		Hours:       attdata.Source.GetHours(),
-		Teachers:    attdata.Source.GetTeachers(),
-		Classes:     attdata.Source.GetClasses(),
+		Time:     instance.Ticks,
+		Days:     attdata.Source.GetDays(),
+		Hours:    attdata.Source.GetHours(),
+		Teachers: attdata.Source.GetTeachers(),
+		//TODO: Classes:     attdata.Source.GetClasses(),
 		Rooms:       attdata.Source.GetRooms(),
 		Activities:  attdata.Source.GetActivities(),
 		Constraints: clist,

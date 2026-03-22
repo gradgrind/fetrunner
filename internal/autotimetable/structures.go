@@ -161,11 +161,17 @@ type TtActivityPlacement struct {
 	Rooms    []RoomIndex
 }
 
-//TODO: I would need methods on the source data to return the constraints in a
-// convenient form.
-//   index, constraint type, weight (0 - 100?), flag for "not available"?,
-//   parameters in an appropriate form (key, value pairs?), all resource
-//   references as indexes?
+type TtActivity struct {
+	Id string // FET: "ActivityId" ? //TODO???
+	// DB: NodeRef of the source activity from which this is derived.
+
+	Subject            string
+	Groups             []*base.Group // a `Class` is represented by its ClassGroup
+	AtomicGroupIndexes []AtomicIndex
+	Teachers           []TeacherIndex
+	FixedRooms         []RoomIndex
+	RoomChoices        [][]RoomIndex
+}
 
 type TtConstraint struct {
 	Id string // FET: "[index]" or "[index:weight]" //TODO???
@@ -176,15 +182,6 @@ type TtConstraint struct {
 	Weight int    // 0 – 100
 	Data   any    // content dependent on constraint type
 }
-
-/*TODO--
-type AttConstraint struct {
-	TtSourceTag string
-	Ctype       string
-	Parameters  []int
-	Weight      int
-}
-*/
 
 /*TODO: How to handle source and back-end constraints?
 

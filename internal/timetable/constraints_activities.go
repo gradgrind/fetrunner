@@ -15,12 +15,12 @@ func (tt_data *TtData) before_after(constraint_map map[string][]*base.BaseConstr
 		for _, c0 := range constraint_map[ctype] {
 			data := c0.Data.(base.BeforeAfterHour)
 			for _, c := range data.Courses {
-				cinfo, ok := tt_data.Ref2CourseInfo[c]
+				cinfo, ok := tt_data.ref2courseInfo[c]
 				if !ok {
 					panic("Invalid course Id in constraint " + ctype + ": " + string(c))
 				}
 				for _, ai := range cinfo.Activities {
-					tt_data.constraints = append(tt_data.constraints, &constraint{
+					tt_data.constraints = append(tt_data.constraints, &ttConstraint{
 						Id:     string(c0.Id),
 						CType:  ctype,
 						Weight: c0.Weight,
@@ -45,7 +45,7 @@ func (tt_data *TtData) double_unbroken(constraint_map map[string][]*base.BaseCon
 		break_hours := du.Data.([]int)
 		for ai, a := range activities {
 			if a.Duration == 2 {
-				tt_data.constraints = append(tt_data.constraints, &constraint{
+				tt_data.constraints = append(tt_data.constraints, &ttConstraint{
 					Id:     string(id),
 					CType:  ctype,
 					Weight: w,
@@ -64,9 +64,9 @@ func (tt_data *TtData) end_of_day(constraint_map map[string][]*base.BaseConstrai
 	ctype := base.C_ActivitiesEndDay
 	for _, c0 := range constraint_map[ctype] {
 		course := c0.Data.(nodeRef)
-		cinfo := tt_data.Ref2CourseInfo[course]
+		cinfo := tt_data.ref2courseInfo[course]
 		for _, ai := range cinfo.Activities {
-			tt_data.constraints = append(tt_data.constraints, &constraint{
+			tt_data.constraints = append(tt_data.constraints, &ttConstraint{
 				Id:     string(c0.Id),
 				CType:  ctype,
 				Weight: c0.Weight,

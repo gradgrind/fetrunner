@@ -1,14 +1,14 @@
 package base
 
 var (
-	C_ClassNotAvailable        = "ClassNotAvailable"
-	C_ClassMinActivitiesPerDay = "ClassMinActivitiesPerDay"
-	C_ClassMaxActivitiesPerDay = "ClassMaxActivitiesPerDay"
-	C_ClassMaxGapsPerDay       = "ClassMaxGapsPerDay"
-	C_ClassMaxGapsPerWeek      = "ClassMaxGapsPerWeek"
-	C_ClassMaxAfternoons       = "ClassMaxAfternoons"
-	C_ClassLunchBreak          = "ClassLunchBreak"
-	C_ClassForceFirstHour      = "ClassForceFirstHour"
+	C_ClassNotAvailable   = "ClassNotAvailable"
+	C_ClassMinHoursPerDay = "ClassMinHoursPerDay"
+	C_ClassMaxHoursPerDay = "ClassMaxHoursPerDay"
+	C_ClassMaxGapsPerDay  = "ClassMaxGapsPerDay"
+	C_ClassMaxGapsPerWeek = "ClassMaxGapsPerWeek"
+	C_ClassMaxAfternoons  = "ClassMaxAfternoons"
+	C_ClassLunchBreak     = "ClassLunchBreak"
+	C_ClassForceFirstHour = "ClassForceFirstHour"
 )
 
 // ++ ClassNotAvailable
@@ -30,11 +30,11 @@ func (db *DbTopLevel) NewClassNotAvailable(
 // ++ ClassMinActivitiesPerDay
 
 // Double time-slots count as two activities, etc.
-func (db *DbTopLevel) NewClassMinActivitiesPerDay(
+func (db *DbTopLevel) NewClassMinHoursPerDay(
 	id NodeRef, weight int, tid NodeRef, n int,
 ) *BaseConstraint {
 	c := &BaseConstraint{
-		CType:  C_ClassMinActivitiesPerDay,
+		CType:  C_ClassMinHoursPerDay,
 		Id:     id,
 		Weight: weight,
 		Data:   ResourceN{tid, n},
@@ -46,11 +46,11 @@ func (db *DbTopLevel) NewClassMinActivitiesPerDay(
 // ++ ClassMaxActivitiesPerDay
 
 // Double time-slots count as two activities, etc.
-func (db *DbTopLevel) NewClassMaxActivitiesPerDay(
+func (db *DbTopLevel) NewClassMaxHoursPerDay(
 	id NodeRef, weight int, tid NodeRef, n int,
 ) *BaseConstraint {
 	c := &BaseConstraint{
-		CType:  C_ClassMaxActivitiesPerDay,
+		CType:  C_ClassMaxHoursPerDay,
 		Id:     id,
 		Weight: weight,
 		Data:   ResourceN{tid, n},

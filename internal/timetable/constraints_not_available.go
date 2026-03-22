@@ -13,8 +13,8 @@ func (tt_data *TtData) get_blocked_slots(constraint_map map[string][]*base.BaseC
 	for _, c0 := range constraint_map[base.C_RoomNotAvailable] {
 		i := len(tt_data.constraints)
 		srcdata := c0.Data.(base.ResourceNotAvailable)
-		r := tt_data.Room2Index[srcdata.Resource]
-		tt_data.constraints = append(tt_data.constraints, &constraint{
+		r := tt_data.room2Index[srcdata.Resource]
+		tt_data.constraints = append(tt_data.constraints, &ttConstraint{
 			Id:     string(c0.Id),
 			CType:  c0.CType,
 			Weight: c0.Weight,
@@ -31,8 +31,8 @@ func (tt_data *TtData) get_blocked_slots(constraint_map map[string][]*base.BaseC
 	for _, c0 := range constraint_map[base.C_TeacherNotAvailable] {
 		i := len(tt_data.constraints)
 		srcdata := c0.Data.(base.ResourceNotAvailable)
-		t := tt_data.Teacher2Index[srcdata.Resource]
-		tt_data.constraints = append(tt_data.constraints, &constraint{
+		t := tt_data.teacher2Index[srcdata.Resource]
+		tt_data.constraints = append(tt_data.constraints, &ttConstraint{
 			Id:     string(c0.Id),
 			CType:  c0.CType,
 			Weight: c0.Weight,
@@ -49,8 +49,8 @@ func (tt_data *TtData) get_blocked_slots(constraint_map map[string][]*base.BaseC
 	for _, c0 := range constraint_map[base.C_ClassNotAvailable] {
 		i := len(tt_data.constraints)
 		srcdata := c0.Data.(base.ResourceNotAvailable)
-		c := tt_data.Class2Index[srcdata.Resource]
-		tt_data.constraints = append(tt_data.constraints, &constraint{
+		c := tt_data.class2Index[srcdata.Resource]
+		tt_data.constraints = append(tt_data.constraints, &ttConstraint{
 			Id:     string(c0.Id),
 			CType:  c0.CType,
 			Weight: c0.Weight,

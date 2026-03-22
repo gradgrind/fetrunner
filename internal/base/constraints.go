@@ -50,7 +50,7 @@ var ConstraintPriority = map[string]int{
 	C_SetStartingTime: 91,
 	//???C_ActivityStartTime: 90,
 
-	C_ClassMinActivitiesPerDay: 5,
+	C_ClassMinHoursPerDay: 5,
 	//C_ClassMaxActivitiesPerDay: ,
 	C_ClassMaxGapsPerDay:  -97,
 	C_ClassMaxGapsPerWeek: -98,

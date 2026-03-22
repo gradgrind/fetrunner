@@ -42,7 +42,7 @@ func (fetbuild *fet_build) add_class_constraints(
 	nhours := tt_data.NHours
 	tclist := fetbuild.time_constraints_list
 
-	for _, c0 := range db.Constraints[base.C_ClassMinActivitiesPerDay] {
+	for _, c0 := range db.Constraints[base.C_ClassMinHoursPerDay] {
 		data := c0.Data.(base.ResourceN)
 		cref := data.Resource
 		w := fetbuild.DbWeight2Fet(c0.Weight)
@@ -60,7 +60,7 @@ func (fetbuild *fet_build) add_class_constraints(
 		}
 	}
 
-	for _, c0 := range db.Constraints[base.C_ClassMaxActivitiesPerDay] {
+	for _, c0 := range db.Constraints[base.C_ClassMaxHoursPerDay] {
 		data := c0.Data.(base.ResourceN)
 		cref := data.Resource
 		w := fetbuild.DbWeight2Fet(c0.Weight)

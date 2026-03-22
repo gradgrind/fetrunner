@@ -40,8 +40,8 @@ func (tt_data *TtData) FilterDivisions() {
 				}
 			}
 		}
-		tt_data.ClassDivisions = append(tt_data.ClassDivisions,
-			ClassDivision{c, divs})
+		tt_data.classDivisions = append(tt_data.classDivisions,
+			classDivision{c, divs})
 	}
 }
 
@@ -55,27 +55,27 @@ func (tt_data *TtData) MakeAtomicGroups() {
 	db := tt_data.db
 
 	// Set up the class index map
-	tt_data.Class2Index = map[nodeRef]classIndex{}
+	tt_data.class2Index = map[nodeRef]classIndex{}
 
 	// An atomic group is an ordered list of single groups, one from each
 	// division.
-	tt_data.AtomicGroup2Indexes = map[nodeRef][]atomicIndex{}
+	tt_data.atomicGroup2Indexes = map[nodeRef][]atomicIndex{}
 
 	// Go through the classes inspecting their Divisions.
 	// Build a list-basis for the atomic groups based on the Cartesian product.
-	for i, cdivs := range tt_data.ClassDivisions {
+	for i, cdivs := range tt_data.classDivisions {
 		cl := cdivs.Class
-		tt_data.Class2Index[cl.Id] = i
+		tt_data.class2Index[cl.Id] = i
 		if len(cdivs.Divisions) == 0 {
 			// Make an atomic group for the class
-			agix := len(tt_data.AtomicGroups)
+			agix := len(tt_data.atomicGroups)
 			ag := &AtomicGroup{
 				//Index: agix,
 				Class: cl.Id,
 				Tag:   cl.Tag + ATOMIC_GROUP_SEP1,
 			}
-			tt_data.AtomicGroups = append(tt_data.AtomicGroups, ag)
-			tt_data.AtomicGroup2Indexes[cl.ClassGroup] = []atomicIndex{
+			tt_data.atomicGroups = append(tt_data.atomicGroups, ag)
+			tt_data.atomicGroup2Indexes[cl.ClassGroup] = []atomicIndex{
 				atomicIndex(agix)}
 			continue
 		}
@@ -109,17 +109,17 @@ func (tt_data *TtData) MakeAtomicGroups() {
 				gtag := db.Ref2Tag(gref)
 				glist = append(glist, gtag)
 			}
-			agix := len(tt_data.AtomicGroups)
+			agix := len(tt_data.atomicGroups)
 			ag := &AtomicGroup{
 				Class:  cl.Id,
 				Groups: ag,
 				Tag: cl.Tag + ATOMIC_GROUP_SEP1 +
 					strings.Join(glist, ATOMIC_GROUP_SEP2),
 			}
-			tt_data.AtomicGroups = append(tt_data.AtomicGroups, ag)
+			tt_data.atomicGroups = append(tt_data.atomicGroups, ag)
 			aglist = append(aglist, atomicIndex(agix))
 		}
-		tt_data.AtomicGroup2Indexes[cl.ClassGroup] = aglist
+		tt_data.atomicGroup2Indexes[cl.ClassGroup] = aglist
 		// Map the individual groups to their atomic groups.
 		count := 1
 		divIndex := len(cdivs.Divisions)
@@ -130,8 +130,8 @@ func (tt_data *TtData) MakeAtomicGroups() {
 			for agi < len(aglist) {
 				for _, g := range divGroups {
 					for j := 0; j < count; j++ {
-						tt_data.AtomicGroup2Indexes[g] = append(
-							tt_data.AtomicGroup2Indexes[g], aglist[agi])
+						tt_data.atomicGroup2Indexes[g] = append(
+							tt_data.atomicGroup2Indexes[g], aglist[agi])
 						agi++
 					}
 				}

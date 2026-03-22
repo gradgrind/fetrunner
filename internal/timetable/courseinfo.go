@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-// Make a shortish string view of a CourseInfo – can be useful in tests
-func (tt_data *TtData) View(cinfo *CourseInfo, db *base.DbTopLevel) string {
+// Make a shortish string view of a courseInfo – can be useful in tests
+func (tt_data *TtData) View(cinfo *courseInfo, db *base.DbTopLevel) string {
 	tlist := []string{}
 	for _, t := range cinfo.Teachers {
 		tlist = append(tlist, db.Teachers[t].GetTag())
@@ -25,16 +25,17 @@ func (tt_data *TtData) View(cinfo *CourseInfo, db *base.DbTopLevel) string {
 }
 
 // Collect courses (Course and SuperCourse) and their activities.
-// Build a list of CourseInfo structures.
+// Build a list of courseInfo structures.
 func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 	db := bdata.Db
-	tt_data.Ref2CourseInfo = map[nodeRef]*CourseInfo{}
+	tt_data.ref2courseInfo = map[nodeRef]*courseInfo{}
 
 	// The list of `TtActivity` items shadows the list of `Activity` items.
-	tt_data.TtActivities = make([]*TtActivity, len(db.Activities))
-	tt_data.Ref2ActivityIndex = map[nodeRef]activityIndex{}
+	tt_data.ttActivities = make([]*ttActivity, len(db.Activities))
+	tt_data.fixedActivities = make([]*base.TimeSlot, len(db.Activities))
+	tt_data.ref2ActivityIndex = map[nodeRef]activityIndex{}
 	for i, a := range db.Activities {
-		tt_data.Ref2ActivityIndex[a.Id] = activityIndex(i)
+		tt_data.ref2ActivityIndex[a.Id] = activityIndex(i)
 	}
 
 	// *** Gather the SuperCourses. ***
@@ -55,12 +56,12 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 				if !slices.Contains(groups, g) {
 					groups = append(groups, g)
 					agroups = append(agroups,
-						tt_data.AtomicGroup2Indexes[gref]...)
+						tt_data.atomicGroup2Indexes[gref]...)
 				}
 			}
 			// Add teachers
 			for _, tref := range sbc.Teachers {
-				t, ok := tt_data.Teacher2Index[tref]
+				t, ok := tt_data.teacher2Index[tref]
 				if !ok {
 					panic("Invalid Teacher ref: " + tref)
 				}
@@ -68,7 +69,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 			}
 			// Add rooms
 			if sbc.Room != "" {
-				r, ok := tt_data.Room2Index[sbc.Room]
+				r, ok := tt_data.room2Index[sbc.Room]
 				if ok {
 					rooms = append(rooms, r)
 					continue
@@ -80,7 +81,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 				rg, ok := gr.(*base.RoomGroup)
 				if ok {
 					for _, rr := range rg.Rooms {
-						r, ok = tt_data.Room2Index[rr]
+						r, ok = tt_data.room2Index[rr]
 						if !ok {
 							panic(fmt.Sprintf(
 								"Bug: Unknown room in RoomGroup %s: %s",
@@ -95,7 +96,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 				if ok {
 					roomlist := []roomIndex{}
 					for _, rr := range rcg.Rooms {
-						r, ok = tt_data.Room2Index[rr]
+						r, ok = tt_data.room2Index[rr]
 						if !ok {
 							panic(fmt.Sprintf(
 								"Bug: Unknown room in RoomChoiceGroup %s: %s",
@@ -129,7 +130,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 			panic("Invalid Subject ref: " + spc.Subject)
 		}
 
-		cinfo := &CourseInfo{
+		cinfo := &courseInfo{
 			Id:                 cref,
 			Subject:            sbj.Tag,
 			Groups:             groups,
@@ -143,20 +144,25 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 		// Build a `TtActivity` for each `Activity` – they are already sorted
 		// with the longest first.
 		for _, a := range spc.Activities {
-			aix := tt_data.Ref2ActivityIndex[a.Id]
+			aix := tt_data.ref2ActivityIndex[a.Id]
 			cinfo.Activities = append(cinfo.Activities, aix)
-			tt_data.TtActivities[aix] = &TtActivity{
-				CourseInfo: len(tt_data.CourseInfoList),
-				//fixedStartTime: , // will be set later
+			tt_data.ttActivities[aix] = &ttActivity{
+				Id:                 string(a.Id),
+				Subject:            cinfo.Subject,
+				Groups:             cinfo.Groups,
+				AtomicGroupIndexes: cinfo.AtomicGroupIndexes,
+				Teachers:           cinfo.Teachers,
+				FixedRooms:         cinfo.FixedRooms,
+				RoomChoices:        cinfo.RoomChoices,
 			}
 		}
 
 		// Filter out any "necessary" rooms from the choices
 		tt_data.roomChoiceFilter(cinfo, bdata)
 
-		tt_data.CourseInfoList = append(
-			tt_data.CourseInfoList, cinfo)
-		tt_data.Ref2CourseInfo[cref] = cinfo
+		tt_data.courseInfoList = append(
+			tt_data.courseInfoList, cinfo)
+		tt_data.ref2courseInfo[cref] = cinfo
 	}
 
 	// *** Gather the plain Courses. ***
@@ -172,13 +178,13 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 				panic("Invalid Group ref: " + gref)
 			}
 			groups = append(groups, g)
-			agroups = append(agroups, tt_data.AtomicGroup2Indexes[gref]...)
+			agroups = append(agroups, tt_data.atomicGroup2Indexes[gref]...)
 		}
 
 		// Get teachers
 		teachers := []teacherIndex{}
 		for _, tref := range c.Teachers {
-			t, ok := tt_data.Teacher2Index[tref]
+			t, ok := tt_data.teacher2Index[tref]
 			if !ok {
 				panic("Invalid Teacher ref: " + tref)
 			}
@@ -189,7 +195,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 		rooms := []roomIndex{}
 		crooms := [][]roomIndex{}
 		if c.Room != "" {
-			r, ok := tt_data.Room2Index[c.Room]
+			r, ok := tt_data.room2Index[c.Room]
 			if ok {
 				rooms = append(rooms, r)
 			} else {
@@ -198,7 +204,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 				rg, ok := gr.(*base.RoomGroup)
 				if ok {
 					for _, rr := range rg.Rooms {
-						r, ok = tt_data.Room2Index[rr]
+						r, ok = tt_data.room2Index[rr]
 						if !ok {
 							panic(fmt.Sprintf(
 								"Unknown room in RoomGroup %s: %s",
@@ -211,7 +217,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 					if ok {
 						roomlist := []roomIndex{}
 						for _, rr := range rcg.Rooms {
-							r, ok = tt_data.Room2Index[rr]
+							r, ok = tt_data.room2Index[rr]
 							if !ok {
 								panic(fmt.Sprintf(
 									"Unknown room in RoomChoiceGroup %s: %s",
@@ -238,7 +244,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 		slices.Sort(agroups)
 		slices.Sort(teachers) // shouldn't need compacting
 		slices.Sort(rooms)    // shouldn't need compacting
-		cinfo := &CourseInfo{
+		cinfo := &courseInfo{
 			Id:                 cref,
 			Subject:            sbj.Tag,
 			Groups:             groups,
@@ -252,16 +258,21 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 		// Build a `TtActivity` for each `Activity` – they are already sorted
 		// with the longest first.
 		for _, a := range c.Activities {
-			aix := tt_data.Ref2ActivityIndex[a.Id]
+			aix := tt_data.ref2ActivityIndex[a.Id]
 			cinfo.Activities = append(cinfo.Activities, aix)
-			tt_data.TtActivities[aix] = &TtActivity{
-				CourseInfo: len(tt_data.CourseInfoList),
-				//fixedStartTime: , // will be set later
+			tt_data.ttActivities[aix] = &ttActivity{
+				Id:                 string(a.Id),
+				Subject:            cinfo.Subject,
+				Groups:             cinfo.Groups,
+				AtomicGroupIndexes: cinfo.AtomicGroupIndexes,
+				Teachers:           cinfo.Teachers,
+				FixedRooms:         cinfo.FixedRooms,
+				RoomChoices:        cinfo.RoomChoices,
 			}
 		}
 
-		tt_data.CourseInfoList = append(
-			tt_data.CourseInfoList, cinfo)
-		tt_data.Ref2CourseInfo[cref] = cinfo
+		tt_data.courseInfoList = append(
+			tt_data.courseInfoList, cinfo)
+		tt_data.ref2courseInfo[cref] = cinfo
 	}
 }
