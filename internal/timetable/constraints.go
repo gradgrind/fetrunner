@@ -5,14 +5,11 @@ import (
 	"strings"
 )
 
-// TODO: Prepare the DB constraints for TtData.
+// Prepare the "DB" constraints for `TtData`.
 func (tt_data *TtData) prepare_constraints(constraint_map map[string][]*base.BaseConstraint) {
 	tt_data.activity_constraints(constraint_map)
-
-	// ...
-
-	//TODO
-
+	tt_data.class_constraints(constraint_map)
+	tt_data.teacher_constraints(constraint_map)
 }
 
 func (tt_data *TtData) prepare_days_between(
@@ -35,9 +32,8 @@ func (tt_data *TtData) prepare_days_between(
 		auto_id = string(cadd0.Id)
 		auto_weight = cadd0.Weight
 		auto_consec = cadd0.Data.(bool)
-	} else if len(cadd) != 0 {
-		// Multiple entries should not be possible.
-		panic("Multiple constraint type " + base.C_AutomaticDifferentDays)
+	} else {
+		panic("Constraint type must be used once only: " + base.C_AutomaticDifferentDays)
 	}
 	delete(constraint_map, base.C_AutomaticDifferentDays)
 
@@ -48,17 +44,19 @@ func (tt_data *TtData) prepare_days_between(
 				// Override default constraint
 				noauto_ddays[course] = struct{}{}
 			}
-			tt_data.constraints = append(tt_data.constraints, &constraint{
-				Id:     string(c.Id),
-				CType:  base.C_DaysBetween,
-				Weight: c.Weight,
-				Data: map[string]any{
-					"DaysBetween":          data.DaysBetween,
-					"ConsecutiveIfSameDay": data.ConsecutiveIfSameDay,
-					"ActivityLists": tt_data.days_between_activities(
-						course, c.Weight, data.ConsecutiveIfSameDay, bdata),
-				},
-			})
+			alists := tt_data.days_between_activities(course, c.Weight, data.ConsecutiveIfSameDay, bdata)
+			for _, alist := range alists {
+				tt_data.constraints = append(tt_data.constraints, &constraint{
+					Id:     string(c.Id),
+					CType:  base.C_DaysBetween,
+					Weight: c.Weight,
+					Data: map[string]any{
+						"DaysBetween":          data.DaysBetween,
+						"ConsecutiveIfSameDay": data.ConsecutiveIfSameDay,
+						"Activities":           alist,
+					},
+				})
+			}
 		}
 	}
 	delete(constraint_map, base.C_DaysBetween)
@@ -70,34 +68,37 @@ func (tt_data *TtData) prepare_days_between(
 	for _, cinfo := range tt_data.CourseInfoList {
 		cref := cinfo.Id
 		if _, ok := noauto_ddays[cref]; len(cinfo.Activities) > 1 && !ok {
-			tt_data.constraints = append(tt_data.constraints, &constraint{
-				Id:     auto_id,
-				CType:  base.C_AutomaticDifferentDays,
-				Weight: auto_weight,
-				Data: map[string]any{
-					"DaysBetween":          1,
-					"ConsecutiveIfSameDay": auto_consec,
-					"ActivityLists": tt_data.days_between_activities(
-						cref, auto_weight, auto_consec, bdata),
-				},
-			})
+			alists := tt_data.days_between_activities(cref, auto_weight, auto_consec, bdata)
+			for _, alist := range alists {
+				tt_data.constraints = append(tt_data.constraints, &constraint{
+					Id:     auto_id,
+					CType:  base.C_AutomaticDifferentDays,
+					Weight: auto_weight,
+					Data: map[string]any{
+						"DaysBetween":          1,
+						"ConsecutiveIfSameDay": auto_consec,
+						"Activities":           alist,
+					},
+				})
+			}
 		}
 	}
 
 	for _, c := range constraint_map[base.C_DaysBetweenJoin] {
 		data := c.Data.(base.DaysBetweenJoin)
-
-		tt_data.constraints = append(tt_data.constraints, &constraint{
-			Id:     string(c.Id),
-			CType:  base.C_DaysBetweenJoin,
-			Weight: c.Weight,
-			Data: map[string]any{
-				"DaysBetween":          data.DaysBetween,
-				"ConsecutiveIfSameDay": data.ConsecutiveIfSameDay,
-				"ActivityLists": tt_data.days_between_join_activities(
-					data.Course1, data.Course2),
-			},
-		})
+		alists := tt_data.days_between_join_activities(data.Course1, data.Course2)
+		for _, alist := range alists {
+			tt_data.constraints = append(tt_data.constraints, &constraint{
+				Id:     string(c.Id),
+				CType:  base.C_DaysBetweenJoin,
+				Weight: c.Weight,
+				Data: map[string]any{
+					"DaysBetween":          data.DaysBetween,
+					"ConsecutiveIfSameDay": data.ConsecutiveIfSameDay,
+					"Activities":           alist,
+				},
+			})
+		}
 	}
 	delete(constraint_map, base.C_DaysBetweenJoin)
 }
@@ -155,17 +156,14 @@ cloop:
 			}
 		}
 		// `alists` is now a list of lists of parallel activity indexes.
-
-		//TODO: Separate constraint for each activity list?
-
-		tt_data.constraints = append(tt_data.constraints, &constraint{
-			Id:     string(c.Id),
-			CType:  base.C_ParallelCourses,
-			Weight: c.Weight,
-			Data: map[string]any{
-				"ActivityLists": alists,
-			},
-		})
+		for _, alist := range alists {
+			tt_data.constraints = append(tt_data.constraints, &constraint{
+				Id:     string(c.Id),
+				CType:  base.C_ParallelCourses,
+				Weight: c.Weight,
+				Data:   alist,
+			})
+		}
 	}
 	delete(constraint_map, base.C_ParallelCourses)
 }
