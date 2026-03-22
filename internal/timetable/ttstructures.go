@@ -3,9 +3,11 @@
 package timetable
 
 import (
+	"cmp"
 	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
 	"maps"
+	"slices"
 )
 
 type nodeRef = base.NodeRef // node reference (UUID)
@@ -31,15 +33,9 @@ type TtData struct {
 	constraints        []*ttConstraint   // ordered constraint list for "autotimetable"
 	hard_not_available []constraintIndex // list of hard "not available" constraints
 
-	//TODO?
-	nConstraints      constraintIndex
-	constraintTypes   []constraintType
-	hardConstraintMap map[constraintType][]constraintIndex
-	softConstraintMap map[constraintType][]constraintIndex
-
-	ndays        int
-	nhours       int
-	hoursperweek int
+	//TODO: Are these being set up?
+	ndays  int
+	nhours int
 
 	atomicGroups []*AtomicGroup
 
@@ -162,9 +158,9 @@ func MakeTimetableData(bd *base.BaseData) *TtData {
 	tt_data := &TtData{
 		db: db,
 
-		ndays:        days,
-		nhours:       hours,
-		hoursperweek: days * hours,
+		ndays:  days,
+		nhours: hours,
+		//hoursperweek: days * hours,
 	}
 
 	// Collect ClassDivisions
@@ -236,20 +232,36 @@ func (tt_data *TtData) GetNActivities() int {
 }
 
 func (tt_data *TtData) GetConstraint_Types() []constraintType {
-	return tt_data.constraintTypes
+	// First sort alphabetically, and then according to priority. This allows
+	// constraint types with the same priority to have a stable order.
+	s1 := slices.Sorted(maps.Keys(tt_data.db.Constraints))
+	priority := base.ConstraintPriority
+	slices.SortStableFunc(s1,
+		func(a, b constraintType) int {
+			return cmp.Compare(priority[b], priority[a])
+		})
+	return s1
+}
+
+func (tt_data *TtData) GetConstraintMaps() (
+	map[constraintType][]constraintIndex,
+	map[constraintType][]constraintIndex,
+) {
+	hardConstraintMap := map[constraintType][]constraintIndex{}
+	softConstraintMap := map[constraintType][]constraintIndex{}
+	for i, c := range tt_data.constraints {
+		if c.IsHard() {
+			hardConstraintMap[c.CType] = append(hardConstraintMap[c.CType], i)
+		} else {
+			softConstraintMap[c.CType] = append(softConstraintMap[c.CType], i)
+		}
+	}
+	return hardConstraintMap, softConstraintMap
 }
 
 // TODO: Is this really needed?
 func (tt_data *TtData) GetNConstraints() constraintIndex {
 	return len(tt_data.constraints)
-}
-
-func (tt_data *TtData) GetHardConstraintMap() map[constraintType][]constraintIndex {
-	return tt_data.hardConstraintMap
-}
-
-func (tt_data *TtData) GetSoftConstraintMap() map[constraintType][]constraintIndex {
-	return tt_data.softConstraintMap
 }
 
 // TODO: This seems to be used only for the result presentation.

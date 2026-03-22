@@ -183,6 +183,10 @@ type TtConstraint struct {
 	Data   any    // content dependent on constraint type
 }
 
+func (c *TtConstraint) IsHard() bool {
+	return c.Weight == base.MAXWEIGHT
+}
+
 /*TODO: How to handle source and back-end constraints?
 
 There needs to be a converter which takes both source and back-end into

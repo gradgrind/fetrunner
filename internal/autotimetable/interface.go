@@ -50,8 +50,8 @@ type TtSource interface {
 	GetNActivities() int
 	GetNConstraints() ConstraintIndex
 	GetConstraint_Types() []ConstraintType // ordered list of constraint types
-	GetHardConstraintMap() map[ConstraintType][]ConstraintIndex
-	GetSoftConstraintMap() map[ConstraintType][]ConstraintIndex
+	// GetConstraintMaps() returns the hard- and soft constraint maps.
+	GetConstraintMaps() (map[ConstraintType]ConstraintIndex, map[ConstraintType]ConstraintIndex)
 
 	//TODO: probably not here ...
 	// Prepare the "source" for a run with a set of enabled constraints:
