@@ -140,7 +140,7 @@ func FetRead(
 			// added in the "Comments"  field.
 			cid := fmt.Sprintf("[%d%s]", i, wtag)
 			comments.SetText(cid + comment)
-			sourcefet.constraints = append(sourcefet.constraints, constraint{
+			sourcefet.constraints = append(sourcefet.constraints, ttConstraint{
 				TtSourceTag: cid,
 				Ctype:       ctype,
 				Weight:      wdb,

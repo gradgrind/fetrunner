@@ -17,30 +17,35 @@ const VIRTUAL_ROOM_PREFIX = "!"
 // const LUNCH_BREAK_TAG = "-lb-"
 // const LUNCH_BREAK_NAME = "Lunch Break"
 
-// Construct a `fet_build` from the timetable data in a `timetable.TtData`.
+// TODO ...
+// Construct a `fet_build` from the timetable data available via the
+// `autotimetable.TtSource` interface.
 // This `fet_build` needs to contain all the information for generating a
-// `FET` file with a subset of constraints. The constraints are determined
-// by the source (here `timetable.TtData`) and the possibility to map to
-// a variable number of `FET` constraints should be supported.
-// Some fields of the `timetable.TtData` and the`autotimetable.BasicData`
-// are initialized.
+// `FET` file with a subset of constraints, as an implementation of the
+// `autotimetable.TtBackend` interface. The constraints are
+// determined by the source and the possibility to map to a variable number
+// of `FET` constraints should be supported.
+// TODO? Some fields of the `autotimetable.BasicData` are initialized.
 func FetTree(attdata *autotimetable.AutoTtData) *fet_build {
-	source := attdata.Source
+	source := attdata.Source // TtSource interface
 	doc := etree.NewDocument()
 	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
 
 	fetbuild := &fet_build{
+		real_soft: attdata.Parameters.REAL_SOFT,
+
 		basedata: attdata.BaseData,
 		ttsource: source,
 
-		Doc:         doc,
-		WeightTable: MakeFetWeights(),
+		Doc:                doc,
+		WeightTable:        MakeFetWeights(),
+		ConstraintElements: make([][]*etree.Element, source.GetNConstraints()),
 
 		fet_virtual_rooms:  map[string]string{},
 		fet_virtual_room_n: map[string]int{},
 
 		//TODO--?
-		real_soft: real_soft,
+		//real_soft: real_soft,
 	}
 
 	fetroot := doc.CreateElement("fet")
@@ -78,7 +83,14 @@ func FetTree(attdata *autotimetable.AutoTtData) *fet_build {
 
 	// Start handling constraints by fetching the source constraints in a
 	// convenient form.
-	fetbuild.source_constraints = source.GetSourceConstraints()
+	fetbuild.source_constraints = source.GetConstraints()
+
+	//TODO: Convert the source constraints to FET constraints
+	for i, sc := range fetbuild.source_constraints {
+		db_constraint_fet[sc.CType](fetbuild, i, sc)
+	}
+
+	//TODO--???
 
 	// Add "NotAvailable" constraints for all resources, returning a map
 	// linking a resource to its blocked slot list:
@@ -149,8 +161,8 @@ func (fetbuild *fet_build) add_activity_tag(tag string) {
 // TODO: Where to record the node ref?
 func param_constraint(
 	ctype string, id NodeRef, index int, weight int,
-) constraint {
-	return constraint{
+) ttConstraint {
+	return ttConstraint{
 		TtSourceTag: string(id),
 		Ctype:       ctype,
 		Parameters:  []int{index},
@@ -159,8 +171,8 @@ func param_constraint(
 
 func params_constraint(
 	ctype string, id NodeRef, indexlist []int, weight int,
-) constraint {
-	return constraint{
+) ttConstraint {
+	return ttConstraint{
 		TtSourceTag: string(id),
 		Ctype:       ctype,
 		Parameters:  indexlist,
@@ -170,7 +182,8 @@ func params_constraint(
 //TODO: Possibility of multiple FET constraints for one DB constraint. That could
 // be quite a radical change ...
 
-func (fetbuild *fet_build) add_time_constraint(e *etree.Element, c constraint) {
+// TODO--
+func (fetbuild *fet_build) add_time_constraint(e *etree.Element, c ttConstraint) {
 	i := len(fetbuild.ConstraintElements)
 	fetbuild.ConstraintElements = append(fetbuild.ConstraintElements, e)
 	fetbuild.TimeConstraints = append(fetbuild.TimeConstraints, i)
@@ -191,7 +204,8 @@ func (fetbuild *fet_build) add_time_constraint(e *etree.Element, c constraint) {
 	fetbuild.Constraints = append(fetbuild.Constraints, c)
 }
 
-func (fetbuild *fet_build) add_space_constraint(e *etree.Element, c constraint) {
+// TODO--
+func (fetbuild *fet_build) add_space_constraint(e *etree.Element, c ttConstraint) {
 	i := len(fetbuild.ConstraintElements)
 	fetbuild.ConstraintElements = append(fetbuild.ConstraintElements, e)
 	fetbuild.SpaceConstraints = append(fetbuild.SpaceConstraints, i)

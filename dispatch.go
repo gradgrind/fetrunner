@@ -261,6 +261,7 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 		panic("Attempt to start generation when already running")
 	}
 	// Set up FET back-end and start processing
+	hcmap, scmap := ttsource.GetConstraintMaps()
 	attdata := &autotimetable.AutoTtData{
 		Parameters:        dsp.TtParameters,
 		BaseData:          bdata,
@@ -268,8 +269,8 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 		NActivities:       ttsource.GetNActivities(),
 		NConstraints:      ttsource.GetNConstraints(),
 		Constraint_Types:  ttsource.GetConstraint_Types(),
-		HardConstraintMap: ttsource.GetHardConstraintMap(),
-		SoftConstraintMap: ttsource.GetSoftConstraintMap(),
+		HardConstraintMap: hcmap,
+		SoftConstraintMap: scmap,
 	}
 	dsp.AutoTtData = attdata
 

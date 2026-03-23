@@ -36,7 +36,7 @@ func (attdata *AutoTtData) new_current_instance(
 	// Read placements
 	alist := instance.Backend.Results(bdata, attdata, instance)
 
-	clist := attdata.Source.GetSourceConstraints()
+	clist := attdata.Source.GetConstraints()
 	attdata.lastResult = &Result{
 		Time:     instance.Ticks,
 		Days:     attdata.Source.GetDays(),

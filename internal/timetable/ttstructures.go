@@ -28,14 +28,12 @@ type autoTtData = autotimetable.AutoTtData
 type constraintType = autotimetable.ConstraintType
 
 type TtData struct {
-	db *base.DbTopLevel
+	db     *base.DbTopLevel
+	ndays  int
+	nhours int
 
 	constraints        []*ttConstraint   // ordered constraint list for "autotimetable"
 	hard_not_available []constraintIndex // list of hard "not available" constraints
-
-	//TODO: Are these being set up?
-	ndays  int
-	nhours int
 
 	atomicGroups []*AtomicGroup
 
@@ -60,6 +58,10 @@ type TtData struct {
 	ref2ActivityIndex map[nodeRef]activityIndex
 	courseInfoList    []*courseInfo
 	ref2courseInfo    map[nodeRef]*courseInfo
+}
+
+func (tt_data *TtData) SourceType() string {
+	return "DB"
 }
 
 func (tt_data *TtData) GetDays() []element {
@@ -153,14 +155,11 @@ type classDivision struct {
 // "resources" (atomic student groups, teachers and rooms) and "activities".
 func MakeTimetableData(bd *base.BaseData) *TtData {
 	db := bd.Db
-	days := len(db.Days)
-	hours := len(db.Hours)
 	tt_data := &TtData{
 		db: db,
 
-		ndays:  days,
-		nhours: hours,
-		//hoursperweek: days * hours,
+		ndays:  len(db.Days),
+		nhours: len(db.Hours),
 	}
 
 	// Collect ClassDivisions
@@ -217,18 +216,8 @@ func (tt_data *TtData) RoomResources() {
 	}
 }
 
-func (tt_data *TtData) GetActivities() []element {
-	activities := tt_data.db.Activities
-	alist := make([]element, len(activities))
-	for i, a := range activities {
-		alist[i] = element{Id: a.Id} // no Tag field
-	}
-	return alist
-}
-
-// TODO: Is this really needed?
-func (tt_data *TtData) GetNActivities() int {
-	return len(tt_data.ttActivities)
+func (tt_data *TtData) GetActivities() []*ttActivity {
+	return tt_data.ttActivities
 }
 
 func (tt_data *TtData) GetConstraint_Types() []constraintType {
@@ -259,13 +248,18 @@ func (tt_data *TtData) GetConstraintMaps() (
 	return hardConstraintMap, softConstraintMap
 }
 
-// TODO: Is this really needed?
+func (tt_data *TtData) GetNActivities() int {
+	return len(tt_data.ttActivities)
+}
+
 func (tt_data *TtData) GetNConstraints() constraintIndex {
 	return len(tt_data.constraints)
 }
 
-// TODO: This seems to be used only for the result presentation.
-// Is it really necessary? If so, what should it contain?
 func (tt_data *TtData) GetConstraints() []*ttConstraint {
 	return tt_data.constraints
+}
+
+func (tt_data *TtData) GetHardBlocked() []constraintIndex {
+	return tt_data.hard_not_available
 }

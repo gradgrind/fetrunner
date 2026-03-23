@@ -5,94 +5,99 @@ import (
 	"strconv"
 )
 
-// TODO ... some of this is now in timetable package
-func (fetbuild *fet_build) blocked_slots() map[NodeRef][]base.TimeSlot {
-	tt_data := fetbuild.ttdata
-	db := fetbuild.basedata.Db
-	sclist := fetbuild.space_constraints_list
-	tclist := fetbuild.time_constraints_list
-	namap := map[NodeRef][]base.TimeSlot{} // needed for lunch-break constraints
+// Convert "DB" constraints to "FET" constraints.
 
-	// Rooms
-	for _, c0 := range db.Constraints[base.C_RoomNotAvailable] {
-		// The weight is presumably 100% ...
-		w := fetbuild.DbWeight2Fet(c0.Weight)
-		data := c0.Data.(base.ResourceNotAvailable)
-		rref := data.Resource
-		// `NotAvailable` is an ordered list of time-slots in which the
-		// room is to be regarded as not available for the timetable.
-
-		if len(data.NotAvailable) != 0 {
-			cna := sclist.CreateElement("ConstraintRoomNotAvailableTimes")
-			cna.CreateElement("Weight_Percentage").SetText(w)
-			cna.CreateElement("Room").SetText(db.Ref2Tag(rref))
-			cna.CreateElement("Number_of_Not_Available_Times").
-				SetText(strconv.Itoa(len(data.NotAvailable)))
-			for _, slot := range data.NotAvailable {
-				nat := cna.CreateElement("Not_Available_Time")
-				nat.CreateElement("Day").SetText(fetbuild.DayList[slot.Day])
-				nat.CreateElement("Hour").SetText(fetbuild.HourList[slot.Hour])
-			}
-			cna.CreateElement("Active").SetText("true")
-
-			fetbuild.add_space_constraint(cna, param_constraint(
-				c0.CType, c0.Id, tt_data.RoomIndex[rref], c0.Weight))
+func room_blocked(
+	fetbuild *fet_build,
+	i constraintIndex,
+	constraint *ttConstraint,
+) {
+	roomix := mapReadInt(constraint.Data, "Room")
+	// `notAvailable` is an ordered list of time-slots in which the
+	// room is to be regarded as not available for the timetable.
+	notAvailable := mapReadTimeSlots(constraint.Data)
+	if len(notAvailable) != 0 {
+		w1, comment := fetbuild.constraintWeight(i, constraint.Weight)
+		cna := fetbuild.space_constraints_list.CreateElement("ConstraintRoomNotAvailableTimes")
+		cna.CreateElement("Weight_Percentage").SetText(w1)
+		cna.CreateElement("Room").SetText(fetbuild.RoomList[roomix])
+		cna.CreateElement("Number_of_Not_Available_Times").
+			SetText(strconv.Itoa(len(notAvailable)))
+		for _, slot := range notAvailable {
+			nat := cna.CreateElement("Not_Available_Time")
+			nat.CreateElement("Day").SetText(fetbuild.DayList[slot.Day])
+			nat.CreateElement("Hour").SetText(fetbuild.HourList[slot.Hour])
 		}
+		cna.CreateElement("Active").SetText("true")
+		cna.CreateElement("Comments").SetText(comment)
+
+		fetbuild.ConstraintElements[i] = append(
+			fetbuild.ConstraintElements[i], cna)
 	}
+}
 
-	// Teachers
-	for _, c0 := range db.Constraints[base.C_TeacherNotAvailable] {
-		// The weight is presumably 100% ...
-		w := fetbuild.DbWeight2Fet(c0.Weight)
-		data := c0.Data.(base.ResourceNotAvailable)
-		tref := data.Resource
-		namap[tref] = data.NotAvailable
-		// `NotAvailable` is an ordered list of time-slots in which the
-		// teacher is to be regarded as not available for the timetable.
-		if len(data.NotAvailable) != 0 {
-			cna := tclist.CreateElement("ConstraintTeacherNotAvailableTimes")
-			cna.CreateElement("Weight_Percentage").SetText(w)
-			cna.CreateElement("Teacher").SetText(db.Ref2Tag(tref))
-			cna.CreateElement("Number_of_Not_Available_Times").
-				SetText(strconv.Itoa(len(data.NotAvailable)))
-			for _, slot := range data.NotAvailable {
-				nat := cna.CreateElement("Not_Available_Time")
-				nat.CreateElement("Day").SetText(fetbuild.DayList[slot.Day])
-				nat.CreateElement("Hour").SetText(fetbuild.HourList[slot.Hour])
-			}
-			cna.CreateElement("Active").SetText("true")
-
-			fetbuild.add_time_constraint(cna, param_constraint(
-				c0.CType, c0.Id, tt_data.TeacherIndex[tref], c0.Weight))
+func teacher_blocked(
+	fetbuild *fet_build,
+	i constraintIndex,
+	constraint *ttConstraint,
+) {
+	tix := mapReadInt(constraint.Data, "Teacher")
+	// `notAvailable` is an ordered list of time-slots in which the
+	// teacher is to be regarded as not available for the timetable.
+	notAvailable := mapReadTimeSlots(constraint.Data)
+	if len(notAvailable) != 0 {
+		w1, comment := fetbuild.constraintWeight(i, constraint.Weight)
+		if constraint.Weight == base.MAXWEIGHT {
+			// Collect hard blocks for determining lunch-breaks.
+			fetbuild.hard_teacher_blocks[tix] = notAvailable
 		}
-	}
-
-	// Classes
-	for _, c0 := range db.Constraints[base.C_ClassNotAvailable] {
-		// The weight is presumably 100% ...
-		w := fetbuild.DbWeight2Fet(c0.Weight)
-		data := c0.Data.(base.ResourceNotAvailable)
-		cref := data.Resource
-		namap[cref] = data.NotAvailable
-		// `NotAvailable` is an ordered list of time-slots in which the
-		// class is to be regarded as not available for the timetable.
-		if len(data.NotAvailable) != 0 {
-			cna := tclist.CreateElement("ConstraintStudentsSetNotAvailableTimes")
-			cna.CreateElement("Weight_Percentage").SetText(w)
-			cna.CreateElement("Students").SetText(db.Ref2Tag(cref))
-			cna.CreateElement("Number_of_Not_Available_Times").
-				SetText(strconv.Itoa(len(data.NotAvailable)))
-			for _, slot := range data.NotAvailable {
-				nat := cna.CreateElement("Not_Available_Time")
-				nat.CreateElement("Day").SetText(fetbuild.DayList[slot.Day])
-				nat.CreateElement("Hour").SetText(fetbuild.HourList[slot.Hour])
-			}
-			cna.CreateElement("Active").SetText("true")
-
-			fetbuild.add_time_constraint(cna, param_constraint(
-				c0.CType, c0.Id, tt_data.ClassIndex[cref], c0.Weight))
+		cna := fetbuild.time_constraints_list.CreateElement("ConstraintTeacherNotAvailableTimes")
+		cna.CreateElement("Weight_Percentage").SetText(w1)
+		cna.CreateElement("Teacher").SetText(fetbuild.TeacherList[tix])
+		cna.CreateElement("Number_of_Not_Available_Times").
+			SetText(strconv.Itoa(len(notAvailable)))
+		for _, slot := range notAvailable {
+			nat := cna.CreateElement("Not_Available_Time")
+			nat.CreateElement("Day").SetText(fetbuild.DayList[slot.Day])
+			nat.CreateElement("Hour").SetText(fetbuild.HourList[slot.Hour])
 		}
-	}
+		cna.CreateElement("Active").SetText("true")
+		cna.CreateElement("Comments").SetText(comment)
 
-	return namap
+		fetbuild.ConstraintElements[i] = append(
+			fetbuild.ConstraintElements[i], cna)
+	}
+}
+
+func class_blocked(
+	fetbuild *fet_build,
+	i constraintIndex,
+	constraint *ttConstraint,
+) {
+	classix := mapReadInt(constraint.Data, "Class")
+	// `notAvailable` is an ordered list of time-slots in which the
+	// class is to be regarded as not available for the timetable.
+	notAvailable := mapReadTimeSlots(constraint.Data)
+	if len(notAvailable) != 0 {
+		w1, comment := fetbuild.constraintWeight(i, constraint.Weight)
+		if constraint.Weight == base.MAXWEIGHT {
+			// Collect hard blocks for determining lunch-breaks.
+			fetbuild.hard_class_blocks[classix] = notAvailable
+		}
+		cna := fetbuild.time_constraints_list.CreateElement("ConstraintStudentsSetNotAvailableTimes")
+		cna.CreateElement("Weight_Percentage").SetText(w1)
+		cna.CreateElement("Students").SetText(fetbuild.ClassList[classix])
+		cna.CreateElement("Number_of_Not_Available_Times").
+			SetText(strconv.Itoa(len(notAvailable)))
+		for _, slot := range notAvailable {
+			nat := cna.CreateElement("Not_Available_Time")
+			nat.CreateElement("Day").SetText(fetbuild.DayList[slot.Day])
+			nat.CreateElement("Hour").SetText(fetbuild.HourList[slot.Hour])
+		}
+		cna.CreateElement("Active").SetText("true")
+		cna.CreateElement("Comments").SetText(comment)
+
+		fetbuild.ConstraintElements[i] = append(
+			fetbuild.ConstraintElements[i], cna)
+	}
 }

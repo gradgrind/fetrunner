@@ -39,10 +39,8 @@ type TtSource interface {
 	GetRooms() []base.ElementBase
 	GetActivities() []*TtActivity
 
-	//TODO: temporary name? -> GetConstraints?
-	GetSourceConstraints() []*TtConstraint
-	//TODO--???
-	//GetConstraints() []AttConstraint
+	GetConstraints() []*TtConstraint
+	GetHardBlocked() []ConstraintIndex
 
 	//TODO:
 	//ConstraintRef(index int) string // get source reference for indexed constraint
@@ -51,7 +49,7 @@ type TtSource interface {
 	GetNConstraints() ConstraintIndex
 	GetConstraint_Types() []ConstraintType // ordered list of constraint types
 	// GetConstraintMaps() returns the hard- and soft constraint maps.
-	GetConstraintMaps() (map[ConstraintType]ConstraintIndex, map[ConstraintType]ConstraintIndex)
+	GetConstraintMaps() (map[ConstraintType][]ConstraintIndex, map[ConstraintType][]ConstraintIndex)
 
 	//TODO: probably not here ...
 	// Prepare the "source" for a run with a set of enabled constraints:

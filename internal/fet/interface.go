@@ -15,7 +15,7 @@ import (
 
 type element = base.ElementBase
 
-type constraint = autotimetable.AttConstraint
+type ttConstraint = autotimetable.TtConstraint
 type constraintIndex = autotimetable.ConstraintIndex
 type autoTtData = autotimetable.AutoTtData
 type constraintType = autotimetable.ConstraintType
@@ -28,7 +28,7 @@ type softWeight struct {
 type TtSourceFet struct {
 	doc                *etree.Document
 	constraintElements []*etree.Element // ordered constraint elements
-	constraints        []constraint     // ordered constraint info for "autotimetable"
+	constraints        []ttConstraint   // ordered constraint info for "autotimetable"
 	softWeights        []softWeight
 
 	activityElements []*etree.Element
@@ -135,7 +135,7 @@ func (sourcefet *TtSourceFet) GetActivities() []element {
 	return aidlist
 }
 
-func (sourcefet *TtSourceFet) GetConstraints() []constraint { return sourcefet.constraints }
+func (sourcefet *TtSourceFet) GetConstraints() []ttConstraint { return sourcefet.constraints }
 
 /*TODO--?
 func (sourcefet *TtSourceFet) ConstraintRef(index int) string {

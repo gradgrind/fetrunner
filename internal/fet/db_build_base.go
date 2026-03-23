@@ -3,6 +3,7 @@ package fet
 import (
 	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
+	"fmt"
 
 	"github.com/beevik/etree"
 )
@@ -10,15 +11,17 @@ import (
 const fet_version = "7.5.5"
 
 type fet_build struct {
-	basedata           *base.BaseData
+	real_soft bool
+
+	//TODO? basedata           *base.BaseData
 	ttsource           autotimetable.TtSource
 	source_constraints []*autotimetable.TtConstraint
 
 	Doc                *etree.Document
 	WeightTable        []float64
-	ConstraintElements []*etree.Element
-	TimeConstraints    []int // indexes into `ConstraintElements`
-	SpaceConstraints   []int // indexes into `ConstraintElements`
+	ConstraintElements [][]*etree.Element // a source constraint can have multiple FET constraints
+	TimeConstraints    []int              // indexes into `ConstraintElements`
+	SpaceConstraints   []int              // indexes into `ConstraintElements`
 
 	/*TODO--?
 	Constraints        []constraint
@@ -41,14 +44,64 @@ type fet_build struct {
 
 	DayList      []string
 	HourList     []string
+	ClassList    []string
 	TeacherList  []string
 	SubjectList  []string
 	RoomList     []string
 	ActivityList []string
 
+	hard_teacher_blocks [][]base.TimeSlot
+	hard_class_blocks   [][]base.TimeSlot
+
 	// Cache for FET virtual rooms, "hash" -> FET-virtual-room tag
 	fet_virtual_rooms  map[string]string
 	fet_virtual_room_n map[string]int // FET-virtual-room tag -> number of room sets
 
-	real_soft bool // if false, give soft constraints weight 100
+	//TODO--?
+	//real_soft bool // if false, give soft constraints weight 100
+}
+
+var db_constraint_fet = map[constraintType]func(
+	*fet_build,
+	constraintIndex,
+	*ttConstraint,
+){
+	base.C_RoomNotAvailable:    room_blocked,
+	base.C_ClassNotAvailable:   class_blocked,
+	base.C_TeacherNotAvailable: teacher_blocked,
+}
+
+func mapReadInt(m any, key string) int {
+	mm, ok := m.(map[string]any)
+	if ok {
+		val, ok := mm[key].(int)
+		if ok {
+			return val
+		}
+	}
+	panic("Expected map, key: " + key + ", int value")
+}
+
+func mapReadTimeSlots(m any) []base.TimeSlot {
+	mm, ok := m.(map[string]any)
+	if ok {
+		val, ok := mm["Times"].([]base.TimeSlot)
+		if ok {
+			return val
+		}
+	}
+	panic("Expected map, key: Times, list of TimeSlots as value")
+}
+
+// Return FET weight and comment values.
+func (fetbuild *fet_build) constraintWeight(i int, w int) (string, string) {
+	w1 := "100"
+	if w != base.MAXWEIGHT {
+		if fetbuild.real_soft {
+			w1 = fetbuild.DbWeight2Fet(w)
+		}
+		return w1, fmt.Sprintf("[%d:%d]", i, w)
+	} else {
+		return w1, fmt.Sprintf("[%d]", i)
+	}
 }
