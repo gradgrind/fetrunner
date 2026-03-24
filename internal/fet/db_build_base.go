@@ -68,6 +68,8 @@ var db_constraint_fet = map[constraintType]func(
 	base.C_RoomNotAvailable:    room_blocked,
 	base.C_ClassNotAvailable:   class_blocked,
 	base.C_TeacherNotAvailable: teacher_blocked,
+	base.C_ActivityStartTime:   activity_start,
+	base.C_ActivityRooms:       activity_rooms,
 }
 
 func mapReadInt(m any, key string) int {
@@ -79,6 +81,39 @@ func mapReadInt(m any, key string) int {
 		}
 	}
 	panic("Expected map, key: " + key + ", int value")
+}
+
+func mapReadIndexList(m any, key string) []int {
+	mm, ok := m.(map[string]any)
+	if ok {
+		val, ok := mm[key].([]int)
+		if ok {
+			return val
+		}
+	}
+	panic("Expected map, key: " + key + ", int-list value")
+}
+
+func mapReadIndexListList(m any, key string) [][]int {
+	mm, ok := m.(map[string]any)
+	if ok {
+		val, ok := mm[key].([][]int)
+		if ok {
+			return val
+		}
+	}
+	panic("Expected map, key: " + key + ", int-list-list value")
+}
+
+func mapReadTimeSlot(m any) base.TimeSlot {
+	mm, ok := m.(map[string]any)
+	if ok {
+		val, ok := mm["Time"].(base.TimeSlot)
+		if ok {
+			return val
+		}
+	}
+	panic("Expected map, key: Time, a TimeSlot as value")
 }
 
 func mapReadTimeSlots(m any) []base.TimeSlot {

@@ -173,8 +173,6 @@ type TtActivity struct {
 	Groups             []*base.Group // a `Class` is represented by its ClassGroup
 	AtomicGroupIndexes []AtomicIndex
 	Teachers           []TeacherIndex
-	FixedRooms         []RoomIndex
-	RoomChoices        [][]RoomIndex
 }
 
 type TtConstraint struct {

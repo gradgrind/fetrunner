@@ -33,8 +33,8 @@ var (
 	C_DoubleActivityNotOverBreaks = "DoubleActivityNotOverBreaks"
 	C_ParallelCourses             = "ParallelCourses"
 
-	C_SetStartingTime = "SetStartingTime"
-	C_SetRooms        = "SetRooms"
+	C_ActivityStartTime = "ActivityStartTime"
+	C_ActivityRooms     = "ActivityRooms"
 )
 
 // Constraint "priority", used for making an ordered list of the constraint
@@ -47,8 +47,7 @@ var ConstraintPriority = map[string]int{
 	C_ClassNotAvailable:   99,
 	C_TeacherNotAvailable: 98,
 
-	C_SetStartingTime: 91,
-	//???C_ActivityStartTime: 90,
+	C_ActivityStartTime: 90,
 
 	C_ClassMinHoursPerDay: 5,
 	//C_ClassMaxActivitiesPerDay: ,

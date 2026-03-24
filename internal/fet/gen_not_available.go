@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-// Convert "DB" constraints to "FET" constraints.
+// Convert "base" constraints to "FET" constraints.
 
 func room_blocked(
 	fetbuild *fet_build,

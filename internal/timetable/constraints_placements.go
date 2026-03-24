@@ -4,8 +4,9 @@ import (
 	"fetrunner/internal/base"
 )
 
-// Note: Room placements are treated as activity resources (see
-// `autotimetable.TtActivity`), not as constraints.
+// TODO: Room placements are treated in "DB" as activity resources, which I
+// have incorporated in `autotimetable.TtActivity`. But actually I need constraints
+// for autotimetable, so I should change this.
 
 func (tt_data *TtData) placement_constraints(constraint_map map[string][]*base.BaseConstraint) {
 	for _, c0 := range constraint_map[base.C_ActivityStartTime] {

@@ -9,10 +9,6 @@ func fet_activity_index(aix int) string {
 	return strconv.Itoa(aix + 1) // the FET activity Ids start at 1
 }
 
-//TODO: the room constraints ...???
-// If these are not available as source constraints, surely the autotimetable
-// mechanism won't work?!
-
 // Generate the fet activities.
 func (fetbuild *fet_build) set_activities() {
 	alist := fetbuild.ttsource.GetActivities()
