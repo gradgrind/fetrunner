@@ -46,7 +46,8 @@ func (tt_data *TtData) class_afternoons(constraint_map map[string][]*base.BaseCo
 					Id:     string(c0.Id),
 					CType:  ctype,
 					Weight: c0.Weight,
-					Data:   map[string]any{"Class": cix, "MaxAfternoons": n},
+					Data: map[string]any{
+						"Class": cix, "MaxAfternoons": n, "AfternoonStart": h0},
 				})
 			}
 		}
@@ -98,7 +99,7 @@ func (tt_data *TtData) class_max_gaps(constraint_map map[string][]*base.BaseCons
 					Id:     string(c0.Id),
 					CType:  ctype,
 					Weight: c0.Weight,
-					Data:   map[string]any{"Class": cix, "MaxGaps": n},
+					Data:   map[string]any{"Class": cix, "nHours": n},
 				})
 			}
 		}
