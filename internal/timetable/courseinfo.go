@@ -148,6 +148,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 			cinfo.Activities = append(cinfo.Activities, aix)
 			tt_data.ttActivities[aix] = &ttActivity{
 				Id:                 string(a.Id),
+				Duration:           a.Duration,
 				Subject:            cinfo.Subject,
 				Groups:             cinfo.Groups,
 				AtomicGroupIndexes: cinfo.AtomicGroupIndexes,
@@ -262,6 +263,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 			cinfo.Activities = append(cinfo.Activities, aix)
 			tt_data.ttActivities[aix] = &ttActivity{
 				Id:                 string(a.Id),
+				Duration:           a.Duration,
 				Subject:            cinfo.Subject,
 				Groups:             cinfo.Groups,
 				AtomicGroupIndexes: cinfo.AtomicGroupIndexes,

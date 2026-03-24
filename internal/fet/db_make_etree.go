@@ -32,7 +32,8 @@ func FetTree(attdata *autotimetable.AutoTtData) *fet_build {
 	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
 
 	fetbuild := &fet_build{
-		real_soft: attdata.Parameters.REAL_SOFT,
+		real_soft:           attdata.Parameters.REAL_SOFT,
+		no_room_constraints: attdata.Parameters.WITHOUT_ROOM_CONSTRAINTS,
 
 		basedata: attdata.BaseData,
 		ttsource: source,
@@ -47,6 +48,7 @@ func FetTree(attdata *autotimetable.AutoTtData) *fet_build {
 		//TODO--?
 		//real_soft: real_soft,
 	}
+	attdata.Backend = fetbuild
 
 	fetroot := doc.CreateElement("fet")
 	fetbuild.fetroot = fetroot

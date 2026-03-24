@@ -11,7 +11,8 @@ import (
 const fet_version = "7.5.5"
 
 type fet_build struct {
-	real_soft bool
+	real_soft           bool // if false, give soft constraints weight 100
+	no_room_constraints bool // if true, no rooms will be allocated
 
 	//TODO? basedata           *base.BaseData
 	ttsource           autotimetable.TtSource
@@ -39,8 +40,6 @@ type fet_build struct {
 
 	//TODO: What is this for?
 	ActivityElementList []*etree.Element
-
-	constraint_counter int // for tagging constraints
 
 	DayList      []string
 	HourList     []string

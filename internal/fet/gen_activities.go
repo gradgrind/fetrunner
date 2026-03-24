@@ -9,71 +9,52 @@ func fet_activity_index(aix int) string {
 	return strconv.Itoa(aix + 1) // the FET activity Ids start at 1
 }
 
+//TODO: the room constraints ...???
+// If these are not available as source constraints, surely the autotimetable
+// mechanism won't work?!
+
 // Generate the fet activities.
 func (fetbuild *fet_build) set_activities() {
-	//TODO-- db := fetbuild.basedata.Db
-
-	//TODO: All the resources of the activities are needed!
 	alist := fetbuild.ttsource.GetActivities()
-
-	//TODO-- tt_data := fetbuild.ttdata
-
 	fetactivities := fetbuild.fetroot.CreateElement("Activities_List")
 	for ai, tt_activity := range alist {
-		//TODO-- for ai, tt_activity := range tt_data.TtActivities {
 		fetactivity := fetactivities.CreateElement("Activity")
 		fetbuild.ActivityElementList = append(fetbuild.ActivityElementList, fetactivity)
 		// The fet activities start at Id = 1
 		aid := fet_activity_index(ai)
 		fetactivity.CreateElement("Id").SetText(aid)
-
-		cinfo := tt_data.CourseInfoList[tt_activity.CourseInfo]
-
 		// Teachers
 		tlist := []string{}
-		for _, ti := range cinfo.Teachers {
-			tlist = append(tlist, db.Teachers[ti].GetTag())
+		for _, ti := range tt_activity.Teachers {
+			tlist = append(tlist, fetbuild.TeacherList[ti])
 		}
 		slices.Sort(tlist)
 		for _, t := range tlist {
 			fetactivity.CreateElement("Teacher").SetText(t)
 		}
-
 		// Subject
-		fetactivity.CreateElement("Subject").SetText(cinfo.Subject)
-
+		fetactivity.CreateElement("Subject").SetText(tt_activity.Subject)
 		// Student groups
 		glist := []string{}
-		for _, cg := range cinfo.Groups {
+		for _, cg := range tt_activity.Groups {
 			glist = append(glist, fetGroupTag(cg))
 		}
 		slices.Sort(glist)
 		for _, g := range glist {
 			fetactivity.CreateElement("Students").SetText(g)
 		}
-
 		//TODO? Activity_Tag: tag (can be more than one of these)
-
 		fetactivity.CreateElement("Active").SetText("true")
-
-		// Get the total duration for this course.
-		totalDuration := 0
-		for _, aix := range cinfo.Activities {
-			totalDuration += db.Activities[aix].Duration
-		}
+		// Activities are not grouped in the FET generated here, so the
+		// total duration is the same as that of the individual activity
+		// and the activity group id is "0".
+		duration := tt_activity.Duration
 		fetactivity.CreateElement("Total_Duration").
-			SetText(strconv.Itoa(totalDuration))
-
-		// Start FET activity indexes at 1
-		agid := "0" // Activity_Group_Id
-		if len(cinfo.Activities) > 1 {
-			agid = fet_activity_index(cinfo.Activities[0])
-		}
-		a := db.Activities[ai]
+			SetText(strconv.Itoa(duration))
 		fetactivity.CreateElement("Duration").
-			SetText(strconv.Itoa(a.Duration))
+			SetText(strconv.Itoa(duration))
 		fetactivity.CreateElement("Activity_Group_Id").
-			SetText(agid)
+			SetText("0")
 
 		fetbuild.ActivityList = append(fetbuild.ActivityList, aid)
 	}

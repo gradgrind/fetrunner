@@ -32,6 +32,9 @@ type Parameters struct {
 	// maximum number of timetable generations (`FET` processes) which
 	// may run at the same time.
 	MAXPROCESSES int
+	// If the WITHOUT_ROOM_CONSTRAINTS flag is true, no rooms will be allocated.
+	// TODO: Is this flag useful? It is currently not set anywhere.
+	WITHOUT_ROOM_CONSTRAINTS bool
 
 	// A string to select an alternative timetable-generation back-end.
 	// Currently only FET is available, and is the default.
@@ -165,6 +168,7 @@ type TtActivity struct {
 	Id string // FET: "ActivityId" ? //TODO???
 	// DB: NodeRef of the source activity from which this is derived.
 
+	Duration           int
 	Subject            string
 	Groups             []*base.Group // a `Class` is represented by its ClassGroup
 	AtomicGroupIndexes []AtomicIndex
