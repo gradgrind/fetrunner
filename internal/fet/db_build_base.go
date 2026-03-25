@@ -65,23 +65,31 @@ var base_constraint_fet = map[constraintType]func(
 	constraintIndex,
 	*ttConstraint,
 ){
-	base.C_RoomNotAvailable:      room_blocked,
-	base.C_ClassNotAvailable:     class_blocked,
-	base.C_TeacherNotAvailable:   teacher_blocked,
-	base.C_ActivityStartTime:     activity_start,
-	base.C_ActivityRooms:         activity_rooms,
-	base.C_TeacherMaxDays:        teacher_max_days,
-	base.C_TeacherMinHoursPerDay: teacher_min_hours_per_day,
-	base.C_TeacherMaxHoursPerDay: teacher_max_hours_per_day,
-	base.C_TeacherLunchBreak:     teacher_lunch_breaks,
-	base.C_TeacherMaxGapsPerDay:  teacher_max_gaps_per_day,
-	base.C_ClassMaxGapsPerWeek:   class_max_gaps_per_week,
-	base.C_ClassMinHoursPerDay:   class_min_hours_per_day,
-	base.C_ClassMaxHoursPerDay:   class_max_hours_per_day,
-	base.C_ClassLunchBreak:       class_lunch_breaks,
-	base.C_ClassMaxGapsPerDay:    class_max_gaps_per_day,
-	base.C_ClassMaxGapsPerWeek:   class_max_gaps_per_week,
-	base.C_ClassForceFirstHour:   class_force_first_hour,
+	base.C_RoomNotAvailable:            room_blocked,
+	base.C_ClassNotAvailable:           class_blocked,
+	base.C_TeacherNotAvailable:         teacher_blocked,
+	base.C_ActivityStartTime:           activity_start,
+	base.C_ActivityRooms:               activity_rooms,
+	base.C_TeacherMaxDays:              teacher_max_days,
+	base.C_TeacherMinHoursPerDay:       teacher_min_hours_per_day,
+	base.C_TeacherMaxHoursPerDay:       teacher_max_hours_per_day,
+	base.C_TeacherLunchBreak:           teacher_lunch_breaks,
+	base.C_TeacherMaxGapsPerDay:        teacher_max_gaps_per_day,
+	base.C_ClassMaxGapsPerWeek:         class_max_gaps_per_week,
+	base.C_ClassMinHoursPerDay:         class_min_hours_per_day,
+	base.C_ClassMaxHoursPerDay:         class_max_hours_per_day,
+	base.C_ClassLunchBreak:             class_lunch_breaks,
+	base.C_ClassMaxGapsPerDay:          class_max_gaps_per_day,
+	base.C_ClassMaxGapsPerWeek:         class_max_gaps_per_week,
+	base.C_ClassForceFirstHour:         class_force_first_hour,
+	base.C_DaysBetween:                 days_between,
+	base.C_AutomaticDifferentDays:      days_between,
+	base.C_DaysBetweenJoin:             days_between,
+	base.C_ActivitiesEndDay:            ends_day,
+	base.C_AfterHour:                   after_hour,
+	base.C_BeforeHour:                  before_hour,
+	base.C_ParallelCourses:             parallel_activities,
+	base.C_DoubleActivityNotOverBreaks: double_no_break,
 }
 
 func anyInt(a any) int {
@@ -90,6 +98,14 @@ func anyInt(a any) int {
 		return val
 	}
 	panic("Expected int value")
+}
+
+func anyIntList(a any) []int {
+	val, ok := a.([]int)
+	if ok {
+		return val
+	}
+	panic("Expected int-list value")
 }
 
 func mapReadInt(m any, key string) int {
@@ -123,6 +139,17 @@ func mapReadIndexListList(m any, key string) [][]int {
 		}
 	}
 	panic("Expected map, key: " + key + ", int-list-list value")
+}
+
+func mapReadBool(m any, key string) bool {
+	mm, ok := m.(map[string]any)
+	if ok {
+		val, ok := mm[key].(bool)
+		if ok {
+			return val
+		}
+	}
+	panic("Expected map, key: " + key + ", bool value")
 }
 
 func mapReadTimeSlot(m any) base.TimeSlot {

@@ -5,19 +5,17 @@ import (
 	"strconv"
 )
 
-func fet_activity_index(aix int) string {
-	return strconv.Itoa(aix + 1) // the FET activity Ids start at 1
-}
-
 // Generate the fet activities.
 func (fetbuild *fet_build) set_activities() {
 	alist := fetbuild.ttsource.GetActivities()
 	fetactivities := fetbuild.fetroot.CreateElement("Activities_List")
+	fetbuild.ActivityList = make([]string, len(alist))
 	for ai, tt_activity := range alist {
 		fetactivity := fetactivities.CreateElement("Activity")
 		fetbuild.ActivityElementList = append(fetbuild.ActivityElementList, fetactivity)
 		// The fet activities start at Id = 1
-		aid := fet_activity_index(ai)
+		aid := strconv.Itoa(ai + 1)
+		fetbuild.ActivityList[ai] = aid
 		fetactivity.CreateElement("Id").SetText(aid)
 		// Teachers
 		tlist := []string{}
@@ -51,7 +49,5 @@ func (fetbuild *fet_build) set_activities() {
 			SetText(strconv.Itoa(duration))
 		fetactivity.CreateElement("Activity_Group_Id").
 			SetText("0")
-
-		fetbuild.ActivityList = append(fetbuild.ActivityList, aid)
 	}
 }

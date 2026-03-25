@@ -190,7 +190,9 @@ func MakeTimetableData(bd *base.BaseData) *TtData {
 	tt_data.prepare_parallels(bd, constraint_map)
 
 	// Collect the remaining constraints.
-	tt_data.prepare_constraints(constraint_map)
+	tt_data.activity_constraints(constraint_map)
+	tt_data.class_constraints(constraint_map)
+	tt_data.teacher_constraints(constraint_map)
 	for c := range constraint_map {
 		bd.Logger.Error("UnhandledConstraintType: %s", c)
 	}
