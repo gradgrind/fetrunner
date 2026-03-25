@@ -34,9 +34,7 @@ func FetTree(attdata *autotimetable.AutoTtData) *fet_build {
 	fetbuild := &fet_build{
 		real_soft:           attdata.Parameters.REAL_SOFT,
 		no_room_constraints: attdata.Parameters.WITHOUT_ROOM_CONSTRAINTS,
-
-		basedata: attdata.BaseData,
-		ttsource: source,
+		ttsource:            source,
 
 		Doc:                doc,
 		WeightTable:        MakeFetWeights(),
@@ -44,9 +42,6 @@ func FetTree(attdata *autotimetable.AutoTtData) *fet_build {
 
 		fet_virtual_rooms:  map[string]string{},
 		fet_virtual_room_n: map[string]int{},
-
-		//TODO--?
-		//real_soft: real_soft,
 	}
 	attdata.Backend = fetbuild
 
@@ -85,55 +80,40 @@ func FetTree(attdata *autotimetable.AutoTtData) *fet_build {
 
 	// Start handling constraints by fetching the source constraints in a
 	// convenient form.
-	fetbuild.source_constraints = source.GetConstraints()
-
-	//TODO: Convert the source constraints to FET constraints
-	for i, sc := range fetbuild.source_constraints {
+	source_constraints := source.GetConstraints()
+	// Convert the source constraints to FET constraints
+	for i, sc := range source_constraints {
 		base_constraint_fet[sc.CType](fetbuild, i, sc)
 	}
+	return fetbuild
+}
 
-	//TODO--???
+//TODO: Check that the correct constraint types (after timetable preprocessing)
+// and related stuff gets saved in AutoTtData.
 
-	// Add "NotAvailable" constraints for all resources, returning a map
-	// linking a resource to its blocked slot list:
-	//   NodeRef -> []db.TimeSlot
-	//TODO: I shouldn't be using NodeRef, but resource types and indexes.
-	namap := fetbuild.blocked_slots()
-
-	//TODO: Handle WITHOUT_ROOM_CONSTRAINTS
-	fetbuild.add_placement_constraints(false)
-
-	fetbuild.add_activity_constraints()
-
-	fetbuild.add_class_constraints(namap)
-	fetbuild.add_teacher_constraints(namap)
-
-	//TODO: The remaining constraints
-
-	// Collect the constraints, dividing into soft and hard groups.
+func TODO_deleteme() {
+	// Divide the constraints into soft and hard groups.
 	hard_constraint_map := map[string][]int{}
 	soft_constraint_map := map[string][]int{}
 	constraint_types := []string{}
-	for i, c := range fetbuild.Constraints {
-
-		constraint_types = append(constraint_types, c.Ctype)
+	for i, c := range fetbuild.source_constraints {
+		constraint_types = append(constraint_types, c.CType)
 		// ... duplicates wil be removed in `sort_constraint_types`
-
 		if c.Weight == base.MAXWEIGHT {
 			// Hard constraint
-			hard_constraint_map[c.Ctype] = append(
-				hard_constraint_map[c.Ctype], i)
+			hard_constraint_map[c.CType] = append(
+				hard_constraint_map[c.CType], i)
 		} else {
 			// Soft constraint
-			wctype := fmt.Sprintf("%02d:%s", c.Weight, c.Ctype)
+			wctype := fmt.Sprintf("%02d:%s", c.Weight, c.CType)
 			soft_constraint_map[wctype] = append(soft_constraint_map[wctype], i)
 		}
 	}
 	fetbuild.NConstraints = len(fetbuild.Constraints)
 	tt_data.ConstraintTypes = autotimetable.SortConstraintTypes(
 		constraint_types, base.ConstraintPriority)
-	fetbuild.HardConstraintMap = hard_constraint_map
-	fetbuild.SoftConstraintMap = soft_constraint_map
+	attdata.HardConstraintMap = hard_constraint_map
+	attdata.SoftConstraintMap = soft_constraint_map
 
 	return fetbuild
 }
@@ -158,74 +138,6 @@ func (fetbuild *fet_build) add_activity_tag(tag string) {
 	atag := fetbuild.activity_tag_list.CreateElement("Activity_Tag")
 	atag.CreateElement("Name").SetText(tag)
 	atag.CreateElement("Printable").SetText("false")
-}
-
-// TODO: Where to record the node ref?
-func param_constraint(
-	ctype string, id NodeRef, index int, weight int,
-) ttConstraint {
-	return ttConstraint{
-		TtSourceTag: string(id),
-		Ctype:       ctype,
-		Parameters:  []int{index},
-		Weight:      weight}
-}
-
-func params_constraint(
-	ctype string, id NodeRef, indexlist []int, weight int,
-) ttConstraint {
-	return ttConstraint{
-		TtSourceTag: string(id),
-		Ctype:       ctype,
-		Parameters:  indexlist,
-		Weight:      weight}
-}
-
-//TODO: Possibility of multiple FET constraints for one DB constraint. That could
-// be quite a radical change ...
-
-// TODO--
-func (fetbuild *fet_build) add_time_constraint(e *etree.Element, c ttConstraint) {
-	i := len(fetbuild.ConstraintElements)
-	fetbuild.ConstraintElements = append(fetbuild.ConstraintElements, e)
-	fetbuild.TimeConstraints = append(fetbuild.TimeConstraints, i)
-
-	// Make a tag for the constraint
-	fetbuild.constraint_counter++
-	if c.Weight == 100 {
-		c.Backend = fmt.Sprintf("[%d]", fetbuild.constraint_counter)
-	} else {
-		wfet := e.SelectElement("Weight_Percentage").Text()
-		c.Backend = fmt.Sprintf("[%d:%s]", fetbuild.constraint_counter, wfet)
-		if !fetbuild.real_soft {
-			e.SelectElement("Weight_Percentage").SetText("100")
-		}
-	}
-	e.CreateElement("Comments").SetText(c.Backend)
-
-	fetbuild.Constraints = append(fetbuild.Constraints, c)
-}
-
-// TODO--
-func (fetbuild *fet_build) add_space_constraint(e *etree.Element, c ttConstraint) {
-	i := len(fetbuild.ConstraintElements)
-	fetbuild.ConstraintElements = append(fetbuild.ConstraintElements, e)
-	fetbuild.SpaceConstraints = append(fetbuild.SpaceConstraints, i)
-
-	// Make a tag for the constraint
-	fetbuild.constraint_counter++
-	if c.Weight == 100 {
-		c.Backend = fmt.Sprintf("[%d]", fetbuild.constraint_counter)
-	} else {
-		wfet := e.SelectElement("Weight_Percentage").Text()
-		c.Backend = fmt.Sprintf("[%d:%s]", fetbuild.constraint_counter, wfet)
-		if !fetbuild.real_soft {
-			e.SelectElement("Weight_Percentage").SetText("100")
-		}
-	}
-	e.CreateElement("Comments").SetText(c.Backend)
-
-	fetbuild.Constraints = append(fetbuild.Constraints, c)
 }
 
 func (fetbuild *fet_build) DbWeight2Fet(w int) string {
