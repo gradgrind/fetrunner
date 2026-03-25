@@ -3,7 +3,6 @@ package fet
 import (
 	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
-	"fmt"
 	"strconv"
 
 	"github.com/beevik/etree"
@@ -30,7 +29,7 @@ func FetTree(attdata *autotimetable.AutoTtData) *fet_build {
 	source := attdata.Source // TtSource interface
 	doc := etree.NewDocument()
 	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
-
+	source_constraints := source.GetConstraints()
 	fetbuild := &fet_build{
 		real_soft:           attdata.Parameters.REAL_SOFT,
 		no_room_constraints: attdata.Parameters.WITHOUT_ROOM_CONSTRAINTS,
@@ -38,7 +37,7 @@ func FetTree(attdata *autotimetable.AutoTtData) *fet_build {
 
 		Doc:                doc,
 		WeightTable:        MakeFetWeights(),
-		ConstraintElements: make([][]*etree.Element, source.GetNConstraints()),
+		ConstraintElements: make([][]*etree.Element, len(source_constraints)),
 
 		fet_virtual_rooms:  map[string]string{},
 		fet_virtual_room_n: map[string]int{},
@@ -78,43 +77,10 @@ func FetTree(attdata *autotimetable.AutoTtData) *fet_build {
 	bcspace.CreateElement("Weight_Percentage").SetText("100")
 	bcspace.CreateElement("Active").SetText("true")
 
-	// Start handling constraints by fetching the source constraints in a
-	// convenient form.
-	source_constraints := source.GetConstraints()
 	// Convert the source constraints to FET constraints
 	for i, sc := range source_constraints {
 		base_constraint_fet[sc.CType](fetbuild, i, sc)
 	}
-	return fetbuild
-}
-
-//TODO: Check that the correct constraint types (after timetable preprocessing)
-// and related stuff gets saved in AutoTtData.
-
-func TODO_deleteme() {
-	// Divide the constraints into soft and hard groups.
-	hard_constraint_map := map[string][]int{}
-	soft_constraint_map := map[string][]int{}
-	constraint_types := []string{}
-	for i, c := range fetbuild.source_constraints {
-		constraint_types = append(constraint_types, c.CType)
-		// ... duplicates wil be removed in `sort_constraint_types`
-		if c.Weight == base.MAXWEIGHT {
-			// Hard constraint
-			hard_constraint_map[c.CType] = append(
-				hard_constraint_map[c.CType], i)
-		} else {
-			// Soft constraint
-			wctype := fmt.Sprintf("%02d:%s", c.Weight, c.CType)
-			soft_constraint_map[wctype] = append(soft_constraint_map[wctype], i)
-		}
-	}
-	fetbuild.NConstraints = len(fetbuild.Constraints)
-	tt_data.ConstraintTypes = autotimetable.SortConstraintTypes(
-		constraint_types, base.ConstraintPriority)
-	attdata.HardConstraintMap = hard_constraint_map
-	attdata.SoftConstraintMap = soft_constraint_map
-
 	return fetbuild
 }
 

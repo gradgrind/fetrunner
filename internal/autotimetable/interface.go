@@ -19,39 +19,17 @@ type TtBackend interface {
 
 type TtSource interface {
 	SourceType() string
-
-	//TODO?
-	//SetSoftConstraintWeights(real_soft bool)
-
-	//TODO?
-	//GetConstraintTypeSets() map[string][]int // ctype -> []constraint-index
-
 	GetDays() []base.ElementBase
 	GetHours() []base.ElementBase
 	GetTeachers() []base.ElementBase
-
-	//TODO???
 	GetClasses() []*TtClass
 	GetAtomicGroups() []string
-	//GetStudentGroups() []base.ElementBase
-
 	GetSubjects() []base.ElementBase
 	GetRooms() []base.ElementBase
 	GetActivities() []*TtActivity
-
 	GetConstraints() []*TtConstraint
-	GetHardBlocked() []ConstraintIndex
-
-	//TODO:
-	//ConstraintRef(index int) string // get source reference for indexed constraint
-
-	GetNActivities() int
-	GetNConstraints() ConstraintIndex
-	GetConstraint_Types() []ConstraintType // ordered list of constraint types
+	GetResourceUnavailableConstraintTypes() []ConstraintType
+	GetConstraintTypes() []ConstraintType // ordered list of constraint types
 	// GetConstraintMaps() returns the hard- and soft constraint maps.
 	GetConstraintMaps() (map[ConstraintType][]ConstraintIndex, map[ConstraintType][]ConstraintIndex)
-
-	//TODO: probably not here ...
-	// Prepare the "source" for a run with a set of enabled constraints:
-	//PrepareRun([]bool, any)
 }

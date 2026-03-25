@@ -32,20 +32,16 @@ type TtData struct {
 	ndays  int
 	nhours int
 
-	constraints        []*ttConstraint   // ordered constraint list for "autotimetable"
-	hard_not_available []constraintIndex // list of hard "not available" constraints
-
-	atomicGroups []*AtomicGroup
-
+	constraints   []*ttConstraint // ordered constraint list for "autotimetable"
 	teacher2Index map[nodeRef]teacherIndex
 	teachers      []element
 	room2Index    map[nodeRef]roomIndex
 	rooms         []element
 	class2Index   map[nodeRef]classIndex
-
 	// `atomicGroup2Indexes` maps a class or group NodeRef to its list of atomic
 	// group indexes.
 	atomicGroup2Indexes map[nodeRef][]atomicIndex
+	atomicGroups        []*AtomicGroup
 
 	// `classDivisions` is a list with an entry for each class, containing a
 	// list of its divisions ([][]NodeRef).
@@ -222,16 +218,22 @@ func (tt_data *TtData) GetActivities() []*ttActivity {
 	return tt_data.ttActivities
 }
 
-func (tt_data *TtData) GetConstraint_Types() []constraintType {
-	// First sort alphabetically, and then according to priority. This allows
-	// constraint types with the same priority to have a stable order.
-	s1 := slices.Sorted(maps.Keys(tt_data.db.Constraints))
+func (tt_data *TtData) GetConstraintTypes() []constraintType {
+	// First sort alphabetically, remove duplicates, and then sort according
+	// to priority. This allows constraint types with the same priority to
+	// have a stable order.
+	ctlist := make([]constraintType, len(tt_data.constraints))
+	for i, c := range tt_data.constraints {
+		ctlist[i] = c.CType
+	}
+	slices.Sort(ctlist)
+	ctlist = slices.Compact(ctlist)
 	priority := base.ConstraintPriority
-	slices.SortStableFunc(s1,
+	slices.SortStableFunc(ctlist,
 		func(a, b constraintType) int {
 			return cmp.Compare(priority[b], priority[a])
 		})
-	return s1
+	return ctlist
 }
 
 func (tt_data *TtData) GetConstraintMaps() (
@@ -250,18 +252,6 @@ func (tt_data *TtData) GetConstraintMaps() (
 	return hardConstraintMap, softConstraintMap
 }
 
-func (tt_data *TtData) GetNActivities() int {
-	return len(tt_data.ttActivities)
-}
-
-func (tt_data *TtData) GetNConstraints() constraintIndex {
-	return len(tt_data.constraints)
-}
-
 func (tt_data *TtData) GetConstraints() []*ttConstraint {
 	return tt_data.constraints
-}
-
-func (tt_data *TtData) GetHardBlocked() []constraintIndex {
-	return tt_data.hard_not_available
 }
