@@ -89,7 +89,7 @@ func FetTree(attdata *autotimetable.AutoTtData) *fet_build {
 
 	//TODO: Convert the source constraints to FET constraints
 	for i, sc := range fetbuild.source_constraints {
-		db_constraint_fet[sc.CType](fetbuild, i, sc)
+		base_constraint_fet[sc.CType](fetbuild, i, sc)
 	}
 
 	//TODO--???

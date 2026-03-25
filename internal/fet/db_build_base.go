@@ -60,7 +60,7 @@ type fet_build struct {
 	//real_soft bool // if false, give soft constraints weight 100
 }
 
-var db_constraint_fet = map[constraintType]func(
+var base_constraint_fet = map[constraintType]func(
 	*fet_build,
 	constraintIndex,
 	*ttConstraint,
