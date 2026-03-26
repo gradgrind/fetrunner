@@ -33,7 +33,7 @@ func init() {
 
 type Dispatcher struct {
 	BaseData     *base.BaseData
-	TtSource     autotimetable.TtSource
+	Source       any
 	AutoTtData   *autotimetable.AutoTtData
 	TtParameters *autotimetable.Parameters
 }
@@ -201,9 +201,9 @@ func file_loader(dsp *Dispatcher, op *DispatchOp) {
 	fpath := op.Data[0]
 
 	if strings.HasSuffix(strings.ToLower(fpath), ".fet") {
-		tt_source_fet := fet.FetRead(bd, fpath)
-		if tt_source_fet != nil {
-			dsp.TtSource = tt_source_fet
+		source_fet := fet.FetRead(bd, fpath)
+		if source_fet != nil {
+			dsp.Source = source_fet
 			bd.SourceDir = filepath.Dir(fpath)
 			n := filepath.Base(fpath)
 			bd.Name = strings.TrimSuffix(n, filepath.Ext(n))
@@ -216,7 +216,7 @@ func file_loader(dsp *Dispatcher, op *DispatchOp) {
 		db0 := bd.Db
 		bd.Db = base.NewDb()
 		if w365tt.LoadJSON(bd, fpath) {
-			dsp.TtSource = nil
+			dsp.Source = nil // indicates that the source is the "DB"
 			bd.SourceDir = filepath.Dir(fpath)
 			n := filepath.Base(fpath)
 			bd.Name = strings.TrimSuffix(n, filepath.Ext(n))
@@ -237,28 +237,26 @@ func file_loader(dsp *Dispatcher, op *DispatchOp) {
 func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 	bdata := dsp.BaseData
 	logger := bdata.Logger
-	ttsource := dsp.TtSource
-	if ttsource == nil {
+	if logger.Running {
+		panic("Attempt to start generation when already running")
+	}
+	var ttsource autotimetable.TtSource
+	if dsp.Source == nil {
 		if bdata.Db != nil {
-			//TODO: was
-			//ttsource = fet.FetTree(
-			//	bdata,
-			//	dsp.TtParameters.REAL_SOFT,
-			//	timetable.MakeTimetableData(bdata))
-			//TODO: is now?
 			ttsource = timetable.MakeTimetableData(bdata)
 		} else {
 			logger.Error("No source")
 			logger.Result("OK", "false")
 			return
 		}
-	} else {
+	} else if fetsrc, ok := dsp.Source.(*FetSource); ok {
+		//TODO
+		ttsource = fet.MakeTimetableData(bdata, fetsrc)
 
 		//TODO: This should probably be somewhere else, and done in the back-end.
-		ttsource.SetSoftConstraintWeights(dsp.TtParameters.REAL_SOFT)
-	}
-	if logger.Running {
-		panic("Attempt to start generation when already running")
+		source.SetSoftConstraintWeights(dsp.TtParameters.REAL_SOFT)
+	} else {
+		panic("Invalid data source")
 	}
 	// Set up FET back-end and start processing
 	hcmap, scmap := ttsource.GetConstraintMaps()

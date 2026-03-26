@@ -11,6 +11,8 @@ import (
 	"github.com/beevik/etree"
 )
 
+//TODO: Adapt to the new structures and interfaces ...
+
 // In FET there are "time" constraints and "space" constraints. They are
 // all lumped together in the `ConstraintElements` list, but their indexes
 // are also recorded in the `TimeConstraints` and `SpaceConstraints` lists.

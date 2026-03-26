@@ -23,7 +23,8 @@ var (
 	// FET_CLW and FET_CL are the same except on Windows: see fet/platform_windows.go.
 )
 
-func InitBackend(attdata *autotimetable.AutoTtData) *FetBackend {
+// TODO ...
+func InitBackend(attdata *autotimetable.AutoTtData) *fet_build {
 	bdata := attdata.BaseData
 	if base.TEMPORARY_DIR == "" {
 		bdata.SetTmpDir()
