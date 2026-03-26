@@ -147,7 +147,8 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 			aix := tt_data.ref2ActivityIndex[a.Id]
 			cinfo.Activities = append(cinfo.Activities, aix)
 			tt_data.ttActivities[aix] = &ttActivity{
-				Id:                 string(a.Id),
+				Id: string(a.Id),
+				// Tag: supplied by back-end
 				Duration:           a.Duration,
 				Subject:            cinfo.Subject,
 				Groups:             cinfo.Groups,
@@ -271,7 +272,8 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 			aix := tt_data.ref2ActivityIndex[a.Id]
 			cinfo.Activities = append(cinfo.Activities, aix)
 			tt_data.ttActivities[aix] = &ttActivity{
-				Id:                 string(a.Id),
+				Id: string(a.Id),
+				// Tag: supplied by back-end
 				Duration:           a.Duration,
 				Subject:            cinfo.Subject,
 				Groups:             cinfo.Groups,

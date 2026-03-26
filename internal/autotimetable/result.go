@@ -32,10 +32,7 @@ func (attdata *AutoTtData) new_current_instance(
 	bdata *base.BaseData, instance *TtInstance,
 ) {
 	bdata.Logger.Result(".ACCEPT", strconv.Itoa(instance.Index))
-
-	// Read placements
-	alist := instance.Backend.Results(bdata, attdata, instance)
-
+	alist := attdata.Backend.Results(bdata.Logger, instance) // read placements
 	clist := attdata.Source.GetConstraints()
 	attdata.lastResult = &Result{
 		Time:     instance.Ticks,

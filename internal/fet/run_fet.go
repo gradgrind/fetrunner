@@ -14,8 +14,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-
-	"github.com/beevik/etree"
 )
 
 var (
@@ -24,15 +22,6 @@ var (
 	FET_CLW string = "fet-cl" // "default" value for `FETPATH`, GUI version
 	// FET_CLW and FET_CL are the same except on Windows: see fet/platform_windows.go.
 )
-
-type FetBackend struct {
-	//TODO: Note that this sets up a reference loop, attdata -> FetBackend -> attdata!
-	//attdata *autotimetable.AutoTtData
-
-	tmpdir             string
-	doc                *etree.Document
-	constraintElements []*etree.Element
-}
 
 func InitBackend(attdata *autotimetable.AutoTtData) *FetBackend {
 	bdata := attdata.BaseData
@@ -46,7 +35,7 @@ func InitBackend(attdata *autotimetable.AutoTtData) *FetBackend {
 		tmpdir: tmpdir}
 	//attdata.Backend = fetbackend
 
-	if source, ok := attdata.Source.(*TtSourceFet); ok {
+	if source, ok := source.(*TtSourceFet); ok {
 		// With a FET source, the existing structures can be used for the backend.
 		fetbackend.doc = source.doc
 		// However, the constraints may be modified (soft weights),
@@ -70,7 +59,7 @@ func InitBackend(attdata *autotimetable.AutoTtData) *FetBackend {
 
 		return fetbackend
 	}
-	stype := attdata.Source.SourceType()
+	stype := source.SourceType()
 	if stype == "DB" {
 		ttbe := FetTree(attdata)
 
@@ -85,18 +74,19 @@ func InitBackend(attdata *autotimetable.AutoTtData) *FetBackend {
 	return fetbackend
 }
 
-func (fbe *FetBackend) Tidy(bdata *base.BaseData) {
-	os.RemoveAll(fbe.tmpdir)
+func (fetbuild *fet_build) Tidy(bdata *base.BaseData) {
+	os.RemoveAll(fetbuild.tmpdir)
 }
 
-func (fbe *FetBackend) RunBackend(
+// TODO: It might be enough to pass in just logger and Parameters
+func (fetbuild *fet_build) RunBackend(
 	attdata *autotimetable.AutoTtData,
 	instance *autotimetable.TtInstance,
 ) autotimetable.TtInstanceBackend {
 	bdata := attdata.BaseData
 	fname := fmt.Sprintf("z%05d~%s", instance.Index, instance.ConstraintType)
 	var odir string
-	odir = filepath.Join(fbe.tmpdir, fname)
+	odir = filepath.Join(fetbuild.tmpdir, fname)
 	err := os.MkdirAll(odir, 0700)
 	if err != nil {
 		bdata.Logger.Error("INVALID_TMP_DIR: %s", odir)
@@ -107,16 +97,18 @@ func (fbe *FetBackend) RunBackend(
 
 	// Construct the FET-file
 	enabled := instance.ConstraintEnabled
-	for i, c := range fbe.constraintElements {
-		active := c.SelectElement("Active")
-		if enabled[i] {
-			active.SetText("true")
-		} else {
-			active.SetText("false")
+	for i, clist := range fetbuild.ConstraintElements {
+		for _, c := range clist {
+			active := c.SelectElement("Active")
+			if enabled[i] {
+				active.SetText("true")
+			} else {
+				active.SetText("false")
+			}
 		}
 	}
-	fbe.doc.Indent(2)
-	fet_xml, err := fbe.doc.WriteToBytes()
+	fetbuild.Doc.Indent(2)
+	fet_xml, err := fetbuild.Doc.WriteToBytes()
 	if err != nil {
 		panic(err)
 	}
@@ -184,7 +176,7 @@ func (fbe *FetBackend) RunBackend(
 
 	bdata.Logger.Result(".START", fmt.Sprintf("%d.%s.%d.%d",
 		instance.Index,
-		fbe.ConstraintName(instance),
+		constraintName(instance),
 		len(instance.Constraints),
 		instance.Timeout))
 
@@ -192,9 +184,7 @@ func (fbe *FetBackend) RunBackend(
 	return fet_data
 }
 
-func (fbe *FetBackend) ConstraintName(
-	instance *autotimetable.TtInstance,
-) string {
+func constraintName(instance *autotimetable.TtInstance) string {
 	// FET's constraints all start with "Constraint", which is rather
 	// superfluous for display purposes, so strip it off
 	ctype := strings.TrimPrefix(instance.ConstraintType, "Constraint")
@@ -377,14 +367,12 @@ func (data *FetTtData) FinalizeResult(
 }
 
 // Gather the results of the given run.
-func (data *FetTtData) Results(
-	bdata *base.BaseData,
-	attdata *autotimetable.AutoTtData,
+func (fetbuild *fet_build) Results(
+	logger *base.Logger,
 	instance *autotimetable.TtInstance,
 ) []autotimetable.TtActivityPlacement {
-	logger := bdata.Logger
 	// Get placements
-	xmlpath := data.resultfile
+	xmlpath := instance.InstanceBackend.(*FetTtData).resultfile
 	// Open the XML file
 	xmlFile, err := os.Open(xmlpath)
 	if err != nil {
@@ -406,24 +394,24 @@ func (data *FetTtData) Results(
 	// hours and rooms ...
 	// ... room conversion
 	room2index := map[string]int{}
-	for _, r := range attdata.Source.GetRooms() {
-		room2index[r.Tag] = r.Index
+	for i, r := range fetbuild.RoomList {
+		room2index[r] = i
 
 	}
 	// ... day conversion
 	day2index := map[string]int{}
-	for _, d := range attdata.Source.GetDays() {
-		day2index[d.Tag] = d.Index
+	for i, d := range fetbuild.DayList {
+		day2index[d] = i
 	}
 	// ... hour conversion
 	hour2index := map[string]int{}
-	for _, h := range attdata.Source.GetHours() {
-		hour2index[h.Tag] = h.Index
+	for i, h := range fetbuild.HourList {
+		hour2index[h] = i
 	}
 	// ... activity conversion
 	activity2index := map[string]int{}
-	for _, a := range attdata.Source.GetActivities() {
-		activity2index[a.Tag] = a.Index
+	for i, a := range fetbuild.ActivityList {
+		activity2index[a] = i
 	}
 
 	// Gather the activities

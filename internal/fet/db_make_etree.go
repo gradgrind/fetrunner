@@ -16,16 +16,14 @@ const VIRTUAL_ROOM_PREFIX = "!"
 // const LUNCH_BREAK_TAG = "-lb-"
 // const LUNCH_BREAK_NAME = "Lunch Break"
 
-// TODO ...
 // Construct a `fet_build` from the timetable data available via the
 // `autotimetable.TtSource` interface.
 // This `fet_build` needs to contain all the information for generating a
 // `FET` file with a subset of constraints, as an implementation of the
-// `autotimetable.TtBackend` interface. The constraints are
-// determined by the source and the possibility to map to a variable number
-// of `FET` constraints should be supported.
-// TODO? Some fields of the `autotimetable.BasicData` are initialized.
-func FetTree(attdata *autotimetable.AutoTtData) *fet_build {
+// `autotimetable.TtBackend` interface. The backend (FET) constraints are
+// generated from the source constraints, with the possibility that
+// multiple backend constraints are generated for a single source constraint.
+func FetTree(attdata *autotimetable.AutoTtData) {
 	source := attdata.Source // TtSource interface
 	doc := etree.NewDocument()
 	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
@@ -81,7 +79,6 @@ func FetTree(attdata *autotimetable.AutoTtData) *fet_build {
 	for i, sc := range source_constraints {
 		base_constraint_fet[sc.CType](fetbuild, i, sc)
 	}
-	return fetbuild
 }
 
 /*

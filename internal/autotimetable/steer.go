@@ -290,7 +290,7 @@ func (attdata *AutoTtData) StartGeneration() {
 			count := 0
 			for instance := range runqueue.Active {
 				if instance.RunState < 0 {
-					instance.Backend.DoTick(bdata, attdata, instance)
+					instance.InstanceBackend.DoTick(bdata, attdata, instance)
 					count++
 					attdata.abort_instance(instance)
 				}
@@ -321,7 +321,7 @@ func (attdata *AutoTtData) StartGeneration() {
 
 			//TODO: Where (whether?) to save the FET file ...
 			// Perhaps return a JSON object containing anything relevant as a field?
-			attdata.current_instance.Backend.FinalizeResult(bdata, attdata)
+			attdata.current_instance.InstanceBackend.FinalizeResult(bdata, attdata)
 		}
 
 		logger.Tick(-1) // signal end of process
@@ -433,7 +433,7 @@ tickloop:
 
 func (attdata *AutoTtData) abort_instance(instance *TtInstance) {
 	if !instance.Stopped {
-		instance.Backend.Abort()
+		instance.InstanceBackend.Abort()
 		instance.Stopped = true
 	}
 }

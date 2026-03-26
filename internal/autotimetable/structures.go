@@ -110,9 +110,9 @@ type TtInstance struct {
 	Constraints    []ConstraintIndex
 
 	// Run time ...
-	Backend TtInstanceBackend // interface to generator back-end
-	Ticks   int               // run time of this instance
-	Stopped bool              // `abort_instance()` has been called on this instance
+	InstanceBackend TtInstanceBackend // interface to generator back-end for this instance
+	Ticks           int               // run time of this instance
+	Stopped         bool              // `abort_instance()` has been called on this instance
 
 	// `RunState` is used in the tick-loop, but the "finished" states are set
 	// using the back-end `DoTick` method (though still in the thread of the
@@ -124,14 +124,6 @@ type TtInstance struct {
 	Progress int    // percent
 	LastTime int    // last (instance) time at which the back-end made progress
 	Message  string // "" or error message
-}
-
-type TtInstanceBackend interface {
-	Abort()
-	DoTick(*base.BaseData, *AutoTtData, *TtInstance)
-	Clear()
-	Results(*base.BaseData, *AutoTtData, *TtInstance) []TtActivityPlacement
-	FinalizeResult(*base.BaseData, *AutoTtData)
 }
 
 type ActivityIndex = int
@@ -167,6 +159,7 @@ type TtActivityPlacement struct {
 type TtActivity struct {
 	Id string // FET: "ActivityId" ? //TODO???
 	// DB: NodeRef of the source activity from which this is derived.
+	Tag string // optionally usable by the back-end
 
 	Duration           int
 	Subject            string

@@ -2,20 +2,25 @@ package autotimetable
 
 import "fetrunner/internal/base"
 
-type TtBackend interface {
-	RunBackend(*AutoTtData, *TtInstance) TtInstanceBackend
-	Tidy(*base.BaseData)
-	ConstraintName(*TtInstance) string
-
-	//TODO:
-	EnableConstraint(index int)
-}
-
-//TODO: In autotimetable primarily indexes should be used to refer to elements
+// In autotimetable primarily indexes should be used to refer to elements
 // of all sorts, including constraints, all 0-based (including
 // the activities!). If some other sort of reference is needed (distinguish
 // node-ref and tag) it should be available in the source and/or back-end
 // interfaces.
+
+type TtBackend interface {
+	RunBackend(*AutoTtData, *TtInstance) TtInstanceBackend
+	Tidy(*base.BaseData)
+	ConstraintName(*TtInstance) string
+	Results(*base.Logger, *TtInstance) []TtActivityPlacement
+}
+
+type TtInstanceBackend interface {
+	Abort()
+	DoTick(*base.BaseData, *AutoTtData, *TtInstance)
+	Clear()
+	FinalizeResult(*base.BaseData, *AutoTtData)
+}
 
 type TtSource interface {
 	SourceType() string
