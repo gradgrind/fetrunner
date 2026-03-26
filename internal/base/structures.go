@@ -23,6 +23,13 @@ type BaseData struct {
 	Db *DbTopLevel
 }
 
+type SourceDB struct {
+}
+
+func (s *SourceDB) SourceType() string {
+	return "DB"
+}
+
 // TODO?
 var ErrorMessages = map[string]string{}
 

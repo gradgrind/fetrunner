@@ -33,9 +33,13 @@ func init() {
 
 type Dispatcher struct {
 	BaseData     *base.BaseData
-	Source       any
+	Source       SourceData
 	AutoTtData   *autotimetable.AutoTtData
 	TtParameters *autotimetable.Parameters
+}
+
+type SourceData interface {
+	SourceType() string
 }
 
 type DispatchOp struct {
@@ -241,6 +245,25 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 		panic("Attempt to start generation when already running")
 	}
 	var ttsource autotimetable.TtSource
+	//TODO
+	if dsp.Source == nil {
+		logger.Error("No source")
+		logger.Result("OK", "false")
+		return
+	}
+	switch dsp.Source.SourceType() {
+	case "DB":
+		ttsource = timetable.MakeTimetableData(bdata)
+
+	case "FET":
+		//TODO
+		ttsource = fet.MakeTimetableData(bdata, fetsrc)
+
+	default:
+		panic("Invalid data source")
+	}
+
+	//TODO-- ...
 	if dsp.Source == nil {
 		if bdata.Db != nil {
 			ttsource = timetable.MakeTimetableData(bdata)
@@ -258,6 +281,7 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 	} else {
 		panic("Invalid data source")
 	}
+
 	// Set up FET back-end and start processing
 	hcmap, scmap := ttsource.GetConstraintMaps()
 	attdata := &autotimetable.AutoTtData{

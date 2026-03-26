@@ -13,6 +13,16 @@ import (
 
 //TODO: Adapt to the new structures and interfaces ...
 
+//TODO: FetRead should probably return a *SourceFET, which can then be
+// converted to a TtSourceFet.
+
+type SourceFET struct {
+}
+
+func (s *SourceFET) SourceType() string {
+	return "FET"
+}
+
 // In FET there are "time" constraints and "space" constraints. They are
 // all lumped together in the `ConstraintElements` list, but their indexes
 // are also recorded in the `TimeConstraints` and `SpaceConstraints` lists.
