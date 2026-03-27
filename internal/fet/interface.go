@@ -20,16 +20,19 @@ type constraintIndex = autotimetable.ConstraintIndex
 type autoTtData = autotimetable.AutoTtData
 type constraintType = autotimetable.ConstraintType
 
-type softWeight struct {
-	Index  constraintIndex
-	Weight string
-}
+//TODO--???
+//type softWeight struct {
+//	Index  constraintIndex
+//	Weight string
+//}
 
 type TtSourceFet struct {
 	doc                *etree.Document
 	constraintElements []*etree.Element // ordered constraint elements
-	constraints        []ttConstraint   // ordered constraint info for "autotimetable"
-	softWeights        []softWeight
+	constraints        []*ttConstraint  // ordered constraint info for "autotimetable"
+
+	//TODO--???
+	//softWeights []softWeight
 
 	activityElements []*etree.Element
 
@@ -38,7 +41,7 @@ type TtSourceFet struct {
 	timeConstraints  []int // indexes into `ConstraintElements`
 	spaceConstraints []int // indexes into `ConstraintElements`
 
-	nConstraints      constraintIndex
+	//nConstraints      constraintIndex
 	constraintTypes   []constraintType
 	hardConstraintMap map[constraintType][]constraintIndex
 	softConstraintMap map[constraintType][]constraintIndex
@@ -125,17 +128,25 @@ func (sourcefet *TtSourceFet) GetAtomicGroups() []string {
 	return nil
 }
 
-func (sourcefet *TtSourceFet) GetActivities() []element {
-	aidlist := make([]element, len(sourcefet.activityElements))
+func (sourcefet *TtSourceFet) GetActivities() []*autotimetable.TtActivity {
+	aidlist := make([]*autotimetable.TtActivity, len(sourcefet.activityElements))
 	for i, a := range sourcefet.activityElements {
-		aidlist[i] = element{
-			//No Id
-			Tag: a.SelectElement("Id").Text()}
+		aidlist[i] = &autotimetable.TtActivity{
+			Id: a.SelectElement("Id").Text(),
+			//TODO?
+			// These are probably not needed if the back-end just uses a copy
+			// of the FET source:
+			//Tag:                string // optionally usable by the back-end,
+			//Duration:           int,
+			//Groups:             []*base.Group,
+			//AtomicGroupIndexes: []AtomicIndex,
+			//Teachers:           []TeacherIndex
+		}
 	}
 	return aidlist
 }
 
-func (sourcefet *TtSourceFet) GetConstraints() []ttConstraint { return sourcefet.constraints }
+func (sourcefet *TtSourceFet) GetConstraints() []*ttConstraint { return sourcefet.constraints }
 
 /*TODO--?
 func (sourcefet *TtSourceFet) ConstraintRef(index int) string {
@@ -147,21 +158,30 @@ func (sourcefet *TtSourceFet) ConstraintRef(index int) string {
 }
 */
 
-func (sourcefet *TtSourceFet) GetNActivities() int {
-	return len(sourcefet.activityElements)
-}
+//func (sourcefet *TtSourceFet) GetNActivities() int {
+//	return len(sourcefet.activityElements)
+//}
 
-func (sourcefet *TtSourceFet) GetNConstraints() constraintIndex { return sourcefet.nConstraints }
-func (sourcefet *TtSourceFet) GetConstraint_Types() []constraintType {
+// func (sourcefet *TtSourceFet) GetNConstraints() constraintIndex { return sourcefet.nConstraints }
+func (sourcefet *TtSourceFet) GetConstraintTypes() []constraintType {
 	return sourcefet.constraintTypes
 }
-func (sourcefet *TtSourceFet) GetHardConstraintMap() map[constraintType][]constraintIndex {
-	return sourcefet.hardConstraintMap
-}
-func (sourcefet *TtSourceFet) GetSoftConstraintMap() map[constraintType][]constraintIndex {
-	return sourcefet.softConstraintMap
+func (sourcefet *TtSourceFet) GetResourceUnavailableConstraintTypes() []constraintType {
+	return []constraintType{
+		"ConstraintStudentsSetNotAvailableTimes",
+		"ConstraintTeacherNotAvailableTimes",
+		"ConstraintRoomNotAvailableTimes",
+	}
 }
 
+func (sourcefet *TtSourceFet) GetConstraintMaps() (
+	map[constraintType][]constraintIndex,
+	map[constraintType][]constraintIndex,
+) {
+	return sourcefet.hardConstraintMap, sourcefet.softConstraintMap
+}
+
+// TODO??? This is not a TtSource method ...
 // Rebuild the FET file given an array detailing which constraints are enabled.
 // The `xmlp` argument is a pointer to a byte slice, to receive the
 // XML FET-file.

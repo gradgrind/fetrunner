@@ -29,8 +29,7 @@ type fet_build struct {
 	time_constraints_list  *etree.Element
 	space_constraints_list *etree.Element
 
-	//TODO: What is this for?
-	ActivityElementList []*etree.Element
+	//ActivityElementList []*etree.Element
 
 	DayList      []string
 	HourList     []string
@@ -40,6 +39,7 @@ type fet_build struct {
 	RoomList     []string
 	ActivityList []string
 
+	//TODO: These may be unused:
 	hard_teacher_blocks [][]base.TimeSlot
 	hard_class_blocks   [][]base.TimeSlot
 

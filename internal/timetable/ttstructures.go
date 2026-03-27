@@ -27,6 +27,13 @@ type constraintIndex = autotimetable.ConstraintIndex
 type autoTtData = autotimetable.AutoTtData
 type constraintType = autotimetable.ConstraintType
 
+type SourceDB struct {
+}
+
+func (s *SourceDB) SourceType() string {
+	return "DB"
+}
+
 type TtData struct {
 	db     *base.DbTopLevel
 	ndays  int
@@ -149,7 +156,7 @@ type classDivision struct {
 
 // MakeTimetableData performs the initialization of a TtData structure, collecting
 // "resources" (atomic student groups, teachers and rooms) and "activities".
-func MakeTimetableData(bd *base.BaseData) *TtData {
+func (sdb *SourceDB) MakeTimetableData(bd *base.BaseData) autotimetable.TtSource {
 	db := bd.Db
 	tt_data := &TtData{
 		db: db,

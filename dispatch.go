@@ -40,6 +40,7 @@ type Dispatcher struct {
 
 type SourceData interface {
 	SourceType() string
+	MakeTimetableData(bd *base.BaseData) autotimetable.TtSource
 }
 
 type DispatchOp struct {
@@ -217,10 +218,10 @@ func file_loader(dsp *Dispatcher, op *DispatchOp) {
 			return
 		}
 	} else if strings.HasSuffix(strings.ToLower(fpath), "_w365.json") {
-		db0 := bd.Db
+		db0 := bd.Db // save old Db in case loading of new data fails
 		bd.Db = base.NewDb()
 		if w365tt.LoadJSON(bd, fpath) {
-			dsp.Source = nil // indicates that the source is the "DB"
+			dsp.Source = &timetable.SourceDB{}
 			bd.SourceDir = filepath.Dir(fpath)
 			n := filepath.Base(fpath)
 			bd.Name = strings.TrimSuffix(n, filepath.Ext(n))
@@ -244,43 +245,12 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 	if logger.Running {
 		panic("Attempt to start generation when already running")
 	}
-	var ttsource autotimetable.TtSource
-	//TODO
 	if dsp.Source == nil {
 		logger.Error("No source")
 		logger.Result("OK", "false")
 		return
 	}
-	switch dsp.Source.SourceType() {
-	case "DB":
-		ttsource = timetable.MakeTimetableData(bdata)
-
-	case "FET":
-		//TODO
-		ttsource = fet.MakeTimetableData(bdata, fetsrc)
-
-	default:
-		panic("Invalid data source")
-	}
-
-	//TODO-- ...
-	if dsp.Source == nil {
-		if bdata.Db != nil {
-			ttsource = timetable.MakeTimetableData(bdata)
-		} else {
-			logger.Error("No source")
-			logger.Result("OK", "false")
-			return
-		}
-	} else if fetsrc, ok := dsp.Source.(*FetSource); ok {
-		//TODO
-		ttsource = fet.MakeTimetableData(bdata, fetsrc)
-
-		//TODO: This should probably be somewhere else, and done in the back-end.
-		source.SetSoftConstraintWeights(dsp.TtParameters.REAL_SOFT)
-	} else {
-		panic("Invalid data source")
-	}
+	ttsource := dsp.Source.MakeTimetableData(bdata)
 
 	// Set up FET back-end and start processing
 	hcmap, scmap := ttsource.GetConstraintMaps()
@@ -302,7 +272,7 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 func runtt(dsp *Dispatcher, op *DispatchOp) {
 	switch dsp.TtParameters.BACKEND {
 	case "", "FET":
-		dsp.AutoTtData.Backend = fet.InitBackend(attdata)
+		fet.InitBackend(dsp.AutoTtData)
 	default:
 		panic("Unsupported timetable-generation back-end: " + dsp.TtParameters.BACKEND)
 	}

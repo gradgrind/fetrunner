@@ -14,6 +14,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/beevik/etree"
 )
 
 var (
@@ -24,7 +26,7 @@ var (
 )
 
 // TODO ...
-func InitBackend(attdata *autotimetable.AutoTtData) *fet_build {
+func InitBackend(attdata *autotimetable.AutoTtData) {
 	bdata := attdata.BaseData
 	if base.TEMPORARY_DIR == "" {
 		bdata.SetTmpDir()
@@ -60,19 +62,66 @@ func InitBackend(attdata *autotimetable.AutoTtData) *fet_build {
 
 		return fetbackend
 	}
-	stype := source.SourceType()
-	if stype == "DB" {
-		ttbe := FetTree(attdata)
-
-		//TODO: Where to deal with REAL_SOFT? In the source transformation?
-		// It could, alternatively, be done on the FET constraint elements.
-
-		fetbackend.doc = ttbe.Doc
-		fetbackend.constraintElements = ttbe.ConstraintElements
-	} else {
+	var fetbuild *fet_build
+	switch stype := attdata.Source.SourceType(); stype {
+	case "DB":
+		fetbuild = BuildFet(attdata)
+	case "FET":
+		fetbuild = PrepareFet(attdata)
+	default:
 		panic("Unsupported timetable source type: " + stype)
 	}
-	return fetbackend
+	fetbuild.tmpdir = tmpdir
+}
+
+// Construct a `fet_build` structure as back-end from the `TtSource`.
+func PrepareFet(attdata *autotimetable.AutoTtData) *fet_build {
+	source := attdata.Source
+	fetsource := source.(*TtSourceFet) // source
+	cllist := make([][]*etree.Element, len(fetsource.constraintElements))
+	for i, c := range fetsource.constraintElements {
+		cllist[i] = []*etree.Element{c}
+	}
+	//TODO: How many of these fields are needed?
+	fetbuild := &fet_build{
+		real_soft:           attdata.Parameters.REAL_SOFT,
+		no_room_constraints: attdata.Parameters.WITHOUT_ROOM_CONSTRAINTS,
+		ttsource:            source,
+
+		Doc: fetsource.doc,
+		//WeightTable:        MakeFetWeights(),
+		ConstraintElements: cllist,
+
+		//TimeConstraints    []int              // indexes into `ConstraintElements`
+		//SpaceConstraints   []int              // indexes into `ConstraintElements`
+
+		//fetroot                *etree.Element
+		//room_list              *etree.Element // needed for adding virtual rooms
+		//activity_tag_list      *etree.Element // in case these are needed
+		//time_constraints_list  *etree.Element
+		//space_constraints_list *etree.Element
+
+		//--ActivityElementList []*etree.Element
+
+		//DayList      []string
+		//HourList     []string
+		//ClassList    []string
+		//TeacherList  []string
+		//SubjectList  []string
+		//RoomList     []string
+		//ActivityList []string
+
+		//hard_teacher_blocks [][]base.TimeSlot
+		//hard_class_blocks   [][]base.TimeSlot
+
+		// Cache for FET virtual rooms, "hash" -> FET-virtual-room tag
+		//fet_virtual_rooms  map[string]string
+		//fet_virtual_room_n map[string]int // FET-virtual-room tag -> number of room sets
+
+		//tmpdir string // must be set later, before using
+	}
+	attdata.Backend = fetbuild
+
 }
 
 func (fetbuild *fet_build) Tidy(bdata *base.BaseData) {

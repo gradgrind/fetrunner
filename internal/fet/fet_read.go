@@ -17,6 +17,7 @@ import (
 // converted to a TtSourceFet.
 
 type SourceFET struct {
+	doc *etree.Document
 }
 
 func (s *SourceFET) SourceType() string {
@@ -30,17 +31,25 @@ func (s *SourceFET) SourceType() string {
 func FetRead(
 	bdata *base.BaseData,
 	fetpath string,
-) *TtSourceFet {
+) *SourceFET {
 	logger := bdata.Logger
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(fetpath); err != nil {
 		logger.Error("%s", err)
 		return nil
 	}
+	return &SourceFET{
+		doc: doc,
+	}
+}
+
+func (sfet *SourceFET) MakeTimetableData(bd *base.BaseData) autotimetable.TtSource {
+	logger := bd.Logger
 	weightTable := MakeFetWeights()
-	sourcefet := &TtSourceFet{doc: doc}
+	newdoc := sfet.doc.Copy()
+	sourcefet := &TtSourceFet{doc: newdoc}
 	//fmt.Printf("sourcefet.WeightTable = %+v\n\n", sourcefet.WeightTable)
-	fetroot := doc.Root()
+	fetroot := newdoc.Root()
 
 	/*
 	   fmt.Printf("ROOT element: %s (%+v)\n", root.Tag, root.Attr)
@@ -124,8 +133,7 @@ func FetRead(
 				wctype := fmt.Sprintf("%02d:%s", wdb, ctype)
 				soft_constraint_map[wctype] = append(soft_constraint_map[wctype],
 					constraintIndex(i))
-				sourcefet.softWeights = append(sourcefet.softWeights,
-					softWeight{i, w})
+				//sourcefet.softWeights = append(sourcefet.softWeights, softWeight{i, w})
 			}
 			constraint_types = append(constraint_types, ctype)
 			// ... duplicates wil be removed in `sort_constraint_types`
@@ -152,10 +160,10 @@ func FetRead(
 			// added in the "Comments"  field.
 			cid := fmt.Sprintf("[%d%s]", i, wtag)
 			comments.SetText(cid + comment)
-			sourcefet.constraints = append(sourcefet.constraints, ttConstraint{
-				TtSourceTag: cid,
-				Ctype:       ctype,
-				Weight:      wdb,
+			sourcefet.constraints = append(sourcefet.constraints, &ttConstraint{
+				Id:     cid,
+				CType:  ctype,
+				Weight: wdb,
 			})
 		}
 		if inactive != 0 {
@@ -167,7 +175,7 @@ func FetRead(
 		}
 	}
 
-	sourcefet.nConstraints = constraintIndex(len(sourcefet.constraintElements))
+	//sourcefet.nConstraints = constraintIndex(len(sourcefet.constraintElements))
 	sourcefet.constraintTypes = autotimetable.SortConstraintTypes(
 		constraint_types, ConstraintPriority)
 	sourcefet.hardConstraintMap = hard_constraint_map

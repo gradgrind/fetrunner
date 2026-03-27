@@ -23,7 +23,7 @@ const VIRTUAL_ROOM_PREFIX = "!"
 // `autotimetable.TtBackend` interface. The backend (FET) constraints are
 // generated from the source constraints, with the possibility that
 // multiple backend constraints are generated for a single source constraint.
-func FetTree(attdata *autotimetable.AutoTtData) {
+func BuildFet(attdata *autotimetable.AutoTtData) *fet_build {
 	source := attdata.Source // TtSource interface
 	doc := etree.NewDocument()
 	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
@@ -79,6 +79,7 @@ func FetTree(attdata *autotimetable.AutoTtData) {
 	for i, sc := range source_constraints {
 		base_constraint_fet[sc.CType](fetbuild, i, sc)
 	}
+	return fetbuild
 }
 
 /*
