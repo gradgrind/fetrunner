@@ -145,7 +145,7 @@ type classDivision struct {
 
 // MakeTimetableData performs the initialization of a TtData structure, collecting
 // "resources" (atomic student groups, teachers and rooms) and "activities".
-func MakeTimetableData(bd *base.BaseData) autotimetable.TtSource {
+func MakeTimetableData(bd *base.BaseData) *TtData {
 	db := bd.Db
 	tt_data := &TtData{
 		db: db,

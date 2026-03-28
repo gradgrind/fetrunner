@@ -249,7 +249,7 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 	case "DB":
 		ttsource = timetable.MakeTimetableData(bdata)
 	case "FET":
-		ttsource = fet.MakeTimetableData(bdata)
+		ttsource = bdata.Source.(*fet.TtSourceFet)
 	default:
 		panic("Unknown source type: " + stype)
 	}
