@@ -1,13 +1,13 @@
 package fet
 
 import (
-	"fetrunner/internal/autotimetable"
-	"fetrunner/internal/base"
-	"math"
-	"slices"
-	"strconv"
+    "fetrunner/internal/autotimetable"
+    "fetrunner/internal/base"
+    "math"
+    "slices"
+    "strconv"
 
-	"github.com/beevik/etree"
+    "github.com/beevik/etree"
 )
 
 // In FET the IDs and "tags" (short names) are generally the same, and only
@@ -19,131 +19,130 @@ type ttConstraint = autotimetable.TtConstraint
 type constraintIndex = autotimetable.ConstraintIndex
 type autoTtData = autotimetable.AutoTtData
 type constraintType = autotimetable.ConstraintType
+type ttActivity = autotimetable.TtActivity
 
-//TODO--???
-//type softWeight struct {
-//	Index  constraintIndex
-//	Weight string
-//}
-
-type TtSourceFet struct {
-	doc                *etree.Document
-	constraintElements []*etree.Element // ordered constraint elements
-	constraints        []*ttConstraint  // ordered constraint info for "autotimetable"
-
-	//TODO--???
-	//softWeights []softWeight
-
-	activityElements []*etree.Element
-
-	// FET has time and space constraints separate. It might be useful in
-	// some way to have that information here.
-	timeConstraints  []int // indexes into `ConstraintElements`
-	spaceConstraints []int // indexes into `ConstraintElements`
-
-	//nConstraints      constraintIndex
-	constraintTypes   []constraintType
-	hardConstraintMap map[constraintType][]constraintIndex
-	softConstraintMap map[constraintType][]constraintIndex
+type softWeight struct {
+  Index  constraintIndex
+  Weight string
 }
 
-func (sourcefet *TtSourceFet) SourceType() string {
-	return "FET"
+type TtSourceFet struct {
+    doc                *etree.Document
+    constraintElements []*etree.Element // ordered constraint elements
+    constraints        []*ttConstraint  // ordered constraint info for "autotimetable"
+    t_constraints      []int            // (source) indexes of active time constraints
+    s_constraints      []int            // (source) indexes of active space constraints
+    activities         []*ttActivity
+
+    softWeights []softWeight // used for reconstructing original soft weights
+
+    //activityElements []*etree.Element
+
+    // FET has time and space constraints separate. It might be useful in
+    // some way to have that information here.
+    //timeConstraints  []int // indexes into `ConstraintElements`
+    //spaceConstraints []int // indexes into `ConstraintElements`
+
+    //nConstraints      constraintIndex
+    constraintTypes   []constraintType
+    hardConstraintMap map[constraintType][]constraintIndex
+    softConstraintMap map[constraintType][]constraintIndex
 }
 
 func (sourcefet *TtSourceFet) GetDays() []element {
-	items := []element{}
-	for _, e := range sourcefet.doc.Root().SelectElement("Days_List").SelectElements("Day") {
-		id := e.SelectElement("Name").Text()
-		items = append(items, element{
-			// In FET the ID is also the tag
-			Id: base.NodeRef(id), Tag: id})
-	}
-	return items
+    items := []element{}
+    for _, e := range sourcefet.doc.Root().SelectElement("Days_List").SelectElements("Day") {
+        id := e.SelectElement("Name").Text()
+        items = append(items, element{
+            Id: base.NodeRef("Day:" + id), Tag: id})
+    }
+    return items
 }
 
 func (sourcefet *TtSourceFet) GetHours() []element {
-	items := []element{}
-	for _, e := range sourcefet.doc.Root().SelectElement("Hours_List").SelectElements("Hour") {
-		id := e.SelectElement("Name").Text()
-		items = append(items, element{
-			// In FET the ID is also the tag
-			Id: base.NodeRef(id), Tag: id})
-	}
-	return items
+    items := []element{}
+    for _, e := range sourcefet.doc.Root().SelectElement("Hours_List").SelectElements("Hour") {
+        id := e.SelectElement("Name").Text()
+        items = append(items, element{
+            Id: base.NodeRef("Hour:" + id), Tag: id})
+    }
+    return items
 }
 
 func (sourcefet *TtSourceFet) GetTeachers() []element {
-	items := []element{}
-	for _, e := range sourcefet.doc.Root().SelectElement("Teachers_List").SelectElements("Teacher") {
-		id := e.SelectElement("Name").Text()
-		items = append(items, element{
-			// In FET the ID is also the tag
-			Id: base.NodeRef(id), Tag: id})
-	}
-	return items
+    items := []element{}
+    for _, e := range sourcefet.doc.Root().SelectElement("Teachers_List").SelectElements("Teacher") {
+        id := e.SelectElement("Name").Text()
+        items = append(items, element{
+            Id: base.NodeRef("Teacher:" + id), Tag: id})
+    }
+    return items
 }
 
 func (sourcefet *TtSourceFet) GetSubjects() []element {
-	items := []element{}
-	for _, e := range sourcefet.doc.Root().SelectElement("Subjects_List").SelectElements("Subject") {
-		id := e.SelectElement("Name").Text()
-		items = append(items, element{
-			// In FET the ID is also the tag
-			Id: base.NodeRef(id), Tag: id})
-	}
-	return items
+    items := []element{}
+    for _, e := range sourcefet.doc.Root().SelectElement("Subjects_List").SelectElements("Subject") {
+        id := e.SelectElement("Name").Text()
+        items = append(items, element{
+            Id: base.NodeRef("Subject:" + id), Tag: id})
+    }
+    return items
 }
 
 func (sourcefet *TtSourceFet) GetRooms() []element {
-	items := []element{}
-	for _, e := range sourcefet.doc.Root().SelectElement("Rooms_List").SelectElements("Room") {
-		// Only include real rooms, skip virtual ones.
-		if e.SelectElement("Virtual").Text() == "false" {
-			id := e.SelectElement("Name").Text()
-			items = append(items, element{
-				// In FET the ID is also the tag
-				Id: base.NodeRef(id), Tag: id})
-		}
-	}
-	return items
+    items := []element{}
+    for _, e := range sourcefet.doc.Root().SelectElement("Rooms_List").SelectElements("Room") {
+        // Only include real rooms, skip virtual ones.
+        if e.SelectElement("Virtual").Text() == "false" {
+            id := e.SelectElement("Name").Text()
+            items = append(items, element{
+                Id: base.NodeRef("Room:" + id), Tag: id})
+        }
+    }
+    return items
 }
 
 func (sourcefet *TtSourceFet) GetClasses() []*autotimetable.TtClass {
-	items := []*autotimetable.TtClass{}
-	for _, e := range sourcefet.doc.Root().SelectElement("Students_List").SelectElements("Year") {
-		id := e.SelectElement("Name").Text()
-		items = append(items, &autotimetable.TtClass{
-			// In FET the ID is also the tag
-			Id: base.NodeRef(id), Tag: id})
-		//TODO: the other fields?: AtomicIndexes []AtomicIndex, Groups []*TtGroup
-	}
-	return items
+    items := []*autotimetable.TtClass{}
+    for _, e := range sourcefet.doc.Root().SelectElement("Students_List").SelectElements("Year") {
+        id := e.SelectElement("Name").Text()
+        items = append(items, &autotimetable.TtClass{
+            Id: base.NodeRef("Class:" + id), Tag: id})
+        //TODO: the other fields?: AtomicIndexes []AtomicIndex, Groups []*TtGroup
+    }
+    return items
 }
 
 // TODO?
 // I guess it should be possible to implement this properly (didn't I do it
 // somewhere already?), but it might not be necessary ...
 func (sourcefet *TtSourceFet) GetAtomicGroups() []string {
-	return nil
+    return nil
 }
 
-func (sourcefet *TtSourceFet) GetActivities() []*autotimetable.TtActivity {
-	aidlist := make([]*autotimetable.TtActivity, len(sourcefet.activityElements))
-	for i, a := range sourcefet.activityElements {
-		aidlist[i] = &autotimetable.TtActivity{
-			Id: a.SelectElement("Id").Text(),
-			//TODO?
-			// These are probably not needed if the back-end just uses a copy
-			// of the FET source:
-			//Tag:                string // optionally usable by the back-end,
-			//Duration:           int,
-			//Groups:             []*base.Group,
-			//AtomicGroupIndexes: []AtomicIndex,
-			//Teachers:           []TeacherIndex
-		}
-	}
-	return aidlist
+/*
+TODO--?
+
+    func (sourcefet *TtSourceFet) GetActivities() []*autotimetable.TtActivity {
+        aidlist := make([]*autotimetable.TtActivity, len(sourcefet.activityElements))
+        for i, a := range sourcefet.activityElements {
+            aidlist[i] = &autotimetable.TtActivity{
+                Id: a.SelectElement("Id").Text(),
+                //TODO?
+                // These are probably not needed if the back-end just uses a copy
+                // of the FET source:
+                //Tag:                string // optionally usable by the back-end,
+                //Duration:           int,
+                //Groups:             []*base.Group,
+                //AtomicGroupIndexes: []AtomicIndex,
+                //Teachers:           []TeacherIndex
+            }
+        }
+        return aidlist
+    }
+*/
+func (sourcefet *TtSourceFet) GetActivities() []*ttActivity {
+    return sourcefet.activities
 }
 
 func (sourcefet *TtSourceFet) GetConstraints() []*ttConstraint { return sourcefet.constraints }
@@ -159,85 +158,92 @@ func (sourcefet *TtSourceFet) ConstraintRef(index int) string {
 */
 
 //func (sourcefet *TtSourceFet) GetNActivities() int {
-//	return len(sourcefet.activityElements)
+//  return len(sourcefet.activityElements)
 //}
 
 // func (sourcefet *TtSourceFet) GetNConstraints() constraintIndex { return sourcefet.nConstraints }
 func (sourcefet *TtSourceFet) GetConstraintTypes() []constraintType {
-	return sourcefet.constraintTypes
+    return sourcefet.constraintTypes
 }
 func (sourcefet *TtSourceFet) GetResourceUnavailableConstraintTypes() []constraintType {
-	return []constraintType{
-		"ConstraintStudentsSetNotAvailableTimes",
-		"ConstraintTeacherNotAvailableTimes",
-		"ConstraintRoomNotAvailableTimes",
-	}
+    return []constraintType{
+        "ConstraintStudentsSetNotAvailableTimes",
+        "ConstraintTeacherNotAvailableTimes",
+        "ConstraintRoomNotAvailableTimes",
+    }
 }
 
 func (sourcefet *TtSourceFet) GetConstraintMaps() (
-	map[constraintType][]constraintIndex,
-	map[constraintType][]constraintIndex,
+    map[constraintType][]constraintIndex,
+    map[constraintType][]constraintIndex,
 ) {
-	return sourcefet.hardConstraintMap, sourcefet.softConstraintMap
+    return sourcefet.hardConstraintMap, sourcefet.softConstraintMap
 }
 
-// TODO??? This is not a TtSource method ...
+/* TODO--??? This is not a TtSource method ...
 // Rebuild the FET file given an array detailing which constraints are enabled.
 // The `xmlp` argument is a pointer to a byte slice, to receive the
 // XML FET-file.
+
 // TODO: The xmlp parameter is specifically for FET, so it shouldn't be in the
 // interface in this form. Also this should be a method on the back-end data.
 // So the back-end data needs ConstraintElements and Doc, presumably also the
 // byte buffer, or the method should handle the file writing.
+
 // TODO: This should probably set the soft weights, but not modify the FET
-// source, so it should rather operate on a copy of the source.
-func (sourcefet *TtSourceFet) PrepareRun(enabled []bool, xmlp any) {
-	for i, c := range sourcefet.constraintElements {
-		active := c.SelectElement("Active")
-		if enabled[i] {
-			active.SetText("true")
-		} else {
-			active.SetText("false")
-		}
-	}
-	/* TODO: What was the point of all this? !!!
-	   root := sourcefet.Doc.Root()
-	   et := root.SelectElement("Time_Constraints_List")
-	   active := 0
-	   n := 0
-	   for _, e := range et.ChildElements() {
-	       // Count and skip if inactive
-	       if e.SelectElement("Active").Text() == "true" {
-	           active++ // count active constraints
-	       }
-	       n++
-	   }
-	*/
-	sourcefet.doc.Indent(2)
-	var err error
-	*(xmlp.(*[]byte)), err = sourcefet.doc.WriteToBytes()
-	if err != nil {
-		panic(err)
-	}
+// source, so it should rather operate on a copy of the source. Or, rather,
+// the weights should be set in the initial back-end construction of the
+// fet_build.
+
+// Actually, this is not being used at the moment!
+func (fetbuild *fet_build) PrepareRun(enabled []bool, xmlp any) {
+    for i, c := range sourcefet.constraintElements {
+        active := c.SelectElement("Active")
+        if enabled[i] {
+            active.SetText("true")
+        } else {
+            active.SetText("false")
+        }
+    }
+    /* TODO: What was the point of all this? !!!
+       root := sourcefet.Doc.Root()
+       et := root.SelectElement("Time_Constraints_List")
+       active := 0
+       n := 0
+       for _, e := range et.ChildElements() {
+           // Count and skip if inactive
+           if e.SelectElement("Active").Text() == "true" {
+               active++ // count active constraints
+           }
+           n++
+       }
+    * /
+    sourcefet.doc.Indent(2)
+    var err error
+    *(xmlp.(*[]byte)), err = sourcefet.doc.WriteToBytes()
+    if err != nil {
+        panic(err)
+    }
 }
+*/
 
 func MakeFetWeights() []float64 {
-	wtable := make([]float64, 101)
-	wtable[0] = 0.0
-	wtable[100] = 100.0
-	for w := 1; w < 100; w++ {
-		wf := float64(w + 1)
-		denom := wf + math.Pow(2, (wf-50.0)*0.2)
-		wtable[w] = 100.0 - 100.0/denom
-	}
-	return wtable
+    wtable := make([]float64, 101)
+    wtable[0] = 0.0
+    wtable[100] = 100.0
+    for w := 1; w < 100; w++ {
+        wf := float64(w + 1)
+        denom := wf + math.Pow(2, (wf-50.0)*0.2)
+        wtable[w] = 100.0 - 100.0/denom
+    }
+    return wtable
 }
 
 func FetWeight2Db(w string, weightTable []float64) int {
-	wf, err := strconv.ParseFloat(w, 64)
-	if err != nil {
-		panic(err)
-	}
-	wdb, _ := slices.BinarySearch(weightTable, wf)
-	return wdb
+    wf, err := strconv.ParseFloat(w, 64)
+    if err != nil {
+        panic(err)
+    }
+    wdb, _ := slices.BinarySearch(weightTable, wf)
+    return wdb
 }

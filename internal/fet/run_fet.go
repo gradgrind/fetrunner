@@ -25,7 +25,6 @@ var (
 	// FET_CLW and FET_CL are the same except on Windows: see fet/platform_windows.go.
 )
 
-// TODO ...
 func InitBackend(attdata *autotimetable.AutoTtData) {
 	bdata := attdata.BaseData
 	if base.TEMPORARY_DIR == "" {
@@ -33,37 +32,8 @@ func InitBackend(attdata *autotimetable.AutoTtData) {
 	}
 	tmpdir := filepath.Join(base.TEMPORARY_DIR, bdata.Name)
 	os.RemoveAll(tmpdir)
-	fetbackend := &FetBackend{
-		//attdata: attdata,
-		tmpdir: tmpdir}
-	//attdata.Backend = fetbackend
-
-	if source, ok := source.(*TtSourceFet); ok {
-		// With a FET source, the existing structures can be used for the backend.
-		fetbackend.doc = source.doc
-		// However, the constraints may be modified (soft weights),
-		// so these need resetting for each new run.
-		fetbackend.constraintElements = source.constraintElements
-		// When first reading the source file, the original weights are saved in
-		// `TtSourceFet.softWeights` so that they can be restored, if necessary.
-		// New weights should be set according to REAL_SOFT.
-		real_soft := attdata.Parameters.REAL_SOFT
-		for _, cw := range source.softWeights {
-			e := source.constraintElements[cw.Index]
-			if real_soft {
-				e.SelectElement("Weight_Percentage").SetText(cw.Weight)
-			} else {
-				e.SelectElement("Weight_Percentage").SetText("100")
-			}
-		}
-
-		//TODO? I guess the TtSourceFet will already include the fetrunner constraint
-		// indexes?
-
-		return fetbackend
-	}
 	var fetbuild *fet_build
-	switch stype := attdata.Source.SourceType(); stype {
+	switch stype := bdata.Source.SourceType(); stype {
 	case "DB":
 		fetbuild = BuildFet(attdata)
 	case "FET":
@@ -74,17 +44,26 @@ func InitBackend(attdata *autotimetable.AutoTtData) {
 	fetbuild.tmpdir = tmpdir
 }
 
-// Construct a `fet_build` structure as back-end from the `TtSource`.
+// Construct a `fet_build` structure as back-end from a `TtSourceFet`.
 func PrepareFet(attdata *autotimetable.AutoTtData) *fet_build {
 	source := attdata.Source
 	fetsource := source.(*TtSourceFet) // source
 	cllist := make([][]*etree.Element, len(fetsource.constraintElements))
+	real_soft := attdata.Parameters.REAL_SOFT
+	for _, sw := range fetsource.softWeights {
+		c := fetsource.constraintElements[sw.Index]
+		if real_soft {
+			c.SelectElement("Weight_Percentage").SetText(sw.Weight)
+		} else {
+			c.SelectElement("Weight_Percentage").SetText("100")
+		}
+	}
 	for i, c := range fetsource.constraintElements {
 		cllist[i] = []*etree.Element{c}
 	}
 	//TODO: How many of these fields are needed?
 	fetbuild := &fet_build{
-		real_soft:           attdata.Parameters.REAL_SOFT,
+		real_soft:           real_soft,
 		no_room_constraints: attdata.Parameters.WITHOUT_ROOM_CONSTRAINTS,
 		ttsource:            source,
 
@@ -92,8 +71,8 @@ func PrepareFet(attdata *autotimetable.AutoTtData) *fet_build {
 		//WeightTable:        MakeFetWeights(),
 		ConstraintElements: cllist,
 
-		//TimeConstraints    []int              // indexes into `ConstraintElements`
-		//SpaceConstraints   []int              // indexes into `ConstraintElements`
+		//--TimeConstraints    []int              // indexes into `ConstraintElements`
+		//--SpaceConstraints   []int              // indexes into `ConstraintElements`
 
 		//fetroot                *etree.Element
 		//room_list              *etree.Element // needed for adding virtual rooms
@@ -121,7 +100,7 @@ func PrepareFet(attdata *autotimetable.AutoTtData) *fet_build {
 		//tmpdir string // must be set later, before using
 	}
 	attdata.Backend = fetbuild
-
+	return fetbuild
 }
 
 func (fetbuild *fet_build) Tidy(bdata *base.BaseData) {

@@ -27,13 +27,6 @@ type constraintIndex = autotimetable.ConstraintIndex
 type autoTtData = autotimetable.AutoTtData
 type constraintType = autotimetable.ConstraintType
 
-type SourceDB struct {
-}
-
-func (s *SourceDB) SourceType() string {
-	return "DB"
-}
-
 type TtData struct {
 	db     *base.DbTopLevel
 	ndays  int
@@ -61,10 +54,6 @@ type TtData struct {
 	ref2ActivityIndex map[nodeRef]activityIndex
 	courseInfoList    []*courseInfo
 	ref2courseInfo    map[nodeRef]*courseInfo
-}
-
-func (tt_data *TtData) SourceType() string {
-	return "DB"
 }
 
 func (tt_data *TtData) GetDays() []element {
@@ -156,7 +145,7 @@ type classDivision struct {
 
 // MakeTimetableData performs the initialization of a TtData structure, collecting
 // "resources" (atomic student groups, teachers and rooms) and "activities".
-func (sdb *SourceDB) MakeTimetableData(bd *base.BaseData) autotimetable.TtSource {
+func MakeTimetableData(bd *base.BaseData) autotimetable.TtSource {
 	db := bd.Db
 	tt_data := &TtData{
 		db: db,

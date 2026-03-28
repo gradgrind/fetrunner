@@ -9,32 +9,31 @@ import "fetrunner/internal/base"
 // interfaces.
 
 type TtBackend interface {
-	RunBackend(*AutoTtData, *TtInstance) TtInstanceBackend
-	Tidy(*base.BaseData)
-	ConstraintName(*TtInstance) string
-	Results(*base.Logger, *TtInstance) []TtActivityPlacement
+    RunBackend(*AutoTtData, *TtInstance) TtInstanceBackend
+    Tidy(*base.BaseData)
+    ConstraintName(*TtInstance) string
+    Results(*base.Logger, *TtInstance) []TtActivityPlacement
 }
 
 type TtInstanceBackend interface {
-	Abort()
-	DoTick(*base.BaseData, *AutoTtData, *TtInstance)
-	Clear()
-	FinalizeResult(*base.BaseData, *AutoTtData)
+    Abort()
+    DoTick(*base.BaseData, *AutoTtData, *TtInstance)
+    Clear()
+    FinalizeResult(*base.BaseData, *AutoTtData)
 }
 
 type TtSource interface {
-	SourceType() string
-	GetDays() []base.ElementBase
-	GetHours() []base.ElementBase
-	GetTeachers() []base.ElementBase
-	GetClasses() []*TtClass
-	GetAtomicGroups() []string
-	GetSubjects() []base.ElementBase
-	GetRooms() []base.ElementBase
-	GetActivities() []*TtActivity
-	GetConstraints() []*TtConstraint
-	GetResourceUnavailableConstraintTypes() []ConstraintType
-	GetConstraintTypes() []ConstraintType // ordered list of constraint types
-	// GetConstraintMaps() returns the hard- and soft constraint maps.
-	GetConstraintMaps() (map[ConstraintType][]ConstraintIndex, map[ConstraintType][]ConstraintIndex)
+    GetDays() []base.ElementBase
+    GetHours() []base.ElementBase
+    GetTeachers() []base.ElementBase
+    GetClasses() []*TtClass
+    GetAtomicGroups() []string
+    GetSubjects() []base.ElementBase
+    GetRooms() []base.ElementBase
+    GetActivities() []*TtActivity
+    GetConstraints() []*TtConstraint
+    GetResourceUnavailableConstraintTypes() []ConstraintType
+    GetConstraintTypes() []ConstraintType // ordered list of constraint types
+    // GetConstraintMaps() returns the hard- and soft constraint maps.
+    GetConstraintMaps() (map[ConstraintType][]ConstraintIndex, map[ConstraintType][]ConstraintIndex)
 }

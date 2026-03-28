@@ -11,11 +11,6 @@ import (
 	"github.com/beevik/etree"
 )
 
-//TODO: Adapt to the new structures and interfaces ...
-
-//TODO: FetRead should probably return a *SourceFET, which can then be
-// converted to a TtSourceFet.
-
 type SourceFET struct {
 	doc *etree.Document
 }
@@ -25,8 +20,7 @@ func (s *SourceFET) SourceType() string {
 }
 
 // In FET there are "time" constraints and "space" constraints. They are
-// all lumped together in the `ConstraintElements` list, but their indexes
-// are also recorded in the `TimeConstraints` and `SpaceConstraints` lists.
+// all lumped together in the `ConstraintElements` list.
 
 func FetRead(
 	bdata *base.BaseData,
@@ -43,13 +37,14 @@ func FetRead(
 	}
 }
 
-func (sfet *SourceFET) MakeTimetableData(bd *base.BaseData) autotimetable.TtSource {
+func MakeTimetableData(bd *base.BaseData) autotimetable.TtSource {
 	logger := bd.Logger
 	weightTable := MakeFetWeights()
-	newdoc := sfet.doc.Copy()
-	sourcefet := &TtSourceFet{doc: newdoc}
+	//newdoc := sfet.doc.Copy()
+	//sourcefet := &TtSourceFet{doc: newdoc}
+	sourcefet := &TtSourceFet{}
 	//fmt.Printf("sourcefet.WeightTable = %+v\n\n", sourcefet.WeightTable)
-	fetroot := newdoc.Root()
+	fetroot := bd.Source.(*SourceFET).doc.Root()
 
 	/*
 	   fmt.Printf("ROOT element: %s (%+v)\n", root.Tag, root.Attr)
@@ -61,12 +56,23 @@ func (sfet *SourceFET) MakeTimetableData(bd *base.BaseData) autotimetable.TtSour
 
 	// Get active activities, count inactive ones
 	{
-		activities := []*etree.Element{}
+		//a_elements := []*etree.Element{}
+		activities := []*ttActivity{}
 		ael := fetroot.SelectElement("Activities_List")
 		inactive := 0
 		for _, a := range ael.ChildElements() {
 			if a.SelectElement("Active").Text() == "true" {
-				activities = append(activities, a)
+				//a_elements = append(a_elements, a)
+				activities = append(activities, &ttActivity{
+					Id: a.SelectElement("Id").Text(),
+					//TODO?
+					// These are probably not needed if the back-end just uses a copy
+					// of the FET source:
+					//Tag:                string // optionally usable by the back-end,
+					//Duration:           int,
+					//Groups:             []*base.Group,
+					//AtomicGroupIndexes: []AtomicIndex,
+				})
 			} else {
 				inactive++
 			}
@@ -74,7 +80,8 @@ func (sfet *SourceFET) MakeTimetableData(bd *base.BaseData) autotimetable.TtSour
 		if inactive != 0 {
 			logger.Result("INACTIVE_ACTIVITIES", strconv.Itoa(inactive))
 		}
-		sourcefet.activityElements = activities
+		//sourcefet.activityElements = a_elements
+		sourcefet.activities = activities
 	}
 
 	// Collect the constraints, dividing into soft and hard groups.
@@ -101,8 +108,9 @@ func (sfet *SourceFET) MakeTimetableData(bd *base.BaseData) autotimetable.TtSour
 			et = fetroot.SelectElement("Space_Constraints_List")
 			bc = "ConstraintBasicCompulsorySpace"
 		}
+		tsindexes := []int{}
 		inactive := 0
-		for _, e := range et.ChildElements() {
+		for ic, e := range et.ChildElements() {
 			// Count and skip if inactive
 			if e.SelectElement("Active").Text() == "false" {
 				inactive++ // count inactive constraints
@@ -113,13 +121,15 @@ func (sfet *SourceFET) MakeTimetableData(bd *base.BaseData) autotimetable.TtSour
 				// Basic, non-negotiable constraint
 				continue
 			}
-			i := len(sourcefet.constraintElements)
+			tsindexes = append(tsindexes, ic)
+
+			i := len(sourcefet.constraints)
 			sourcefet.constraintElements = append(sourcefet.constraintElements, e)
-			if timespace == 0 {
-				sourcefet.timeConstraints = append(sourcefet.timeConstraints, i)
-			} else {
-				sourcefet.spaceConstraints = append(sourcefet.spaceConstraints, i)
-			}
+			//if timespace == 0 {
+			//  sourcefet.timeConstraints = append(sourcefet.timeConstraints, i)
+			//} else {
+			//  sourcefet.spaceConstraints = append(sourcefet.spaceConstraints, i)
+			//}
 
 			w := e.SelectElement("Weight_Percentage").Text()
 			wdb := FetWeight2Db(w, weightTable)
@@ -133,7 +143,7 @@ func (sfet *SourceFET) MakeTimetableData(bd *base.BaseData) autotimetable.TtSour
 				wctype := fmt.Sprintf("%02d:%s", wdb, ctype)
 				soft_constraint_map[wctype] = append(soft_constraint_map[wctype],
 					constraintIndex(i))
-				//sourcefet.softWeights = append(sourcefet.softWeights, softWeight{i, w})
+				sourcefet.softWeights = append(sourcefet.softWeights, softWeight{i, w})
 			}
 			constraint_types = append(constraint_types, ctype)
 			// ... duplicates wil be removed in `sort_constraint_types`
@@ -166,10 +176,15 @@ func (sfet *SourceFET) MakeTimetableData(bd *base.BaseData) autotimetable.TtSour
 				Weight: wdb,
 			})
 		}
-		if inactive != 0 {
-			if timespace == 0 {
+
+		if timespace == 0 {
+			sourcefet.t_constraints = tsindexes
+			if inactive != 0 {
 				logger.Result("INACTIVE_TIME_CONSTRAINTS", strconv.Itoa(inactive))
-			} else {
+			}
+		} else {
+			sourcefet.s_constraints = tsindexes
+			if inactive != 0 {
 				logger.Result("INACTIVE_SPACE_CONSTRAINTS", strconv.Itoa(inactive))
 			}
 		}

@@ -33,14 +33,8 @@ func init() {
 
 type Dispatcher struct {
 	BaseData     *base.BaseData
-	Source       SourceData
 	AutoTtData   *autotimetable.AutoTtData
 	TtParameters *autotimetable.Parameters
-}
-
-type SourceData interface {
-	SourceType() string
-	MakeTimetableData(bd *base.BaseData) autotimetable.TtSource
 }
 
 type DispatchOp struct {
@@ -208,7 +202,7 @@ func file_loader(dsp *Dispatcher, op *DispatchOp) {
 	if strings.HasSuffix(strings.ToLower(fpath), ".fet") {
 		source_fet := fet.FetRead(bd, fpath)
 		if source_fet != nil {
-			dsp.Source = source_fet
+			bd.Source = source_fet
 			bd.SourceDir = filepath.Dir(fpath)
 			n := filepath.Base(fpath)
 			bd.Name = strings.TrimSuffix(n, filepath.Ext(n))
@@ -221,7 +215,7 @@ func file_loader(dsp *Dispatcher, op *DispatchOp) {
 		db0 := bd.Db // save old Db in case loading of new data fails
 		bd.Db = base.NewDb()
 		if w365tt.LoadJSON(bd, fpath) {
-			dsp.Source = &timetable.SourceDB{}
+			bd.Source = &base.SourceDB{}
 			bd.SourceDir = filepath.Dir(fpath)
 			n := filepath.Base(fpath)
 			bd.Name = strings.TrimSuffix(n, filepath.Ext(n))
@@ -245,13 +239,20 @@ func runtt_source(dsp *Dispatcher, op *DispatchOp) {
 	if logger.Running {
 		panic("Attempt to start generation when already running")
 	}
-	if dsp.Source == nil {
+	if bdata.Source == nil {
 		logger.Error("No source")
 		logger.Result("OK", "false")
 		return
 	}
-	ttsource := dsp.Source.MakeTimetableData(bdata)
-
+	var ttsource autotimetable.TtSource
+	switch stype := bdata.Source.SourceType(); stype {
+	case "DB":
+		ttsource = timetable.MakeTimetableData(bdata)
+	case "FET":
+		ttsource = fet.MakeTimetableData(bdata)
+	default:
+		panic("Unknown source type: " + stype)
+	}
 	// Set up FET back-end and start processing
 	hcmap, scmap := ttsource.GetConstraintMaps()
 	attdata := &autotimetable.AutoTtData{

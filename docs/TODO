@@ -8,8 +8,6 @@ Currently, `TtSource` seems to be something like what it should be, but `TtBacke
 
 Actually, `TtSource` methods shouldn't be able to return `IdPair` items, because it should be independent of the back-end data.
 
-The method `PrepareRun()` seems to have been incorrectly placed in the `TtSource` interface as it is clearly dealing with the back-end generator.
-
 The `Dispatcher` structure contains a `TtSource` item, but also a `TtAutoData` item, which also has a `TtSource` item. Having two references to `TtSource` is probably not such a good idea. It might be better to keep the source information out of `TtAutoData`, as it is really only dealing with the back-end, which will somehow encapsulate the prepared and translated source. However, having looked at the code, it seems that the source interface is used in generating result data. It might be better to remove `TtSource` from the `Dispatcher` structure, maybe `TtParameters` too, because also that is only relevant to "autotimetable".
 
 The selected implementation of `TtBackend` seems to be only stored in the `TtInstance` structures, which means the actual selection is done somewhere else, which is a bit confusing. It suggests that I am using `TtBackend` as something a bit different from what I specified above. This version is just the instance-bound functionality, so it should perhaps be called something like `TtInstanceBackend`. The actual back-end interface is perhaps rather what is currently `BackendInterface`, but currently, in `runtt_source()` (in "dispatch.go") the back-end is assumed to be `FET`.
