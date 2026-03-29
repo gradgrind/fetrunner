@@ -99,6 +99,22 @@ func PrepareFet(attdata *autotimetable.AutoTtData) *fet_build {
 
 		//tmpdir string // must be set later, before using
 	}
+
+	for _, d := range source.GetDays() {
+		fetbuild.DayList = append(fetbuild.DayList, d.Tag)
+	}
+	for _, h := range source.GetHours() {
+		fetbuild.HourList = append(fetbuild.HourList, h.Tag)
+	}
+	for _, r := range source.GetRooms() {
+		fetbuild.RoomList = append(fetbuild.RoomList, r.Tag)
+	}
+
+	//TODO: Currently no Tag field!
+	for _, a := range source.GetActivities() {
+		fetbuild.ActivityList = append(fetbuild.ActivityList, a.Tag)
+	}
+
 	attdata.Backend = fetbuild
 	return fetbuild
 }
@@ -425,7 +441,6 @@ func (fetbuild *fet_build) Results(
 	room2index := map[string]int{}
 	for i, r := range fetbuild.RoomList {
 		room2index[r] = i
-
 	}
 	// ... day conversion
 	day2index := map[string]int{}

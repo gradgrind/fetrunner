@@ -86,12 +86,13 @@ func (sourcefet *TtSourceFet) read_activities(fetroot *etree.Element) int {
 	for _, a := range ael.ChildElements() {
 		if a.SelectElement("Active").Text() == "true" {
 			//a_elements = append(a_elements, a)
+			id := a.SelectElement("Id").Text()
 			activities = append(activities, &ttActivity{
-				Id: a.SelectElement("Id").Text(),
+				Id:  id,
+				Tag: id,
 				//TODO?
 				// These are probably not needed if the back-end just uses a copy
 				// of the FET source:
-				//Tag:                string // optionally usable by the back-end,
 				//Duration:           int,
 				//Groups:             []*base.Group,
 				//AtomicGroupIndexes: []AtomicIndex,
