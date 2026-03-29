@@ -37,7 +37,7 @@ func (tt_data *TtData) teacher_hours_per_day(constraint_map map[string][]*base.B
 		for _, c0 := range constraint_map[ctype] {
 			data := c0.Data.(base.ResourceN)
 			n := data.N
-			if n >= 1 && n < nhours {
+			if n >= 2 && n < nhours {
 				tix := tt_data.teacher2Index[data.Resource]
 				tt_data.constraints = append(tt_data.constraints, &ttConstraint{
 					Id:     string(c0.Id),

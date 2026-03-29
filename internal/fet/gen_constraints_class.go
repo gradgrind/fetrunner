@@ -153,7 +153,7 @@ func class_force_first_hour(
 	constraint *ttConstraint,
 ) {
 	w1, comment := fetbuild.constraintWeight(i, constraint.Weight)
-	c := fetbuild.time_constraints_list.CreateElement("ConstraintStudentsSetMaxGapsPerDay")
+	c := fetbuild.time_constraints_list.CreateElement("ConstraintStudentsSetEarlyMaxBeginningsAtSecondHour")
 	c.CreateElement("Weight_Percentage").SetText(w1)
 	cix := constraint.Data.(int)
 	c.CreateElement("Students").SetText(fetbuild.ClassList[cix])
