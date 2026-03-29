@@ -39,9 +39,8 @@ type fet_build struct {
 	RoomList     []string
 	ActivityList []string
 
-	//TODO: These may be unused:
-	hard_teacher_blocks [][]base.TimeSlot
-	hard_class_blocks   [][]base.TimeSlot
+	teacher_hard_blocked [][][]bool // [teacher][day][hour] -> bool
+	class_hard_blocked   [][][]bool // [class][day][hour] -> bool
 
 	// Cache for FET virtual rooms, "hash" -> FET-virtual-room tag
 	fet_virtual_rooms  map[string]string

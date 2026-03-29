@@ -1,7 +1,6 @@
 package fet
 
 import (
-	"fetrunner/internal/base"
 	"strconv"
 )
 
@@ -47,10 +46,14 @@ func teacher_blocked(
 	notAvailable := mapReadTimeSlots(constraint.Data)
 	if len(notAvailable) != 0 {
 		w1, comment := fetbuild.constraintWeight(i, constraint.Weight)
-		if constraint.Weight == base.MAXWEIGHT {
-			// Collect hard blocks for determining lunch-breaks.
-			fetbuild.hard_teacher_blocks[tix] = notAvailable
+		// Collect hard-blocked slots
+		ndays := len(fetbuild.DayList)
+		nhours := len(fetbuild.HourList)
+		blocked_slots := make([][]bool, ndays)
+		for d := range ndays {
+			blocked_slots[d] = make([]bool, nhours)
 		}
+		// Generate the FET element
 		cna := fetbuild.time_constraints_list.CreateElement("ConstraintTeacherNotAvailableTimes")
 		cna.CreateElement("Weight_Percentage").SetText(w1)
 		cna.CreateElement("Teacher").SetText(fetbuild.TeacherList[tix])
@@ -60,10 +63,15 @@ func teacher_blocked(
 			nat := cna.CreateElement("Not_Available_Time")
 			nat.CreateElement("Day").SetText(fetbuild.DayList[slot.Day])
 			nat.CreateElement("Hour").SetText(fetbuild.HourList[slot.Hour])
+
+			if constraint.IsHard() {
+				blocked_slots[slot.Day][slot.Hour] = true
+			}
 		}
 		cna.CreateElement("Active").SetText("true")
 		cna.CreateElement("Comments").SetText(comment)
 
+		fetbuild.teacher_hard_blocked[tix] = blocked_slots
 		fetbuild.ConstraintElements[i] = append(
 			fetbuild.ConstraintElements[i], cna)
 	}
@@ -80,10 +88,14 @@ func class_blocked(
 	notAvailable := mapReadTimeSlots(constraint.Data)
 	if len(notAvailable) != 0 {
 		w1, comment := fetbuild.constraintWeight(i, constraint.Weight)
-		if constraint.Weight == base.MAXWEIGHT {
-			// Collect hard blocks for determining lunch-breaks.
-			fetbuild.hard_class_blocks[classix] = notAvailable
+		// Collect hard-blocked slots
+		ndays := len(fetbuild.DayList)
+		nhours := len(fetbuild.HourList)
+		blocked_slots := make([][]bool, ndays)
+		for d := range ndays {
+			blocked_slots[d] = make([]bool, nhours)
 		}
+		// Generate the FET element
 		cna := fetbuild.time_constraints_list.CreateElement("ConstraintStudentsSetNotAvailableTimes")
 		cna.CreateElement("Weight_Percentage").SetText(w1)
 		cna.CreateElement("Students").SetText(fetbuild.ClassList[classix])
@@ -93,10 +105,15 @@ func class_blocked(
 			nat := cna.CreateElement("Not_Available_Time")
 			nat.CreateElement("Day").SetText(fetbuild.DayList[slot.Day])
 			nat.CreateElement("Hour").SetText(fetbuild.HourList[slot.Hour])
+
+			if constraint.IsHard() {
+				blocked_slots[slot.Day][slot.Hour] = true
+			}
 		}
 		cna.CreateElement("Active").SetText("true")
 		cna.CreateElement("Comments").SetText(comment)
 
+		fetbuild.class_hard_blocked[classix] = blocked_slots
 		fetbuild.ConstraintElements[i] = append(
 			fetbuild.ConstraintElements[i], cna)
 	}
