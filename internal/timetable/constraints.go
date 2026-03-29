@@ -25,7 +25,7 @@ func (tt_data *TtData) prepare_days_between(
 		auto_id = string(cadd0.Id)
 		auto_weight = cadd0.Weight
 		auto_consec = cadd0.Data.(bool)
-	} else {
+	} else if len(cadd) != 0 {
 		panic("Constraint type must be used once only: " + base.C_AutomaticDifferentDays)
 	}
 	delete(constraint_map, base.C_AutomaticDifferentDays)

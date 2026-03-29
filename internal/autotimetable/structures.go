@@ -181,28 +181,3 @@ type TtConstraint struct {
 func (c *TtConstraint) IsHard() bool {
     return c.Weight == base.MAXWEIGHT
 }
-
-/*TODO: How to handle source and back-end constraints?
-
-There needs to be a converter which takes both source and back-end into
-account, so it can't be associated with just one end. In general, I suppose
-it is an m*n situation. Maybe it can be primarily source-based, allowing a
-choice of back-end on the basis of the source. The other way round would
-also be possible, in principle, but perhaps less "practical".
-
-As far as the autotimetable function is concerned, only a limited set of
-parameters/methods needs to be exposed via the back-end interface, though
-the source constraints would be the visible ones. In AutoTtData:
-
-...
-
-    NActivities       int
-
-    NConstraints      ConstraintIndex
-    Constraint_Types  []ConstraintType // ordered list of constraint types
-    HardConstraintMap map[ConstraintType][]ConstraintIndex
-    SoftConstraintMap map[ConstraintType][]ConstraintIndex
-
-...
-
-*/

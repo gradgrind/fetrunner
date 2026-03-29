@@ -6,6 +6,7 @@ import (
 	"cmp"
 	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
+	"fmt"
 	"maps"
 	"slices"
 )
@@ -242,7 +243,8 @@ func (tt_data *TtData) GetConstraintMaps() (
 		if c.IsHard() {
 			hardConstraintMap[c.CType] = append(hardConstraintMap[c.CType], i)
 		} else {
-			softConstraintMap[c.CType] = append(softConstraintMap[c.CType], i)
+			wctype := fmt.Sprintf("%02d:%s", c.Weight, c.CType)
+			softConstraintMap[wctype] = append(softConstraintMap[wctype], i)
 		}
 	}
 	return hardConstraintMap, softConstraintMap

@@ -77,7 +77,12 @@ func BuildFet(attdata *autotimetable.AutoTtData) *fet_build {
 
 	// Convert the source constraints to FET constraints
 	for i, sc := range source_constraints {
-		base_constraint_fet[sc.CType](fetbuild, i, sc)
+		fn, ok := base_constraint_fet[sc.CType]
+		if ok {
+			fn(fetbuild, i, sc)
+		} else {
+			panic("No conversion for constraint " + sc.CType)
+		}
 	}
 	return fetbuild
 }

@@ -94,7 +94,7 @@ The following instructions assume you are using the Qt development kit from the 
 #### Compilation on Linux
 
 ```
-$HOME/Qt/Tools/CMake/bin/cmake .. -DCMAKE_PREFIX_PATH=$HOME/Qt/6.10.1/gcc_64 -DCMAKE_INSTALL_PREFIX=install
+$HOME/Qt/Tools/CMake/bin/cmake .. -DCMAKE_PREFIX_PATH=$HOME/Qt/6.10.2/gcc_64 -DCMAKE_INSTALL_PREFIX=install
 
 $HOME/Qt/Tools/CMake/bin/cmake --build . --target install -j 4
 ```
@@ -106,7 +106,7 @@ Optionally copy the `icons` directory from `fetrunner\gui` to  the `bin` directo
 #### Compilation on Windows
 
 ```
-C:\Qt\Tools\CMake_64\bin\cmake.exe .. -DCMAKE_PREFIX_PATH=C:\Qt\6.10.1\mingw_64 -DCMAKE_GENERATOR="MinGW Makefiles"
+C:\Qt\Tools\CMake_64\bin\cmake.exe .. -DCMAKE_PREFIX_PATH=C:\Qt\6.10.2\mingw_64 -DCMAKE_GENERATOR="MinGW Makefiles"
 
 C:\Qt\Tools\CMake_64\bin\cmake.exe --build . -j 4
 ```
@@ -126,7 +126,7 @@ To build the necessary `fet-clw.exe` program you need to download the `FET` sour
  - Compile:
 
 ```
-C:\Qt\Tools\CMake_64\bin\cmake.exe .. -DCMAKE_PREFIX_PATH=C:\Qt\6.10.1\mingw_64 -DCMAKE_GENERATOR="MinGW Makefiles" -DCOMMAND_LINE_ONLY=ON -DNO_WINDOWS_CONSOLE=ON
+C:\Qt\Tools\CMake_64\bin\cmake.exe .. -DCMAKE_PREFIX_PATH=C:\Qt\6.10.2\mingw_64 -DCMAKE_GENERATOR="MinGW Makefiles" -DCOMMAND_LINE_ONLY=ON -DNO_WINDOWS_CONSOLE=ON
 
 C:\Qt\Tools\CMake_64\bin\cmake.exe --build . -j 4
 ```

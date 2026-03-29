@@ -54,7 +54,7 @@ func (tt_data *TtData) double_unbroken(constraint_map map[string][]*base.BaseCon
 				})
 			}
 		}
-	} else {
+	} else if len(dulist) != 0 {
 		panic("Constraint type must be used once only: " + base.C_DoubleActivityNotOverBreaks)
 	}
 	delete(constraint_map, ctype)
