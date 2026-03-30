@@ -156,16 +156,18 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 				Teachers:           cinfo.Teachers,
 			}
 			// Room placement
-			tt_data.constraints = append(tt_data.constraints, &ttConstraint{
-				Id:     "",
-				CType:  base.C_ActivityRooms,
-				Weight: base.MAXWEIGHT,
-				Data: map[string]any{
-					"Activity":    aix,
-					"FixedRooms":  cinfo.FixedRooms,
-					"RoomChoices": cinfo.RoomChoices,
-				},
-			})
+			if len(cinfo.FixedRooms) != 0 || len(cinfo.RoomChoices) != 0 {
+				tt_data.constraints = append(tt_data.constraints, &ttConstraint{
+					Id:     "",
+					CType:  base.C_ActivityRooms,
+					Weight: base.MAXWEIGHT,
+					Data: map[string]any{
+						"Activity":    aix,
+						"FixedRooms":  cinfo.FixedRooms,
+						"RoomChoices": cinfo.RoomChoices,
+					},
+				})
+			}
 		}
 
 		// Filter out any "necessary" rooms from the choices
@@ -281,16 +283,18 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 				Teachers:           cinfo.Teachers,
 			}
 			// Room placement
-			tt_data.constraints = append(tt_data.constraints, &ttConstraint{
-				Id:     "",
-				CType:  base.C_ActivityRooms,
-				Weight: base.MAXWEIGHT,
-				Data: map[string]any{
-					"Activity":    aix,
-					"FixedRooms":  cinfo.FixedRooms,
-					"RoomChoices": cinfo.RoomChoices,
-				},
-			})
+			if len(cinfo.FixedRooms) != 0 || len(cinfo.RoomChoices) != 0 {
+				tt_data.constraints = append(tt_data.constraints, &ttConstraint{
+					Id:     "",
+					CType:  base.C_ActivityRooms,
+					Weight: base.MAXWEIGHT,
+					Data: map[string]any{
+						"Activity":    aix,
+						"FixedRooms":  cinfo.FixedRooms,
+						"RoomChoices": cinfo.RoomChoices,
+					},
+				})
+			}
 		}
 
 		tt_data.courseInfoList = append(

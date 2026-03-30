@@ -62,7 +62,7 @@ func after_hour(
 	ndays := len(fetbuild.DayList)
 	nhours := len(fetbuild.HourList)
 	timeslots := []preferred_time{}
-	for d := 0; d < ndays; d++ {
+	for d := range ndays {
 		for h := h0; h < nhours; h++ {
 			timeslots = append(timeslots, preferred_time{
 				Preferred_Day:  fetbuild.DayList[d],
@@ -97,7 +97,7 @@ func before_hour(
 	h0 := mapReadInt(constraint.Data, "Hour") + 1
 	ndays := len(fetbuild.DayList)
 	timeslots := []preferred_time{}
-	for d := 0; d < ndays; d++ {
+	for d := range ndays {
 		for h := 0; h < h0; h++ {
 			timeslots = append(timeslots, preferred_time{
 				Preferred_Day:  fetbuild.DayList[d],
@@ -162,7 +162,7 @@ func double_no_break(
 		doubleBlocked[h-1] = true
 		hlist = append(hlist, h)
 	}
-	for d := 0; d < ndays; d++ {
+	for d := range ndays {
 		for h, bl := range doubleBlocked {
 			if !bl {
 				timeslots = append(timeslots, preferred_time{
@@ -175,6 +175,8 @@ func double_no_break(
 	w1, comment := fetbuild.constraintWeight(i, constraint.Weight)
 	c := fetbuild.time_constraints_list.CreateElement("ConstraintActivityPreferredStartingTimes")
 	c.CreateElement("Weight_Percentage").SetText(w1)
+	a := fetbuild.ActivityList[mapReadInt(constraint.Data, "Activity")]
+	c.CreateElement("Activity_Id").SetText(a)
 	c.CreateElement("Number_of_Preferred_Starting_Times").SetText(strconv.Itoa(len(timeslots)))
 	for _, t := range timeslots {
 		pts := c.CreateElement("Preferred_Starting_Time")

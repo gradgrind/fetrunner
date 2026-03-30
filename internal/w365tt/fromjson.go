@@ -48,7 +48,7 @@ func LoadJSON(newdb *base.BaseData, jsonpath string) bool {
 				slices.Sort(mb)
 			}
 			mb0 := mb[0]
-			mb1 := mb[len(mb)-1] - mb[0]
+			mb1 := mb[len(mb)-1]
 			if mb1-mb0 >= len(mb) {
 				newdb.Logger.Error("MiddayBreak hours not contiguous")
 			} else {
