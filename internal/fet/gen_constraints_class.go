@@ -105,12 +105,16 @@ func class_lunch_breaks(
 	mb1 := mapReadInt(constraint.Data, "Hour1")
 	cix := mapReadInt(constraint.Data, "Class")
 	lbdays := []int{} // collect days needing lunch-break
+	blocked := fetbuild.class_hard_blocked[cix]
 nextday:
-	for d, blist := range fetbuild.teacher_hard_blocked[cix] {
-		for h := mb0; h <= mb1; h++ {
-			if blist[h] {
-				// A slot is blocked.
-				continue nextday
+	for d := range len(fetbuild.DayList) {
+		if len(blocked) != 0 {
+			blist := blocked[d]
+			for h := mb0; h <= mb1; h++ {
+				if blist[h] {
+					// A slot is blocked.
+					continue nextday
+				}
 			}
 		}
 		lbdays = append(lbdays, d) // this day has no blocked lunch-break slots
