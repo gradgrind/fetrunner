@@ -39,8 +39,13 @@ type fet_build struct {
 	RoomList     []string
 	ActivityList []string
 
-	teacher_hard_blocked [][][]bool // [teacher][day][hour] -> bool
-	class_hard_blocked   [][][]bool // [class][day][hour] -> bool
+	teacher_hard_blocked     [][][]bool // [teacher][day][hour] -> bool (blocked)
+	class_hard_blocked       [][][]bool // [class][day][hour] -> bool (blocked)
+	teacher_max_days         []int      // [teacher] -> max. number of days
+	teacher_max_afternoons   []int      // [teacher] -> max. number of afternoons
+	class_max_afternoons     []int      // [class] -> max. number of afternoons
+	teacher_lunch_break_days [][]int    // [teacher] -> []int (days)
+	class_lunch_break_days   [][]int    // [class] -> []int (days)
 
 	// Cache for FET virtual rooms, "hash" -> FET-virtual-room tag
 	fet_virtual_rooms  map[string]string

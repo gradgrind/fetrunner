@@ -42,6 +42,9 @@ func (fetbuild *fet_build) set_teachers() {
 	}
 	fetbuild.TeacherList = ids
 	fetbuild.teacher_hard_blocked = make([][][]bool, len(ids))
+	fetbuild.teacher_max_days = make([]int, len(ids))
+	fetbuild.teacher_max_afternoons = make([]int, len(ids))
+	fetbuild.teacher_lunch_break_days = make([][]int, len(ids))
 }
 
 func (fetbuild *fet_build) set_subjects() {
@@ -100,6 +103,8 @@ func (fetbuild *fet_build) set_classes() {
 	}
 	fetbuild.ClassList = ids
 	fetbuild.class_hard_blocked = make([][][]bool, len(ids))
+	fetbuild.class_max_afternoons = make([]int, len(ids))
+	fetbuild.class_lunch_break_days = make([][]int, len(ids))
 }
 
 // In FET the group identifier is constructed from the class tag,

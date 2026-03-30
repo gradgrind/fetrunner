@@ -4,6 +4,12 @@ import (
 	"strconv"
 )
 
+// Convert "base" constraints to "FET" constraints.
+
+// In the source constraints list, the hard-blocked slots and the
+// max-afternoons must precede the lunch-break constraints, which
+// must preced the max-gaps constraints.
+
 /* Lunch-breaks
 
 Lunch-breaks can be done using max-hours-in-interval constraint, but that
@@ -76,6 +82,7 @@ func class_max_afternoons(
 	cix := mapReadInt(constraint.Data, "Class")
 	c.CreateElement("Students").SetText(fetbuild.ClassList[cix])
 	n := mapReadInt(constraint.Data, "MaxAfternoons")
+	fetbuild.class_max_afternoons[cix] = n
 	h0 := mapReadInt(constraint.Data, "AfternoonStart")
 	c.CreateElement("Interval_Start_Hour").SetText(fetbuild.HourList[h0])
 	c.CreateElement("Interval_End_Hour").SetText("")
@@ -94,19 +101,22 @@ func class_lunch_breaks(
 ) {
 	// Generate the constraint unless all days have a blocked
 	// lesson at lunchtime.
-	//TODO: I also need to count the lunch-break days.
 	mb0 := mapReadInt(constraint.Data, "Hour0")
 	mb1 := mapReadInt(constraint.Data, "Hour1")
 	cix := mapReadInt(constraint.Data, "Class")
+	lbdays := []int{} // collect days needing lunch-break
 nextday:
-	for _, blist := range fetbuild.class_hard_blocked[cix] {
+	for d, blist := range fetbuild.teacher_hard_blocked[cix] {
 		for h := mb0; h <= mb1; h++ {
 			if blist[h] {
 				// A slot is blocked.
 				continue nextday
 			}
 		}
-		// This day has no blocked slots, generate the constraint.
+		lbdays = append(lbdays, d) // this day has no blocked lunch-break slots
+	}
+	if len(lbdays) != 0 {
+		fetbuild.class_lunch_break_days[cix] = lbdays
 		w1, comment := fetbuild.constraintWeight(i, constraint.Weight)
 		c := fetbuild.time_constraints_list.CreateElement("ConstraintStudentsSetMaxHoursDailyInInterval")
 		c.CreateElement("Weight_Percentage").SetText(w1)
@@ -133,6 +143,15 @@ func class_max_gaps_per_week(
 	cix := mapReadInt(constraint.Data, "Class")
 	c.CreateElement("Students").SetText(fetbuild.ClassList[cix])
 	n := mapReadInt(constraint.Data, "nHours")
+	// Adjust to accommodate lunch breaks
+	lbdays := len(fetbuild.class_lunch_break_days[cix])
+	if lbdays > 0 {
+		maxpm := fetbuild.class_max_afternoons[cix]
+		if maxpm < lbdays {
+			lbdays = maxpm
+		}
+		n += lbdays // TODO: or set n to at least lbdays?
+	}
 	c.CreateElement("Max_Gaps").SetText(strconv.Itoa(n))
 	c.CreateElement("Active").SetText("true")
 	c.CreateElement("Comments").SetText(comment)
@@ -152,6 +171,13 @@ func class_max_gaps_per_day(
 	cix := mapReadInt(constraint.Data, "Class")
 	c.CreateElement("Students").SetText(fetbuild.ClassList[cix])
 	n := mapReadInt(constraint.Data, "nHours")
+	// Ensure that a gap is allowed if there are lunch breaks.
+	if n == 0 {
+		lbdays := len(fetbuild.class_lunch_break_days[cix])
+		if lbdays > 0 {
+			n = 1
+		}
+	}
 	c.CreateElement("Max_Gaps").SetText(strconv.Itoa(n))
 	c.CreateElement("Active").SetText("true")
 	c.CreateElement("Comments").SetText(comment)

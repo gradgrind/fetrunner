@@ -6,8 +6,8 @@ import (
 
 func (tt_data *TtData) class_constraints(constraint_map map[string][]*base.BaseConstraint) {
 	tt_data.class_hours_per_day(constraint_map)
-	tt_data.class_afternoons(constraint_map)
-	tt_data.class_lunchbreak(constraint_map)
+	tt_data.class_afternoons(constraint_map) // before class_lunchbreak()
+	tt_data.class_lunchbreak(constraint_map) // before class_max_gaps()
 	tt_data.class_force_hour0(constraint_map)
 	tt_data.class_max_gaps(constraint_map)
 }

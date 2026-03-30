@@ -5,10 +5,10 @@ import (
 )
 
 func (tt_data *TtData) teacher_constraints(constraint_map map[string][]*base.BaseConstraint) {
-	tt_data.teacher_max_days(constraint_map)
+	tt_data.teacher_max_days(constraint_map) // before teacher_lunchbreak()
 	tt_data.teacher_hours_per_day(constraint_map)
-	tt_data.teacher_afternoons(constraint_map)
-	tt_data.teacher_lunchbreak(constraint_map)
+	tt_data.teacher_afternoons(constraint_map) // before teacher_lunchbreak()
+	tt_data.teacher_lunchbreak(constraint_map) // before teacher_max_gaps()
 	tt_data.teacher_max_gaps(constraint_map)
 }
 
