@@ -23,30 +23,48 @@ func (tt_data *TtData) get_blocked_slots(constraint_map map[string][]*base.BaseC
 	delete(constraint_map, base.C_RoomNotAvailable)
 
 	// Teachers
+	tt_data.teacher_hard_blocked = make([][][]bool, len(tt_data.teachers))
 	for _, c0 := range constraint_map[base.C_TeacherNotAvailable] {
 		srcdata := c0.Data.(base.ResourceNotAvailable)
-		t := tt_data.teacher2Index[srcdata.Resource]
+		tix := tt_data.teacher2Index[srcdata.Resource]
 		tt_data.constraints = append(tt_data.constraints, &ttConstraint{
 			Id:     string(c0.Id),
 			CType:  c0.CType,
 			Weight: c0.Weight,
 			Data: map[string]any{
-				"Teacher": t, "Times": srcdata.NotAvailable},
+				"Teacher": tix, "Times": srcdata.NotAvailable},
 		})
+		blocked_slots := make([][]bool, tt_data.ndays)
+		for d := range tt_data.ndays {
+			blocked_slots[d] = make([]bool, tt_data.nhours)
+		}
+		for _, nas := range srcdata.NotAvailable {
+			blocked_slots[nas.Day][nas.Hour] = true
+		}
+		tt_data.teacher_hard_blocked[tix] = blocked_slots
 	}
 	delete(constraint_map, base.C_TeacherNotAvailable)
 
 	// Classes
+	tt_data.class_hard_blocked = make([][][]bool, len(tt_data.classDivisions))
 	for _, c0 := range constraint_map[base.C_ClassNotAvailable] {
 		srcdata := c0.Data.(base.ResourceNotAvailable)
-		c := tt_data.class2Index[srcdata.Resource]
+		cix := tt_data.class2Index[srcdata.Resource]
 		tt_data.constraints = append(tt_data.constraints, &ttConstraint{
 			Id:     string(c0.Id),
 			CType:  c0.CType,
 			Weight: c0.Weight,
 			Data: map[string]any{
-				"Class": c, "Times": srcdata.NotAvailable},
+				"Class": cix, "Times": srcdata.NotAvailable},
 		})
+		blocked_slots := make([][]bool, tt_data.ndays)
+		for d := range tt_data.ndays {
+			blocked_slots[d] = make([]bool, tt_data.nhours)
+		}
+		for _, nas := range srcdata.NotAvailable {
+			blocked_slots[nas.Day][nas.Hour] = true
+		}
+		tt_data.class_hard_blocked[cix] = blocked_slots
 	}
 	delete(constraint_map, base.C_ClassNotAvailable)
 }

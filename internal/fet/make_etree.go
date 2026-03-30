@@ -1,11 +1,11 @@
 package fet
 
 import (
-	"fetrunner/internal/autotimetable"
-	"fetrunner/internal/base"
-	"strconv"
+    "fetrunner/internal/autotimetable"
+    "fetrunner/internal/base"
+    "strconv"
 
-	"github.com/beevik/etree"
+    "github.com/beevik/etree"
 )
 
 type NodeRef = base.NodeRef
@@ -24,67 +24,66 @@ const VIRTUAL_ROOM_PREFIX = "!"
 // generated from the source constraints, with the possibility that
 // multiple backend constraints are generated for a single source constraint.
 func BuildFet(attdata *autotimetable.AutoTtData) *fet_build {
-	source := attdata.Source // TtSource interface
-	doc := etree.NewDocument()
-	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
-	source_constraints := source.GetConstraints()
-	fetbuild := &fet_build{
-		real_soft:           attdata.Parameters.REAL_SOFT,
-		no_room_constraints: attdata.Parameters.WITHOUT_ROOM_CONSTRAINTS,
-		ttsource:            source,
+    source := attdata.Source // TtSource interface
+    doc := etree.NewDocument()
+    doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
+    source_constraints := source.GetConstraints()
+    fetbuild := &fet_build{
+        real_soft:           attdata.Parameters.REAL_SOFT,
+        no_room_constraints: attdata.Parameters.WITHOUT_ROOM_CONSTRAINTS,
+        ttsource:            source,
 
-		Doc:                doc,
-		WeightTable:        MakeFetWeights(),
-		ConstraintElements: make([][]*etree.Element, len(source_constraints)),
+        Doc:                doc,
+        WeightTable:        MakeFetWeights(),
+        ConstraintElements: make([][]*etree.Element, len(source_constraints)),
 
-		fet_virtual_rooms:  map[string]string{},
-		fet_virtual_room_n: map[string]int{},
-	}
-	attdata.Backend = fetbuild
+        fet_virtual_rooms:  map[string]string{},
+        fet_virtual_room_n: map[string]int{},
+    }
+    attdata.Backend = fetbuild
 
-	fetroot := doc.CreateElement("fet")
-	fetbuild.fetroot = fetroot
-	fetroot.CreateAttr("version", fet_version)
-	fetroot.CreateElement("Mode").SetText("Official")
-	//fetroot.CreateElement("Institution_Name").SetText(source.GetInstitution())
+    fetroot := doc.CreateElement("fet")
+    fetbuild.fetroot = fetroot
+    fetroot.CreateAttr("version", fet_version)
+    fetroot.CreateElement("Mode").SetText("Official")
+    //fetroot.CreateElement("Institution_Name").SetText(source.GetInstitution())
 
-	//TODO?
-	source_ref := ""
-	fetroot.CreateElement("Comments").SetText(source_ref)
+    //TODO?
+    source_ref := ""
+    fetroot.CreateElement("Comments").SetText(source_ref)
 
-	fetbuild.set_days_hours()
-	fetbuild.set_teachers()
+    fetbuild.set_days_hours()
+    fetbuild.set_teachers()
+    fetbuild.set_subjects()
+    fetbuild.set_rooms()
+    fetbuild.set_classes()
 
-	fetbuild.set_subjects()
-	fetbuild.set_rooms()
-	fetbuild.set_classes()
+    fetbuild.activity_tag_list = fetroot.CreateElement("Activity_Tags_List")
 
-	fetbuild.activity_tag_list = fetroot.CreateElement("Activity_Tags_List")
+    fetbuild.set_activities()
 
-	fetbuild.set_activities()
+    tclist := fetroot.CreateElement("Time_Constraints_List")
+    fetbuild.time_constraints_list = tclist
+    bctime := tclist.CreateElement("ConstraintBasicCompulsoryTime")
+    bctime.CreateElement("Weight_Percentage").SetText("100")
+    bctime.CreateElement("Active").SetText("true")
 
-	tclist := fetroot.CreateElement("Time_Constraints_List")
-	fetbuild.time_constraints_list = tclist
-	bctime := tclist.CreateElement("ConstraintBasicCompulsoryTime")
-	bctime.CreateElement("Weight_Percentage").SetText("100")
-	bctime.CreateElement("Active").SetText("true")
+    sclist := fetroot.CreateElement("Space_Constraints_List")
+    fetbuild.space_constraints_list = sclist
+    bcspace := sclist.CreateElement("ConstraintBasicCompulsorySpace")
+    bcspace.CreateElement("Weight_Percentage").SetText("100")
+    bcspace.CreateElement("Active").SetText("true")
 
-	sclist := fetroot.CreateElement("Space_Constraints_List")
-	fetbuild.space_constraints_list = sclist
-	bcspace := sclist.CreateElement("ConstraintBasicCompulsorySpace")
-	bcspace.CreateElement("Weight_Percentage").SetText("100")
-	bcspace.CreateElement("Active").SetText("true")
-
-	// Convert the source constraints to FET constraints
-	for i, sc := range source_constraints {
-		fn, ok := base_constraint_fet[sc.CType]
-		if ok {
-			fn(fetbuild, i, sc)
-		} else {
-			panic("No conversion for constraint " + sc.CType)
-		}
-	}
-	return fetbuild
+    // Convert the source constraints to FET constraints
+    for i, sc := range source_constraints {
+        fn, ok := base_constraint_fet[sc.CType]
+        if ok {
+            fn(fetbuild, i, sc)
+        } else {
+            panic("No conversion for constraint " + sc.CType)
+        }
+    }
+    return fetbuild
 }
 
 /*
@@ -104,17 +103,17 @@ func oldweight2fet(w int) string {
 
 // Currently unused
 func (fetbuild *fet_build) add_activity_tag(tag string) {
-	atag := fetbuild.activity_tag_list.CreateElement("Activity_Tag")
-	atag.CreateElement("Name").SetText(tag)
-	atag.CreateElement("Printable").SetText("false")
+    atag := fetbuild.activity_tag_list.CreateElement("Activity_Tag")
+    atag.CreateElement("Name").SetText(tag)
+    atag.CreateElement("Printable").SetText("false")
 }
 
 func (fetbuild *fet_build) DbWeight2Fet(w int) string {
-	if w <= 0 {
-		return "0"
-	}
-	if w >= 100 {
-		return "100"
-	}
-	return strconv.FormatFloat(fetbuild.WeightTable[w], 'f', 3, 64)
+    if w <= 0 {
+        return "0"
+    }
+    if w >= 100 {
+        return "100"
+    }
+    return strconv.FormatFloat(fetbuild.WeightTable[w], 'f', 3, 64)
 }

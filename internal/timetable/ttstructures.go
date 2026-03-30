@@ -55,6 +55,9 @@ type TtData struct {
 	ref2ActivityIndex map[nodeRef]activityIndex
 	courseInfoList    []*courseInfo
 	ref2courseInfo    map[nodeRef]*courseInfo
+
+	teacher_hard_blocked [][][]bool // [teacher][day][hour] -> bool (blocked)
+	class_hard_blocked   [][][]bool // [class][day][hour] -> bool (blocked)
 }
 
 func (tt_data *TtData) GetDays() []element {

@@ -99,41 +99,21 @@ func class_lunch_breaks(
 	i constraintIndex,
 	constraint *ttConstraint,
 ) {
-	// Generate the constraint unless all days have a blocked
-	// lesson at lunchtime.
 	mb0 := mapReadInt(constraint.Data, "Hour0")
 	mb1 := mapReadInt(constraint.Data, "Hour1")
 	cix := mapReadInt(constraint.Data, "Class")
-	lbdays := []int{} // collect days needing lunch-break
-	blocked := fetbuild.class_hard_blocked[cix]
-nextday:
-	for d := range len(fetbuild.DayList) {
-		if len(blocked) != 0 {
-			blist := blocked[d]
-			for h := mb0; h <= mb1; h++ {
-				if blist[h] {
-					// A slot is blocked.
-					continue nextday
-				}
-			}
-		}
-		lbdays = append(lbdays, d) // this day has no blocked lunch-break slots
-	}
-	if len(lbdays) != 0 {
-		fetbuild.class_lunch_break_days[cix] = lbdays
-		w1, comment := fetbuild.constraintWeight(i, constraint.Weight)
-		c := fetbuild.time_constraints_list.CreateElement("ConstraintStudentsSetMaxHoursDailyInInterval")
-		c.CreateElement("Weight_Percentage").SetText(w1)
-		c.CreateElement("Students").SetText(fetbuild.ClassList[cix])
-		c.CreateElement("Interval_Start_Hour").SetText(fetbuild.HourList[mb0])
-		c.CreateElement("Interval_End_Hour").SetText(fetbuild.HourList[mb1+1])
-		c.CreateElement("Maximum_Hours_Daily").SetText(strconv.Itoa(mb1 - mb0))
-		c.CreateElement("Active").SetText("true")
-		c.CreateElement("Comments").SetText(comment)
+	w1, comment := fetbuild.constraintWeight(i, constraint.Weight)
+	c := fetbuild.time_constraints_list.CreateElement("ConstraintStudentsSetMaxHoursDailyInInterval")
+	c.CreateElement("Weight_Percentage").SetText(w1)
+	c.CreateElement("Students").SetText(fetbuild.ClassList[cix])
+	c.CreateElement("Interval_Start_Hour").SetText(fetbuild.HourList[mb0])
+	c.CreateElement("Interval_End_Hour").SetText(fetbuild.HourList[mb1+1])
+	c.CreateElement("Maximum_Hours_Daily").SetText(strconv.Itoa(mb1 - mb0))
+	c.CreateElement("Active").SetText("true")
+	c.CreateElement("Comments").SetText(comment)
 
-		fetbuild.ConstraintElements[i] = append(
-			fetbuild.ConstraintElements[i], c)
-	}
+	fetbuild.ConstraintElements[i] = append(
+		fetbuild.ConstraintElements[i], c)
 }
 
 func class_max_gaps_per_week(

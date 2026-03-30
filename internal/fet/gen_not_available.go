@@ -71,7 +71,7 @@ func teacher_blocked(
 		cna.CreateElement("Active").SetText("true")
 		cna.CreateElement("Comments").SetText(comment)
 
-		fetbuild.teacher_hard_blocked[tix] = blocked_slots
+		//fetbuild.teacher_hard_blocked[tix] = blocked_slots
 		fetbuild.ConstraintElements[i] = append(
 			fetbuild.ConstraintElements[i], cna)
 	}
@@ -113,7 +113,7 @@ func class_blocked(
 		cna.CreateElement("Active").SetText("true")
 		cna.CreateElement("Comments").SetText(comment)
 
-		fetbuild.class_hard_blocked[classix] = blocked_slots
+		//fetbuild.class_hard_blocked[classix] = blocked_slots
 		fetbuild.ConstraintElements[i] = append(
 			fetbuild.ConstraintElements[i], cna)
 	}

@@ -62,12 +62,30 @@ func (tt_data *TtData) class_lunchbreak(constraint_map map[string][]*base.BaseCo
 		for _, c0 := range constraint_map[ctype] {
 			cref := c0.Data.(nodeRef)
 			cix := tt_data.class2Index[cref]
-			tt_data.constraints = append(tt_data.constraints, &ttConstraint{
-				Id:     string(c0.Id),
-				CType:  ctype,
-				Weight: c0.Weight,
-				Data:   map[string]any{"Class": cix, "Hour0": mb0, "Hour1": mb1},
-			})
+			lbdays := []int{} // collect days needing lunch-break
+			blocked := tt_data.class_hard_blocked[cix]
+		nextday:
+			for d := range tt_data.ndays {
+				if len(blocked) != 0 {
+					blist := blocked[d]
+					for h := mb0; h <= mb1; h++ {
+						if blist[h] {
+							// A slot is blocked.
+							continue nextday
+						}
+					}
+				}
+				lbdays = append(lbdays, d) // this day has no blocked lunch-break slots
+			}
+			if len(lbdays) != 0 {
+				tt_data.constraints = append(tt_data.constraints, &ttConstraint{
+					Id:     string(c0.Id),
+					CType:  ctype,
+					Weight: c0.Weight,
+					Data: map[string]any{"Class": cix, "Hour0": mb0, "Hour1": mb1,
+						"Days": lbdays},
+				})
+			}
 		}
 	}
 	delete(constraint_map, ctype)
