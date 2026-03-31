@@ -75,13 +75,11 @@ func (rq *RunQueue) update_instances() {
 				continue
 			}
 
-			limit := (instance.Ticks * 200) / t
+			limit := (instance.Ticks * 50) / t
+			//TODO: This is not really a timeout! And the multiplier is highly experimental.
+			// It's more of a "progress on course" criterion.
 			if instance.Progress < limit {
 				// Progress is too slow ...
-				//if instance.Progress*2 > limit {
-				//	// ... but stretch the rule a bit
-				//	continue
-				//}
 				logger.Info("Timeout %d @ %d, %d%%",
 					instance.Index,
 					instance.Ticks,
