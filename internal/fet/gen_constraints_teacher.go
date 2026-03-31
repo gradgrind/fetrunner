@@ -30,7 +30,7 @@ solution.
 
 // ------------------------------------------------------------------------
 
-func teacher_max_days(
+func teacher_days_limit(
 	fetbuild *fet_build,
 	i constraintIndex,
 	constraint *ttConstraint,
@@ -89,7 +89,7 @@ func teacher_max_hours_per_day(
 		fetbuild.ConstraintElements[i], c)
 }
 
-func teacher_max_afternoons(
+func teacher_afternoons_limit(
 	fetbuild *fet_build,
 	i constraintIndex,
 	constraint *ttConstraint,
@@ -100,6 +100,9 @@ func teacher_max_afternoons(
 	tix := mapReadInt(constraint.Data, "Teacher")
 	c.CreateElement("Teacher").SetText(fetbuild.TeacherList[tix])
 	n := mapReadInt(constraint.Data, "MaxAfternoons")
+	if n == 0 {
+		panic("MaxAfternoons may not be 0")
+	}
 	fetbuild.teacher_max_afternoons[tix] = n
 	h0 := mapReadInt(constraint.Data, "AfternoonStart")
 	c.CreateElement("Interval_Start_Hour").SetText(fetbuild.HourList[h0])
@@ -150,11 +153,11 @@ func teacher_max_gaps_per_week(
 	lbdays := len(fetbuild.teacher_lunch_break_days[tix])
 	if lbdays > 0 {
 		maxpm := fetbuild.teacher_max_afternoons[tix]
-		if maxpm < lbdays {
+		if maxpm != 0 && maxpm < lbdays {
 			lbdays = maxpm
 		}
 		maxd := fetbuild.teacher_max_days[tix]
-		if maxd < lbdays {
+		if maxd != 0 && maxd < lbdays {
 			lbdays = maxd
 		}
 		n += lbdays // TODO: or set n to at least lbdays?

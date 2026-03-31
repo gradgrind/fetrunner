@@ -71,7 +71,7 @@ func class_max_hours_per_day(
 		fetbuild.ConstraintElements[i], c)
 }
 
-func class_max_afternoons(
+func class_afternoons_limit(
 	fetbuild *fet_build,
 	i constraintIndex,
 	constraint *ttConstraint,
@@ -82,6 +82,9 @@ func class_max_afternoons(
 	cix := mapReadInt(constraint.Data, "Class")
 	c.CreateElement("Students").SetText(fetbuild.ClassList[cix])
 	n := mapReadInt(constraint.Data, "MaxAfternoons")
+	if n == 0 {
+		panic("MaxAfternoons may not be 0")
+	}
 	fetbuild.class_max_afternoons[cix] = n
 	h0 := mapReadInt(constraint.Data, "AfternoonStart")
 	c.CreateElement("Interval_Start_Hour").SetText(fetbuild.HourList[h0])
@@ -132,7 +135,7 @@ func class_max_gaps_per_week(
 	lbdays := len(fetbuild.class_lunch_break_days[cix])
 	if lbdays > 0 {
 		maxpm := fetbuild.class_max_afternoons[cix]
-		if maxpm < lbdays {
+		if maxpm != 0 && maxpm < lbdays {
 			lbdays = maxpm
 		}
 		n += lbdays // TODO: or set n to at least lbdays?
