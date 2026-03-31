@@ -102,6 +102,7 @@ func class_lunch_breaks(
 	mb0 := mapReadInt(constraint.Data, "Hour0")
 	mb1 := mapReadInt(constraint.Data, "Hour1")
 	cix := mapReadInt(constraint.Data, "Class")
+	fetbuild.class_lunch_break_days[cix] = mapReadIndexList(constraint.Data, "Days")
 	w1, comment := fetbuild.constraintWeight(i, constraint.Weight)
 	c := fetbuild.time_constraints_list.CreateElement("ConstraintStudentsSetMaxHoursDailyInInterval")
 	c.CreateElement("Weight_Percentage").SetText(w1)
