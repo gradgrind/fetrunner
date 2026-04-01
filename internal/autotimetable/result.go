@@ -34,12 +34,17 @@ func (attdata *AutoTtData) new_current_instance(
 	bdata.Logger.Result(".ACCEPT", strconv.Itoa(instance.Index))
 	alist := attdata.Backend.Results(bdata.Logger, instance) // read placements
 	clist := attdata.Source.GetConstraints()
+	cl_list0 := attdata.Source.GetClasses()
+	cl_list := make([]base.ElementBase, len(cl_list0))
+	for i, cl := range cl_list0 {
+		cl_list[i] = base.ElementBase{Id: cl.Id, Tag: cl.Tag}
+	}
 	attdata.lastResult = &Result{
-		Time:     instance.Ticks,
-		Days:     attdata.Source.GetDays(),
-		Hours:    attdata.Source.GetHours(),
-		Teachers: attdata.Source.GetTeachers(),
-		//TODO: Classes:     attdata.Source.GetClasses(),
+		Time:        instance.Ticks,
+		Days:        attdata.Source.GetDays(),
+		Hours:       attdata.Source.GetHours(),
+		Teachers:    attdata.Source.GetTeachers(),
+		Classes:     cl_list,
 		Rooms:       attdata.Source.GetRooms(),
 		Activities:  attdata.Source.GetActivities(),
 		Constraints: clist,

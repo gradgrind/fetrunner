@@ -14,7 +14,7 @@ The  Go *struct* `BaseData` exists to tie together all the information and data 
 
 ## Package `timetable`
 
-To prepare for building a timetable the data in the `base` package is preprocessed somewhat to populate the Go *struct* `TtData`. This structure must be rebuilt if the underlying data (in `DbTopLevel`) is changed. This timetable "preparation" is separated out into the package `timetable`.
+To prepare for building a timetable the data in the `base` package is preprocessed somewhat to populate the Go *struct* `TtData`, which is used as the data source, to be converted to the format needed by the back-end. This structure must be rebuilt if the underlying data (in `DbTopLevel`) is changed. This timetable "preparation" is separated out into the package `timetable`.
 
 ## Package `autotimetable`
 
@@ -26,13 +26,9 @@ It is also possible to fill this structure directly from some source data – in
 
 ## Package `fet`
 
-This provides a back-end based on a FET file. It handles regeneration of the FET file with different constraints enabled and starts and monitors the FET process. The FET configuration data is supplied in a particular structure, Go *struct* `TtRunDataFet`, which can be constructed from an actual FET input file, but can also be produced from some other data – in particular, constructing it from `TtData` and `DbTopLevel` structures is supported in the `makefet` package.
+This provides a back-end based on a FET file. It handles regeneration of the FET file with different constraints enabled and starts and monitors the FET process. The FET configuration data is supplied in a particular structure, Go *struct* `fet_build`, which can be constructed from an actual FET input file, but can also be produced from some other data – in particular, constructing it from `TtData` structures is supported by the `BuildFet` function.
 
-To handle input from an actual FET file, there is a FET-file reader, which parses a FET input file to produce the `TtRunDataFet` necessary for the FET back-end.
-
-### Package `makefet`
-
-This package builds a `TtRunDataFet` from `TtData` and `DbTopLevel` structures. The database structure doesn't support all FET constraints and other features, and the conversion is not 1:1 for all elements, but, in general, the database features can be modelled fairly well in FET. This should not be too surprising as FET was considered as the timetable-generating back-end right from the beginning.
+To handle input from an actual FET file, there is a FET-file reader, which parses a FET input file to produce a `TtSourceFet` structure, from which the `PrepareFet` function can produce the `fet_build` for the FET back-end.
 
 ## Package `w365tt`
 

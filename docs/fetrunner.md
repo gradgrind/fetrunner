@@ -1,18 +1,27 @@
-# `fetrunner`
+# fetrunner
+    – an assistant for the generation of school timetables
 
-When trying to produce a timetable with FET, it can happen that the generation step doesn't run smoothly. In some cases it won't even start, returning an error message which may help in finding the unsatisfiable condition in the configuration file (`xxx.fet`), though sometimes the message may seem a bit cryptic. In other cases the process will start, but get stuck at an early stage. In other cases the progress will be very slow, so that it is not clear when (or if!) the process will be completed.
+## History
 
-`fetrunner` is a utility which attempts to assist in finding the places in the configuration file which lead to these problems. It does this by repeatedly running the command-line version of FET, each time with a different subset of the conditions specified in the configuration file.
+`fetrunner` stems from a series of converter tools allowing certain commercial timetable programs to use [`FET`](https://lalescu.ro/liviu/fet/) for automatic timetable generation. This was desirable because of limitations of the commercial programs' internal generators.
 
-Somewhat as a side-product `fetrunner` also produces a fully populated timetable from its last successful configuration. That means that probably not all the constraints are satisfied, so it might not be all that useful, but there might be circumstances under which it is helpful. Only if even the unconstrained configuration fails to run will there be no such placement data.
+This worked pretty well. However, after several years of practical experience (generating timetables for a school), it became clear that quite a lot of insight into the generation process was necessary to get the best out of `FET`. That meant many runs with tweaked conditions (constraints) until a usable timetable was produced. It was sometimes quite an effort to trace the conditions which prevented the successful generation of a timetable meeting the specifications.
 
-**TODO:** The addition of a processing stage which deactivates groups of activities is under consideration. This may be able to offer some assistance when not even the unconstrained data will run.
+The question arose as to whether this "debugging" process could be automated to some extent. It seemed likely as the steps one would typically perform were usually very similar from one case to another, involving systematic disabling and re-enabling of various groups of constraints. `fetrunner` is the result of efforts to answer this question.
+
+## The problem to solve
+
+When trying to produce a timetable with `FET` it can happen that the generation step doesn't run smoothly. In some cases it won't even start, returning an error message which may help in finding the unsatisfiable condition in the configuration file ("xxx.fet"), though sometimes the message may seem a bit cryptic. In other cases the process will start, but get stuck at an early stage. In other cases the progress will be very slow, so that it is not clear when (or if!) the process will be completed.
+
+`fetrunner` is an attempt to assist in finding the conditions which lead to these problems. It does this by repeatedly running the command-line version of `FET`, each time with a different subset of the constraints specified in the configuration file.
+
+Somewhat as a side-product `fetrunner` also produces a fully populated timetable from its last successful configuration. That means that probably not all the constraints are satisfied, so it might not be all that useful, but under certain circumstances it might be helpful. Only if even the unconstrained configuration fails to run will there be no such placement data.
 
 ## How it works
 
-Basically it starts by deactivating all the constraints. If even that doesn't help, there may be an error message from FET which can offer some useful information.
+Basically it starts by deactivating all the constraints. If even that doesn't help, there may be an error message from `FET` which can offer some useful information.
 
-Then it activates a single type of constraint, which means all the individual constraints of a particular type, and starts a FET generation run. This is repeated, in principle, for all the constraint types used in the source file (see [Parallel processing](#parallel-processing)).
+Then it activates a single type of constraint, which means all the individual constraints of a particular type, and starts a `FET` generation run. This is repeated, in principle, for all the constraint types used in the source file. Several of these processes can be run simultaneously (see [Parallel processing](#parallel-processing)).
 
 When one of these generation runs completes successfully, all the others are stopped and discarded. This first successful run is now taken as a new basis. For each of the remaining constraint types a new generation run is started, with the new constraint type being added to the successfully completed one. Again, the first successfully completing run is taken as a new basis, and so on until all constraint types have been enabled.
 
@@ -20,27 +29,31 @@ Well, given an "easy" configuration file that might work within a reasonable tim
 
 Normally the first stages of the algorithm (the addition of the "easiest" constraint types) will run quickly, within a few seconds, allowing most of the constraints to be enabled in a fairly short time. But the longer the run times, the more difficult it is to cover all the remaining constraint types in a given overall run time – some "easy" constraints might never get tested.
 
-There are essentially two things that need dealing with. Perhaps the simplest is when a constraint blocks the generation completely, in such a way that FET returns an error message. The other is when the generation run gets stuck or progresses only very slowly (it is not always easy to distinguish the two). At first, while there are still constraint types which can be added whose runs complete quickly, non-completing runs are no problem because they will simply be discarded. But at some point, only the difficult constraint types remain.
+There are essentially two cases that need dealing with. Perhaps the simplest is when a constraint blocks the generation completely, in such a way that `FET` returns an error message. The other is when the generation run gets stuck or progresses only very slowly (it is not always easy to distinguish between these two). At first, while there are still constraint types which can be added whose runs complete quickly, non-completing runs are no problem because they will simply be discarded. But at some point, only the difficult constraint types remain.
+
+One of the aims of `fetrunner` is to produce a timetable within a limited, specified time. When the configuration is "challenging", this may only be possible by leaving some of the constraints disabled, even though they might be satisfiable (given enough time).
 
 ### Hard and soft constraints
 
-A constraint is categorised as "hard" if it *must* be satisfied in an acceptable timetable. `fetrunner` loosens this requirement a bit in order to get all the activities placed in a given time. The resulting timetable is then presumably not yet acceptable, but may be helpful. A "soft" constraint is one which should be satisfied "if possible", but a resulting timetable may be acceptable even if the constraint is not satisfied. In FET, hard constraints have "Weight" 100 (%), Anything less and the constraint is considered soft (even if, say, 99.99% is not particularly soft).
+A constraint is categorised as "hard" if it *must* be satisfied in an acceptable timetable. `fetrunner` loosens this requirement a bit in order to get all the activities placed in a given time. The resulting timetable is then presumably not yet acceptable, but may be helpful. A "soft" constraint is one which should be satisfied "if possible", but a resulting timetable may be acceptable even if the constraint is not satisfied. In `FET`, hard constraints have "weight" 100 (%) – for any smaller value the constraint is considered soft (even if, say, 99.99% is not particularly soft).
 
-`fetrunner` takes the distinction between hard and soft constraints into account in that it doesn't touch the soft constraints (it leaves them deactivated) until all the hard constraints have been satisfied (or rejected as "impossible"). Thus, it is possible that the soft constraints never get tested.
+`fetrunner` takes the distinction between hard and soft constraints into account in that it doesn't touch the soft constraints (it leaves them deactivated) until all the hard constraints have been satisfied (or rejected as "impossible"). Thus, it is possible that the soft constraints never get tested, if the processing of the hard constraints takes up all the available time.
 
-Because of the way `fetrunner` works, it doesn't make much sense to actually use soft constraints in their original form. In `FET` a soft constraint is rejected if a number (dependent on the weight) of placement attempts conflict with it. `fetrunner` does something vaguely similar, in that it tries to use the constraint, only accepting it if a run completes. So, when `fetrunner` enables a soft constraint, it is actually turned into a hard constraint. **TODO**: This is experimental, it may be less efficient?
+Because of the way `fetrunner` works, it doesn't make much sense to actually use soft constraints in their original form. In `FET` a soft constraint is rejected if a number (dependent on the weight) of placement attempts conflict with it. `fetrunner` does something vaguely similar, in that it tries to use the constraint, only accepting it if a run completes successfully. In `fetrunner`, the weight of the soft constraints is used to determine the initial order in which the constraints are enabled for testing, so that ones with a higher weight are introduced first. The constraint itself is run in `FET` as a hard constraint (weight 100). As this approach has not yet been widely tested, there is a flag which can be set to cause the original weight to be used, so that the effectiveness can be compared.
 
-### Handling "difficult" constraint types
+### Handling "difficult" constraints
 
-Note that the difficult constraint types may not always be the same, it depends on the data. Nevertheless, there may be certain constraint types which turn out to be difficult more often in practice.
+Many constraints will be satisfied easily, and `fetrunner` tries to enable these first, so that as many constraints as possible get enabled in the given time. As soon as time-consuming ("difficult") constraints are enabled, each individual test run takes longer, so fewer tests are possible. Some constraint types may be more prone to being "difficult" than others, but in general this depends on the input data.
 
-The algorithm uses various tests to determine whether a set of constraints (of one type) is "difficult". These have been developed more or less by trial and error, and may not be at all optimal, if indeed there is such a thing in this situation. In essence there is a combination of rather flexible "timeouts" and estimates of whether a run is getting "stuck". Two sorts of "getting stuck" seem to prevail – some runs stop progressing soon after starting, others just progress very slowly.
+The algorithm uses various tests to determine whether a set of constraints (of one type) is "difficult". These have been developed more or less by trial and error, and may not be at all optimal, if indeed there is such a thing in this situation. The primary considerations are whether a run is likely to complete, and how long it will take. A `FET` run produces a completion measure – how many activities have been placed. In combination with the elapsed time, `fetrunner` uses this to calculate a rate of progress.
 
-It is to be expected that the run times will gradually increase as more and more constraints are enabled. To compensate for this the basic timeouts are gradually increased, taking into account the run time of the latest "basis".
+If the rate of progress is too low, the run may be terminated and the list of constraints split into two halves, which are then (later, when processing capacity becomes available) run separately. In this way a binary search procedure for potentially blocking constraints is implemented. If there is such a constraint, this process will lead eventually to a run with a single new constraint. If this run is deemed to be "stuck", the constraint is marked as "impossible" and removed from consideration.
 
-When a run trialling a set of constraints is determined to be "stuck", it is stopped and divided into two halves. This is essentially a binary search for difficult constraints within a set, so that – eventually – the individual constraints which are not difficult will be accepted (enabled) and the failing ones can be reported.
+In some cases a constraint really will be impossible, at least in combination with others, and there may be a more or less helpful message from `FET`. In other cases it may just be that more time would be needed to incorporate this constraint. It is in the nature of `fetrunner` that it cannot always distinguish between the two (because of the general complexity of the timetabling problem).
 
-If at some stage of the overall proceedings the available "processes" (threads, processor cores) are not all used, a set of constraints may be split even before it has timed out.
+The acceptable rate of progress varies according to the overall state of the process. At the beginning only rapidly progressing runs will be accepted, so that as many "easy" constraints as possible get accepted. As more constraints are enable, the run time will generally increase, so lower rates of progress must be tolerated. The acceptable rate is made dependent on the completion time for the last successful run.
+
+If at some stage of the overall proceedings the available "processes" (threads, processor cores) are not all used, a set of constraints may be split even before it is judged to be too slow.
 
 ### Parallel processing
 
@@ -64,28 +77,6 @@ Finally there is a run with all the hard constraints and no soft constraints ena
 
 Apart from the timeouts of the individual runs, there is also an overall timeout, which determines the maximum length of a `fetrunner` run. Around five minutes seems reasonable in many cases and this is set as the default. But there are situations in which a shorter or longer run may be desirable, so it is possible to specify any number of seconds. If the timeout is set to 0, there is no timeout, so the run could possibly go on indefinitely. In such a case it may be necessary to terminate the run manually.
 
-When the algorithm finishes, the results are available as a JSON object detailing the constraints which were deactivated and the activity placements resulting from the last successful run (the latest "basis").
+When the algorithm finishes, the results are available as a [JSON object](Result_JSON.md) detailing the constraints which were deactivated and the activity placements resulting from the last successful run (the latest "basis").
 
 While the algorithm is running it produces a log, documenting the progress. This can be useful for diagnosing program errors, but may also be used for run-time feedback of the progress.
-
-## Structure of the JSON result
-
-The JSON object presents information about the last successful "basis", which constraints were disabled and the placement of the activities. For individual constraints which led to FET errors the FET message is recorded. The information is presented in terms of item indexes. That is, each presented item (day, hour, activity, constraint, room) is referred to by an index (starting at 0). In order to correlate these items with those in the FET configuration, there is a list of references for each of these item types. These references are objects containing two entries:
-
-**The "Backend" field** is a reference to the corresponding FET node. For an Activity that is the Activity's "Id" field. For a Room, a Day or an Hour that is the item's "Name" field. In FET constraints have no clear identifying tag, so this is handled by using the "Comments" field. A new FET file is built in which the constraint comments are prefixed by some number surrounded by square brackets (e.g. "[23]").  Thus each constraint gets its own identifier tag.
-
-**There is also a "Source" field**. This can be useful when the original FET file is generated by some other software. This field then references the object in that other software. If the source is a FET file, these fields will have the same values as the "Backend" field, except for the constraints (as FET has no unique tags for constraints)
-
-The items in the constraint list have additional fields:
-
- - "Ctype" (constraint name), as used in the source, so it may differ from the FET constraint name
- - "Parameters" (comma separated integers), empty for FET source
- - "Weight", an integer in the range 0 (ineffective) to 100 ("hard") – with FET source a non-linear conversion function is used 
-
-If there are parameters, their interpretation is dependent on the constraint name. Not every source constraint need have its own reference, some may be attached to a teacher or class, for example. In this case the item referred to would be passed in the parameter field (as an index), the source-reference being empty. A constraint on a group of activities might place the indexes of these activities as a comma-separated list in the parameters field.
-
-Bear in mind that the actual constraints in the constraints list are FET constraints (even if their "Ctype" fields refer to the source), which may well not correspond 1:1 with the source constraints. Multiple FET constraints might derive from a single source constraint. The reverse case is currently not supported.
-
-### Reporting "impossible" constraints
-
-If any individual constraint was found to cause a FET error report, these reports are recorded in the "ConstraintErrors" map, the key being the constraint index, the value the message. Also constraints whose corresponding run was determined to get stuck at the beginning are reported here. Because this structure is updated independently of the individual runs, it is possible that the odd entry (concerning "stuck" constraints) may be for a constraint which is enabled in the latest "basis". Such an entry can then be ignored.
