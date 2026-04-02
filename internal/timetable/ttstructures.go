@@ -134,7 +134,7 @@ func (tt_data *TtData) GetTeachers() []element {
 type courseInfo struct {
 	Id                 nodeRef // Course or SuperCourse
 	Subject            string
-	Groups             []*base.Group // a `Class` is represented by its ClassGroup
+	Groups             []base.ElementBase // a `Class` is represented by its ClassGroup
 	AtomicGroupIndexes []atomicIndex
 	Teachers           []teacherIndex
 	FixedRooms         []roomIndex

@@ -10,7 +10,6 @@ import (
 
 type NodeRef = base.NodeRef
 
-const CLASS_GROUP_SEP = "."
 const VIRTUAL_ROOM_PREFIX = "!"
 
 // const LUNCH_BREAK_TAG = "-lb-"

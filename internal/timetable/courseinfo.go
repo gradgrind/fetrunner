@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+var CLASS_GROUP_SEPARATOR string = "." //TODO: Maybe this should be settable?
+
 // Make a shortish string view of a courseInfo – can be useful in tests
 func (tt_data *TtData) View(cinfo *courseInfo, db *base.DbTopLevel) string {
 	tlist := []string{}
@@ -15,7 +17,7 @@ func (tt_data *TtData) View(cinfo *courseInfo, db *base.DbTopLevel) string {
 	}
 	glist := []string{}
 	for _, g := range cinfo.Groups {
-		glist = append(glist, base.GroupTag(g))
+		glist = append(glist, g.Tag)
 	}
 	return fmt.Sprintf("<Course %s/%s:%s>",
 		strings.Join(glist, ","),
@@ -41,7 +43,7 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 	// *** Gather the SuperCourses. ***
 	for _, spc := range db.SuperCourses {
 		cref := spc.Id
-		groups := []*base.Group{}
+		groups := []base.ElementBase{}
 		agroups := []atomicIndex{}
 		teachers := []teacherIndex{}
 		rooms := []roomIndex{}
@@ -53,8 +55,13 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 				if !ok {
 					panic("Invalid Group ref: " + gref)
 				}
-				if !slices.Contains(groups, g) {
-					groups = append(groups, g)
+				newtag := g.Class.Tag
+				if g.Tag != "" {
+					newtag += CLASS_GROUP_SEPARATOR + g.Tag
+				}
+				g1 := base.ElementBase{Id: g.Id, Tag: newtag}
+				if !slices.Contains(groups, g1) {
+					groups = append(groups, g1)
 					agroups = append(agroups,
 						tt_data.atomicGroup2Indexes[gref]...)
 				}
@@ -183,14 +190,19 @@ func (tt_data *TtData) CollectCourses(bdata *base.BaseData) {
 		cref := c.Id
 
 		// Get groups
-		groups := []*base.Group{}
+		groups := []base.ElementBase{}
 		agroups := []atomicIndex{}
 		for _, gref := range c.Groups {
 			g, ok := db.GetElement(gref).(*base.Group)
 			if !ok {
 				panic("Invalid Group ref: " + gref)
 			}
-			groups = append(groups, g)
+			newtag := g.Class.Tag
+			if g.Tag != "" {
+				newtag += CLASS_GROUP_SEPARATOR + g.Tag
+			}
+			g1 := base.ElementBase{Id: g.Id, Tag: newtag}
+			groups = append(groups, g1)
 			agroups = append(agroups, tt_data.atomicGroup2Indexes[gref]...)
 		}
 
