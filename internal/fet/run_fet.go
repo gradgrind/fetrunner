@@ -110,7 +110,7 @@ func PrepareFet(attdata *autotimetable.AutoTtData) *fet_build {
 		fetbuild.RoomList = append(fetbuild.RoomList, r.Tag)
 	}
 
-	//TODO: Currently no Tag field!
+	// The Tag field is, in this case, set in the source.
 	for _, a := range source.GetActivities() {
 		fetbuild.ActivityList = append(fetbuild.ActivityList, a.Tag)
 	}

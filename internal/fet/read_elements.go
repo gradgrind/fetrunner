@@ -5,6 +5,7 @@ import (
 	"fetrunner/internal/base"
 	"fmt"
 	"regexp"
+	"strconv"
 
 	"github.com/beevik/etree"
 )
@@ -76,6 +77,14 @@ func (sourcefet *TtSourceFet) read_elements(fetroot *etree.Element) {
 	}
 }
 
+func readInt(s string) int {
+	i, e := strconv.Atoi(s)
+	if e != nil {
+		panic("Not an integer: " + s)
+	}
+	return i
+}
+
 // Get active activities, count inactive ones. Return the number of inactive
 // activities in the source – these are ignored.
 func (sourcefet *TtSourceFet) read_activities(fetroot *etree.Element) int {
@@ -83,19 +92,39 @@ func (sourcefet *TtSourceFet) read_activities(fetroot *etree.Element) int {
 	activities := []*ttActivity{}
 	ael := fetroot.SelectElement("Activities_List")
 	inactive := 0
+	// A teacher-map is required, tag -> element
+	tmap := map[string]int{}
+	for i, t := range sourcefet.teachers {
+		tmap[t.Tag] = i
+	}
 	for _, a := range ael.ChildElements() {
 		if a.SelectElement("Active").Text() == "true" {
 			//a_elements = append(a_elements, a)
 			id := a.SelectElement("Id").Text()
+			glist := []element{}
+			for _, g := range a.SelectElements("Students") {
+				gt := g.Text()
+				glist = append(glist, element{Id: "Group:" + NodeRef(gt), Tag: gt})
+			}
+			tlist := []autotimetable.TeacherIndex{}
+			for _, t := range a.SelectElements("Teacher") {
+				tt := t.Text()
+				tix, ok := tmap[tt]
+				if !ok {
+					panic("Unknown teacher: " + tt)
+				}
+				tlist = append(tlist, tix)
+			}
 			activities = append(activities, &ttActivity{
-				Id:  id,
-				Tag: id,
-				//TODO?
-				// These are probably not needed if the back-end just uses a copy
-				// of the FET source:
-				//Duration:           int,
-				//Groups:             []*base.Group,
+				Id:  "Activity:" + id,
+				Tag: id, // In this case, this field is set here, for the "FET" back-end.
+				// Although they are not strictly required, the remaining fields can
+				// make reading the JSON result file easier.
+				Duration: readInt(a.SelectElement("Duration").Text()),
+				Subject:  a.SelectElement("Subject").Text(),
+				Groups:   glist,
 				//AtomicGroupIndexes: []AtomicIndex,
+				Teachers: tlist,
 			})
 		} else {
 			inactive++
