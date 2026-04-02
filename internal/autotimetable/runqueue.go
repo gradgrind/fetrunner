@@ -6,15 +6,24 @@ import (
 	"slices"
 )
 
+/*
+A new instance is not started immediately. First it is placed at the end the the queue
+(the `Queue` field). This can, in principle, grow indefinitely, but when an instance is
+started it is removed from the front of the queue, leaving a gap. The first entry in
+the queue is at the index stored in the `Next` field. When `Next` reaches a certain
+value, all the queue entries are moved up to the beginning of the `Queue` slice. Maybe
+a circular buffer would be better, but that would need a fixed size, or a more
+complicated growing algorithm.
+*/
 type RunQueue struct {
-	AutoTtData *AutoTtData
-	Queue      []*TtInstance
-	Pending    []*TtInstance
-	Active     map[*TtInstance]struct{}
-	MaxRunning int
-	Next       int
+	AutoTtData *AutoTtData              // convenient access to autotimetable data
+	Queue      []*TtInstance            // pre-start buffer
+	Active     map[*TtInstance]struct{} // set of running instances
+	MaxRunning int                      // maximum number of running processes
+	Next       int                      // index of next instance in `Queue`
 }
 
+// Add an instance to the queue, compacting the queue buffer if necessary.
 func (rq *RunQueue) add(instance *TtInstance) {
 	if rq.Next >= 100 {
 		// Reclaim space
@@ -162,6 +171,7 @@ func (rq *RunQueue) update_queue() int {
 	// If not all processors are being used, split one or more instances.
 	//TODO: This is not terribly neat, it also had a couple of bugs, and may
 	// still have some. It should perhaps be replaced by something cleaner.
+	// Rapidly progressing instances should perhaps not be split (yet)?
 	for instance := range rq.Active {
 		np := rq.MaxRunning - running
 		if np <= 0 {

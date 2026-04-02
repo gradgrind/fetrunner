@@ -264,20 +264,22 @@ that might have completed successfully) and this successful instance is used
 as the base for a new cycle. Depending on the time this instance took to
 complete, the timeout may be increased.
 
-There is some flexibility around the timeouts. If an instance seems to be
-progressing too slowly, it can be halted immediately. On the other hand,
-if the instance looks like it might complete if given a little more time,
-the timeout termination is delayed.
+TODO: There might be useful tweaks to the ordering of the constraint
+instances (and splitting?) in the next cycle, based on their progress in
+the current one.
 
-When an instance times out, it is removed from the constraint list. It is
-split into two, each with half of the constraints, the new instances being
-added to the constraint list and to the end of the run-queue. If the
-instance has only one constraint to add, no new instance is started – until
-the next cycle with a new base.
+If an instance seems to be progressing too slowly, it will be halted, and
+removed from the constraint list. This allows another instance to be started.
+The halted process is split into two, each with half of the constraints,
+the new instances being added to the constraint list and to the end of the
+run-queue. If the instance has only one constraint to add, it is run without
+a "timeout", which means that different criteria apply for checking whether
+it is stuck. Once this instance is deemed to be stuck or too slow, it is
+completely discarded (its constraint is judged to be "impossible").
+TODO: Might there be circumstances under which a further attempt is made
+to include this constraint?
 
-When the constraint list is empty, the cycle ends. For the next cycle, the
-as yet unincluded constraints are collected again and the timeout is
-adjusted if necessary.
+When the constraint list is empty, the phase ends.
 
 Should it come to pass that all the constraints (hard and soft) have been
 added successfully (unlikely, because it is more likely that the overall
@@ -289,7 +291,6 @@ func (rq *RunQueue) phase_main() bool {
 	attdata := rq.AutoTtData
 	bdata := attdata.BaseData
 	logger := bdata.Logger
-	next_timeout := 0 // non-zero => "restart with new base"
 	base_instance := attdata.current_instance
 	if base_instance == nil {
 		if attdata.Parameters.SKIP_HARD {
@@ -303,6 +304,7 @@ func (rq *RunQueue) phase_main() bool {
 
 	// See if an instance has completed successfully, setting `next_timeout`
 	// to a non-zero value if one has.
+	next_timeout := 0 // non-zero => "restart with new base"
 	for i, instance := range attdata.constraint_instance_list {
 		if instance.RunState == 1 {
 			// Completed successfully, make this instance the new base.
@@ -337,9 +339,9 @@ func (rq *RunQueue) phase_main() bool {
 			if len(instance.Constraints) > 1 {
 				timeout := next_timeout
 				if timeout == 0 {
+					// If not rebasing, keep the old "timeout"
 					timeout = instance.Timeout
 				}
-
 				sit := []string{}
 				for _, si := range rq.split_instance(
 					instance, base_instance, timeout) {
@@ -349,12 +351,10 @@ func (rq *RunQueue) phase_main() bool {
 				}
 				logger.Info("(SPLIT) %d:%s -> %v",
 					instance.Index, instance.ConstraintType, sit)
-
-				//split_instances = append(split_instances,
-				//	runqueue.split_instance(
-				//		instance, base_instance, timeout)...)
-
 			} else if len(instance.Constraints) == 1 {
+				// Only a single constraint
+				//TODO: Save the constraint index with some measure of its
+				// progress rate, to allow possible later reinclusion?
 				if len(instance.Message) != 0 {
 					attdata.ConstraintErrors[instance.Constraints[0]] =
 						instance.Message
@@ -375,6 +375,11 @@ func (rq *RunQueue) phase_main() bool {
 					instance.RunState = 3
 				}
 				// Build new instance
+
+				//TODO: Split it if progress was slow (but not slow enough to
+				// trigger an Abort)?
+				//TODO: Adjust placement in queue according to progress rate?
+
 				instance = attdata.new_instance(
 					base_instance,
 					instance.ConstraintType,
