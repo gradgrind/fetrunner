@@ -91,8 +91,14 @@ type AutoTtData struct {
 	// 2: adding soft constraints, 3: finished
 	// The (successful) instance on which current trials are based:
 	current_instance *TtInstance
-	// List of instances adding a constraint type:
+	// List of instances adding a constraint type. This is initialized on entry to a
+	// new phase and used to set up the run queue.
+
+	//TODO: Clarify how the run queue, which is also a list of instances, is different!
+
 	constraint_instance_list []*TtInstance
+	active_instances         map[*TtInstance]struct{} // set of running instances
+	next_instance            int                      // index of next instance in `Queue`
 }
 
 type TtInstance struct {

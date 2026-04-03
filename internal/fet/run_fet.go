@@ -127,15 +127,15 @@ func (fetbuild *fet_build) Tidy(bdata *base.BaseData) {
 func (fetbuild *fet_build) RunBackend(
 	attdata *autotimetable.AutoTtData,
 	instance *autotimetable.TtInstance,
-) autotimetable.TtInstanceBackend {
+) {
+	instance.InstanceBackend = nil
 	bdata := attdata.BaseData
 	fname := fmt.Sprintf("z%05d~%s", instance.Index, instance.ConstraintType)
 	var odir string
 	odir = filepath.Join(fetbuild.tmpdir, fname)
 	err := os.MkdirAll(odir, 0700)
 	if err != nil {
-		bdata.Logger.Error("INVALID_TMP_DIR: %s", odir)
-		return nil
+		panic("INVALID_TMP_DIR: " + odir)
 	}
 	stemfile := filepath.Join(odir, fname)
 	fetfile := stemfile + ".fet"
@@ -161,8 +161,7 @@ func (fetbuild *fet_build) RunBackend(
 	// Write FET file
 	err = os.WriteFile(fetfile, fet_xml, 0600)
 	if err != nil {
-		bdata.Logger.Error("WRITE_TMP_FET_FILE_FAILED: %s", fetfile)
-		return nil
+		panic("WRITE_TMP_FET_FILE_FAILED: " + fetfile)
 	}
 	if instance.ConstraintType == "_COMPLETE" &&
 		attdata.Parameters.WRITE_FET_FILE {
@@ -170,8 +169,7 @@ func (fetbuild *fet_build) RunBackend(
 		cfile := filepath.Join(bdata.SourceDir, "_"+bdata.Name+".fet")
 		err = os.WriteFile(cfile, fet_xml, 0600)
 		if err != nil {
-			bdata.Logger.Error("WRITE_FET_FILE_FAILED: %s", cfile)
-			return nil
+			panic("WRITE_FET_FILE_FAILED: " + cfile)
 		}
 	}
 	logfile := filepath.Join(odir, "logs", "max_placed_activities.txt")
@@ -187,6 +185,7 @@ func (fetbuild *fet_build) RunBackend(
 		logfile:    logfile,
 		resultfile: resultfile,
 		cancel:     cancel,
+		count:      0,
 	}
 
 	params := []string{
@@ -226,7 +225,7 @@ func (fetbuild *fet_build) RunBackend(
 		instance.Timeout))
 
 	go run(fet_data, runCmd)
-	return fet_data
+	instance.InstanceBackend = fet_data
 }
 
 func constraintName(instance *autotimetable.TtInstance) string {
@@ -260,10 +259,8 @@ func (data *FetTtData) Abort() {
 }
 
 func (data *FetTtData) Clear() {
-	//base.Message.Printf("### Remove %s\n", fttd.workingdir)
+	// Remove instance directory
 	os.RemoveAll(data.odir)
-	//} else {
-	//  base.Message.Printf("### No TtData: %s\n", instance.Tag)
 }
 
 // The executable, `fet-cl`, places any messages in the `log` directory, as
@@ -331,6 +328,7 @@ func (data *FetTtData) DoTick(
 					count, err := strconv.Atoi(string(l[2]))
 					if err == nil {
 						if count > data.count {
+							data.count = count
 							instance.LastTime = instance.Ticks
 							percent := (count * 100) / int(attdata.NActivities)
 							if percent > instance.Progress {

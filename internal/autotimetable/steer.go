@@ -155,13 +155,8 @@ func (attdata *AutoTtData) StartGeneration() {
 	//sigChan := make(chan os.Signal, 1)
 	//signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
-	runqueue := &RunQueue{
-		AutoTtData: attdata,
-		Queue:      nil,
-		Active:     map[*TtInstance]struct{}{},
-		MaxRunning: attdata.Parameters.MAXPROCESSES,
-		Next:       0,
-	}
+	attdata.active_instances = map[*TtInstance]struct{}{}
+	attdata.next_instance = 0
 
 	// Global data
 	attdata.Ticks = 0
@@ -184,6 +179,8 @@ func (attdata *AutoTtData) StartGeneration() {
 		//Timeout:           0,
 		ConstraintEnabled: enabled,
 	}
+
+	//TODO!!! The run queue handler needs to deal with the special instances!
 	// Add to run queue
 	runqueue.add(attdata.full_instance)
 

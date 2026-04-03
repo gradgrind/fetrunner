@@ -13,6 +13,8 @@ const (
 	PHASE_FINISHED
 )
 
+const NEARLY_FINISHED = 80 // (progress, %) TODO: experimental, what is a good value?
+
 /* On entering each phase, all running instances except the special
 processes appropriate to the new phase are aborted.
 
@@ -63,13 +65,13 @@ If _COMPLETE completes successfully PHASE_FINISHED is entered.
 Also if there are no remaining constraint-addition processes running,
 PHASE_FINISHED is entered.
 
-## In PHASE_FINISHED no instances may be running. After they have finished
-the processing is finished.
+## In PHASE_FINISHED no instances should be running. All instances still
+running on entry, should have already been told to stop. After they have
+properly finished the whole process is finished.
 */
 
 // Enter new phase.
-func (rq *RunQueue) enter_phase(p int) {
-	attdata := rq.AutoTtData
+func (attdata *AutoTtData) enter_phase(p int) {
 	bdata := attdata.BaseData
 
 	base_instance := attdata.current_instance
@@ -88,19 +90,27 @@ func (rq *RunQueue) enter_phase(p int) {
 				"Bug, no current_instance at enter_phase(%d)\n", p))
 		}
 	} else {
-		// Adjust the initial time-out.
+		// Adjust the initial time-out guideline.
 		attdata.cycle_timeout = (max(attdata.cycle_timeout,
 			attdata.current_instance.Ticks) *
 			attdata.Parameters.NEW_PHASE_TIMEOUT_FACTOR) / 10
 	}
 
-	var n int
+	// Abort all processes except appropriate specials
+	for _, instance := range attdata.constraint_instance_list {
+		if instance.RunState < 0 {
+			// Tell the running instance to stop.
+			attdata.abort_instance(instance)
+		} else if instance.RunState == 0 {
+			// Indicate that a queued instance is not to be started
+			instance.RunState = 3
+		} // else the instance will have finished already
+	}
+	attdata.constraint_instance_list = nil
+
 new_phase:
 	attdata.phase = p
 	bdata.Logger.Result(".PHASE", strconv.Itoa(p))
-
-	// Abort all processes except appropriate specials
-	attdata.abort_constraint_list()
 
 	if p >= PHASE_HARD {
 		if attdata.null_instance.RunState < 0 {
@@ -126,35 +136,25 @@ new_phase:
 		return
 	}
 	// Initialize constraint list.
-	attdata.constraint_instance_list, n = attdata.get_basic_constraints(
-		base_instance)
-	if n == 0 {
+	if new_instance_list, n := attdata.get_basic_constraints(base_instance); n == 0 {
 		// Skip to next phase
 		p++
 		attdata.phase = p
 		bdata.Logger.Result(".PHASE", strconv.Itoa(p))
 		goto new_phase
-	}
-	// Queue instances for running
-	for _, bc := range attdata.constraint_instance_list {
-		rq.add(bc)
-	}
-}
+	} else {
 
-func (attdata *AutoTtData) abort_constraint_list() {
-	for _, instance := range attdata.constraint_instance_list {
-		if instance.RunState < 0 {
-			attdata.abort_instance(instance)
-		} else if instance.RunState == 0 {
-			// Indicate that a queued instance is not to be started
-			instance.RunState = 3
+		//TODO!!!
+
+		attdata.constraint_instance_list = new_instance_list
+		// Queue instances for running
+		for _, bc := range new_instance_list {
+			rq.add(bc)
 		}
 	}
-	attdata.constraint_instance_list = nil
 }
 
-func (rq *RunQueue) tick_phase() bool {
-	attdata := rq.AutoTtData
+func (attdata *AutoTtData) tick_phase() bool {
 	bdata := attdata.BaseData
 	logger := bdata.Logger
 	p := attdata.phase
@@ -162,7 +162,7 @@ func (rq *RunQueue) tick_phase() bool {
 		panic("Bug, tick_phase in PHASE_FINISHED+")
 	}
 	if attdata.full_instance.RunState == 1 {
-		attdata.full_instance.RunState = 3
+		attdata.full_instance.RunState = 3 // indicate that the instance has been "handled"
 		// Set as current.
 		attdata.current_instance = attdata.full_instance
 		logger.Result(".COMPLETE_OK", "All constraints OK")
@@ -180,8 +180,7 @@ func (rq *RunQueue) tick_phase() bool {
 			attdata.abort_instance(attdata.hard_instance)
 		}
 		attdata.hard_instance.RunState = 3
-		attdata.abort_constraint_list()
-		rq.enter_phase(PHASE_FINISHED)
+		attdata.enter_phase(PHASE_FINISHED)
 		return true
 	}
 
@@ -200,8 +199,7 @@ func (rq *RunQueue) tick_phase() bool {
 			attdata.abort_instance(attdata.na_instance)
 		}
 		attdata.na_instance.RunState = 3
-		attdata.abort_constraint_list()
-		rq.enter_phase(PHASE_SOFT)
+		attdata.enter_phase(PHASE_SOFT)
 		return true
 	}
 
@@ -216,17 +214,16 @@ func (rq *RunQueue) tick_phase() bool {
 			attdata.abort_instance(attdata.null_instance)
 		}
 		attdata.null_instance.RunState = 3
-		attdata.abort_constraint_list()
-		rq.enter_phase(PHASE_HARD)
+		attdata.enter_phase(PHASE_HARD)
 		return true
 	}
 
 	switch attdata.null_instance.RunState {
 	case -1:
 		//if attdata.null_instance.Ticks ==
-		//	attdata.null_instance.Timeout {
-		//	attdata.abort_instance(attdata.null_instance)
-		//	// The failure will be caught next time round ...
+		//  attdata.null_instance.Timeout {
+		//  attdata.abort_instance(attdata.null_instance)
+		//  // The failure will be caught next time round ...
 		//}
 	case 1:
 		// The null instance completed successfully.
@@ -241,12 +238,12 @@ func (rq *RunQueue) tick_phase() bool {
 		logger.Error(
 			"Unconstrained instance failed:\n:::+\n%s\n:::-",
 			attdata.null_instance.Message)
-		rq.enter_phase(PHASE_FINISHED)
+		attdata.enter_phase(PHASE_FINISHED)
 		return true
 	}
 
-	if rq.phase_main() {
-		rq.enter_phase(p + 1)
+	if attdata.phase_main() {
+		attdata.enter_phase(p + 1)
 		return true
 	}
 	return false
@@ -287,8 +284,7 @@ timeout will have been reached or the hard-only or full instance will have
 completed already), return `true`, indicating that there are no more
 constraints to add. Otherwise (the normal case) return `false`.
 */
-func (rq *RunQueue) phase_main() bool {
-	attdata := rq.AutoTtData
+func (attdata *AutoTtData) phase_main() bool {
 	bdata := attdata.BaseData
 	logger := bdata.Logger
 	base_instance := attdata.current_instance
@@ -333,6 +329,11 @@ func (rq *RunQueue) phase_main() bool {
 	// restart them accordingly.
 	split_instances := []*TtInstance{}
 	new_constraint_list := []*TtInstance{}
+	type weighted_instance struct {
+		progress int
+		instance *TtInstance
+	}
+	renewed_instances := []weighted_instance{}
 	for _, instance := range attdata.constraint_instance_list {
 		if instance.RunState == 2 { // timed out / failed
 			// Split if more than one instance in list
@@ -343,7 +344,7 @@ func (rq *RunQueue) phase_main() bool {
 					timeout = instance.Timeout
 				}
 				sit := []string{}
-				for _, si := range rq.split_instance(
+				for _, si := range attdata.split_instance(
 					instance, base_instance, timeout) {
 					split_instances = append(split_instances, si)
 					sit = append(sit,
@@ -366,11 +367,14 @@ func (rq *RunQueue) phase_main() bool {
 			if next_timeout != 0 {
 				// There is a new base instance ...
 				// Cancel existing instance
+				progress := 0
 				switch instance.RunState {
 				case -2: // already split and aborted, don't build a new instance
 					continue
 				case -1: // running
 					attdata.abort_instance(instance)
+					// Get progress because if well advanced, it should be prioritized
+					progress = instance.Progress
 				case 0: // queued, mark it "don't start"
 					instance.RunState = 3
 				}
@@ -386,24 +390,44 @@ func (rq *RunQueue) phase_main() bool {
 					instance.Weight,
 					instance.Constraints,
 					next_timeout)
-				rq.add(instance)
+
+				if progress > NEARLY_FINISHED {
+					renewed_instances = append(renewed_instances,
+						weighted_instance{progress, instance})
+				} else {
+					//TODO???
+					rq.add(instance)
+				}
 			}
 			new_constraint_list = append(
 				new_constraint_list, instance)
 		}
 	}
-	attdata.constraint_instance_list = append(new_constraint_list,
+	attdata.constraint_instance_list = nil
+	if len(renewed_instances) != 0 {
+		slices.SortStableFunc(renewed_instances, func(a, b weighted_instance) int {
+			return b.progress - a.progress // highest progress first
+		})
+		for _, ri := range renewed_instances {
+			attdata.constraint_instance_list = append(attdata.constraint_instance_list,
+				ri.instance)
+		}
+	}
+	attdata.constraint_instance_list = append(attdata.constraint_instance_list,
+		new_constraint_list...)
+	attdata.constraint_instance_list = append(attdata.constraint_instance_list,
 		split_instances...)
+
+	//TODO???
 	for _, instance := range split_instances {
 		rq.add(instance)
 	}
 	return false // still processing
 }
 
-func (rq *RunQueue) split_instance(
+func (attdata *AutoTtData) split_instance(
 	instance *TtInstance, base_instance *TtInstance, timeout int,
 ) []*TtInstance {
-	attdata := rq.AutoTtData
 	nhalf := len(instance.Constraints) / 2
 	return []*TtInstance{
 		attdata.new_instance(

@@ -4,6 +4,7 @@ import (
 	"fetrunner/internal/base"
 	"fmt"
 	"slices"
+	"strconv"
 )
 
 /*
@@ -14,28 +15,29 @@ the queue is at the index stored in the `Next` field. When `Next` reaches a cert
 value, all the queue entries are moved up to the beginning of the `Queue` slice. Maybe
 a circular buffer would be better, but that would need a fixed size, or a more
 complicated growing algorithm.
-*/
+* /
 type RunQueue struct {
-	AutoTtData *AutoTtData              // convenient access to autotimetable data
-	Queue      []*TtInstance            // pre-start buffer
-	Active     map[*TtInstance]struct{} // set of running instances
-	MaxRunning int                      // maximum number of running processes
-	Next       int                      // index of next instance in `Queue`
+	AutoTtData   *AutoTtData              // convenient access to autotimetable data
+	Queue        []*TtInstance            // pre-start buffer
+	Active       map[*TtInstance]struct{} // set of running instances
+	MaxProcesses int                      // maximum number of running processes
+	NextInstance int                      // index of next instance in `Queue`
 }
 
 // Add an instance to the queue, compacting the queue buffer if necessary.
 func (rq *RunQueue) add(instance *TtInstance) {
-	if rq.Next >= 100 {
+	if rq.NextInstance >= 100 {
 		// Reclaim space
-		vec2 := rq.Queue[rq.Next:]
+		vec2 := rq.Queue[rq.NextInstance:]
 		n := len(vec2)
 		copy(rq.Queue, vec2)
 		rq.Queue = rq.Queue[:n]
-		rq.Next = 0
+		rq.NextInstance = 0
 	}
-	//instance.ProcessingState = 0 // not started yet
+	instance.RunState = 0 // not started yet
 	rq.Queue = append(rq.Queue, instance)
 }
+*/
 
 // `update_instances` is called – in the tick-loop – just after receiving a
 // tick.
@@ -45,12 +47,11 @@ func (rq *RunQueue) add(instance *TtInstance) {
 // (successful, 100%) or 2 (not successful) – in the back-end tick handler
 // `DoTick()`, called at the beginning of this method, and thus also in the
 // tick-loop thread.
-func (rq *RunQueue) update_instances() {
-	attdata := rq.AutoTtData
+func (attdata *AutoTtData) update_instances() {
 	bdata := attdata.BaseData
 	logger := bdata.Logger
 	// First increment the ticks of active instances.
-	for instance := range rq.Active {
+	for instance := range attdata.active_instances {
 		if instance.RunState < 0 {
 			instance.Ticks++
 			// Among other things, update the state:
@@ -65,6 +66,9 @@ func (rq *RunQueue) update_instances() {
 				continue // the state will be changed next time round
 			}
 			// Check for timeout or getting "stuck"
+
+			//TODO: Should this rather be in the back-end as it could be engine-dependent?
+
 			t := instance.Timeout
 			if t == 0 {
 				// Check for lack of progress for instances with no timeout
@@ -126,18 +130,20 @@ func (attdata *AutoTtData) BlockSingleConstraint(
 
 // `update_queue` is called – in the tick-loop – just before waiting for a tick.
 // Clean up finished/discarded instances, try to start new ones.
-func (rq *RunQueue) update_queue() int {
-	attdata := rq.AutoTtData
+func (attdata *AutoTtData) update_queue() int {
 	bdata := attdata.BaseData
 	logger := bdata.Logger
 
 	// Count running instances, remove others
 	running := 0
-	for instance := range rq.Active {
+	for instance := range attdata.active_instances {
 		if instance.RunState < 0 {
 			running++
 		} else {
-			delete(rq.Active, instance)
+			// This is the final end of this instance. The FET run must have
+			// finished already, and all back-end data from the run must have been
+			// collected already.
+			delete(attdata.active_instances, instance)
 			if !attdata.Parameters.DEBUG {
 				instance.InstanceBackend.Clear()
 			}
@@ -145,24 +151,23 @@ func (rq *RunQueue) update_queue() int {
 	}
 
 	// Try to start queued instances
-	for rq.Next < len(rq.Queue) && running < rq.MaxRunning {
-		instance := rq.Queue[rq.Next]
-		rq.Queue[rq.Next] = nil
-		rq.Next++
+	maxprocesses := attdata.Parameters.MAXPROCESSES
+	for attdata.next_instance < len(attdata.constraint_instance_list) &&
+		running < maxprocesses {
+		instance := attdata.constraint_instance_list[attdata.next_instance]
+
+		//TODO?
+		attdata.constraint_instance_list[attdata.next_instance] = nil
+		attdata.next_instance++
 
 		if instance.RunState == 0 {
-			instance.InstanceBackend =
-				attdata.Backend.RunBackend(attdata, instance)
-			if instance.InstanceBackend == nil {
-				instance.RunState = 3
-			} else {
-				instance.RunState = -1 // indicate started/running
-				rq.Active[instance] = struct{}{}
-				running++
-			}
+			attdata.Backend.RunBackend(attdata, instance)
+			instance.RunState = -1 // indicate started/running
+			attdata.active_instances[instance] = struct{}{}
+			running++
 		} else {
 			if instance.RunState != 3 {
-				panic("Bug")
+				panic("Bug, invalid RunState: " + strconv.Itoa(instance.RunState))
 			}
 			// Cancelled before starting, skip it
 		}
@@ -172,8 +177,8 @@ func (rq *RunQueue) update_queue() int {
 	//TODO: This is not terribly neat, it also had a couple of bugs, and may
 	// still have some. It should perhaps be replaced by something cleaner.
 	// Rapidly progressing instances should perhaps not be split (yet)?
-	for instance := range rq.Active {
-		np := rq.MaxRunning - running
+	for instance := range attdata.active_instances {
+		np := maxprocesses - running
 		if np <= 0 {
 			break
 		}
@@ -219,7 +224,6 @@ func (rq *RunQueue) update_queue() int {
 					instance.Timeout)
 				attdata.constraint_instance_list = append(
 					attdata.constraint_instance_list, inew)
-				rq.add(inew)
 				tags = append(tags,
 					fmt.Sprintf("%d:%s", inew.Index, inew.ConstraintType))
 				running++
@@ -232,5 +236,5 @@ func (rq *RunQueue) update_queue() int {
 		}
 	}
 
-	return len(rq.Active)
+	return len(attdata.active_instances)
 }
