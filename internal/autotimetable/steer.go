@@ -466,11 +466,15 @@ func (attdata *AutoTtData) new_instance(
 		Constraints:       constraint_indexes,
 		Weight:            weight,
 
-		// Run time
-		//BackEndData     any
-		Ticks:   0,
-		Stopped: false,
-		//ProcessingState int
+		list_next:       nil,
+		list_previous:   nil,
+		InstanceBackend: nil,
+		Ticks:           0,
+		Stopped:         false,
+		RunState:        0,
+		Progress:        0,
+		LastTime:        0,
+		Message:         "",
 	}
 	return instance
 }

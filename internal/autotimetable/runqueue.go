@@ -4,9 +4,9 @@ import (
 	"fetrunner/internal/base"
 	"fmt"
 	"slices"
-	"strconv"
 )
 
+// TODO: Would a simple slice be good enough?
 // This is using a linked list for the run-queue instances. The links are in the
 // instances themselves.
 type run_queue struct {
@@ -51,12 +51,26 @@ func (rq *run_queue) get_next() *TtInstance {
 	n := rq.next_instance
 	if n != nil {
 		rq.next_instance = n.list_next
+		rq.remove(n)
 	}
 	return n
 }
 
+func (rq *run_queue) add_multiple(instances []*TtInstance) {
+	for _, i := range instances {
+		rq.add_end(i)
+	}
+}
+
 func (rq *run_queue) clear() {
-	// TODO
+	n := rq.first
+	for n != nil {
+		n.list_next = nil
+		n.list_previous = nil
+	}
+	rq.first = nil
+	rq.last = nil
+	rq.next_instance = nil
 }
 
 // ---------------------------------
@@ -237,26 +251,16 @@ func (attdata *AutoTtData) update_queue() int {
 	for running < maxprocesses {
 		instance := attdata.constraint_instance_list.get_next()
 		if instance == nil {
-			break
+			goto split
 		}
-		if instance.RunState == 0 {
-			attdata.Backend.RunBackend(attdata, instance)
-			instance.RunState = -1 // indicate started/running
-			attdata.active_instances.add(instance)
-			running++
-		} else {
-			//TODO: Can it still be 3? Aren't all the activated ones now in active-instances?
-			// I would still need a signal to not allow starting new instances, and I would
-			// still need to know the non-completed instances.
-			// The question is, when do the instances get removed from constraint_instance_list?
-
-			if instance.RunState != 3 {
-				panic("Bug, invalid RunState: " + strconv.Itoa(instance.RunState))
-			}
-			// Cancelled before starting, skip it
-		}
+		attdata.Backend.RunBackend(attdata, instance)
+		instance.RunState = -1 // indicate started/running
+		attdata.active_instances.add(instance)
+		running++
 	}
+	return running
 
+split:
 	// If not all processors are being used, split one or more instances.
 	//TODO: This is not terribly neat, it also had a couple of bugs, and may
 	// still have some. It should perhaps be replaced by something cleaner.
@@ -276,8 +280,8 @@ func (attdata *AutoTtData) update_queue() int {
 			}
 			instance.RunState = -2 // mark as split
 			attdata.abort_instance(instance)
-			// Remove it from constraint list.
-			attdata.constraint_instance_list.remove(instance)
+			//TODO: Remove it from constraint list? Is it still in there?
+			//attdata.constraint_instance_list.remove(instance)
 
 			// Always assume one more processor, so that one instance
 			// will be available in the queue, if possible.

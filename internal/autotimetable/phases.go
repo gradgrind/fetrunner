@@ -145,14 +145,7 @@ new_phase:
 		bdata.Logger.Result(".PHASE", strconv.Itoa(p))
 		goto new_phase
 	} else {
-
-		//TODO!!!
-
-		attdata.constraint_instance_list = new_instance_list
-		// Queue instances for running
-		for _, bc := range new_instance_list {
-			rq.add(bc)
-		}
+		attdata.constraint_instance_list.add_multiple(new_instance_list)
 	}
 }
 
@@ -303,7 +296,7 @@ func (attdata *AutoTtData) phase_main() bool {
 	// See if an instance has completed successfully, setting `next_timeout`
 	// to a non-zero value if one has.
 	next_timeout := 0 // non-zero => "restart with new base"
-	for i, instance := range attdata.constraint_instance_list {
+	for _, instance := range attdata.active_instances.get_instances() {
 		if instance.RunState == 1 {
 			// Completed successfully, make this instance the new base.
 			attdata.current_instance = instance
@@ -312,15 +305,12 @@ func (attdata *AutoTtData) phase_main() bool {
 			next_timeout = max(
 				(instance.Ticks*attdata.Parameters.NEW_BASE_TIMEOUT_FACTOR)/10,
 				attdata.cycle_timeout)
-			// Remove it from constraint list.
-			attdata.constraint_instance_list = slices.Delete(
-				attdata.constraint_instance_list, i, i+1)
-
 			// next_timeout != 0 and base_instance = current_instance is new
 			break
 		}
 	}
 
+	//TODO: Shouldn't this be testing the active instances?
 	if len(attdata.constraint_instance_list) == 0 {
 		// all current constraint trials finished.
 		return true
