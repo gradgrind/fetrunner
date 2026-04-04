@@ -7,7 +7,86 @@ import (
 	"strconv"
 )
 
-/*
+// This is using a linked list for the run-queue instances. The links are in the
+// instances themselves.
+type run_queue struct {
+	first         *TtInstance
+	last          *TtInstance
+	next_instance *TtInstance // next instance in `constraint_instance_list`
+}
+
+func (rq *run_queue) add_end(i *TtInstance) {
+	l := rq.last
+	if l == nil {
+		rq.first = i
+	} else {
+		rq.last.list_next = i
+	}
+	rq.last = i
+	i.list_previous = l
+	i.list_next = nil
+}
+
+func (rq *run_queue) remove(i *TtInstance) {
+	p := i.list_previous
+	n := i.list_next
+	if p == nil {
+		// This should be the first in the list.
+		if i != rq.first {
+			panic("Attempt to remove TtInstance from list – instance not in list")
+		}
+		rq.first = n
+	} else {
+		p.list_next = n
+	}
+	if n == nil {
+		// This is the last in the list
+		rq.last = p
+	}
+	i.list_next = nil
+	i.list_previous = nil
+}
+
+func (rq *run_queue) get_next() *TtInstance {
+	n := rq.next_instance
+	if n != nil {
+		rq.next_instance = n.list_next
+	}
+	return n
+}
+
+func (rq *run_queue) clear() {
+	// TODO
+}
+
+// ---------------------------------
+
+type active_instance_set struct {
+	instances []*TtInstance
+	blocked   bool // not accepting new instances
+}
+
+func (ais *active_instance_set) get_instances() []*TtInstance {
+	return ais.instances
+}
+
+func (ais *active_instance_set) number() int {
+	return len(ais.instances)
+}
+
+func (ais *active_instance_set) remove(i *TtInstance) {
+	ais.instances = slices.DeleteFunc(ais.instances, func(tti *TtInstance) bool {
+		return tti == i
+	})
+}
+
+func (ais *active_instance_set) add(i *TtInstance) {
+	ais.instances = append(ais.instances, i)
+}
+
+//
+
+/* TODO--
 A new instance is not started immediately. First it is placed at the end the the queue
 (the `Queue` field). This can, in principle, grow indefinitely, but when an instance is
 started it is removed from the front of the queue, leaving a gap. The first entry in
@@ -51,7 +130,7 @@ func (attdata *AutoTtData) update_instances() {
 	bdata := attdata.BaseData
 	logger := bdata.Logger
 	// First increment the ticks of active instances.
-	for instance := range attdata.active_instances {
+	for _, instance := range attdata.active_instances.get_instances() {
 		if instance.RunState < 0 {
 			instance.Ticks++
 			// Among other things, update the state:
@@ -136,14 +215,14 @@ func (attdata *AutoTtData) update_queue() int {
 
 	// Count running instances, remove others
 	running := 0
-	for instance := range attdata.active_instances {
+	for _, instance := range attdata.active_instances.get_instances() {
 		if instance.RunState < 0 {
 			running++
 		} else {
 			// This is the final end of this instance. The FET run must have
 			// finished already, and all back-end data from the run must have been
-			// collected already.
-			delete(attdata.active_instances, instance)
+			// collected.
+			attdata.active_instances.remove(instance)
 			if !attdata.Parameters.DEBUG {
 				instance.InstanceBackend.Clear()
 			}
@@ -151,21 +230,26 @@ func (attdata *AutoTtData) update_queue() int {
 	}
 
 	// Try to start queued instances
+	if attdata.active_instances.blocked {
+		return running
+	}
 	maxprocesses := attdata.Parameters.MAXPROCESSES
-	for attdata.next_instance < len(attdata.constraint_instance_list) &&
-		running < maxprocesses {
-		instance := attdata.constraint_instance_list[attdata.next_instance]
-
-		//TODO?
-		attdata.constraint_instance_list[attdata.next_instance] = nil
-		attdata.next_instance++
-
+	for running < maxprocesses {
+		instance := attdata.constraint_instance_list.get_next()
+		if instance == nil {
+			break
+		}
 		if instance.RunState == 0 {
 			attdata.Backend.RunBackend(attdata, instance)
 			instance.RunState = -1 // indicate started/running
-			attdata.active_instances[instance] = struct{}{}
+			attdata.active_instances.add(instance)
 			running++
 		} else {
+			//TODO: Can it still be 3? Aren't all the activated ones now in active-instances?
+			// I would still need a signal to not allow starting new instances, and I would
+			// still need to know the non-completed instances.
+			// The question is, when do the instances get removed from constraint_instance_list?
+
 			if instance.RunState != 3 {
 				panic("Bug, invalid RunState: " + strconv.Itoa(instance.RunState))
 			}
@@ -177,7 +261,7 @@ func (attdata *AutoTtData) update_queue() int {
 	//TODO: This is not terribly neat, it also had a couple of bugs, and may
 	// still have some. It should perhaps be replaced by something cleaner.
 	// Rapidly progressing instances should perhaps not be split (yet)?
-	for instance := range attdata.active_instances {
+	for _, instance := range attdata.active_instances.get_instances() {
 		np := maxprocesses - running
 		if np <= 0 {
 			break
@@ -193,10 +277,7 @@ func (attdata *AutoTtData) update_queue() int {
 			instance.RunState = -2 // mark as split
 			attdata.abort_instance(instance)
 			// Remove it from constraint list.
-			attdata.constraint_instance_list = slices.DeleteFunc(
-				attdata.constraint_instance_list, func(i *TtInstance) bool {
-					return i == instance
-				})
+			attdata.constraint_instance_list.remove(instance)
 
 			// Always assume one more processor, so that one instance
 			// will be available in the queue, if possible.
@@ -222,8 +303,7 @@ func (attdata *AutoTtData) update_queue() int {
 					instance.Weight,
 					instance.Constraints[n:nx],
 					instance.Timeout)
-				attdata.constraint_instance_list = append(
-					attdata.constraint_instance_list, inew)
+				attdata.constraint_instance_list.add_end(inew)
 				tags = append(tags,
 					fmt.Sprintf("%d:%s", inew.Index, inew.ConstraintType))
 				running++
@@ -236,5 +316,5 @@ func (attdata *AutoTtData) update_queue() int {
 		}
 	}
 
-	return len(attdata.active_instances)
+	return attdata.active_instances.number()
 }

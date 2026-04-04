@@ -247,10 +247,10 @@ func (attdata *AutoTtData) StartGeneration() {
 		if len(attdata.SoftConstraintMap) == 0 {
 			logger.Error("--SOFT_SKIP_HARD: Skipping hard-constraint test," +
 				" but no soft constraints")
-			runqueue.enter_phase(PHASE_FINISHED) // skip to end phase
+			attdata.enter_phase(PHASE_FINISHED) // skip to end phase
 		} else {
 			// Start handling soft constraints.
-			runqueue.enter_phase(PHASE_SOFT)
+			attdata.enter_phase(PHASE_SOFT)
 		}
 
 	} else {
@@ -258,14 +258,14 @@ func (attdata *AutoTtData) StartGeneration() {
 			logger.Warning("--HARD: No hard constraints")
 		} else {
 			// Add "_HARD_ONLY" instance to run queue
-			runqueue.add(attdata.hard_instance)
+			attdata.add(attdata.hard_instance)
 		}
 		// Add basic special instances to run queue
 		runqueue.add(attdata.na_instance)
 		runqueue.add(attdata.null_instance)
 
 		// Start in basic phase with only special instances.
-		runqueue.enter_phase(PHASE_BASIC)
+		attdata.enter_phase(PHASE_BASIC)
 	}
 
 	// *** Ticker loop ***
@@ -285,7 +285,7 @@ func (attdata *AutoTtData) StartGeneration() {
 			// Wait for active instances to finish, stopping them if
 			// necessary.
 			count := 0
-			for instance := range runqueue.Active {
+			for instance := range attdata.active_instances {
 				if instance.RunState < 0 {
 					instance.InstanceBackend.DoTick(bdata, attdata, instance)
 					count++
@@ -328,7 +328,7 @@ tickloop:
 	for {
 		// Remove completed and aborted instances, start queued instances if
 		// there are free processors.
-		if runqueue.update_queue() == 0 {
+		if attdata.update_queue() == 0 {
 			logger.Info("Run-queue empty")
 		}
 
@@ -343,7 +343,7 @@ tickloop:
 		logger.Tick(attdata.Ticks)
 
 		// Deal with "tick" updates to the `RunState` of the active instances.
-		runqueue.update_instances()
+		attdata.update_instances()
 
 		// This handling of the "full" instance is independent of the phase.
 		if attdata.full_instance.RunState == 1 {
@@ -360,7 +360,7 @@ tickloop:
 		}
 
 		for {
-			if runqueue.tick_phase() {
+			if attdata.tick_phase() {
 				if attdata.phase == PHASE_FINISHED {
 					break tickloop
 				}

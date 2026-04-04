@@ -92,16 +92,16 @@ type AutoTtData struct {
 	// The (successful) instance on which current trials are based:
 	current_instance *TtInstance
 	// List of instances adding a constraint type. This is initialized on entry to a
-	// new phase and used to set up the run queue.
-
-	//TODO: Clarify how the run queue, which is also a list of instances, is different!
-
-	constraint_instance_list []*TtInstance
-	active_instances         map[*TtInstance]struct{} // set of running instances
-	next_instance            int                      // index of next instance in `Queue`
+	// new phase and constitutes the run queue.
+	constraint_instance_list run_queue
+	active_instances         active_instance_set // set of running instances
 }
 
 type TtInstance struct {
+	// Links for the linked instance list
+	list_next     *TtInstance
+	list_previous *TtInstance
+
 	Index   int
 	Timeout int // ticks
 

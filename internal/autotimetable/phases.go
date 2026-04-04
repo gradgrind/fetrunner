@@ -97,7 +97,8 @@ func (attdata *AutoTtData) enter_phase(p int) {
 	}
 
 	// Abort all processes except appropriate specials
-	for _, instance := range attdata.constraint_instance_list {
+	instance := attdata.constraint_instance_list.first
+	for instance != nil {
 		if instance.RunState < 0 {
 			// Tell the running instance to stop.
 			attdata.abort_instance(instance)
@@ -105,8 +106,9 @@ func (attdata *AutoTtData) enter_phase(p int) {
 			// Indicate that a queued instance is not to be started
 			instance.RunState = 3
 		} // else the instance will have finished already
+		instance = instance.list_next
 	}
-	attdata.constraint_instance_list = nil
+	attdata.constraint_instance_list.clear()
 
 new_phase:
 	attdata.phase = p
