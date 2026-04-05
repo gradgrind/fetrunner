@@ -226,6 +226,7 @@ func (fetbuild *fet_build) RunBackend(
 
 	go run(fet_data, runCmd)
 	instance.InstanceBackend = fet_data
+	instance.RunState = -1 // indicate started/running
 }
 
 func constraintName(instance *autotimetable.TtInstance) string {
@@ -300,11 +301,10 @@ var re *regexp.Regexp = regexp.MustCompile(pattern)
 // `DoTick` runs in the "tick" loop. Rather like a "tail" function it reads
 // the FET progress from its log file, by simply polling for new lines.
 func (data *FetTtData) DoTick(
-	bdata *base.BaseData,
 	attdata *autotimetable.AutoTtData,
 	instance *autotimetable.TtInstance,
 ) {
-	logger := bdata.Logger
+	logger := attdata.BaseData.Logger
 	if data.reader == nil {
 		// Await the existence of the log file
 		file, err := os.Open(data.logfile)

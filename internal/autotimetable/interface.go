@@ -17,7 +17,7 @@ type TtBackend interface {
 
 type TtInstanceBackend interface {
 	Abort()
-	DoTick(*base.BaseData, *AutoTtData, *TtInstance)
+	DoTick(*AutoTtData, *TtInstance)
 	Clear()
 	FinalizeResult(*base.BaseData, *AutoTtData)
 }

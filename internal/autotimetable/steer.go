@@ -155,8 +155,8 @@ func (attdata *AutoTtData) StartGeneration() {
 	//sigChan := make(chan os.Signal, 1)
 	//signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
-	attdata.active_instances = map[*TtInstance]struct{}{}
-	attdata.next_instance = 0
+	attdata.active_instances = nil
+	attdata.run_queue = nil
 
 	// Global data
 	attdata.Ticks = 0
@@ -167,103 +167,103 @@ func (attdata *AutoTtData) StartGeneration() {
 	// should run until the overall time-out, at which point any other active
 	// instances should be stopped and the "best" solution at this point
 	// chosen.
-	enabled := make([]bool, attdata.NConstraints)
-	attdata.log_nconstraints(enabled)
-	for i := range attdata.NConstraints {
-		// Enable all constraints
-		enabled[i] = true
-	}
-	attdata.full_instance = &TtInstance{
-		Index:          0,
-		ConstraintType: "_COMPLETE",
-		//Timeout:           0,
-		ConstraintEnabled: enabled,
-	}
-
-	//TODO!!! The run queue handler needs to deal with the special instances!
-	// Add to run queue
-	runqueue.add(attdata.full_instance)
-
-	// Instance without soft constraints (if any, otherwise same as full
-	// instance) – enable only the hard constraints.
-	// This is needed even if SKIP_HARD is set, because it is used as
-	// initial base instance for PHASE_SOFT. However, with SKIP_HARD set it
-	// will not be run.
-	enabled = make([]bool, attdata.NConstraints)
-	for _, ilist := range attdata.HardConstraintMap {
-		// Enable all hard constraints
-		for _, i := range ilist {
+	{ // Prepare and start fully constrained instance.
+		enabled := make([]bool, attdata.NConstraints)
+		attdata.log_nconstraints(enabled)
+		for i := range attdata.NConstraints {
+			// Enable all constraints
 			enabled[i] = true
 		}
-	}
-	attdata.instanceCounter++
-	attdata.hard_instance = &TtInstance{
-		Index:          attdata.instanceCounter,
-		ConstraintType: "_HARD_ONLY",
-		//Timeout:           0,
-		ConstraintEnabled: enabled,
+		instance := &TtInstance{
+			Index:          0,
+			ConstraintType: "_COMPLETE",
+			//Timeout:           0,
+			ConstraintEnabled: enabled,
+		}
+		attdata.full_instance = instance
+		attdata.start_instance(instance)
 	}
 
-	// Instance with only "NotAvailable" (hard) constraints – if any,
-	// otherwise skip this instance.
-	// Note that the selection of the constraints to be enabled relies on
-	// the substring "NotAvailable" being present in (only) these constraints.
-	// For `FET` and "DB" inputs this works, but seems a bit fragile.
-	notAvailableRunState := 3
-	enabled = make([]bool, attdata.NConstraints)
-	for ctype, ilist := range attdata.HardConstraintMap {
-		if strings.Contains(ctype, "NotAvailable") {
-			notAvailableRunState = 0
+	{ // Prepare instance without soft constraints, enable only the hard constraints.
+		// If there are no soft constraints, this is the same as the fully
+		// constrained instance
+		// This is needed even if SKIP_HARD is set, because it is used as
+		// initial base instance for PHASE_SOFT. However, with SKIP_HARD set it
+		// will not be run.
+		enabled := make([]bool, attdata.NConstraints)
+		for _, ilist := range attdata.HardConstraintMap {
+			// Enable all hard constraints
 			for _, i := range ilist {
 				enabled[i] = true
 			}
 		}
-	}
-	attdata.instanceCounter++
-	attdata.na_instance = &TtInstance{
-		Index:          attdata.instanceCounter,
-		ConstraintType: "_NA_ONLY",
-		//Timeout:           0,
-		ConstraintEnabled: enabled,
-		RunState:          notAvailableRunState,
+		attdata.instanceCounter++
+		attdata.hard_instance = &TtInstance{
+			Index:          attdata.instanceCounter,
+			ConstraintType: "_HARD_ONLY",
+			//Timeout:           0,
+			ConstraintEnabled: enabled,
+		}
 	}
 
-	// Unconstrained instance
-	enabled = make([]bool, attdata.NConstraints)
-	attdata.instanceCounter++
-	attdata.null_instance = &TtInstance{
-		Index:          attdata.instanceCounter,
-		ConstraintType: "_UNCONSTRAINED",
-		//Timeout:           0 ... attdata.cycle_timeout?,
-		ConstraintEnabled: enabled,
+	{ // Prepare instance with only "NotAvailable" (hard) constraints.
+		// If there aren't any, skip this instance.
+		notAvailable := 0
+		enabled := make([]bool, attdata.NConstraints)
+		for _, natype := range attdata.Source.GetResourceUnavailableConstraintTypes() {
+			for _, i := range attdata.HardConstraintMap[natype] {
+				notAvailable++
+				enabled[i] = true
+			}
+		}
+		if notAvailable != 0 {
+			attdata.instanceCounter++
+			attdata.na_instance = &TtInstance{
+				Index:          attdata.instanceCounter,
+				ConstraintType: "_NA_ONLY",
+				//Timeout:           0,
+				ConstraintEnabled: enabled,
+			}
+		} else {
+			attdata.na_instance = nil
+		}
+
+	}
+
+	{ // Prepare unconstrained instance.
+		enabled := make([]bool, attdata.NConstraints)
+		attdata.instanceCounter++
+		attdata.null_instance = &TtInstance{
+			Index:          attdata.instanceCounter,
+			ConstraintType: "_UNCONSTRAINED",
+			//Timeout:           0 ... attdata.cycle_timeout?,
+			ConstraintEnabled: enabled,
+		}
 	}
 
 	attdata.cycle_timeout = 0
 
 	if attdata.Parameters.SKIP_HARD {
-		attdata.null_instance.RunState = 3
-		attdata.na_instance.RunState = 3
-		attdata.hard_instance.RunState = 3
+		// Don't run null_instance, na_instance or hard_instance
 		if len(attdata.SoftConstraintMap) == 0 {
 			logger.Error("--SOFT_SKIP_HARD: Skipping hard-constraint test," +
 				" but no soft constraints")
 			attdata.enter_phase(PHASE_FINISHED) // skip to end phase
 		} else {
 			// Start handling soft constraints.
+			attdata.current_instance = attdata.hard_instance
 			attdata.enter_phase(PHASE_SOFT)
 		}
-
 	} else {
 		if len(attdata.HardConstraintMap) == 0 {
 			logger.Warning("--HARD: No hard constraints")
 		} else {
-			// Add "_HARD_ONLY" instance to run queue
-			attdata.add(attdata.hard_instance)
+			attdata.start_instance(attdata.hard_instance)
 		}
-		// Add basic special instances to run queue
-		runqueue.add(attdata.na_instance)
-		runqueue.add(attdata.null_instance)
-
+		if attdata.na_instance != nil {
+			attdata.start_instance(attdata.na_instance)
+		}
+		attdata.start_instance(attdata.null_instance)
 		// Start in basic phase with only special instances.
 		attdata.enter_phase(PHASE_BASIC)
 	}
@@ -285,9 +285,9 @@ func (attdata *AutoTtData) StartGeneration() {
 			// Wait for active instances to finish, stopping them if
 			// necessary.
 			count := 0
-			for instance := range attdata.active_instances {
+			for _, instance := range attdata.active_instances {
 				if instance.RunState < 0 {
-					instance.InstanceBackend.DoTick(bdata, attdata, instance)
+					instance.InstanceBackend.DoTick(attdata, instance)
 					count++
 					attdata.abort_instance(instance)
 				}
@@ -342,7 +342,7 @@ tickloop:
 		attdata.Ticks++
 		logger.Tick(attdata.Ticks)
 
-		// Deal with "tick" updates to the `RunState` of the active instances.
+		// Deal with "tick" updates to the `RunState` of the running instances.
 		attdata.update_instances()
 
 		// This handling of the "full" instance is independent of the phase.
@@ -428,10 +428,15 @@ tickloop:
 	logger.Info("%s", report)
 }
 
+func (attdata *AutoTtData) start_instance(instance *TtInstance) {
+	attdata.run_queue = append(attdata.run_queue, instance)
+	attdata.Backend.RunBackend(attdata, instance)
+}
+
 func (attdata *AutoTtData) abort_instance(instance *TtInstance) {
-	if !instance.Stopped {
+	if instance != nil && instance.RunState == -1 {
 		instance.InstanceBackend.Abort()
-		instance.Stopped = true
+		instance.RunState = -2
 	}
 }
 
@@ -466,11 +471,8 @@ func (attdata *AutoTtData) new_instance(
 		Constraints:       constraint_indexes,
 		Weight:            weight,
 
-		list_next:       nil,
-		list_previous:   nil,
 		InstanceBackend: nil,
 		Ticks:           0,
-		Stopped:         false,
 		RunState:        0,
 		Progress:        0,
 		LastTime:        0,

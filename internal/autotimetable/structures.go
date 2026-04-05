@@ -91,17 +91,12 @@ type AutoTtData struct {
 	// 2: adding soft constraints, 3: finished
 	// The (successful) instance on which current trials are based:
 	current_instance *TtInstance
-	// List of instances adding a constraint type. This is initialized on entry to a
-	// new phase and constitutes the run queue.
-	constraint_instance_list run_queue
-	active_instances         active_instance_set // set of running instances
+
+	run_queue        []*TtInstance // reversed list of pending constraint-type instances
+	active_instances []*TtInstance // list of running constraint-type instances
 }
 
 type TtInstance struct {
-	// Links for the linked instance list
-	list_next     *TtInstance
-	list_previous *TtInstance
-
 	Index   int
 	Timeout int // ticks
 
@@ -118,14 +113,13 @@ type TtInstance struct {
 	// Run time ...
 	InstanceBackend TtInstanceBackend // interface to generator back-end for this instance
 	Ticks           int               // run time of this instance
-	Stopped         bool              // `abort_instance()` has been called on this instance
 
 	// `RunState` is used in the tick-loop, but the "finished" states are set
 	// using the back-end `DoTick` method (though still in the thread of the
 	// tick-loop).
-	RunState int // 0: not started, <0: running (not finished),
-	// 1: finished (success, 100%), 2: finished (unsuccessful),
-	// 3: obsolete / don't start (waiting for deletion)
+	RunState int // 0: not started,
+	// -1: running normally, -2: aborted but still running,
+	// 1: finished (success, 100%), 2: finished (unsuccessful)
 	// The following are set by the back-end:
 	Progress int    // percent
 	LastTime int    // last (instance) time at which the back-end made progress
