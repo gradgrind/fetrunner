@@ -113,6 +113,7 @@ new_phase:
 		p++
 		goto new_phase
 	} else {
+		//TODO: Reversed order!
 		attdata.run_queue = new_instance_list
 	}
 }
@@ -216,6 +217,10 @@ timeout will have been reached or the hard-only or full instance will have
 completed already), return `true`, indicating that there are no more
 constraints to add. Otherwise (the normal case) return `false`.
 */
+
+//TODO: IMPORTANT! Bear in mind the reversed order of run_queue. But this may
+// not be ideal because of the need to add split instances.
+
 func (attdata *AutoTtData) phase_main() bool {
 	bdata := attdata.BaseData
 	logger := bdata.Logger
@@ -230,17 +235,18 @@ func (attdata *AutoTtData) phase_main() bool {
 	)
 	insertion_index := 0
 	for _, instance := range attdata.active_instances {
-		if len(instance.Constraints) == 0 {
+		if len(instance.Constraints) == 0 { // a special instance
 			if instance.RunState < 0 {
+				// Retain instance in active list.
 				attdata.active_instances[insertion_index] = instance
 				insertion_index++
 			}
-			continue // a special instance
+			continue
 		}
 
 		//TODO: Do I want to distinguish between failed and timed out?
 
-		switch rs := instance.RunState; rs {
+		switch instance.RunState {
 		case 1: // completed successfully
 			if next_timeout == 0 {
 				// This instance will be the new base.
@@ -256,57 +262,34 @@ func (attdata *AutoTtData) phase_main() bool {
 			fallthrough
 		case -1: // running
 			to_continue = append(to_continue, instance)
-		case -2: // aborted, but still running
-			//TODO?
-
-		}
-
-		if instance.RunState >= 2 {
-			// 2, 3, 4: // abandoned, timed out, failed //TODO???
+		case -2: // aborted, but still running – retain until completed //TODO???
+			attdata.active_instances[insertion_index] = instance
+			insertion_index++
+		case 2, 3, 4: // abandoned, timed out, failed //TODO???
 			// Gather all unsuccessfully ended constraints here, whether with >1
 			// constraints, a single constraint, abandoned, timed out or with error.
 			failed = append(failed, instance)
-			continue
+		default:
+			panic("Invalid RunState: " + strconv.Itoa(instance.RunState))
 		}
-
-		if instance.RunState == 1 {
-			// completed successfully
-			if next_timeout == 0 {
-				// This instance will be the new base.
-				attdata.current_instance = instance
-				base_instance = instance
-				attdata.new_current_instance(bdata, instance)
-				next_timeout = max(
-					(instance.Ticks*attdata.Parameters.NEW_BASE_TIMEOUT_FACTOR)/10,
-					attdata.cycle_timeout)
-				// next_timeout != 0 and base_instance = current_instance is new
-
-				//TODO? Is this really needed?
-				attdata.active_instances.blocked = true
-				continue
-			}
-		}
-		// still running
-		to_continue = append(to_continue, instance)
 	}
+	attdata.active_instances = attdata.active_instances[0:insertion_index]
 
-	//
+	//TODO
 
-	// If there is a new base, stop the old instances and
-	// restart them accordingly.
-	if next_timeout != 0 {
-		type weighted_instance struct {
-			progress int
-			instance *TtInstance
-		}
-
-		priority_instances := []weighted_instance{}
+	if next_timeout == 0 {
+		// No new base yet, add instances which are still running.
+		attdata.active_instances = append(attdata.active_instances, to_continue...)
+		next_timeout = attdata.cycle_timeout // for new split instances
+	} else {
+		// There is a new base, stop the old instances and queue them for restarting.
+		new_queue := []*TtInstance{}
+		old_queue := attdata.run_queue
 		for _, instance := range to_continue {
 			if instance.RunState == -1 {
 				// Cancel existing instance
 				attdata.abort_instance(instance)
 			}
-			// Build new instance.
 			// Get progress because if well advanced, it should be prioritized.
 			progress := instance.Progress
 
@@ -314,57 +297,67 @@ func (attdata *AutoTtData) phase_main() bool {
 			// trigger an Abort)?
 			//TODO: Adjust placement in queue according to progress rate?
 
-			instance = attdata.new_instance(
+			if progress > NEARLY_FINISHED {
+				// Build new instance and queue it.
+				new_queue = append(new_queue, attdata.new_instance(
+					base_instance,
+					instance.ConstraintType,
+					instance.Weight,
+					instance.Constraints,
+					next_timeout))
+			} else {
+				// Add to the old run queue.
+				old_queue = append(old_queue, instance)
+			}
+		}
+		// Add rebased old_queue to new_queue.
+		for _, instance := range old_queue {
+			new_queue = append(new_queue, attdata.new_instance(
 				base_instance,
 				instance.ConstraintType,
 				instance.Weight,
 				instance.Constraints,
-				next_timeout)
-
-			if progress > NEARLY_FINISHED {
-				priority_instances = append(priority_instances,
-					weighted_instance{progress, instance})
-			} else {
-				//TODO???
-				rq.add(instance)
-			}
+				next_timeout))
 		}
+		attdata.run_queue = new_queue
+	}
+	//TODO: Add split failed instances.
 
-		split_instances := []*TtInstance{}
-		for _, instance := range failed {
-			if len(instance.Constraints) > 1 {
-				sit := []string{}
-				for _, si := range attdata.split_instance(
-					instance, base_instance, next_timeout) {
-					split_instances = append(split_instances, si)
-					sit = append(sit,
-						fmt.Sprintf("%d:%s", si.Index, si.ConstraintType))
-				}
-				logger.Info("(SPLIT) %d:%s -> %v",
-					instance.Index, instance.ConstraintType, sit)
-			} else if len(instance.Constraints) == 1 {
-				// Only a single constraint
-				//TODO: Save the constraint index with some measure of its
-				// progress rate, to allow possible later reinclusion?
-				if len(instance.Message) != 0 {
-					attdata.ConstraintErrors[instance.Constraints[0]] =
-						instance.Message
-				}
+	//TODO?
 
-				//TODO: I may well want to distinguish between the various
-				// reasons for stopping.
-				// If there was an actual error, the constraint should be
-				// immediately blocked, this instance dropped.
-				// If there was a timeout, at least one that doesn't look like
-				// being completely stuck, it is possible that a (later) rerun
-				// might be considered.
-				// If the instance was aborted because of a completed instance,
-				// the handling might depend on the progress, if the instance
-				// is not too fresh.
-			} else {
-				panic("Bug, expected constraint(s)")
+	split_instances := []*TtInstance{}
+	for _, instance := range failed {
+		if len(instance.Constraints) > 1 {
+			sit := []string{}
+			for _, si := range attdata.split_instance(
+				instance, base_instance, next_timeout) {
+				split_instances = append(split_instances, si)
+				sit = append(sit,
+					fmt.Sprintf("%d:%s", si.Index, si.ConstraintType))
+			}
+			logger.Info("(SPLIT) %d:%s -> %v",
+				instance.Index, instance.ConstraintType, sit)
+		} else if len(instance.Constraints) == 1 {
+			// Only a single constraint
+			//TODO: Save the constraint index with some measure of its
+			// progress rate, to allow possible later reinclusion?
+			if len(instance.Message) != 0 {
+				attdata.ConstraintErrors[instance.Constraints[0]] =
+					instance.Message
 			}
 
+			//TODO: I may well want to distinguish between the various
+			// reasons for stopping.
+			// If there was an actual error, the constraint should be
+			// immediately blocked, this instance dropped.
+			// If there was a timeout, at least one that doesn't look like
+			// being completely stuck, it is possible that a (later) rerun
+			// might be considered.
+			// If the instance was aborted because of a completed instance,
+			// the handling might depend on the progress, if the instance
+			// is not too fresh.
+		} else {
+			panic("Bug, expected constraint(s)")
 		}
 
 	}
