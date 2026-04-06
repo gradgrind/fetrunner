@@ -315,7 +315,7 @@ func (data *FetTtData) DoTick(
 		data.reader = bufio.NewReader(file)
 	}
 	{
-		var l [][]byte
+		var l [][]byte = nil
 		progressed := false
 		for {
 			line, err := data.reader.ReadString('\n')
@@ -323,40 +323,41 @@ func (data *FetTtData) DoTick(
 				l = re.FindSubmatch([]byte(line))
 				continue
 			}
-			if err == io.EOF {
-				if l != nil {
-					count, err := strconv.Atoi(string(l[2]))
-					if err == nil {
-						if count > data.count {
-							data.count = count
-							instance.LastTime = instance.Ticks
-							percent := (count * 100) / int(attdata.NActivities)
-							if percent > instance.Progress {
-								instance.Progress = percent
-								logger.Result(".PROGRESS",
-									fmt.Sprintf("%d.%d.%d",
-										instance.Index,
-										instance.Progress,
-										instance.Ticks))
-								progressed = true
-							}
+			if err != io.EOF {
+				panic(err)
+			}
+
+			if l != nil {
+				count, err := strconv.Atoi(string(l[2]))
+				if err == nil {
+					if count > data.count {
+						data.count = count
+						instance.LastTime = instance.Ticks
+						percent := (count * 100) / int(attdata.NActivities)
+						if percent > instance.Progress {
+							instance.Progress = percent
+							logger.Result(".PROGRESS",
+								fmt.Sprintf("%d.%d.%d",
+									instance.Index,
+									instance.Progress,
+									instance.Ticks))
+							progressed = true
 						}
 					}
 				}
-
-				//TODO: Experiment to catch FET getting stuck soon after start.
-				// It may need tweaking.
-				if !data.fet_timeout && instance.LastTime < 2 &&
-					instance.Ticks-instance.LastTime > 10 {
-					data.fet_timeout = true
-					logger.Info("FET_Stuck %d @ %d, %d%%",
-						instance.Index, instance.Ticks, instance.Progress)
-					data.Abort()
-				}
-
-				break
 			}
-			panic(err)
+
+			//TODO: Experiment to catch FET getting stuck soon after start.
+			// It may need tweaking.
+			if !data.fet_timeout && instance.LastTime < 2 &&
+				instance.Ticks-instance.LastTime > 10 {
+				data.fet_timeout = true
+				logger.Info("FET_Stuck %d @ %d, %d%%",
+					instance.Index, instance.Ticks, instance.Progress)
+				data.Abort()
+			}
+
+			break
 		}
 		if !progressed && data.finished == 0 {
 			logger.Result(".NOPROGRESS",
@@ -370,10 +371,17 @@ exit:
 		if data.rdfile != nil {
 			data.rdfile.Close()
 		}
-		if instance.Progress == 100 && instance.RunState == -1 {
-			instance.RunState = 1
-		} else {
-			instance.RunState = 2
+		switch instance.RunState {
+		case autotimetable.ABORT_NEW_CYCLE:
+			instance.RunState = autotimetable.INSTANCE_CANCELLED
+		case autotimetable.ABORT_TIMED_OUT:
+			instance.RunState = autotimetable.INSTANCE_TIMED_OUT
+		case autotimetable.INSTANCE_RUNNING:
+			if instance.Progress == 100 {
+				instance.RunState = autotimetable.INSTANCE_SUCCESSFUL
+			} else {
+				instance.RunState = autotimetable.INSTANCE_FAILED
+			}
 		}
 		//if data.finished < 0 {
 		//  logger.Info("FET_Failed: [%d] %s",
@@ -392,7 +400,6 @@ exit:
 		} else {
 			return
 		}
-		attdata.BlockSingleConstraint(instance, logger)
 	}
 }
 

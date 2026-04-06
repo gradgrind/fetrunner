@@ -147,7 +147,6 @@ func (attdata *AutoTtData) StartGeneration() {
 
 	attdata.lastResult = nil
 	attdata.ConstraintErrors = map[ConstraintIndex]string{}
-	attdata.BlockConstraint = map[ConstraintIndex]bool{}
 	attdata.instanceCounter = 0
 	attdata.current_instance = nil
 
@@ -342,30 +341,25 @@ tickloop:
 		logger.Tick(attdata.Ticks)
 
 		// Deal with "tick" updates to the `RunState` of the running instances.
-		attdata.update_instances()
+		// First increment the ticks of running instances.
+		for _, instance := range attdata.active_instances {
+			if instance.RunState < 0 {
+				instance.Ticks++
+				// Among other things, update the state:
+				instance.InstanceBackend.DoTick(attdata, instance)
+			}
+		}
 
-		// This handling of the "full" instance is independent of the phase.
-		if attdata.full_instance.RunState == 1 {
-			// Cancel all other runs and return this instance as result.
-			attdata.current_instance = attdata.full_instance
-			logger.Result(".ALL_OK", "All constraints OK")
-			attdata.new_current_instance(bdata, attdata.current_instance)
-			break
+		// Then handle the new states
+		for attdata.tick_phase() {
+			if attdata.phase == PHASE_FINISHED {
+				break tickloop
+			}
 		}
 
 		if attdata.Ticks == attdata.Parameters.TIMEOUT {
 			logger.Info("!!! TIMEOUT !!!")
 			break
-		}
-
-		for {
-			if attdata.tick_phase() {
-				if attdata.phase == PHASE_FINISHED {
-					break tickloop
-				}
-			} else {
-				break
-			}
 		}
 
 	} // tickloop: end

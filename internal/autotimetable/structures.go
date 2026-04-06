@@ -71,7 +71,6 @@ type AutoTtData struct {
 	HardConstraintMap map[ConstraintType][]ConstraintIndex
 	SoftConstraintMap map[ConstraintType][]ConstraintIndex
 	ConstraintErrors  map[ConstraintIndex]string // collect error messages
-	BlockConstraint   map[ConstraintIndex]bool   // if true, don't enable the constraint
 
 	Ticks int // "global" time ticker
 	// The instance tick counter is in `TtInstance` because it may be needed
@@ -92,9 +91,10 @@ type AutoTtData struct {
 	// The (successful) instance on which current trials are based:
 	current_instance *TtInstance
 
-	run_queue        []*TtInstance // pending constraint-type instances
-	run_queue_next   int           // index of next instance in queue
-	active_instances []*TtInstance // list of running constraint-type instances
+	run_queue           []*TtInstance // pending constraint-type instances
+	run_queue_next      int           // index of next instance in queue
+	active_instances    []*TtInstance // list of running constraint-type instances
+	timed_out_instances []*TtInstance // single-constraint instances stopped for being too slow
 }
 
 type TtInstance struct {

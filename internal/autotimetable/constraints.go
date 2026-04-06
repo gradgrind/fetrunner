@@ -60,8 +60,7 @@ func (attdata *AutoTtData) get_basic_constraints(
 	for _, wcl := range wlist {
 		cixlist := []ConstraintIndex{}
 		for _, i := range wcl.indexes {
-			if !instance0.ConstraintEnabled[i] &&
-				!attdata.BlockConstraint[i] {
+			if !instance0.ConstraintEnabled[i] {
 				cixlist = append(cixlist, i)
 			}
 		}
@@ -86,7 +85,7 @@ func SortConstraintTypes(
 ) []ConstraintType {
 	slices.Sort(constraint_types)
 	l := slices.Compact(constraint_types)
-	slices.SortFunc(l,
+	slices.SortStableFunc(l,
 		func(a, b ConstraintType) int {
 			return cmp.Compare(priority[b], priority[a])
 		})

@@ -1,7 +1,6 @@
 package autotimetable
 
 import (
-	"fetrunner/internal/base"
 	"fmt"
 )
 
@@ -34,107 +33,22 @@ func (attdata *AutoTtData) queue_instance(instance *TtInstance) {
 	attdata.run_queue = append(attdata.run_queue, instance)
 }
 
+func (attdata *AutoTtData) n_queued() int {
+	return len(attdata.run_queue) - attdata.run_queue_next
+}
+
 // ... end of instance queue handling
 
-// `update_instances` is called – in the tick-loop – just after receiving a
-// tick.
-// The `RunState` field is initially 0, which indicates "not started".
-// Unstarted instances in the queue are started in `update_queue`, which
-// also sets `RunState` to INSTANCE_RUNNING. `RunState` is set to a "finished"
-// value – 1 (successful, 100%) or 2 (not successful) TODO? – in the back-end
-// tick handler `DoTick()`, called at the beginning of this method, and thus
-// also in the tick-loop thread.
-func (attdata *AutoTtData) update_instances() {
-	bdata := attdata.BaseData
-	logger := bdata.Logger
-	// First increment the ticks of active instances.
-	for _, instance := range attdata.active_instances {
-		if instance.RunState < 0 {
-			instance.Ticks++
-			// Among other things, update the state:
-			instance.InstanceBackend.DoTick(attdata, instance)
-		}
-		switch instance.RunState {
-
-		case -2: // running, awaiting completion after "abort", split
-
-		case -1: // running, not finished
-			if instance.Progress == 100 {
-				continue // the state will be changed next time round
-			}
-			// Check for timeout or getting "stuck"
-
-			//TODO: Should this rather be in the back-end as it could be engine-dependent?
-
-			t := instance.Timeout
-			if t == 0 {
-				// Check for lack of progress for instances with no timeout
-				if instance.LastTime < attdata.Parameters.LAST_TIME_0 &&
-					instance.Ticks >= attdata.Parameters.LAST_TIME_1 {
-					// Stop instance
-					logger.Info(
-						"Stop (too slow) %d:%s @ %d, p: %d n: %d",
-						instance.Index,
-						instance.ConstraintType,
-						instance.Ticks,
-						instance.Progress,
-						len(instance.Constraints))
-					attdata.abort_instance(instance, ABORT_TIMED_OUT)
-					attdata.BlockSingleConstraint(instance, logger)
-				}
-				continue
-			}
-
-			limit := (instance.Ticks * 50) / t
-			//TODO: This is not really a timeout! And the multiplier is highly experimental.
-			// It's more of a "progress on course" criterion.
-			if instance.Progress < limit {
-				// Progress is too slow ...
-				logger.Info("Timeout %d @ %d, %d%%",
-					instance.Index,
-					instance.Ticks,
-					instance.Progress)
-				attdata.abort_instance(instance, ABORT_TIMED_OUT)
-				continue
-			}
-
-		case 1: // completed successfully
-
-		case 2: // completed unsuccessfully
-
-		case 3: // don't start
-
-		default: // shouldn't be possible
-			panic("Impossible instance RunState")
-		}
-	}
-}
-
-func (attdata *AutoTtData) BlockSingleConstraint(
-	instance *TtInstance,
-	logger *base.Logger,
-) {
-	if len(instance.Constraints) == 1 {
-		c := instance.Constraints[0]
-		attdata.BlockConstraint[c] = true
-		logger.Result(
-			".ELIMINATE", fmt.Sprintf("%s.%d.%s",
-				attdata.Backend.ConstraintName(instance),
-				c,
-				instance.Message))
-	}
-}
-
-// `update_queue` is called – in the tick-loop – just before waiting for a tick.
 // Clean up finished/discarded instances, try to start new ones.
+// This is called – in the tick-loop – just before waiting for a tick.
 func (attdata *AutoTtData) update_queue() int {
 	// Count running, still active, instances; remove completed ones.
 	running := 0
 	insert_index := 0
 	for _, instance := range attdata.active_instances {
 		if instance.RunState > 0 {
-			// This is the final end of this instance. The FET run must have
-			// finished already, and all back-end data from the run must have been
+			// This is the final end of this instance. The back-end run must
+			// have finished already, and all data from the run must have been
 			// collected.
 			if !attdata.Parameters.DEBUG {
 				instance.InstanceBackend.Clear()
@@ -233,4 +147,89 @@ split:
 
 		return attdata.active_instances.number()
 	*/
+}
+
+// TODO ... ??? Much is now in the phase handler
+// `update_instances` is called – in the tick-loop – just after receiving a
+// tick.
+// The `RunState` field is initially 0, which indicates "not started".
+// Unstarted instances in the queue are started in `update_queue`, which
+// also sets `RunState` to INSTANCE_RUNNING. `RunState` is set to a "finished"
+// value – 1 (successful, 100%) or 2 (not successful) TODO? – in the back-end
+// tick handler `DoTick()`, called at the beginning of this method, and thus
+// also in the tick-loop thread.
+func (attdata *AutoTtData) update_instances() {
+	bdata := attdata.BaseData
+	logger := bdata.Logger
+	// First increment the ticks of active instances.
+	for _, instance := range attdata.active_instances {
+		if instance.RunState < 0 {
+			instance.Ticks++
+			// Among other things, update the state:
+			instance.InstanceBackend.DoTick(attdata, instance)
+		}
+		switch instance.RunState {
+
+		case -2: // running, awaiting completion after "abort", split
+
+		case -1: // running, not finished
+			if instance.Progress == 100 {
+				continue // the state will be changed next time round
+			}
+			// Check for timeout or getting "stuck"
+
+			//TODO: Should this rather be in the back-end as it could be engine-dependent?
+
+			t := instance.Timeout
+			if t == 0 {
+				// Check for lack of progress for instances with no timeout
+				if instance.LastTime < attdata.Parameters.LAST_TIME_0 &&
+					instance.Ticks >= attdata.Parameters.LAST_TIME_1 {
+					// Stop instance
+					logger.Info(
+						"Stop (too slow) %d:%s @ %d, p: %d n: %d",
+						instance.Index,
+						instance.ConstraintType,
+						instance.Ticks,
+						instance.Progress,
+						len(instance.Constraints))
+					attdata.abort_instance(instance, ABORT_TIMED_OUT)
+					attdata.BlockSingleConstraint(instance, logger)
+				}
+				continue
+			}
+
+			limit := (instance.Ticks * 50) / t
+			//TODO: This is not really a timeout! And the multiplier is highly experimental.
+			// It's more of a "progress on course" criterion.
+			if instance.Progress < limit {
+				// Progress is too slow ...
+				logger.Info("Timeout %d @ %d, %d%%",
+					instance.Index,
+					instance.Ticks,
+					instance.Progress)
+				attdata.abort_instance(instance, ABORT_TIMED_OUT)
+				continue
+			}
+
+		case 1: // completed successfully
+
+		case 2: // completed unsuccessfully
+
+		case 3: // don't start
+
+		default: // shouldn't be possible
+			panic("Impossible instance RunState")
+		}
+	}
+}
+
+func (attdata *AutoTtData) EliminateSingleConstraint(instance *TtInstance) {
+	if len(instance.Constraints) == 1 {
+		attdata.BaseData.Logger.Result(
+			".ELIMINATE", fmt.Sprintf("%s.%d.%s",
+				attdata.Backend.ConstraintName(instance),
+				instance.Constraints[0],
+				instance.Message))
+	}
 }
