@@ -5,46 +5,45 @@ import (
 	"fmt"
 )
 
-/* TODO--
-A new instance is not started immediately. First it is placed at the end the the queue
-(the `Queue` field). This can, in principle, grow indefinitely, but when an instance is
-started it is removed from the front of the queue, leaving a gap. The first entry in
-the queue is at the index stored in the `Next` field. When `Next` reaches a certain
-value, all the queue entries are moved up to the beginning of the `Queue` slice. Maybe
-a circular buffer would be better, but that would need a fixed size, or a more
-complicated growing algorithm.
-* /
-type RunQueue struct {
-    AutoTtData   *AutoTtData              // convenient access to autotimetable data
-    Queue        []*TtInstance            // pre-start buffer
-    Active       map[*TtInstance]struct{} // set of running instances
-    MaxProcesses int                      // maximum number of running processes
-    NextInstance int                      // index of next instance in `Queue`
+// Handling the instance queue ...
+
+func (attdata *AutoTtData) set_runqueue(instances []*TtInstance) {
+	attdata.run_queue = instances
+	attdata.run_queue_next = 0
 }
 
-// Add an instance to the queue, compacting the queue buffer if necessary.
-func (rq *RunQueue) add(instance *TtInstance) {
-    if rq.NextInstance >= 100 {
-        // Reclaim space
-        vec2 := rq.Queue[rq.NextInstance:]
-        n := len(vec2)
-        copy(rq.Queue, vec2)
-        rq.Queue = rq.Queue[:n]
-        rq.NextInstance = 0
-    }
-    instance.RunState = 0 // not started yet
-    rq.Queue = append(rq.Queue, instance)
+func (attdata *AutoTtData) unqueue_instance() *TtInstance {
+	if attdata.run_queue_next < len(attdata.run_queue) {
+		tti := attdata.run_queue[attdata.run_queue_next]
+		attdata.run_queue_next++
+		return tti
+	}
+	return nil
 }
-*/
+
+func (attdata *AutoTtData) queue_instance(instance *TtInstance) {
+	if attdata.run_queue_next >= 100 {
+		// Reclaim space
+		vec2 := attdata.run_queue[attdata.run_queue_next:]
+		n := len(vec2)
+		copy(attdata.run_queue, vec2)
+		attdata.run_queue = attdata.run_queue[:n]
+		attdata.run_queue_next = 0
+	}
+	instance.RunState = 0 // not started yet
+	attdata.run_queue = append(attdata.run_queue, instance)
+}
+
+// ... end of instance queue handling
 
 // `update_instances` is called – in the tick-loop – just after receiving a
 // tick.
 // The `RunState` field is initially 0, which indicates "not started".
 // Unstarted instances in the queue are started in `update_queue`, which
-// also sets `RunState` to -1. `RunState` is set to a "finished" value – 1
-// (successful, 100%) or 2 (not successful) TODO? – in the back-end tick handler
-// `DoTick()`, called at the beginning of this method, and thus also in the
-// tick-loop thread.
+// also sets `RunState` to INSTANCE_RUNNING. `RunState` is set to a "finished"
+// value – 1 (successful, 100%) or 2 (not successful) TODO? – in the back-end
+// tick handler `DoTick()`, called at the beginning of this method, and thus
+// also in the tick-loop thread.
 func (attdata *AutoTtData) update_instances() {
 	bdata := attdata.BaseData
 	logger := bdata.Logger
@@ -80,7 +79,7 @@ func (attdata *AutoTtData) update_instances() {
 						instance.Ticks,
 						instance.Progress,
 						len(instance.Constraints))
-					attdata.abort_instance(instance)
+					attdata.abort_instance(instance, ABORT_TIMED_OUT)
 					attdata.BlockSingleConstraint(instance, logger)
 				}
 				continue
@@ -95,7 +94,7 @@ func (attdata *AutoTtData) update_instances() {
 					instance.Index,
 					instance.Ticks,
 					instance.Progress)
-				attdata.abort_instance(instance)
+				attdata.abort_instance(instance, ABORT_TIMED_OUT)
 				continue
 			}
 
@@ -141,7 +140,7 @@ func (attdata *AutoTtData) update_queue() int {
 				instance.InstanceBackend.Clear()
 			}
 		} else {
-			if instance.RunState == -1 {
+			if instance.RunState == INSTANCE_RUNNING {
 				running++
 			}
 			attdata.active_instances[insert_index] = instance
@@ -153,16 +152,12 @@ func (attdata *AutoTtData) update_queue() int {
 	// Try to start queued instances
 	maxprocesses := attdata.Parameters.MAXPROCESSES
 	for running < maxprocesses {
-		// Pop instance from top of stack.
-		n := len(attdata.run_queue)
-		if n == 0 {
+		// Get next pending instance.
+		instance := attdata.unqueue_instance()
+		if instance == nil {
 			goto split
 		}
-		instance := attdata.run_queue[n-1]
-		n--
-		attdata.run_queue = attdata.run_queue[0:n]
-		attdata.Backend.RunBackend(attdata, instance)
-		attdata.active_instances = append(attdata.active_instances, instance)
+		attdata.start_instance(instance)
 		running++
 	}
 	return running
@@ -185,7 +180,7 @@ split:
 			if np <= 0 {
 				break
 			}
-			if instance.RunState == -1 { // instance running, not (yet) split
+			if instance.RunState == INSTANCE_RUNNING { // instance running, not (yet) split
 				if instance.Stopped {
 					continue
 				}

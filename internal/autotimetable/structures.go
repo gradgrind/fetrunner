@@ -92,7 +92,8 @@ type AutoTtData struct {
 	// The (successful) instance on which current trials are based:
 	current_instance *TtInstance
 
-	run_queue        []*TtInstance // reversed list of pending constraint-type instances
+	run_queue        []*TtInstance // pending constraint-type instances
+	run_queue_next   int           // index of next instance in queue
 	active_instances []*TtInstance // list of running constraint-type instances
 }
 
@@ -117,14 +118,24 @@ type TtInstance struct {
 	// `RunState` is used in the tick-loop, but the "finished" states are set
 	// using the back-end `DoTick` method (though still in the thread of the
 	// tick-loop).
-	RunState int // 0: not started,
-	// -1: running normally, -2: aborted but still running,
-	// 1: finished (success, 100%), 2: finished (unsuccessful)
+	RunState int // for possible values see constants below
 	// The following are set by the back-end:
 	Progress int    // percent
 	LastTime int    // last (instance) time at which the back-end made progress
 	Message  string // "" or error message
 }
+
+// The values of an instance's `RunState`
+const (
+	INSTANCE_NULL       = 0  // initial value, not started
+	INSTANCE_RUNNING    = -1 // the instance is running
+	ABORT_NEW_CYCLE     = -2 // the instance is no longer required
+	ABORT_TIMED_OUT     = -3 // the instance was progressing too slowly
+	INSTANCE_SUCCESSFUL = 1  // the run concluded successfully
+	INSTANCE_CANCELLED  = 2  // the instance was stopped, being no longer required
+	INSTANCE_TIMED_OUT  = 3  // the instance was stopped because of being too slow
+	INSTANCE_FAILED     = 4  // an error was encountered during the run
+)
 
 type ActivityIndex = int
 type TeacherIndex = int

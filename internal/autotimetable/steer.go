@@ -156,7 +156,7 @@ func (attdata *AutoTtData) StartGeneration() {
 	//signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
 	attdata.active_instances = nil
-	attdata.run_queue = nil
+	attdata.set_runqueue(nil)
 
 	// Global data
 	attdata.Ticks = 0
@@ -282,14 +282,13 @@ func (attdata *AutoTtData) StartGeneration() {
 				attdata.Ticks, r, debug.Stack())
 		}
 		for {
-			// Wait for active instances to finish, stopping them if
-			// necessary.
+			// Wait for active instances to finish, stopping them if necessary.
 			count := 0
 			for _, instance := range attdata.active_instances {
 				if instance.RunState < 0 {
 					instance.InstanceBackend.DoTick(attdata, instance)
 					count++
-					attdata.abort_instance(instance)
+					attdata.abort_instance(instance, ABORT_NEW_CYCLE)
 				}
 			}
 			if count == 0 {
@@ -429,14 +428,14 @@ tickloop:
 }
 
 func (attdata *AutoTtData) start_instance(instance *TtInstance) {
-	attdata.run_queue = append(attdata.run_queue, instance)
 	attdata.Backend.RunBackend(attdata, instance)
+	attdata.active_instances = append(attdata.active_instances, instance)
 }
 
-func (attdata *AutoTtData) abort_instance(instance *TtInstance) {
-	if instance != nil && instance.RunState == -1 {
+func (attdata *AutoTtData) abort_instance(instance *TtInstance, reason int) {
+	if instance != nil && instance.RunState == INSTANCE_RUNNING {
 		instance.InstanceBackend.Abort()
-		instance.RunState = -2
+		instance.RunState = reason
 	}
 }
 

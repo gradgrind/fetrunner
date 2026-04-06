@@ -15,6 +15,7 @@ type weighted_constraint_list struct {
 // Collect the individual constraints by type, including only those which
 // are disabled. Hard constraints are ordered as in the `ConstraintTypes`
 // list. Soft constraints are ordered according to weight.
+// Return the list of instances and the total number of individual constraints.
 func (attdata *AutoTtData) get_basic_constraints(
 	instance0 *TtInstance,
 ) ([]*TtInstance, int) {
