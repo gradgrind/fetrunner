@@ -398,6 +398,7 @@ exit:
 			instance.Ticks-instance.LastTime > 10 {
 			logger.Info("FET_Stuck_0 %d:%s @ %d, p: %d%% n: %d",
 				instance.Index,
+				instance.ConstraintType,
 				instance.Ticks,
 				instance.Progress,
 				len(instance.Constraints))
