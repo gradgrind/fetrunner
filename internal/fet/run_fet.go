@@ -241,18 +241,18 @@ func constraintName(instance *autotimetable.TtInstance) string {
 }
 
 type FetTtData struct {
-	ifile       string
-	fetxml      []byte
-	odir        string // the working directory for this instance
-	logfile     string
-	resultfile  string
-	rdfile      *os.File // this must be closed when the subprocess finishes
-	reader      *bufio.Reader
-	cancel      func()
-	fet_timeout bool
-	finished    int
-	count       int
-	errormsg    string // record error message
+	ifile      string
+	fetxml     []byte
+	odir       string // the working directory for this instance
+	logfile    string
+	resultfile string
+	rdfile     *os.File // this must be closed when the subprocess finishes
+	reader     *bufio.Reader
+	cancel     func()
+	//fet_timeout bool
+	finished int
+	count    int
+	errormsg string // record error message
 }
 
 func (data *FetTtData) Abort() {
@@ -304,7 +304,9 @@ func (data *FetTtData) DoTick(
 	attdata *autotimetable.AutoTtData,
 	instance *autotimetable.TtInstance,
 ) {
+	instance.Ticks++
 	logger := attdata.BaseData.Logger
+	progressed := false
 	if data.reader == nil {
 		// Await the existence of the log file
 		file, err := os.Open(data.logfile)
@@ -316,56 +318,43 @@ func (data *FetTtData) DoTick(
 	}
 	{
 		var l [][]byte = nil
-		progressed := false
 		for {
 			line, err := data.reader.ReadString('\n')
-			if err == nil {
-				l = re.FindSubmatch([]byte(line))
-				continue
-			}
-			if err != io.EOF {
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
 				panic(err)
 			}
-
-			if l != nil {
-				count, err := strconv.Atoi(string(l[2]))
-				if err == nil {
-					if count > data.count {
-						data.count = count
-						instance.LastTime = instance.Ticks
-						percent := (count * 100) / int(attdata.NActivities)
-						if percent > instance.Progress {
-							instance.Progress = percent
-							logger.Result(".PROGRESS",
-								fmt.Sprintf("%d.%d.%d",
-									instance.Index,
-									instance.Progress,
-									instance.Ticks))
-							progressed = true
-						}
+			l = re.FindSubmatch([]byte(line))
+		}
+		if l != nil {
+			count, err := strconv.Atoi(string(l[2]))
+			if err == nil {
+				if count > data.count {
+					data.count = count
+					instance.LastTime = instance.Ticks
+					percent := (count * 100) / int(attdata.NActivities)
+					if percent > instance.Progress {
+						instance.Progress = percent
+						logger.Result(".PROGRESS",
+							fmt.Sprintf("%d.%d.%d",
+								instance.Index,
+								instance.Progress,
+								instance.Ticks))
+						progressed = true
 					}
 				}
 			}
-
-			//TODO: Experiment to catch FET getting stuck soon after start.
-			// It may need tweaking.
-			if !data.fet_timeout && instance.LastTime < 2 &&
-				instance.Ticks-instance.LastTime > 10 {
-				data.fet_timeout = true
-				logger.Info("FET_Stuck %d @ %d, %d%%",
-					instance.Index, instance.Ticks, instance.Progress)
-				data.Abort()
-			}
-
-			break
-		}
-		if !progressed && data.finished == 0 {
-			logger.Result(".NOPROGRESS",
-				fmt.Sprintf("%d.%d",
-					instance.Index,
-					instance.Ticks))
 		}
 	}
+	if !progressed && data.finished == 0 {
+		logger.Result(".NOPROGRESS",
+			fmt.Sprintf("%d.%d",
+				instance.Index,
+				instance.Ticks))
+	}
+
 exit:
 	if data.finished != 0 {
 		if data.rdfile != nil {
@@ -391,14 +380,64 @@ exit:
 		logger.Result(".END", fmt.Sprintf("%d.%d",
 			instance.Index, instance.Progress))
 
+		//TODO? Add a message for a time-out?
 		efile, err := os.ReadFile(filepath.Join(data.odir, "logs", "errors.txt"))
 		if err == nil {
 			instance.Message = string(efile)
-		} else if data.fet_timeout {
-			instance.Message = fmt.Sprintf("FET_Stuck_At_Beginning (%d%%)",
-				instance.Progress)
-		} else {
-			return
+		}
+		return
+	}
+
+	//TODO: Timeouts ...
+
+	if instance.RunState == autotimetable.INSTANCE_RUNNING {
+
+		//TODO: Experiment to catch FET getting stuck soon after start.
+		// It may need tweaking.
+		if instance.LastTime < 2 &&
+			instance.Ticks-instance.LastTime > 10 {
+			logger.Info("FET_Stuck_0 %d:%s @ %d, p: %d%% n: %d",
+				instance.Index,
+				instance.Ticks,
+				instance.Progress,
+				len(instance.Constraints))
+			data.Abort()
+			instance.RunState = autotimetable.ABORT_TIMED_OUT
+		}
+
+		//TODO: Maybe the remaining time until the global time-out would be useful?
+
+		t := instance.Timeout
+		if t == 0 {
+			// Check for lack of progress for instances with no timeout
+			if instance.LastTime < attdata.Parameters.LAST_TIME_0 &&
+				instance.Ticks >= attdata.Parameters.LAST_TIME_1 {
+				// Stop instance
+				logger.Info(
+					"FET_Slow_0 %d:%s @ %d, p: %d n: %d",
+					instance.Index,
+					instance.ConstraintType,
+					instance.Ticks,
+					instance.Progress,
+					len(instance.Constraints))
+				data.Abort()
+				instance.RunState = autotimetable.ABORT_TIMED_OUT
+			}
+		}
+
+		limit := (instance.Ticks * 50) / t
+		//TODO: This is not really a timeout! And the multiplier is highly experimental.
+		// It's more of a "progress on course" criterion.
+		if instance.Progress < limit {
+			// Progress is too slow ...
+			logger.Info("FET_Slow_1 %d:%s @ %d, p: %d n: %d",
+				instance.Index,
+				instance.ConstraintType,
+				instance.Ticks,
+				instance.Progress,
+				len(instance.Constraints))
+			data.Abort()
+			instance.RunState = autotimetable.ABORT_TIMED_OUT
 		}
 	}
 }

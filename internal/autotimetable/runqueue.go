@@ -149,7 +149,7 @@ split:
 	*/
 }
 
-// TODO ... ??? Much is now in the phase handler
+// TODO-- ... ??? Much is now in the phase handler
 // `update_instances` is called – in the tick-loop – just after receiving a
 // tick.
 // The `RunState` field is initially 0, which indicates "not started".
@@ -164,7 +164,6 @@ func (attdata *AutoTtData) update_instances() {
 	// First increment the ticks of active instances.
 	for _, instance := range attdata.active_instances {
 		if instance.RunState < 0 {
-			instance.Ticks++
 			// Among other things, update the state:
 			instance.InstanceBackend.DoTick(attdata, instance)
 		}
