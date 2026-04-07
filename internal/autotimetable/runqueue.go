@@ -1,14 +1,14 @@
 package autotimetable
 
-import (
-	"fmt"
-)
-
 // Handling the instance queue ...
 
 func (attdata *AutoTtData) set_runqueue(instances []*TtInstance) {
 	attdata.run_queue = instances
 	attdata.run_queue_next = 0
+}
+
+func (attdata *AutoTtData) get_runqueue() []*TtInstance {
+	return attdata.run_queue[attdata.run_queue_next:]
 }
 
 func (attdata *AutoTtData) unqueue_instance() *TtInstance {
@@ -21,7 +21,7 @@ func (attdata *AutoTtData) unqueue_instance() *TtInstance {
 }
 
 func (attdata *AutoTtData) queue_instance(instance *TtInstance) {
-	if attdata.run_queue_next >= 100 {
+	if attdata.run_queue_next >= 50 {
 		// Reclaim space
 		vec2 := attdata.run_queue[attdata.run_queue_next:]
 		n := len(vec2)
@@ -45,8 +45,15 @@ func (attdata *AutoTtData) update_queue() int {
 	// Count running, still active, instances; remove completed ones.
 	running := 0
 	insert_index := 0
+
+	//TODO--
+	var done []int = nil
+
 	for _, instance := range attdata.active_instances {
 		if instance.RunState > 0 {
+
+			done = append(done, instance.Index)
+
 			// This is the final end of this instance. The back-end run must
 			// have finished already, and all data from the run must have been
 			// collected.
@@ -61,6 +68,16 @@ func (attdata *AutoTtData) update_queue() int {
 			insert_index++
 		}
 	}
+	/* for debugging
+	if len(done) != 0 {
+		fmt.Printf("? %d -> %d %+v\n", len(attdata.active_instances), insert_index, done)
+		var q []string = nil
+		for i := attdata.run_queue_next; i < len(attdata.run_queue); i++ {
+			q = append(q, attdata.run_queue[i].ConstraintType)
+		}
+		fmt.Printf("   <- (%d) %+v\n", attdata.run_queue_next, q)
+	}
+	*/
 	attdata.active_instances = attdata.active_instances[0:insert_index]
 
 	// Try to start queued instances
@@ -147,14 +164,4 @@ split:
 
 		return attdata.active_instances.number()
 	*/
-}
-
-func (attdata *AutoTtData) EliminateSingleConstraint(instance *TtInstance) {
-	if len(instance.Constraints) == 1 {
-		attdata.BaseData.Logger.Result(
-			".ELIMINATE", fmt.Sprintf("%s.%d.%s",
-				attdata.Backend.ConstraintName(instance),
-				instance.Constraints[0],
-				instance.Message))
-	}
 }

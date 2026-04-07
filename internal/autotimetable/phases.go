@@ -245,17 +245,23 @@ func (attdata *AutoTtData) phase_main() bool {
 				next_timeout = max(
 					(instance.Ticks*attdata.Parameters.NEW_BASE_TIMEOUT_FACTOR)/10,
 					attdata.cycle_timeout)
+				/* fordebugging
 				// next_timeout != 0 and base_instance = current_instance is new
+				fmt.Printf("$ %s  n: %d  t: %d (%d, %d)\n",
+					instance.ConstraintType, len(instance.Constraints),
+					next_timeout, instance.Ticks, attdata.cycle_timeout)
+				*/
 			} else {
 				to_continue = append(to_continue, instance)
 			}
 		case INSTANCE_RUNNING: // running
 			n_active++
 			to_continue = append(to_continue, instance)
-		case INSTANCE_CANCELLED, INSTANCE_TIMED_OUT, INSTANCE_FAILED:
+		case INSTANCE_CANCELLED: //TODO?
+		case INSTANCE_TIMED_OUT, INSTANCE_FAILED:
 			//TODO???
 			// Gather all unsuccessfully ended constraints here, whether with >1
-			// constraints, a single constraint, abandoned, timed out or with error.
+			// constraints, a single constraint, timed out or with error.
 			failed = append(failed, instance)
 		}
 	}
@@ -268,7 +274,7 @@ func (attdata *AutoTtData) phase_main() bool {
 	} else {
 		// There is a new base, stop the old instances and queue them for restarting.
 		new_queue := []*TtInstance{} // restart run queue
-		old_queue := attdata.run_queue
+		old_queue := attdata.get_runqueue()
 		for _, instance := range to_continue {
 			attdata.abort_instance(instance, ABORT_NEW_CYCLE)
 
@@ -321,10 +327,17 @@ func (attdata *AutoTtData) phase_main() bool {
 				} else {
 					attdata.ConstraintErrors[instance.Constraints[0]] = "UnknownFailure"
 				}
-				attdata.EliminateSingleConstraint(instance) // log elimination
+				logger.Result(
+					".ELIMINATE", fmt.Sprintf("%s.%d.%s",
+						attdata.Backend.ConstraintName(instance),
+						instance.Constraints[0],
+						instance.Message))
 			case INSTANCE_TIMED_OUT:
 				attdata.timed_out_instances = append(attdata.timed_out_instances, instance)
-				//TODO: Error messages can be added later
+				logger.Result(".TIMED_OUT", fmt.Sprintf("%s.%d.%d.%d",
+					attdata.Backend.ConstraintName(instance),
+					instance.Constraints[0],
+					instance.Progress, instance.Ticks))
 			case INSTANCE_CANCELLED:
 				// No error messages
 			default:

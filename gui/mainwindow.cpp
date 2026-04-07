@@ -331,6 +331,9 @@ bool MainWindow::set_fet_path(QString fetpath0)
             continue;
         }
 
+        // Show log tab in case the warnings are useful.
+        ui->tabWidget->setCurrentWidget(ui->tab_log);
+
         QMessageBox::warning( //
             this,
             tr("FET not found"),

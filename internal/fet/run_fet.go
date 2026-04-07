@@ -13,7 +13,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/beevik/etree"
 )
@@ -220,24 +219,13 @@ func (fetbuild *fet_build) RunBackend(
 
 	bdata.Logger.Result(".START", fmt.Sprintf("%d.%s.%d.%d",
 		instance.Index,
-		constraintName(instance),
+		fetbuild.ConstraintName(instance),
 		len(instance.Constraints),
 		instance.Timeout))
 
 	go run(fet_data, runCmd)
 	instance.InstanceBackend = fet_data
 	instance.RunState = -1 // indicate started/running
-}
-
-func constraintName(instance *autotimetable.TtInstance) string {
-	// FET's constraints all start with "Constraint", which is rather
-	// superfluous for display purposes, so strip it off
-	ctype := strings.TrimPrefix(instance.ConstraintType, "Constraint")
-	// If the constraint is soft, prefix its weight ("nn:")
-	if instance.Weight != "" {
-		ctype = instance.Weight + ":" + ctype
-	}
-	return ctype
 }
 
 type FetTtData struct {
@@ -377,8 +365,8 @@ exit:
 		//      instance.Index, data.errormsg)
 		//}
 
-		logger.Result(".END", fmt.Sprintf("%d.%d",
-			instance.Index, instance.Progress))
+		logger.Result(".END", fmt.Sprintf("%d.%d.%d",
+			instance.Index, instance.Progress, instance.RunState))
 
 		//TODO? Add a message for a time-out?
 		efile, err := os.ReadFile(filepath.Join(data.odir, "logs", "errors.txt"))
@@ -424,21 +412,21 @@ exit:
 				data.Abort()
 				instance.RunState = autotimetable.ABORT_TIMED_OUT
 			}
-		}
-
-		limit := (instance.Ticks * 50) / t
-		//TODO: This is not really a timeout! And the multiplier is highly experimental.
-		// It's more of a "progress on course" criterion.
-		if instance.Progress < limit {
-			// Progress is too slow ...
-			logger.Info("FET_Slow_1 %d:%s @ %d, p: %d n: %d",
-				instance.Index,
-				instance.ConstraintType,
-				instance.Ticks,
-				instance.Progress,
-				len(instance.Constraints))
-			data.Abort()
-			instance.RunState = autotimetable.ABORT_TIMED_OUT
+		} else {
+			limit := (instance.Ticks * 50) / t
+			//TODO: This is not really a timeout! And the multiplier is highly experimental.
+			// It's more of a "progress on course" criterion.
+			if instance.Progress < limit {
+				// Progress is too slow ...
+				logger.Info("FET_Slow_1 %d:%s @ %d, p: %d n: %d",
+					instance.Index,
+					instance.ConstraintType,
+					instance.Ticks,
+					instance.Progress,
+					len(instance.Constraints))
+				data.Abort()
+				instance.RunState = autotimetable.ABORT_TIMED_OUT
+			}
 		}
 	}
 }

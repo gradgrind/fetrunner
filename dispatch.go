@@ -143,7 +143,7 @@ func check_fet(logger *base.Logger, fetpath string) bool {
 	cmd := exec.Command(fetpath, "--version")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		logger.Warning("FET_NOT_FOUND: %s", err)
+		logger.Warning("FET_NOT_FOUND: %s // %s", err, string(out))
 		return false
 	}
 	logger.Result("FET_PATH", fetpath)
@@ -167,7 +167,9 @@ func get_fet(dsp *Dispatcher, op *DispatchOp) {
 			if op.Data[1] == "" {
 				fetpath = fet.FET_CL // command-line version
 			} else {
-				fetpath = fet.FET_CLW // GUI version
+				// For fetrunner GUI version: in Windows a special version of fet-cl
+				// without console pop-up is required.
+				fetpath = fet.FET_CLW
 			}
 			// First try the directory containing the running executable.
 			p, err := os.Executable()

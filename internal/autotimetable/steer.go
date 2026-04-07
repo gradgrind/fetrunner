@@ -1,18 +1,18 @@
 package autotimetable
 
 import (
-	"fmt"
-	"os"
-	"path/filepath"
-	"runtime"
-	"runtime/debug"
-	"slices"
-	"strings"
-	"time"
+    "fmt"
+    "os"
+    "path/filepath"
+    "runtime"
+    "runtime/debug"
+    "slices"
+    "strings"
+    "time"
 )
 
 /*
-	Default parameter values for autotimetable.
+    Default parameter values for autotimetable.
 
 There is probably no general "optimum" value for some parameters, it is
 likely to depend on the data. But perhaps values can be found which
@@ -22,41 +22,41 @@ areas without long processing delays. For later cycles longer times may be
 necessary (depending on the difficulty of the data).
 */
 func DefaultParameters() *Parameters {
-	return &Parameters{
-		MAXPROCESSES:             MaxProcesses(0),
-		TIMEOUT:                  300, // seconds
-		NEW_BASE_TIMEOUT_FACTOR:  12,  // => 1.2
-		NEW_PHASE_TIMEOUT_FACTOR: 15,  // => 1.5
-		LAST_TIME_0:              5,
-		LAST_TIME_1:              50,
-		DEBUG:                    false,
-	}
+    return &Parameters{
+        MAXPROCESSES:             MaxProcesses(0),
+        TIMEOUT:                  300, // seconds
+        NEW_BASE_TIMEOUT_FACTOR:  12,  // => 1.2
+        NEW_PHASE_TIMEOUT_FACTOR: 15,  // => 1.5
+        LAST_TIME_0:              5,
+        LAST_TIME_1:              50,
+        DEBUG:                    false,
+    }
 }
 
 const (
-	minProcesses int = 4
-	optProcesses int = 6
+    minProcesses int = 4
+    optProcesses int = 6
 )
 
 // Don't allow the number of processes to exceed the number of processor
 // thread, unless that is smaller than `minProcesses`. If the parameter `n`
 // is zero try to return an "optimal" number.
 func MaxProcesses(n int) int {
-	nmin, np, nopt := MinNpOptProcesses()
-	if n == 0 {
-		return min(max(nmin, np), nopt)
-	}
-	if n <= minProcesses {
-		return minProcesses
-	}
-	if n > np {
-		return np
-	}
-	return n
+    nmin, np, nopt := MinNpOptProcesses()
+    if n == 0 {
+        return min(max(nmin, np), nopt)
+    }
+    if n <= minProcesses {
+        return minProcesses
+    }
+    if n > np {
+        return np
+    }
+    return n
 }
 
 func MinNpOptProcesses() (int, int, int) {
-	return minProcesses, runtime.NumCPU(), optProcesses
+    return minProcesses, runtime.NumCPU(), optProcesses
 }
 
 /*
@@ -141,335 +141,334 @@ been produced by the generator back-end).
 */
 
 func (attdata *AutoTtData) StartGeneration() {
-	bdata := attdata.BaseData
-	logger := bdata.Logger
-	bdata.StopFlag = false
+    bdata := attdata.BaseData
+    logger := bdata.Logger
+    bdata.StopFlag = false
 
-	attdata.lastResult = nil
-	attdata.ConstraintErrors = map[ConstraintIndex]string{}
-	attdata.instanceCounter = 0
-	attdata.current_instance = nil
+    attdata.lastResult = nil
+    attdata.ConstraintErrors = map[ConstraintIndex]string{}
+    attdata.instanceCounter = 0
+    attdata.current_instance = nil
 
-	// Catch termination signal
-	//sigChan := make(chan os.Signal, 1)
-	//signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+    // Catch termination signal
+    //sigChan := make(chan os.Signal, 1)
+    //signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
-	attdata.active_instances = nil
-	attdata.set_runqueue(nil)
+    attdata.active_instances = nil
+    attdata.set_runqueue(nil)
 
-	// Global data
-	attdata.Ticks = 0
+    // Global data
+    attdata.Ticks = 0
 
-	// First run: all constraints enabled.
-	// On successful completion, all other instances should be stopped.
-	// If it fails, just this instance should be wound up. Otherwise it
-	// should run until the overall time-out, at which point any other active
-	// instances should be stopped and the "best" solution at this point
-	// chosen.
-	{ // Prepare and start fully constrained instance.
-		enabled := make([]bool, attdata.NConstraints)
-		attdata.log_nconstraints(enabled)
-		for i := range attdata.NConstraints {
-			// Enable all constraints
-			enabled[i] = true
-		}
-		instance := &TtInstance{
-			Index:          0,
-			ConstraintType: "_COMPLETE",
-			//Timeout:           0,
-			ConstraintEnabled: enabled,
-		}
-		attdata.full_instance = instance
-		attdata.start_instance(instance)
-	}
+    // First run: all constraints enabled.
+    // On successful completion, all other instances should be stopped.
+    // If it fails, just this instance should be wound up. Otherwise it
+    // should run until the overall time-out, at which point any other active
+    // instances should be stopped and the "best" solution at this point
+    // chosen.
+    { // Prepare and start fully constrained instance.
+        enabled := make([]bool, attdata.NConstraints)
+        attdata.log_nconstraints(enabled)
+        for i := range attdata.NConstraints {
+            // Enable all constraints
+            enabled[i] = true
+        }
+        instance := &TtInstance{
+            Index:          0,
+            ConstraintType: "_COMPLETE",
+            //Timeout:           0,
+            ConstraintEnabled: enabled,
+        }
+        attdata.full_instance = instance
+        attdata.start_instance(instance)
+    }
 
-	{ // Prepare instance without soft constraints, enable only the hard constraints.
-		// If there are no soft constraints, this is the same as the fully
-		// constrained instance
-		// This is needed even if SKIP_HARD is set, because it is used as
-		// initial base instance for PHASE_SOFT. However, with SKIP_HARD set it
-		// will not be run.
-		enabled := make([]bool, attdata.NConstraints)
-		for _, ilist := range attdata.HardConstraintMap {
-			// Enable all hard constraints
-			for _, i := range ilist {
-				enabled[i] = true
-			}
-		}
-		attdata.instanceCounter++
-		attdata.hard_instance = &TtInstance{
-			Index:          attdata.instanceCounter,
-			ConstraintType: "_HARD_ONLY",
-			//Timeout:           0,
-			ConstraintEnabled: enabled,
-		}
-	}
+    { // Prepare instance without soft constraints, enable only the hard constraints.
+        // If there are no soft constraints, this is the same as the fully
+        // constrained instance
+        // This is needed even if SKIP_HARD is set, because it is used as
+        // initial base instance for PHASE_SOFT. However, with SKIP_HARD set it
+        // will not be run.
+        enabled := make([]bool, attdata.NConstraints)
+        for _, ilist := range attdata.HardConstraintMap {
+            // Enable all hard constraints
+            for _, i := range ilist {
+                enabled[i] = true
+            }
+        }
+        attdata.instanceCounter++
+        attdata.hard_instance = &TtInstance{
+            Index:          attdata.instanceCounter,
+            ConstraintType: "_HARD_ONLY",
+            //Timeout:           0,
+            ConstraintEnabled: enabled,
+        }
+    }
 
-	{ // Prepare instance with only "NotAvailable" (hard) constraints.
-		// If there aren't any, skip this instance.
-		notAvailable := 0
-		enabled := make([]bool, attdata.NConstraints)
-		for _, natype := range attdata.Source.GetResourceUnavailableConstraintTypes() {
-			for _, i := range attdata.HardConstraintMap[natype] {
-				notAvailable++
-				enabled[i] = true
-			}
-		}
-		if notAvailable != 0 {
-			attdata.instanceCounter++
-			attdata.na_instance = &TtInstance{
-				Index:          attdata.instanceCounter,
-				ConstraintType: "_NA_ONLY",
-				//Timeout:           0,
-				ConstraintEnabled: enabled,
-			}
-		} else {
-			attdata.na_instance = nil
-		}
+    { // Prepare instance with only "NotAvailable" (hard) constraints.
+        // If there aren't any, skip this instance.
+        notAvailable := 0
+        enabled := make([]bool, attdata.NConstraints)
+        for _, natype := range attdata.Source.GetResourceUnavailableConstraintTypes() {
+            for _, i := range attdata.HardConstraintMap[natype] {
+                notAvailable++
+                enabled[i] = true
+            }
+        }
+        if notAvailable != 0 {
+            attdata.instanceCounter++
+            attdata.na_instance = &TtInstance{
+                Index:          attdata.instanceCounter,
+                ConstraintType: "_NA_ONLY",
+                //Timeout:           0,
+                ConstraintEnabled: enabled,
+            }
+        } else {
+            attdata.na_instance = nil
+        }
 
-	}
+    }
 
-	{ // Prepare unconstrained instance.
-		enabled := make([]bool, attdata.NConstraints)
-		attdata.instanceCounter++
-		attdata.null_instance = &TtInstance{
-			Index:          attdata.instanceCounter,
-			ConstraintType: "_UNCONSTRAINED",
-			//Timeout:           0 ... attdata.cycle_timeout?,
-			ConstraintEnabled: enabled,
-		}
-	}
+    { // Prepare unconstrained instance.
+        enabled := make([]bool, attdata.NConstraints)
+        attdata.instanceCounter++
+        attdata.null_instance = &TtInstance{
+            Index:          attdata.instanceCounter,
+            ConstraintType: "_UNCONSTRAINED",
+            //Timeout:           0 ... attdata.cycle_timeout?,
+            ConstraintEnabled: enabled,
+        }
+    }
 
-	attdata.cycle_timeout = 0
+    attdata.cycle_timeout = 0
 
-	if attdata.Parameters.SKIP_HARD {
-		// Don't run null_instance, na_instance or hard_instance
-		if len(attdata.SoftConstraintMap) == 0 {
-			logger.Error("--SOFT_SKIP_HARD: Skipping hard-constraint test," +
-				" but no soft constraints")
-			attdata.enter_phase(PHASE_FINISHED) // skip to end phase
-		} else {
-			// Start handling soft constraints.
-			attdata.current_instance = attdata.hard_instance
-			attdata.enter_phase(PHASE_SOFT)
-		}
-	} else {
-		if len(attdata.HardConstraintMap) == 0 {
-			logger.Warning("--HARD: No hard constraints")
-		} else {
-			attdata.start_instance(attdata.hard_instance)
-		}
-		if attdata.na_instance != nil {
-			attdata.start_instance(attdata.na_instance)
-		}
-		attdata.start_instance(attdata.null_instance)
-		// Start in basic phase with only special instances.
-		attdata.enter_phase(PHASE_BASIC)
-	}
+    if attdata.Parameters.SKIP_HARD {
+        // Don't run null_instance, na_instance or hard_instance
+        if len(attdata.SoftConstraintMap) == 0 {
+            logger.Error("--SOFT_SKIP_HARD: Skipping hard-constraint test," +
+                " but no soft constraints")
+            attdata.enter_phase(PHASE_FINISHED) // skip to end phase
+        } else {
+            // Start handling soft constraints.
+            attdata.current_instance = attdata.hard_instance
+            attdata.enter_phase(PHASE_SOFT)
+        }
+    } else {
+        if len(attdata.HardConstraintMap) == 0 {
+            logger.Warning("--HARD: No hard constraints")
+        } else {
+            attdata.start_instance(attdata.hard_instance)
+        }
+        if attdata.na_instance != nil {
+            attdata.start_instance(attdata.na_instance)
+        }
+        attdata.start_instance(attdata.null_instance)
+        // Start in basic phase with only special instances.
+        attdata.enter_phase(PHASE_BASIC)
+    }
 
-	// *** Ticker loop ***
-	ticker := time.NewTicker(time.Second)
+    // *** Ticker loop ***
+    ticker := time.NewTicker(time.Second)
 
-	// The final tidying up – also when an error occurs
-	defer func() {
-		// Tidy up
-		r := recover()
-		if r != nil {
-			logger.Bug("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---",
-				attdata.Ticks, r, debug.Stack())
-			fmt.Printf("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---\n",
-				attdata.Ticks, r, debug.Stack())
-		}
-		for {
-			// Wait for active instances to finish, stopping them if necessary.
-			count := 0
-			for _, instance := range attdata.active_instances {
-				if instance.RunState < 0 {
-					instance.InstanceBackend.DoTick(attdata, instance)
-					count++
-					attdata.abort_instance(instance, ABORT_NEW_CYCLE)
-				}
-			}
-			if count == 0 {
-				ticker.Stop()
-				break
-			}
-			<-ticker.C
-		}
-		if !attdata.Parameters.DEBUG {
-			// Remove all remaining temporary files
-			attdata.Backend.Tidy(bdata)
-		}
+    // The final tidying up – also when an error occurs
+    defer func() {
+        // Tidy up
+        r := recover()
+        if r != nil {
+            logger.Bug("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---",
+                attdata.Ticks, r, debug.Stack())
+            fmt.Printf("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---\n",
+                attdata.Ticks, r, debug.Stack())
+        }
+        for {
+            // Wait for active instances to finish, stopping them if necessary.
+            count := 0
+            for _, instance := range attdata.active_instances {
+                if instance.RunState < 0 {
+                    instance.InstanceBackend.DoTick(attdata, instance)
+                    count++
+                    attdata.abort_instance(instance, ABORT_NEW_CYCLE)
+                }
+            }
+            if count == 0 {
+                ticker.Stop()
+                break
+            }
+            <-ticker.C
+        }
+        if !attdata.Parameters.DEBUG {
+            // Remove all remaining temporary files
+            attdata.Backend.Tidy(bdata)
+        }
 
-		if attdata.current_instance == nil {
-			logger.Error("!!! NO_RESULT !!!")
-		} else {
-			//TODO: Where (whether?) to save the Result.json file
-			jsonbytes := attdata.GetLastResult()
-			if len(jsonbytes) != 0 {
-				fpath := filepath.Join(bdata.SourceDir, bdata.Name+"_Result.json")
-				err := os.WriteFile(fpath, jsonbytes, 0644)
-				if err != nil {
-					logger.Error("%s", err)
-				}
-			}
+        if attdata.current_instance == nil {
+            logger.Error("!!! NO_RESULT !!!")
+        } else {
+            //TODO: Where (whether?) to save the Result.json file
+            jsonbytes := attdata.GetLastResult()
+            if len(jsonbytes) != 0 {
+                fpath := filepath.Join(bdata.SourceDir, bdata.Name+"_Result.json")
+                err := os.WriteFile(fpath, jsonbytes, 0644)
+                if err != nil {
+                    logger.Error("%s", err)
+                }
+            }
 
-			//TODO: Where (whether?) to save the FET file ...
-			// Perhaps return a JSON object containing anything relevant as a field?
-			attdata.current_instance.InstanceBackend.FinalizeResult(bdata, attdata)
-		}
+            //TODO: Where (whether?) to save the FET file ...
+            // Perhaps return a JSON object containing anything relevant as a field?
+            attdata.current_instance.InstanceBackend.FinalizeResult(bdata, attdata)
+        }
 
-		logger.Tick(-1) // signal end of process
-	}()
+        logger.Tick(-1) // signal end of process
+    }()
 
 tickloop:
-	for {
-		// Remove completed and aborted instances, start queued instances if
-		// there are free processors.
-		if attdata.update_queue() == 0 {
-			logger.Info("Run-queue empty")
-		}
+    for {
+        // Remove completed and aborted instances, start queued instances if
+        // there are free processors.
+        if attdata.update_queue() == 0 {
+            logger.Info("Run-queue empty")
+        }
 
-		<-ticker.C // wait for "tick"
+        <-ticker.C // wait for "tick"
 
-		if bdata.StopFlag {
-			logger.Info("!!! INTERRUPTED !!!")
-			break tickloop
-		}
+        if bdata.StopFlag {
+            logger.Info("!!! INTERRUPTED !!!")
+            break tickloop
+        }
 
-		attdata.Ticks++
-		logger.Tick(attdata.Ticks)
+        attdata.Ticks++
+        logger.Tick(attdata.Ticks)
 
-		// Deal with "tick" updates to the `RunState` of the running instances.
-		// First increment the ticks of running instances.
-		for _, instance := range attdata.active_instances {
-			if instance.RunState < 0 {
-				instance.Ticks++
-				// Among other things, update the state:
-				instance.InstanceBackend.DoTick(attdata, instance)
-			}
-		}
+        // Deal with "tick" updates to the `RunState` of the running instances.
+        // First increment the ticks of running instances.
+        for _, instance := range attdata.active_instances {
+            if instance.RunState < 0 {
+                // Among other things, update the state:
+                instance.InstanceBackend.DoTick(attdata, instance)
+            }
+        }
 
-		// Then handle the new states
-		for attdata.tick_phase() {
-			if attdata.phase == PHASE_FINISHED {
-				break tickloop
-			}
-		}
+        // Then handle the new states
+        for attdata.tick_phase() {
+            if attdata.phase == PHASE_FINISHED {
+                break tickloop
+            }
+        }
 
-		if attdata.Ticks == attdata.Parameters.TIMEOUT {
-			logger.Info("!!! TIMEOUT !!!")
-			break
-		}
+        if attdata.Ticks == attdata.Parameters.TIMEOUT {
+            logger.Info("!!! TIMEOUT !!!")
+            break
+        }
 
-	} // tickloop: end
-	result := attdata.current_instance
-	if result == nil {
-		return // failed
-	}
-	logger.Info("... finalizing ...")
+    } // tickloop: end
+    result := attdata.current_instance
+    if result == nil {
+        return // failed
+    }
+    logger.Info("... finalizing ...")
 
-	hnn := 0
-	hnall := 0
-	snn := 0
-	snall := 0
-	type constraintinfo struct {
-		c string
-		n int
-		N int
-	}
-	infolist := []constraintinfo{}
-	for c, clist := range attdata.HardConstraintMap {
-		n := 0
-		for _, cix := range clist {
-			if result.ConstraintEnabled[cix] {
-				n++
-			}
-		}
-		if len(clist) != 0 {
-			infolist = append(infolist,
-				constraintinfo{string(c), n, len(clist)})
-			hnn += n
-			hnall += len(clist)
-		}
-	}
+    hnn := 0
+    hnall := 0
+    snn := 0
+    snall := 0
+    type constraintinfo struct {
+        c string
+        n int
+        N int
+    }
+    infolist := []constraintinfo{}
+    for c, clist := range attdata.HardConstraintMap {
+        n := 0
+        for _, cix := range clist {
+            if result.ConstraintEnabled[cix] {
+                n++
+            }
+        }
+        if len(clist) != 0 {
+            infolist = append(infolist,
+                constraintinfo{string(c), n, len(clist)})
+            hnn += n
+            hnall += len(clist)
+        }
+    }
 
-	for c, clist := range attdata.SoftConstraintMap {
-		n := 0
-		for _, cix := range clist {
-			if result.ConstraintEnabled[cix] {
-				n++
-			}
-		}
-		if len(clist) != 0 {
-			infolist = append(infolist,
-				constraintinfo{string(c), n, len(clist)})
-			snn += n
-			snall += len(clist)
-		}
-	}
-	slices.SortFunc(infolist, func(a, b constraintinfo) int {
-		return strings.Compare(a.c, b.c)
-	})
-	for _, info := range infolist {
-		logger.Info("$ %s: %d / %d", info.c, info.n, info.N)
-	}
+    for c, clist := range attdata.SoftConstraintMap {
+        n := 0
+        for _, cix := range clist {
+            if result.ConstraintEnabled[cix] {
+                n++
+            }
+        }
+        if len(clist) != 0 {
+            infolist = append(infolist,
+                constraintinfo{string(c), n, len(clist)})
+            snn += n
+            snall += len(clist)
+        }
+    }
+    slices.SortFunc(infolist, func(a, b constraintinfo) int {
+        return strings.Compare(a.c, b.c)
+    })
+    for _, info := range infolist {
+        logger.Info("$ %s: %d / %d", info.c, info.n, info.N)
+    }
 
-	report := fmt.Sprintf(
-		"::: ALL CONSTRAINTS: (hard) %d / %d  (soft) %d / %d\n",
-		hnn, hnall, snn, snall)
-	logger.Info("%s", report)
+    report := fmt.Sprintf(
+        "::: ALL CONSTRAINTS: (hard) %d / %d  (soft) %d / %d\n",
+        hnn, hnall, snn, snall)
+    logger.Info("%s", report)
 }
 
 func (attdata *AutoTtData) start_instance(instance *TtInstance) {
-	attdata.Backend.RunBackend(attdata, instance)
-	attdata.active_instances = append(attdata.active_instances, instance)
+    attdata.Backend.RunBackend(attdata, instance)
+    attdata.active_instances = append(attdata.active_instances, instance)
 }
 
 func (attdata *AutoTtData) abort_instance(instance *TtInstance, reason int) {
-	if instance != nil && instance.RunState == INSTANCE_RUNNING {
-		instance.InstanceBackend.Abort()
-		instance.RunState = reason
-	}
+    if instance != nil && instance.RunState == INSTANCE_RUNNING {
+        instance.InstanceBackend.Abort()
+        instance.RunState = reason
+    }
 }
 
 func (attdata *AutoTtData) new_instance(
-	instance_0 *TtInstance,
-	constraint_type ConstraintType,
-	weight string,
-	constraint_indexes []ConstraintIndex,
-	timeout int,
+    instance_0 *TtInstance,
+    constraint_type ConstraintType,
+    weight string,
+    constraint_indexes []ConstraintIndex,
+    timeout int,
 ) *TtInstance {
-	enabled := slices.Clone(instance_0.ConstraintEnabled)
-	// Add the new constraints
-	for _, c := range constraint_indexes {
-		enabled[c] = true
-	}
-	// Single-constraint instances always have no timeout
-	if len(constraint_indexes) == 1 {
-		timeout = 0
-	} else if timeout < MIN_TIMEOUT && timeout != 0 {
-		timeout = MIN_TIMEOUT
-	}
+    enabled := slices.Clone(instance_0.ConstraintEnabled)
+    // Add the new constraints
+    for _, c := range constraint_indexes {
+        enabled[c] = true
+    }
+    // Single-constraint instances always have no timeout
+    if len(constraint_indexes) == 1 {
+        timeout = 0
+    } else if timeout < MIN_TIMEOUT && timeout != 0 {
+        timeout = MIN_TIMEOUT
+    }
 
-	// Make a new `TtInstance`
-	attdata.instanceCounter++
-	instance := &TtInstance{
-		Index:        attdata.instanceCounter,
-		Timeout:      timeout,
-		BaseInstance: instance_0,
+    // Make a new `TtInstance`
+    attdata.instanceCounter++
+    instance := &TtInstance{
+        Index:        attdata.instanceCounter,
+        Timeout:      timeout,
+        BaseInstance: instance_0,
 
-		ConstraintEnabled: enabled,
-		ConstraintType:    constraint_type,
-		Constraints:       constraint_indexes,
-		Weight:            weight,
+        ConstraintEnabled: enabled,
+        ConstraintType:    constraint_type,
+        Constraints:       constraint_indexes,
+        Weight:            weight,
 
-		InstanceBackend: nil,
-		Ticks:           0,
-		RunState:        0,
-		Progress:        0,
-		LastTime:        0,
-		Message:         "",
-	}
-	return instance
+        InstanceBackend: nil,
+        Ticks:           0,
+        RunState:        0,
+        Progress:        0,
+        LastTime:        0,
+        Message:         "",
+    }
+    return instance
 }
