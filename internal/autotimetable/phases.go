@@ -257,8 +257,8 @@ func (attdata *AutoTtData) phase_main() bool {
 		case INSTANCE_RUNNING: // running
 			n_active++
 			to_continue = append(to_continue, instance)
-		case INSTANCE_CANCELLED: //TODO?
-		case INSTANCE_TIMED_OUT, INSTANCE_FAILED:
+		//case ABORT_NEW_CYCLE, INSTANCE_TIMED_OUT, INSTANCE_CANCELLED: //TODO?
+		case ABORT_TIMED_OUT, INSTANCE_FAILED:
 			//TODO???
 			// Gather all unsuccessfully ended constraints here, whether with >1
 			// constraints, a single constraint, timed out or with error.
@@ -332,7 +332,7 @@ func (attdata *AutoTtData) phase_main() bool {
 						attdata.Backend.ConstraintName(instance),
 						instance.Constraints[0],
 						instance.Message))
-			case INSTANCE_TIMED_OUT:
+			case ABORT_TIMED_OUT:
 				attdata.timed_out_instances = append(attdata.timed_out_instances, instance)
 				logger.Result(".TIMED_OUT", fmt.Sprintf("%s.%d.%d.%d",
 					attdata.Backend.ConstraintName(instance),
