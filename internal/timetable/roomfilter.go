@@ -15,6 +15,13 @@ func (tt_data *TtData) roomChoiceFilter(cinfo *courseInfo, bdata *base.BaseData)
 	// The validity of the rooms in a RoomChoiceGroup has already been checked.
 	// They have been ordered while converting to RoomIndexes.
 
+	//TODO-- fmt.Printf("§§§ FIXED: %+v\n", necessary)
+	//TODO-- fmt.Printf("§§§ CHOICES: %v\n", rclist)
+
+	//TODO: The failure case may be a bit too radical (and somehow fails anyway at the
+	// moment). Could it more accurately reflect the needs (at least, number of parallel
+	// groups?).
+
 stage1:
 	newlist := [][]roomIndex{}
 	for i, rc0 := range rclist {
@@ -55,10 +62,17 @@ stage1:
 				cinfo.RoomChoices = nil
 				slices.Sort(necessary)
 				cinfo.FixedRooms = necessary
+
+				//TODO-- fmt.Printf("§§§-- FIXED: %+v\n", necessary)
+				//TODO-- fmt.Printf("§§§-- CHOICES: %v\n", cinfo.RoomChoices)
+
 				return
 			}
 		}
 	}
+
+	//TODO-- fmt.Printf("§§§++ FIXED: %+v\n", necessary)
+	//TODO-- fmt.Printf("§§§++ CHOICES: %v\n", rclist)
 
 	//fmt.Printf("*******>>> %d %d %d\n", len(necessary), len(newlist), delta)
 
