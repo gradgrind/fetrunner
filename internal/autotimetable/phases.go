@@ -25,9 +25,12 @@ processes appropriate to the new phase are aborted.
 - _COMPLETE
 
 There is no `current_instance` (it is `nil`) until a run has completed
-successfully, no new instances are built in this phase.
+successfully. Hard constraints restricting the availablity of classes, teachers
+and rooms are added (see `GetResourceUnavailableConstraintTypes()`).
+These are regarded as especially important constraints.
 
-If _UNCONSTRAINED completes successfully it becomes the current instance.
+If _UNCONSTRAINED completes successfully and `current_instance` is still unset,
+this becomes the current instance.
 
 If _NA_ONLY completes successfully the PHASE_HARD is entered.
 
@@ -88,12 +91,13 @@ new_phase:
 	// is a transition to a new phase. ABORT_NEW_CYCLE is used because no
 	// error message should arise for the constraints.
 	if p == PHASE_BASIC {
-		// Only special instances, no current instance
+		// no current instance
+		new_instance_list, _ := attdata.get_basic_constraints(attdata.null_instance)
+		attdata.set_runqueue(new_instance_list)
 		return
-	} else {
-		attdata.abort_instance(attdata.null_instance, ABORT_NEW_CYCLE)
-		attdata.abort_instance(attdata.na_instance, ABORT_NEW_CYCLE)
 	}
+	attdata.abort_instance(attdata.null_instance, ABORT_NEW_CYCLE)
+	attdata.abort_instance(attdata.na_instance, ABORT_NEW_CYCLE)
 	if p >= PHASE_SOFT {
 		attdata.abort_instance(attdata.hard_instance, ABORT_NEW_CYCLE)
 	}
@@ -143,28 +147,7 @@ func (attdata *AutoTtData) tick_phase() bool {
 		return true
 	}
 	if p == PHASE_BASIC {
-		if attdata.null_instance != nil {
-			if attdata.null_instance.RunState == INSTANCE_SUCCESSFUL {
-				// Set as current.
-				attdata.current_instance = attdata.null_instance
-				logger.Result(".NULL_OK", "Without constraints OK")
-				attdata.new_current_instance(bdata, attdata.current_instance)
-				attdata.null_instance = nil
-			} else if attdata.null_instance.RunState > INSTANCE_SUCCESSFUL {
-				// The null instance failed.
-				logger.Error(
-					"UnconstrainedInstanceFailed:\n:::+\n%s\n:::-",
-					attdata.null_instance.Message)
-				attdata.enter_phase(PHASE_FINISHED)
-				return true
-			}
-		}
-		if attdata.na_instance == nil {
-			if attdata.null_instance == nil {
-				attdata.enter_phase(PHASE_HARD)
-				return true
-			}
-		} else if attdata.na_instance.RunState == INSTANCE_SUCCESSFUL {
+		if attdata.na_instance.RunState == INSTANCE_SUCCESSFUL {
 			// Set as current.
 			attdata.current_instance = attdata.na_instance
 			bdata.Logger.Result(".NA_OK", "All hard NotAvailable constraints OK")
@@ -172,7 +155,12 @@ func (attdata *AutoTtData) tick_phase() bool {
 			attdata.enter_phase(PHASE_HARD)
 			return true
 		}
-		return false // in this phase there are only special instances running
+		if attdata.null_instance.RunState == INSTANCE_SUCCESSFUL && attdata.current_instance == nil {
+			attdata.current_instance = attdata.null_instance
+			logger.Result(".NULL_OK", "Without constraints OK")
+			attdata.new_current_instance(bdata, attdata.current_instance)
+			// Don't change phase.
+		}
 	}
 
 	// Handle the currently active constraint-adding instances.
@@ -185,7 +173,7 @@ func (attdata *AutoTtData) tick_phase() bool {
 }
 
 /*
-	Main processing phase(s), accumulating constraints.
+    Main processing phase(s), accumulating constraints.
 
 `phase_main()` is run in all phases except PHASE_FINISHED.
 Generator instances are run which try to add the (as yet not included)
@@ -246,10 +234,10 @@ func (attdata *AutoTtData) phase_main() bool {
 					(instance.Ticks*attdata.Parameters.NEW_BASE_TIMEOUT_FACTOR)/10,
 					attdata.cycle_timeout)
 				/* fordebugging
-				// next_timeout != 0 and base_instance = current_instance is new
-				fmt.Printf("$ %s  n: %d  t: %d (%d, %d)\n",
-					instance.ConstraintType, len(instance.Constraints),
-					next_timeout, instance.Ticks, attdata.cycle_timeout)
+				   // next_timeout != 0 and base_instance = current_instance is new
+				   fmt.Printf("$ %s  n: %d  t: %d (%d, %d)\n",
+				       instance.ConstraintType, len(instance.Constraints),
+				       next_timeout, instance.Ticks, attdata.cycle_timeout)
 				*/
 			} else {
 				to_continue = append(to_continue, instance)

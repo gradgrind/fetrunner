@@ -3,6 +3,7 @@ package autotimetable
 import (
 	"cmp"
 	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -41,21 +42,30 @@ func (attdata *AutoTtData) get_basic_constraints(
 
 		panic("Bug: get_basic_constraints ... FINISHED!")
 
-	default:
-
+	case PHASE_BASIC, PHASE_HARD:
+		natypes := attdata.Source.GetResourceUnavailableConstraintTypes()
 		emap := attdata.HardConstraintMap
+	nexttype:
 		for _, ctype := range attdata.Constraint_Types {
-			if strings.Contains(ctype, "NotAvailable") {
-				if p != PHASE_BASIC {
-					continue
+			for _, ct := range natypes {
+				if ct == ctype {
+					// It is a "not-available" constraint.
+					if p == PHASE_BASIC {
+						wlist = append(wlist,
+							weighted_constraint_list{"", ctype, emap[ctype]})
+						continue nexttype
+					}
 				}
-			} else if p != PHASE_HARD {
-				continue
 			}
-			wlist = append(wlist,
-				weighted_constraint_list{"", ctype, emap[ctype]})
+			// It is not a "not-available" constraint.
+			if p == PHASE_HARD {
+				wlist = append(wlist,
+					weighted_constraint_list{"", ctype, emap[ctype]})
+			}
 		}
 
+	default:
+		panic("Bug: Unexpected PHASE: " + strconv.Itoa(p))
 	}
 	for _, wcl := range wlist {
 		cixlist := []ConstraintIndex{}
