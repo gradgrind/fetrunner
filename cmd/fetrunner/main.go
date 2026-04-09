@@ -57,120 +57,121 @@ suitably structured, but the results are similar.
 package main
 
 import (
-    "errors"
-    "fetrunner"
-    "fetrunner/internal/base"
-    "flag"
-    "fmt"
-    "log"
-    "os"
-    "path/filepath"
-    "strconv"
-    "strings"
+	"errors"
+	"fetrunner"
+	"fetrunner/internal/base"
+	"flag"
+	"fmt"
+	"log"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 )
 
 var (
-    logfile *os.File
+	logfile *os.File
 )
 
 func main() {
-    v := flag.Bool("v", false, "print version and exit")
-    skip_hard := flag.Bool("h", false, "skip hard constraint testing phase")
-    real_soft := flag.Bool("s", false, "the weights of soft constraints are retained")
-    timeout := flag.Int("t", 300, "set timeout, s")
-    nprocesses := flag.Int("p", 0, "max. parallel processes")
-    fetpath := flag.String("fet", "", "FET executable: /path/to/fet-cl")
-    tmppath := flag.String("tmp", "", "Folder for temporary files (FET): /path/to/tmp")
-    write_fet_file := flag.Bool("xf", false, "write fully-constrained FET file")
-    testing := flag.Bool("xt", false, "run in testing mode")
-    debug := flag.Bool("xd", false, "run in debug mode")
+	v := flag.Bool("v", false, "print version and exit")
+	skip_hard := flag.Bool("h", false, "skip hard constraint testing phase")
+	real_soft := flag.Bool("s", false, "the weights of soft constraints are retained")
+	timeout := flag.Int("t", 300, "set timeout, s")
+	nprocesses := flag.Int("p", 0, "max. parallel processes")
+	fetpath := flag.String("fet", "", "FET executable: /path/to/fet-cl")
+	tmppath := flag.String("tmp", "", "Folder for temporary files (FET): /path/to/tmp")
+	write_fet_file := flag.Bool("xf", false, "write fully-constrained FET file")
+	testing := flag.Bool("xt", false, "run in testing mode")
+	debug := flag.Bool("xd", false, "run in debug mode")
 
-    flag.Parse()
+	flag.Parse()
 
-    if *v {
-        fmt.Println("fetrunner version:", fetrunner.VERSION)
-        return
-    }
+	if *v {
+		fmt.Println("fetrunner version:", fetrunner.VERSION)
+		return
+	}
 
-    args := flag.Args()
-    if len(args) != 1 {
-        if len(args) == 0 {
-            log.Fatalln("No input file")
-        }
-        log.Fatalf("Too many command-line arguments:  %+v\n", args)
-    }
-    abspath, err := filepath.Abs(args[0])
-    if err != nil {
-        log.Fatalln(err)
-    }
-    if _, err := os.Stat(abspath); errors.Is(err, os.ErrNotExist) {
-        log.Fatalln(err)
-    }
+	args := flag.Args()
+	if len(args) != 1 {
+		if len(args) == 0 {
+			log.Fatalln("No input file")
+		}
+		log.Fatalf("Too many command-line arguments:  %+v\n", args)
+	}
+	abspath, err := filepath.Abs(args[0])
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if _, err := os.Stat(abspath); errors.Is(err, os.ErrNotExist) {
+		log.Fatalln(err)
+	}
 
-    logpath := strings.TrimSuffix(abspath, filepath.Ext(abspath)) + ".log"
-    logfile, err = os.OpenFile(logpath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
-    if err != nil {
-        log.Fatalln(err)
-    }
-    defer logfile.Close()
+	logpath := strings.TrimSuffix(abspath, filepath.Ext(abspath)) + ".log"
+	logfile, err = os.OpenFile(logpath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer logfile.Close()
 
-    do("VERSION")
-    do("TT_PARAMETER", "TIMEOUT", strconv.Itoa(*timeout))
-    do("TT_PARAMETER", "MAXPROCESSES", strconv.Itoa(*nprocesses))
-    do("TT_PARAMETER", "DEBUG", strconv.FormatBool(*debug))
-    do("TT_PARAMETER", "TESTING", strconv.FormatBool(*testing))
-    do("TT_PARAMETER", "SKIP_HARD", strconv.FormatBool(*skip_hard))
-    do("TT_PARAMETER", "REAL_SOFT", strconv.FormatBool(*real_soft))
-    do("TT_PARAMETER", "WRITE_FET_FILE", strconv.FormatBool(*write_fet_file))
+	do("VERSION")
+	do("TT_PARAMETER", "TIMEOUT", strconv.Itoa(*timeout))
+	do("TT_PARAMETER", "MAXPROCESSES", strconv.Itoa(*nprocesses))
+	do("TT_PARAMETER", "DEBUG", strconv.FormatBool(*debug))
+	do("TT_PARAMETER", "TESTING", strconv.FormatBool(*testing))
+	do("TT_PARAMETER", "SKIP_HARD", strconv.FormatBool(*skip_hard))
+	do("TT_PARAMETER", "REAL_SOFT", strconv.FormatBool(*real_soft))
+	do("TT_PARAMETER", "WRITE_FET_FILE", strconv.FormatBool(*write_fet_file))
 
-    if *tmppath != "" {
-        // Set base directory for temporary files
-        abstmppath, _ := filepath.Abs(*tmppath)
-        if abstmppath != *tmppath {
-            log.Fatalln("Invalid absolute path:", *tmppath)
-        }
-        fileInfo, err := os.Stat(abstmppath)
-        if errors.Is(err, os.ErrNotExist) || !fileInfo.IsDir() {
-            log.Fatalln("Not a directory:", abstmppath)
-        }
-        if !do("TMP_PATH", abstmppath) {
-            return
-        }
-    }
+	if *tmppath != "" {
+		// Set base directory for temporary files
+		abstmppath, _ := filepath.Abs(*tmppath)
+		if abstmppath != *tmppath {
+			log.Fatalln("Invalid absolute path:", *tmppath)
+		}
+		fileInfo, err := os.Stat(abstmppath)
+		if errors.Is(err, os.ErrNotExist) || !fileInfo.IsDir() {
+			log.Fatalln("Not a directory:", abstmppath)
+		}
+		if !do("TMP_PATH", abstmppath) {
+			return
+		}
+	}
 
-    // Get the path to `fet-cl`, and its version number.
-    strs, ok := fetrunner.Do("GET_FET", *fetpath, "")
-    okv := false
-    for _, s := range strs {
-        logfile.WriteString(s + "\n")
-        if strings.Contains(s, "FET_VERSION=") {
-            okv = true
-        }
-    }
-    if !ok {
-        return
-    }
-    if !okv {
-        logfile.WriteString(base.ERROR.String() + " NO_FET\n")
-        return
-    }
+	// Get the path to `fet-cl`, and its version number.
+	strs, ok := fetrunner.Do("GET_FET", *fetpath, "")
+	okv := false
+	for _, s := range strs {
+		logfile.WriteString(s + "\n")
+		if strings.Contains(s, "FET_VERSION=") {
+			okv = true
+		}
+	}
+	if !ok {
+		return
+	}
+	if !okv {
+		logfile.WriteString(base.ERROR.String() + " NO_FET\n")
+		return
+	}
 
-    if !do("SET_FILE", abspath) {
-        return
-    }
-    do("RUN_TT_SOURCE")
+	if !do("SET_FILE", abspath) {
+		return
+	}
+	do("RUN_TT_SOURCE")
 
-    do("HARD_CONSTRAINTS")
-    do("SOFT_CONSTRAINTS")
+	do("HARD_CONSTRAINTS")
+	do("SOFT_CONSTRAINTS")
+	do("N_ACTIVITIES")
 
-    go fetrunner.Termination()
-    fetrunner.RunLoop(do)
+	go fetrunner.Termination()
+	fetrunner.RunLoop(do)
 }
 
 func do(op string, data ...string) bool {
-    strs, ok := fetrunner.Do(op, data...)
-    for _, s := range strs {
-        logfile.WriteString(s + "\n")
-    }
-    return ok
+	strs, ok := fetrunner.Do(op, data...)
+	for _, s := range strs {
+		logfile.WriteString(s + "\n")
+	}
+	return ok
 }

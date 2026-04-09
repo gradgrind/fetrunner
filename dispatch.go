@@ -116,6 +116,7 @@ func init() {
 	OpHandlerMap["RUN_TT_SOURCE"] = runtt_source
 	OpHandlerMap["HARD_CONSTRAINTS"] = hardConstraints
 	OpHandlerMap["SOFT_CONSTRAINTS"] = softConstraints
+	OpHandlerMap["N_ACTIVITIES"] = nActivities
 	OpHandlerMap["RUN_TT"] = runtt
 	OpHandlerMap["_POLL_TT"] = polltt
 	OpHandlerMap["_STOP_TT"] = stoptt
@@ -236,70 +237,80 @@ func file_loader(dsp *Dispatcher, op *DispatchOp) {
 
 // `runtt_source` must be run before `runtt` to ensure that there is source data.
 func runtt_source(dsp *Dispatcher, op *DispatchOp) {
-	bdata := dsp.BaseData
-	logger := bdata.Logger
-	if logger.Running {
-		panic("Attempt to start generation when already running")
-	}
-	if bdata.Source == nil {
-		logger.Error("No source")
-		logger.Result("OK", "false")
-		return
-	}
-	var ttsource autotimetable.TtSource
-	switch stype := bdata.Source.SourceType(); stype {
-	case "DB":
-		ttsource = timetable.MakeTimetableData(bdata)
-	case "FET":
-		ttsource = bdata.Source.(*fet.TtSourceFet)
-	default:
-		panic("Unknown source type: " + stype)
-	}
-	// Set up FET back-end and start processing
-	hcmap, scmap := ttsource.GetConstraintMaps()
-	attdata := &autotimetable.AutoTtData{
-		Parameters:        dsp.TtParameters,
-		BaseData:          bdata,
-		Source:            ttsource,
-		NActivities:       len(ttsource.GetActivities()),
-		NConstraints:      len(ttsource.GetConstraints()),
-		Constraint_Types:  ttsource.GetConstraintTypes(),
-		HardConstraintMap: hcmap,
-		SoftConstraintMap: scmap,
-	}
-	dsp.AutoTtData = attdata
+	if CheckArgs(dsp.BaseData.Logger, op, 0) {
+		bdata := dsp.BaseData
+		logger := bdata.Logger
+		if logger.Running {
+			panic("Attempt to start generation when already running")
+		}
+		if bdata.Source == nil {
+			logger.Error("No source")
+			logger.Result("OK", "false")
+			return
+		}
+		var ttsource autotimetable.TtSource
+		switch stype := bdata.Source.SourceType(); stype {
+		case "DB":
+			ttsource = timetable.MakeTimetableData(bdata)
+		case "FET":
+			ttsource = bdata.Source.(*fet.TtSourceFet)
+		default:
+			panic("Unknown source type: " + stype)
+		}
+		// Set up FET back-end and start processing
+		hcmap, scmap := ttsource.GetConstraintMaps()
+		attdata := &autotimetable.AutoTtData{
+			Parameters:        dsp.TtParameters,
+			BaseData:          bdata,
+			Source:            ttsource,
+			NActivities:       len(ttsource.GetActivities()),
+			NConstraints:      len(ttsource.GetConstraints()),
+			Constraint_Types:  ttsource.GetConstraintTypes(),
+			HardConstraintMap: hcmap,
+			SoftConstraintMap: scmap,
+		}
+		dsp.AutoTtData = attdata
 
-	logger.Result("OK", "true")
+		logger.Result("OK", "true")
+	}
 }
 
 func runtt(dsp *Dispatcher, op *DispatchOp) {
-	switch dsp.TtParameters.BACKEND {
-	case "", "FET":
-		fet.InitBackend(dsp.AutoTtData)
-	default:
-		panic("Unsupported timetable-generation back-end: " + dsp.TtParameters.BACKEND)
-	}
+	if CheckArgs(dsp.BaseData.Logger, op, 0) {
+		switch dsp.TtParameters.BACKEND {
+		case "", "FET":
+			fet.InitBackend(dsp.AutoTtData)
+		default:
+			panic("Unsupported timetable-generation back-end: " + dsp.TtParameters.BACKEND)
+		}
 
-	// Need an extra goroutine so that this can return immediately.
-	dsp.BaseData.Logger.StartRun()
-	go dsp.AutoTtData.StartGeneration()
+		// Need an extra goroutine so that this can return immediately.
+		dsp.BaseData.Logger.StartRun()
+		go dsp.AutoTtData.StartGeneration()
+	}
 }
 
 func polltt(dsp *Dispatcher, op *DispatchOp) {
-	dsp.BaseData.Logger.Poll()
+	if CheckArgs(dsp.BaseData.Logger, op, 0) {
+		dsp.BaseData.Logger.Poll()
+	}
 }
 
 func stoptt(dsp *Dispatcher, op *DispatchOp) {
-	dsp.BaseData.StopFlag = true
+	if CheckArgs(dsp.BaseData.Logger, op, 0) {
+		dsp.BaseData.StopFlag = true
+	}
 }
 
 // Get the result data as a JSON string.
 func ttresult(dsp *Dispatcher, op *DispatchOp) {
-	result := dsp.AutoTtData.GetLastResult()
-	//TODO: At present the JSON result is generated automatically as a
-	// file. It might be preferable to return the data as a string result
-	// instead.
-	_ = result
+	if CheckArgs(dsp.BaseData.Logger, op, 0) {
+		result := dsp.AutoTtData.GetLastResult()
+		//TODO: At present the JSON result is generated automatically as a
+		// file. It might be preferable to return the data as a string result
+		// instead.
+		_ = result
+	}
 }
 
 // Set a parameter for autotimetable.
@@ -357,17 +368,31 @@ func nprocesses(dsp *Dispatcher, op *DispatchOp) {
 }
 
 func hardConstraints(dsp *Dispatcher, op *DispatchOp) {
-	for c, ilist := range dsp.AutoTtData.HardConstraintMap {
-		dsp.BaseData.Logger.Result(
-			strings.TrimPrefix(c, "Constraint"),
-			strconv.Itoa(len(ilist)))
+	if CheckArgs(dsp.BaseData.Logger, op, 0) {
+		for c, ilist := range dsp.AutoTtData.HardConstraintMap {
+			dsp.BaseData.Logger.Result(
+				strings.TrimPrefix(c, "Constraint"),
+				strconv.Itoa(len(ilist)))
+		}
 	}
 }
 
 func softConstraints(dsp *Dispatcher, op *DispatchOp) {
-	for c, ilist := range dsp.AutoTtData.SoftConstraintMap {
-		dsp.BaseData.Logger.Result(
-			strings.Replace(c, ":Constraint", ":", 1),
-			strconv.Itoa(len(ilist)))
+	if CheckArgs(dsp.BaseData.Logger, op, 0) {
+		for c, ilist := range dsp.AutoTtData.SoftConstraintMap {
+			dsp.BaseData.Logger.Result(
+				strings.Replace(c, ":Constraint", ":", 1),
+				strconv.Itoa(len(ilist)))
+		}
+	}
+}
+
+func nActivities(dsp *Dispatcher, op *DispatchOp) {
+	if CheckArgs(dsp.BaseData.Logger, op, 0) {
+		n := dsp.AutoTtData.NActivities
+		if n == 0 {
+			dsp.BaseData.Logger.Error("NO_ACTIVITIES")
+		}
+		dsp.BaseData.Logger.Result("N_ACTIVITIES", strconv.Itoa(n))
 	}
 }

@@ -67,6 +67,7 @@ void MainWindow::setup_progress_table()
         ui->label_soft->setEnabled(true);
         ui->progress_soft->setEnabled(true);
     }
+    backend->op("N_ACTIVITIES");
 }
 
 void MainWindow::nconstraints(const QString &data)
