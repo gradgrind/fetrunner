@@ -160,9 +160,9 @@ func main() {
 	}
 	do("RUN_TT_SOURCE")
 
-	do("HARD_CONSTRAINTS")
-	do("SOFT_CONSTRAINTS")
-	do("N_ACTIVITIES")
+	do("TT_HARD_CONSTRAINTS")
+	do("TT_SOFT_CONSTRAINTS")
+	do("TT_ACTIVITIES")
 
 	go fetrunner.Termination()
 	fetrunner.RunLoop(do)

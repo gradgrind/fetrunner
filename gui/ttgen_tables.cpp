@@ -52,7 +52,7 @@ void MainWindow::setup_progress_table()
         constraint_map[cname] = {row++, 0, val.toInt()};
         // index, satisfied constraints, number of constraints
     };
-    for (const auto &kv : backend->op("HARD_CONSTRAINTS")) {
+    for (const auto &kv : backend->op("TT_HARD_CONSTRAINTS")) {
         add_table_line(kv.key, kv.val);
     }
     auto hcmapsize = constraint_map.size();
@@ -60,14 +60,14 @@ void MainWindow::setup_progress_table()
         ui->label_hard->setEnabled(true);
         ui->progress_hard->setEnabled(true);
     }
-    for (const auto &kv : backend->op("SOFT_CONSTRAINTS")) {
+    for (const auto &kv : backend->op("TT_SOFT_CONSTRAINTS")) {
         add_table_line(kv.key, kv.val);
     }
     if (constraint_map.size() != hcmapsize) {
         ui->label_soft->setEnabled(true);
         ui->progress_soft->setEnabled(true);
     }
-    backend->op("N_ACTIVITIES");
+    backend->op("TT_ACTIVITIES");
 }
 
 void MainWindow::nconstraints(const QString &data)

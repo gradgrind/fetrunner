@@ -114,9 +114,9 @@ func init() {
 	OpHandlerMap["GET_FET"] = get_fet
 	OpHandlerMap["SET_FILE"] = file_loader
 	OpHandlerMap["RUN_TT_SOURCE"] = runtt_source
-	OpHandlerMap["HARD_CONSTRAINTS"] = hardConstraints
-	OpHandlerMap["SOFT_CONSTRAINTS"] = softConstraints
-	OpHandlerMap["N_ACTIVITIES"] = nActivities
+	OpHandlerMap["TT_HARD_CONSTRAINTS"] = hardConstraints
+	OpHandlerMap["TT_SOFT_CONSTRAINTS"] = softConstraints
+	OpHandlerMap["TT_ACTIVITIES"] = nActivities
 	OpHandlerMap["RUN_TT"] = runtt
 	OpHandlerMap["_POLL_TT"] = polltt
 	OpHandlerMap["_STOP_TT"] = stoptt
