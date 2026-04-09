@@ -3,30 +3,21 @@ package timetable
 import (
 	"fetrunner/internal/base"
 	"slices"
-	"strings"
 )
 
 func (tt_data *TtData) roomChoiceFilter(cinfo *courseInfo, bdata *base.BaseData) {
-	delta := 0
-
 	necessary := slices.Clone(cinfo.FixedRooms)
 	rclist := cinfo.RoomChoices
-
+	failures := false
 	// The validity of the rooms in a RoomChoiceGroup has already been checked.
 	// They have been ordered while converting to RoomIndexes.
-
-	//TODO-- fmt.Printf("§§§ FIXED: %+v\n", necessary)
-	//TODO-- fmt.Printf("§§§ CHOICES: %v\n", rclist)
-
-	//TODO: The failure case may be a bit too radical (and somehow fails anyway at the
-	// moment). Could it more accurately reflect the needs (at least, number of parallel
-	// groups?).
-
+	//fmt.Printf("§§§ FIXED: %+v\n", necessary)
+	//fmt.Printf("§§§ CHOICES: %v\n", rclist)
 stage1:
 	newlist := [][]roomIndex{}
 	for i, rc0 := range rclist {
 		// Filter out fixed rooms from the choice list
-		rc := []roomIndex{}
+		var rc []roomIndex = nil
 		for _, r := range rc0 {
 			if !slices.Contains(necessary, r) {
 				rc = append(rc, r)
@@ -35,125 +26,88 @@ stage1:
 		if len(rc) >= 2 {
 			// Sort the elements.
 			slices.Sort(rc)
-			//fmt.Printf("$%d %v -> %v\n", i, rc0, rc)
 			newlist = append(newlist, rc)
-			//fmt.Printf("(STATE1): [%d, %d, %d] %v\n",
-			//	len(necessary), len(rclist), delta,
-			//	necessary)
 		} else if len(rc) == 1 {
 			necessary = append(necessary, rc[0])
-			//fmt.Printf("$%d %v -> %d\n", i, rc0, rc[0])
 			//fmt.Printf("!!! FIXED %d, REPEATING\n", rc[0])
 			rclist = append(newlist, rclist[i+1:]...)
-			//fmt.Printf("(STATE2): [%d, %d, %d] %v\n",
-			//	len(necessary), len(rclist), delta,
-			//	necessary)
+			//fmt.Printf("(+): %+v\n", rclist)
 			goto stage1
 		} else {
-			//fmt.Printf("$%d %v -> {}\n", i, rc0)
-			//fmt.Printf("(STATE3): [%d, %d, %d] %v\n",
-			//	len(necessary), len(rclist), delta,
-			//	necessary)
-			delta--
-			if delta < 0 {
-				// Report error and try to recover by using current `necessary`
-				// and dropping choice lists
-				tt_data.errorRCG(cinfo, rc0, bdata)
-				cinfo.RoomChoices = nil
-				slices.Sort(necessary)
-				cinfo.FixedRooms = necessary
-
-				//TODO-- fmt.Printf("§§§-- FIXED: %+v\n", necessary)
-				//TODO-- fmt.Printf("§§§-- CHOICES: %v\n", cinfo.RoomChoices)
-
-				return
-			}
+			// Drop the choice list.
+			//fmt.Printf("§§§ DROPPING %+v\n", rc0)
+			failures = true
 		}
 	}
+	rclist = newlist
+	//fmt.Printf("§§§++ FIXED: %+v\n", necessary)
+	//fmt.Printf("§§§++ CHOICES: %v\n", rclist)
 
-	//TODO-- fmt.Printf("§§§++ FIXED: %+v\n", necessary)
-	//TODO-- fmt.Printf("§§§++ CHOICES: %v\n", rclist)
-
-	//fmt.Printf("*******>>> %d %d %d\n", len(necessary), len(newlist), delta)
-
-	// Now build the Cartesian product of the choice lists, omitting
-	// values with duplicate rooms and duplicate values generally.
-	cp := [][]roomIndex{{}} // build Cartesian product values here
-	for _, rc := range newlist {
+	// Rooms which occur in all possible combinations of the choices can be
+	// moved to the "necessary" list. To find them, build the Cartesian product
+	// of the choice lists, omitting C-p values with duplicate rooms and
+	// also duplicate C-p values generally.
+	cp := [][]roomIndex{{}}   // build Cartesian product values here
+	newlist = [][]roomIndex{} // collect "accepted" choice lists
+	for i, rc := range rclist {
+		//fmt.Printf("CP + RC: %+v\n", rc)
 		// Add next choice list, extending the entries in `cp`
 		newcp := [][]roomIndex{} // build new `cp` here
 		for _, cp0 := range cp { // for each C-p value
 			for _, r := range rc { // add each room in current choice list
 				if !slices.Contains(cp0, r) { // ... if not a duplicate
 					cp1 := append(slices.Clone(cp0), r)
-					//fmt.Printf("???4: %v\n", cp1)
-
 					// ... and if the new C-p value is not a duplicate
 					slices.Sort(cp1)
-					//fmt.Printf("???5: %v\n", cp1)
 					for _, cp2 := range newcp {
 						if slices.Equal(cp2, cp1) {
 							goto next
 						}
 					}
 					newcp = append(newcp, cp1)
-					//fmt.Printf("???6: %v\n", newcp)
 				next:
 				}
 			}
 		}
-
+		//fmt.Printf("§CP++ %+v\n", newcp)
 		if len(newcp) == 0 {
-			// Report error and try to recover by using current `necessary`
-			// and dropping choice lists
-			tt_data.errorRCG(cinfo, rc, bdata)
-			cinfo.RoomChoices = nil
-			slices.Sort(necessary)
-			cinfo.FixedRooms = necessary
-			return
-		} else {
-			do_restart := false
-			for _, r := range rc {
-				for _, cp0 := range newcp {
-					if !slices.Contains(cp0, r) {
-						goto next2
-					}
+			// Report error and skip to next choice list
+			//fmt.Printf("--- %+v\n", rc)
+			failures = true
+			continue
+		}
+		newlist = append(newlist, rc)
+		// Collect rooms which appear in all C-p values
+		do_restart := false
+		for _, r := range rc {
+			for _, cp0 := range newcp {
+				if !slices.Contains(cp0, r) {
+					goto next2
 				}
-				// r is in all combinations
-				necessary = append(necessary, r)
-				delta++
-				//fmt.Printf("!!! FIXED %d\n", r)
-				do_restart = true
-			next2:
 			}
-			if do_restart {
-				//fmt.Println(" ... restarting")
-				rclist = newlist
-				goto stage1
-			}
+			// r is in all combinations
+			necessary = append(necessary, r)
+			//fmt.Printf("!!! FIXED %d\n", r)
+			do_restart = true
+		next2:
+		}
+		if do_restart {
+			rclist = append(newlist, rclist[i+1:]...)
+			//fmt.Printf("Restarting: %+v\n", rclist)
+			goto stage1
 		}
 
 		cp = newcp
-		//fmt.Printf("???7: %d – %v\n", i, len(newcp))
 	}
 
 	slices.Sort(necessary)
 	cinfo.FixedRooms = necessary
 	cinfo.RoomChoices = newlist
-
-	//fmt.Printf("\n $$ NECESSARY: %v\n\n", necessary)
-	//for i, rc := range newlist {
-	//	fmt.Printf("*** %d: %v\n", i, rc)
-	//}
-	//fmt.Printf("\n delta: %d\n", delta)
-}
-
-func (tt_data *TtData) errorRCG(cinfo *courseInfo, rooms []roomIndex, bdata *base.BaseData) {
-	db := bdata.Db
-	rlist := []string{}
-	for _, r := range rooms {
-		rlist = append(rlist, db.Rooms[r].GetTag())
+	//fmt.Printf("§§§== FIXED: %+v\n", necessary)
+	//fmt.Printf("§§§== CHOICES: %v\n", rclist)
+	if failures {
+		bdata.Logger.Warning(
+			"RoomChoiceGroupsFailure: Course %s, room choices may be represented inaccurately",
+			tt_data.View(cinfo, bdata.Db))
 	}
-	bdata.Logger.Error("Course %s: Invalid room-choice-group with %s",
-		tt_data.View(cinfo, db), strings.Join(rlist, ", "))
 }
