@@ -491,21 +491,22 @@ void MainWindow::iprogress(const QString &data)
 {
     QStringList slist = data.split(u'.');
     // slist: instance index, percent complete, instance run time
-    // Instance 0: fully constrained
-    // Instance 1: all hard constraints
-    // Instance 2: no constraints
+    // Instance -1: fully constrained
+    // Instance -2: all hard constraints
+    // Instance -3: just hard teacher/class/room not-available constraints
+    // Instance -4: no constraints
     // Other instances: constraint-type tests
     auto key = slist[0].toInt();
     switch (key) {
-    case 0:
+    case -1:
         ui->progress_complete->setText(slist[1] + "% @ " + slist[2]);
         break;
-    case 1:
+    case -2:
         ui->progress_hard_only->setText(slist[1] + "% @ " + slist[2]);
         break;
-    case 2:
+    case -3:
         break;
-    case 3:
+    case -4:
         ui->progress_unconstrained->setText(slist[1] + "% @ " + slist[2]);
         break;
     default:
@@ -549,19 +550,20 @@ void MainWindow::iend(const QString &data)
 
 void MainWindow::iaccept(const QString &data)
 {
+    qDebug() << "iaccept:" << data;
     auto slist = data.split(u'.');
     auto key = slist[0].toInt();
     switch (key) {
-    case 0: // "full" completed
+    case -1: // "full" completed
         tableProgressGroupDone(-1);
         break;
-    case 1: // "all hard" completed
+    case -2: // "all hard" completed
         tableProgressGroupDone(0);
         break;
-    case 2: // hard "not available" completed
+    case -3: // hard "not available" completed
         tableProgressGroupDone(1);
         break;
-    case 3: // "unconstrained" completed
+    case -4: // "unconstrained" completed
         break;
     default:
         instance_row &irow = instance_row_map[key];

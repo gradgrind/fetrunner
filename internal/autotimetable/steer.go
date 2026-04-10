@@ -174,7 +174,7 @@ func (attdata *AutoTtData) StartGeneration() {
 			enabled[i] = true
 		}
 		instance := &TtInstance{
-			Index:          0,
+			Index:          -1,
 			ConstraintType: "_COMPLETE",
 			//Timeout:           0,
 			ConstraintEnabled: enabled,
@@ -196,9 +196,8 @@ func (attdata *AutoTtData) StartGeneration() {
 				enabled[i] = true
 			}
 		}
-		attdata.instanceCounter++
 		attdata.hard_instance = &TtInstance{
-			Index:          attdata.instanceCounter,
+			Index:          -2,
 			ConstraintType: "_HARD_ONLY",
 			//Timeout:           0,
 			ConstraintEnabled: enabled,
@@ -216,9 +215,8 @@ func (attdata *AutoTtData) StartGeneration() {
 			}
 		}
 		if notAvailable != 0 {
-			attdata.instanceCounter++
 			attdata.na_instance = &TtInstance{
-				Index:          attdata.instanceCounter,
+				Index:          -3,
 				ConstraintType: "_NA_ONLY",
 				//Timeout:           0,
 				ConstraintEnabled: enabled,
@@ -231,9 +229,8 @@ func (attdata *AutoTtData) StartGeneration() {
 
 	{ // Prepare unconstrained instance.
 		enabled := make([]bool, attdata.NConstraints)
-		attdata.instanceCounter++
 		attdata.null_instance = &TtInstance{
-			Index:          attdata.instanceCounter,
+			Index:          -4,
 			ConstraintType: "_UNCONSTRAINED",
 			//Timeout:           0 ... attdata.cycle_timeout?,
 			ConstraintEnabled: enabled,

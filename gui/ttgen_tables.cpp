@@ -142,6 +142,7 @@ void MainWindow::tableProgress(progress_changed update)
 {
     auto constraint = update.constraint;
     auto delta = update.number.toInt();
+    qDebug() << "++" << constraint << delta;
 
     if (!constraint_map.contains(constraint)) {
         fail("*BUG* constraint_map, no key " + constraint);
