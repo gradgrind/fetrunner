@@ -96,6 +96,12 @@ new_phase:
 		attdata.set_runqueue(new_instance_list)
 		return
 	}
+	if p == PHASE_HARD && attdata.current_instance == nil {
+		bdata.Logger.Error("Unconstrained instance failed:\n:::+\n%s\n:::-",
+			attdata.null_instance.Message)
+		p = PHASE_FINISHED
+		goto new_phase
+	}
 	attdata.abort_instance(attdata.null_instance, ABORT_NEW_CYCLE)
 	attdata.abort_instance(attdata.na_instance, ABORT_NEW_CYCLE)
 	if p >= PHASE_SOFT {
@@ -147,7 +153,7 @@ func (attdata *AutoTtData) tick_phase() bool {
 		return true
 	}
 	if p == PHASE_BASIC {
-		if attdata.na_instance.RunState == INSTANCE_SUCCESSFUL {
+		if attdata.na_instance != nil && attdata.na_instance.RunState == INSTANCE_SUCCESSFUL {
 			// Set as current.
 			attdata.current_instance = attdata.na_instance
 			bdata.Logger.Result(".NA_OK", "All hard NotAvailable constraints OK")
@@ -233,7 +239,7 @@ func (attdata *AutoTtData) phase_main() bool {
 				next_timeout = max(
 					(instance.Ticks*attdata.Parameters.NEW_BASE_TIMEOUT_FACTOR)/10,
 					attdata.cycle_timeout)
-				/* fordebugging
+				/* for debugging
 				   // next_timeout != 0 and base_instance = current_instance is new
 				   fmt.Printf("$ %s  n: %d  t: %d (%d, %d)\n",
 				       instance.ConstraintType, len(instance.Constraints),
@@ -315,11 +321,12 @@ func (attdata *AutoTtData) phase_main() bool {
 				} else {
 					attdata.ConstraintErrors[instance.Constraints[0]] = "UnknownFailure"
 				}
+				logger.Info("InstanceFailed: %d\n:::+\n%s\n:::-", instance.Index, instance.Message)
 				logger.Result(
-					".ELIMINATE", fmt.Sprintf("%s.%d.%s",
+					".ELIMINATE", fmt.Sprintf("%s.%d",
 						attdata.Backend.ConstraintName(instance),
-						instance.Constraints[0],
-						instance.Message))
+						instance.Constraints[0]))
+
 			case ABORT_TIMED_OUT:
 				attdata.timed_out_instances = append(attdata.timed_out_instances, instance)
 				logger.Result(".TIMED_OUT", fmt.Sprintf("%s.%d.%d.%d",

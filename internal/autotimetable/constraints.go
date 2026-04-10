@@ -53,8 +53,8 @@ func (attdata *AutoTtData) get_basic_constraints(
 					if p == PHASE_BASIC {
 						wlist = append(wlist,
 							weighted_constraint_list{"", ctype, emap[ctype]})
-						continue nexttype
 					}
+					continue nexttype
 				}
 			}
 			// It is not a "not-available" constraint.

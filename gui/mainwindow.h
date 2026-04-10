@@ -69,8 +69,7 @@ private:
     void add_completed_instance( //
         QString count,
         QString number,
-        QString ctype,
-        QString message = "");
+        QString ctype);
     void set_tmp_dir(QString tdir);
     bool set_fet_path(QString fetpath);
 

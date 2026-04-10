@@ -350,10 +350,8 @@ tickloop:
 		}
 
 		// Then handle the new states
-		for attdata.tick_phase() {
-			if attdata.phase == PHASE_FINISHED {
-				break tickloop
-			}
+		if attdata.tick_phase() && attdata.phase == PHASE_FINISHED {
+			break tickloop
 		}
 
 		if attdata.Ticks == attdata.Parameters.TIMEOUT {
