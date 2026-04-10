@@ -81,6 +81,8 @@ func (attdata *AutoTtData) enter_phase(p int) {
 		attdata.cycle_timeout = (max(attdata.cycle_timeout,
 			attdata.current_instance.Ticks) *
 			attdata.Parameters.NEW_PHASE_TIMEOUT_FACTOR) / 10
+		//TODO: Does the skip-hard-testing option require a non-zero "timeout"?
+		// Perhaps a cleverer "too-slow test" would be an alternative?
 	}
 new_phase:
 	attdata.phase = p

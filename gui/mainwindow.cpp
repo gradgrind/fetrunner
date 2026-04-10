@@ -485,42 +485,37 @@ void MainWindow::add_completed_instance(
     ui->completed_instance_table->setItem(nrow, 2, item0);
 }
 
-const int INSTANCE0 = 3;
-
 void MainWindow::iprogress(const QString &data)
 {
+    //qDebug() << "iprogress:" << data;
     QStringList slist = data.split(u'.');
     // slist: instance index, percent complete, instance run time
-    // Instance -1: fully constrained
-    // Instance -2: all hard constraints
-    // Instance -3: just hard teacher/class/room not-available constraints
-    // Instance -4: no constraints
-    // Other instances: constraint-type tests
     auto key = slist[0].toInt();
     switch (key) {
-    case -1:
+    case INSTANCE_COMPLETE:
         ui->progress_complete->setText(slist[1] + "% @ " + slist[2]);
         break;
-    case -2:
+    case INSTANCE_HARD_ONLY:
         ui->progress_hard_only->setText(slist[1] + "% @ " + slist[2]);
         break;
-    case -3:
+    case INSTANCE_NOT_AVAILABLE:
         break;
-    case -4:
+    case INSTANCE_UNCONSTRAINED:
         ui->progress_unconstrained->setText(slist[1] + "% @ " + slist[2]);
         break;
-    default:
+    default: // constaint-type tests
         instanceRowProgress(key, slist);
     }
 }
 
 void MainWindow::istart(const QString &data)
 {
+    //qDebug() << "istart:" << data;
     auto slist = data.split(u'.');
     // slist: instance index, constraint type,
     // number of individual constraints, time-out
     auto key = slist[0].toInt();
-    if (key < INSTANCE0)
+    if (key < 0)
         return;
     instance_row_map[key] = {slist, nullptr, 0};
 }
@@ -530,14 +525,15 @@ void MainWindow::iend(const QString &data)
     auto slist = data.split(u'.');
     auto key = slist[0].toInt();
     switch (key) {
-    case 0:
+    case INSTANCE_COMPLETE:
         ui->progress_complete->setEnabled(false);
         break;
-    case 1:
+    case INSTANCE_HARD_ONLY:
         ui->progress_hard_only->setEnabled(false);
         break;
-    case 2:
+    case INSTANCE_UNCONSTRAINED:
         ui->progress_unconstrained->setEnabled(false);
+    case INSTANCE_NOT_AVAILABLE:
         break;
     default:
         auto irow = instance_row_map[key];
@@ -550,20 +546,20 @@ void MainWindow::iend(const QString &data)
 
 void MainWindow::iaccept(const QString &data)
 {
-    qDebug() << "iaccept:" << data;
+    //qDebug() << "iaccept:" << data;
     auto slist = data.split(u'.');
     auto key = slist[0].toInt();
     switch (key) {
-    case -1: // "full" completed
+    case INSTANCE_COMPLETE: // "full" completed
         tableProgressGroupDone(-1);
         break;
-    case -2: // "all hard" completed
+    case INSTANCE_HARD_ONLY: // "all hard" completed
         tableProgressGroupDone(0);
         break;
-    case -3: // hard "not available" completed
+    case INSTANCE_NOT_AVAILABLE: // hard "not available" completed
         tableProgressGroupDone(1);
         break;
-    case -4: // "unconstrained" completed
+    case INSTANCE_UNCONSTRAINED: // "unconstrained" completed
         break;
     default:
         instance_row &irow = instance_row_map[key];

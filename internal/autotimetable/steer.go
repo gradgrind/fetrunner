@@ -298,7 +298,9 @@ func (attdata *AutoTtData) StartGeneration() {
 			attdata.Backend.Tidy(bdata)
 		}
 
-		if attdata.current_instance == nil {
+		if attdata.current_instance == nil || attdata.current_instance.InstanceBackend == nil {
+			// If there is no current instance or, if skipping hard-constraint-testing and
+			// no successes have been booked, there is no result.
 			logger.Error("!!! NO_RESULT !!!")
 		} else {
 			//TODO: Where (whether?) to save the Result.json file
@@ -310,7 +312,6 @@ func (attdata *AutoTtData) StartGeneration() {
 					logger.Error("%s", err)
 				}
 			}
-
 			//TODO: Where (whether?) to save the FET file ...
 			// Perhaps return a JSON object containing anything relevant as a field?
 			attdata.current_instance.InstanceBackend.FinalizeResult(bdata, attdata)

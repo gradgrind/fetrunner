@@ -21,6 +21,11 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
+const int INSTANCE_COMPLETE = -1;
+const int INSTANCE_HARD_ONLY = -2;
+const int INSTANCE_NOT_AVAILABLE = -3;
+const int INSTANCE_UNCONSTRAINED = -4;
+
 struct instance_row
 {
     QStringList data;
