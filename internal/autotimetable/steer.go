@@ -374,8 +374,12 @@ tickloop:
 		N int
 	}
 	infolist := []constraintinfo{}
-	for c, clist := range attdata.HardConstraintMap {
+
+	// Hard constraints sorted by priority
+	for _, c := range attdata.Constraint_Types {
+		fmt.Printf("+++ %s\n", c)
 		n := 0
+		clist := attdata.HardConstraintMap[c]
 		for _, cix := range clist {
 			if result.ConstraintEnabled[cix] {
 				n++
@@ -389,6 +393,9 @@ tickloop:
 		}
 	}
 
+	// Soft constraints sorted reverse-alphabetically, which puts the
+	// highest weights first
+	infolist2 := []constraintinfo{}
 	for c, clist := range attdata.SoftConstraintMap {
 		n := 0
 		for _, cix := range clist {
@@ -397,15 +404,16 @@ tickloop:
 			}
 		}
 		if len(clist) != 0 {
-			infolist = append(infolist,
+			infolist2 = append(infolist2,
 				constraintinfo{string(c), n, len(clist)})
 			snn += n
 			snall += len(clist)
 		}
+		slices.SortFunc(infolist2, func(a, b constraintinfo) int {
+			return strings.Compare(b.c, a.c)
+		})
 	}
-	slices.SortFunc(infolist, func(a, b constraintinfo) int {
-		return strings.Compare(a.c, b.c)
-	})
+	infolist = append(infolist, infolist2...)
 	for _, info := range infolist {
 		logger.Info("$ %s: %d / %d", info.c, info.n, info.N)
 	}

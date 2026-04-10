@@ -26,7 +26,6 @@ func (attdata *AutoTtData) get_basic_constraints(
 	p := attdata.phase
 	switch p {
 	case PHASE_SOFT:
-
 		for k, v := range attdata.SoftConstraintMap {
 			w, c, ok := strings.Cut(k, ":")
 			if !ok {
@@ -35,11 +34,10 @@ func (attdata *AutoTtData) get_basic_constraints(
 			wlist = append(wlist, weighted_constraint_list{w, c, v})
 		}
 		slices.SortFunc(wlist, func(a, b weighted_constraint_list) int {
-			return strings.Compare(a.weight, b.weight)
+			return strings.Compare(b.weight, a.weight)
 		})
 
 	case PHASE_FINISHED:
-
 		panic("Bug: get_basic_constraints ... FINISHED!")
 
 	case PHASE_BASIC, PHASE_HARD:

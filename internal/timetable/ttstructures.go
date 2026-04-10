@@ -3,12 +3,10 @@
 package timetable
 
 import (
-	"cmp"
 	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
 	"fmt"
 	"maps"
-	"slices"
 )
 
 type nodeRef = base.NodeRef // node reference (UUID)
@@ -226,14 +224,7 @@ func (tt_data *TtData) GetConstraintTypes() []constraintType {
 	for i, c := range tt_data.constraints {
 		ctlist[i] = c.CType
 	}
-	slices.Sort(ctlist)
-	ctlist = slices.Compact(ctlist)
-	priority := base.ConstraintPriority
-	slices.SortStableFunc(ctlist,
-		func(a, b constraintType) int {
-			return cmp.Compare(priority[b], priority[a])
-		})
-	return ctlist
+	return autotimetable.SortConstraintTypes(ctlist, base.ConstraintPriority)
 }
 
 func (tt_data *TtData) GetConstraintMaps() (

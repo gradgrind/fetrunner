@@ -8,10 +8,12 @@ import (
 	"fetrunner/internal/timetable"
 	"fetrunner/internal/w365tt"
 	"fmt"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -367,22 +369,29 @@ func nprocesses(dsp *Dispatcher, op *DispatchOp) {
 	dsp.BaseData.Logger.Result(op.Op, fmt.Sprintf("%d.%d.%d", nmin, np, nopt))
 }
 
+// Return the hard constraints sorted according to priority.
 func hardConstraints(dsp *Dispatcher, op *DispatchOp) {
 	if CheckArgs(dsp.BaseData.Logger, op, 0) {
-		for c, ilist := range dsp.AutoTtData.HardConstraintMap {
-			dsp.BaseData.Logger.Result(
-				strings.TrimPrefix(c, "Constraint"),
-				strconv.Itoa(len(ilist)))
+		for _, c := range dsp.AutoTtData.Constraint_Types {
+			ilist, ok := dsp.AutoTtData.HardConstraintMap[c]
+			if ok {
+				dsp.BaseData.Logger.Result(
+					strings.TrimPrefix(c, "Constraint"),
+					strconv.Itoa(len(ilist)))
+			}
 		}
 	}
 }
 
+// Return the soft constraints sort according to weight.
 func softConstraints(dsp *Dispatcher, op *DispatchOp) {
 	if CheckArgs(dsp.BaseData.Logger, op, 0) {
-		for c, ilist := range dsp.AutoTtData.SoftConstraintMap {
+		clist := slices.SortedFunc(maps.Keys(dsp.AutoTtData.SoftConstraintMap),
+			func(a, b string) int { return strings.Compare(b, a) })
+		for _, c := range clist {
 			dsp.BaseData.Logger.Result(
 				strings.Replace(c, ":Constraint", ":", 1),
-				strconv.Itoa(len(ilist)))
+				strconv.Itoa(len(dsp.AutoTtData.SoftConstraintMap[c])))
 		}
 	}
 }
