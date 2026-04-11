@@ -208,7 +208,7 @@ func (attdata *AutoTtData) StartGeneration() {
 		// If there aren't any, skip this instance.
 		notAvailable := 0
 		enabled := make([]bool, attdata.NConstraints)
-		for _, natype := range attdata.Source.GetResourceUnavailableConstraintTypes() {
+		for _, natype := range attdata.Source.GetPhase0ConstraintTypes() {
 			for _, i := range attdata.HardConstraintMap[natype] {
 				notAvailable++
 				enabled[i] = true
@@ -377,7 +377,6 @@ tickloop:
 
 	// Hard constraints sorted by priority
 	for _, c := range attdata.Constraint_Types {
-		fmt.Printf("+++ %s\n", c)
 		n := 0
 		clist := attdata.HardConstraintMap[c]
 		for _, cix := range clist {

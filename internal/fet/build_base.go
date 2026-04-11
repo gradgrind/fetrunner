@@ -20,16 +20,12 @@ type fet_build struct {
 	Doc                *etree.Document
 	WeightTable        []float64
 	ConstraintElements [][]*etree.Element // a source constraint can have multiple FET constraints
-	//--TimeConstraints    []int              // indexes into `ConstraintElements`
-	//--SpaceConstraints   []int              // indexes into `ConstraintElements`
 
 	fetroot                *etree.Element
 	room_list              *etree.Element // needed for adding virtual rooms
 	activity_tag_list      *etree.Element // in case these are needed
 	time_constraints_list  *etree.Element
 	space_constraints_list *etree.Element
-
-	//ActivityElementList []*etree.Element
 
 	DayList      []string
 	HourList     []string

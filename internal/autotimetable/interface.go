@@ -32,7 +32,7 @@ type TtSource interface {
 	GetRooms() []base.ElementBase
 	GetActivities() []*TtActivity
 	GetConstraints() []*TtConstraint
-	GetResourceUnavailableConstraintTypes() []ConstraintType
+	GetPhase0ConstraintTypes() []ConstraintType
 	GetConstraintTypes() []ConstraintType // ordered list of constraint types
 	// GetConstraintMaps() returns the hard- and soft constraint maps.
 	GetConstraintMaps() (map[ConstraintType][]ConstraintIndex, map[ConstraintType][]ConstraintIndex)

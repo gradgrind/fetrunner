@@ -60,7 +60,6 @@ func PrepareFet(attdata *autotimetable.AutoTtData) *fet_build {
 	for i, c := range fetsource.constraintElements {
 		cllist[i] = []*etree.Element{c}
 	}
-	//TODO: How many of these fields are needed?
 	fetbuild := &fet_build{
 		real_soft:           real_soft,
 		no_room_constraints: attdata.Parameters.WITHOUT_ROOM_CONSTRAINTS,
@@ -70,16 +69,11 @@ func PrepareFet(attdata *autotimetable.AutoTtData) *fet_build {
 		//WeightTable:        MakeFetWeights(),
 		ConstraintElements: cllist,
 
-		//--TimeConstraints    []int              // indexes into `ConstraintElements`
-		//--SpaceConstraints   []int              // indexes into `ConstraintElements`
-
 		//fetroot                *etree.Element
 		//room_list              *etree.Element // needed for adding virtual rooms
 		//activity_tag_list      *etree.Element // in case these are needed
 		//time_constraints_list  *etree.Element
 		//space_constraints_list *etree.Element
-
-		//--ActivityElementList []*etree.Element
 
 		//DayList      []string
 		//HourList     []string
@@ -360,15 +354,8 @@ exit:
 				instance.RunState = autotimetable.INSTANCE_FAILED
 			}
 		}
-		//if data.finished < 0 {
-		//  logger.Info("FET_Failed: [%d] %s",
-		//      instance.Index, data.errormsg)
-		//}
-
 		logger.Result(".END", fmt.Sprintf("%d.%d.%d",
 			instance.Index, instance.Progress, instance.RunState))
-
-		//TODO? Add a message for a time-out?
 		efile, err := os.ReadFile(filepath.Join(data.odir, "logs", "errors.txt"))
 		if err == nil {
 			instance.Message = string(efile)
@@ -379,6 +366,25 @@ exit:
 	//TODO: Timeouts ...
 
 	if instance.RunState == autotimetable.INSTANCE_RUNNING {
+
+		/* TODO: testing ...
+		remaining := attdata.Parameters.TIMEOUT - attdata.Ticks
+		prog := instance.Progress
+		ticks := instance.Ticks
+		if prog != 0 {
+			expect := (100 - prog) * ticks / prog
+			if expect > remaining {
+				logger.Info("FET_TooSlow %d:%s @ %d, p: %d%% n: %d",
+					instance.Index,
+					instance.ConstraintType,
+					ticks,
+					prog,
+					len(instance.Constraints))
+				data.Abort()
+				instance.RunState = autotimetable.ABORT_TIMED_OUT
+			}
+		}
+		//... TODO */
 
 		//TODO: Experiment to catch FET getting stuck soon after start.
 		// It may need tweaking.
@@ -393,8 +399,6 @@ exit:
 			data.Abort()
 			instance.RunState = autotimetable.ABORT_TIMED_OUT
 		}
-
-		//TODO: Maybe the remaining time until the global time-out would be useful?
 
 		t := instance.Timeout
 		if t == 0 {
@@ -413,7 +417,7 @@ exit:
 				instance.RunState = autotimetable.ABORT_TIMED_OUT
 			}
 		} else {
-			limit := (instance.Ticks * 50) / t
+			limit := (instance.Ticks * 20) / t // the factor was originally 50
 			//TODO: This is not really a timeout! And the multiplier is highly experimental.
 			// It's more of a "progress on course" criterion.
 			if instance.Progress < limit {

@@ -41,7 +41,7 @@ func (attdata *AutoTtData) get_basic_constraints(
 		panic("Bug: get_basic_constraints ... FINISHED!")
 
 	case PHASE_BASIC, PHASE_HARD:
-		natypes := attdata.Source.GetResourceUnavailableConstraintTypes()
+		natypes := attdata.Source.GetPhase0ConstraintTypes()
 		emap := attdata.HardConstraintMap
 	nexttype:
 		for _, ctype := range attdata.Constraint_Types {
