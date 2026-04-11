@@ -424,6 +424,10 @@ tickloop:
 }
 
 func (attdata *AutoTtData) start_instance(instance *TtInstance) {
+	if instance.Index == 0 {
+		attdata.instanceCounter++
+		instance.Index = attdata.instanceCounter
+	}
 	attdata.Backend.RunBackend(attdata, instance)
 	attdata.active_instances = append(attdata.active_instances, instance)
 }
@@ -455,9 +459,8 @@ func (attdata *AutoTtData) new_instance(
 	}
 
 	// Make a new `TtInstance`
-	attdata.instanceCounter++
 	instance := &TtInstance{
-		Index:        attdata.instanceCounter,
+		Index:        0, // the index will be set when the instance is actually started
 		Timeout:      timeout,
 		BaseInstance: instance_0,
 
