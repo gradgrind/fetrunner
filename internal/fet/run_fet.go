@@ -116,7 +116,6 @@ func (fetbuild *fet_build) Tidy(bdata *base.BaseData) {
 	os.RemoveAll(fetbuild.tmpdir)
 }
 
-// TODO: It might be enough to pass in just logger and Parameters
 func (fetbuild *fet_build) RunBackend(
 	attdata *autotimetable.AutoTtData,
 	instance *autotimetable.TtInstance,
@@ -219,7 +218,6 @@ func (fetbuild *fet_build) RunBackend(
 
 	go run(fet_data, runCmd)
 	instance.InstanceBackend = fet_data
-	instance.RunState = -1 // indicate started/running
 }
 
 type FetTtData struct {
@@ -342,12 +340,8 @@ exit:
 		if data.rdfile != nil {
 			data.rdfile.Close()
 		}
-		switch instance.RunState {
-		case autotimetable.ABORT_NEW_CYCLE:
-			instance.RunState = autotimetable.INSTANCE_CANCELLED
-		case autotimetable.ABORT_TIMED_OUT:
-			instance.RunState = autotimetable.INSTANCE_TIMED_OUT
-		case autotimetable.INSTANCE_RUNNING:
+		instance.Finished = true
+		if instance.RunState == autotimetable.INSTANCE_RUNNING {
 			if instance.Progress == 100 {
 				instance.RunState = autotimetable.INSTANCE_SUCCESSFUL
 			} else {
@@ -368,23 +362,23 @@ exit:
 	if instance.RunState == autotimetable.INSTANCE_RUNNING {
 
 		/* TODO: testing ...
-		remaining := attdata.Parameters.TIMEOUT - attdata.Ticks
-		prog := instance.Progress
-		ticks := instance.Ticks
-		if prog != 0 {
-			expect := (100 - prog) * ticks / prog
-			if expect > remaining {
-				logger.Info("FET_TooSlow %d:%s @ %d, p: %d%% n: %d",
-					instance.Index,
-					instance.ConstraintType,
-					ticks,
-					prog,
-					len(instance.Constraints))
-				data.Abort()
-				instance.RunState = autotimetable.ABORT_TIMED_OUT
-			}
-		}
-		//... TODO */
+		   remaining := attdata.Parameters.TIMEOUT - attdata.Ticks
+		   prog := instance.Progress
+		   ticks := instance.Ticks
+		   if prog != 0 {
+		       expect := (100 - prog) * ticks / prog
+		       if expect > remaining {
+		           logger.Info("FET_TooSlow %d:%s @ %d, p: %d%% n: %d",
+		               instance.Index,
+		               instance.ConstraintType,
+		               ticks,
+		               prog,
+		               len(instance.Constraints))
+		           data.Abort()
+		           instance.RunState = autotimetable.ABORT_TIMED_OUT
+		       }
+		   }
+		   //... TODO */
 
 		//TODO: Experiment to catch FET getting stuck soon after start.
 		// It may need tweaking.

@@ -76,13 +76,15 @@ func (attdata *AutoTtData) get_basic_constraints(
 			continue
 		}
 		nconstraints += len(cixlist)
-		instance := attdata.new_instance(
-			instance0,
-			wcl.ctype,
-			wcl.weight,
-			cixlist,
-			attdata.cycle_timeout)
-		instances = append(instances, instance)
+		instances = append(instances, &TtInstance{
+			// Make a new `TtInstance`
+			Timeout:      attdata.cycle_timeout,
+			BaseInstance: instance0,
+
+			ConstraintType: wcl.ctype,
+			Constraints:    cixlist,
+			Weight:         wcl.weight,
+		})
 	}
 	return instances, nconstraints
 }

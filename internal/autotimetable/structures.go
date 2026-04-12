@@ -77,13 +77,13 @@ type AutoTtData struct {
 	// by the run-time back-end.
 
 	// Local variables
-	instanceCounter int
-	lastResult      *Result
-	cycle_timeout   int
-	full_instance   *TtInstance
-	null_instance   *TtInstance
-	hard_instance   *TtInstance
-	na_instance     *TtInstance
+	instanceCounter   int
+	lastResult        *Result
+	cycle_timeout     int
+	full_instance     *TtInstance
+	null_instance     *TtInstance
+	hard_instance     *TtInstance
+	priority_instance *TtInstance
 
 	//TODO?
 	phase int // 0: initial phase, 1: adding hard constraints,
@@ -115,11 +115,12 @@ type TtInstance struct {
 	InstanceBackend TtInstanceBackend // interface to generator back-end for this instance
 	Ticks           int               // run time of this instance
 
-	// `RunState` is used in the tick-loop, but the "finished" states are set
+	// `RunState` is used in the tick-loop, but the "Done" flag is set
 	// using the back-end `DoTick` method (though still in the thread of the
 	// tick-loop).
 	RunState int // for possible values see constants below
 	// The following are set by the back-end:
+	Finished bool   // set to `true` by `DoTick` when run completes
 	Progress int    // percent
 	LastTime int    // last (instance) time at which the back-end made progress
 	Message  string // "" or error message
@@ -127,14 +128,16 @@ type TtInstance struct {
 
 // The values of an instance's `RunState`
 const (
-	INSTANCE_NULL       = 0  // initial value, not started
-	INSTANCE_RUNNING    = -1 // the instance is running
-	ABORT_NEW_CYCLE     = -2 // the instance is no longer required
-	ABORT_TIMED_OUT     = -3 // the instance was progressing too slowly
-	INSTANCE_SUCCESSFUL = 1  // the run concluded successfully
-	INSTANCE_CANCELLED  = 2  // the instance was stopped, being no longer required
-	INSTANCE_TIMED_OUT  = 3  // the instance was stopped because of being too slow
-	INSTANCE_FAILED     = 4  // an error was encountered during the run
+	// unstarted = 0
+	INSTANCE_RUNNING    = 1  // the instance has been started and is running
+	ABORT_NEW_CYCLE     = 2  // the instance is no longer required
+	ABORT_TIMED_OUT     = 3  // the instance was progressing too slowly
+	INSTANCE_SUCCESSFUL = -1 // the instance completed successfully
+	INSTANCE_FAILED     = -2 // the instance failed due to a data error
+	// If the run state is > INSTANCE_STARTED, the actual completion of the
+	// instance is uninteresting. It will have been told to abort and will
+	// be removed from the active list when it does finish. Any associated
+	// resources can then be tidied up.
 )
 
 type ActivityIndex = int

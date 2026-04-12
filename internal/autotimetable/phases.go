@@ -1,15 +1,15 @@
 package autotimetable
 
 import (
-    "fmt"
-    "strconv"
+	"fmt"
+	"strconv"
 )
 
 const (
-    PHASE_BASIC = iota
-    PHASE_HARD
-    PHASE_SOFT
-    PHASE_FINISHED
+	PHASE_BASIC = iota
+	PHASE_HARD
+	PHASE_SOFT
+	PHASE_FINISHED
 )
 
 const NEARLY_FINISHED = 80 // (progress, %) TODO: experimental, what is a good value?
@@ -20,7 +20,7 @@ processes appropriate to the new phase are aborted.
 ## In PHASE_BASIC all the special constraints are running initially:
 
 - _UNCONSTRAINED
-- _NA_ONLY (if there are any hard not-available constraints)
+- _PRIORITY (if there are any "priority" constraints)
 - _HARD_ONLY
 - _COMPLETE
 
@@ -32,7 +32,7 @@ These are regarded as especially important constraints.
 If _UNCONSTRAINED completes successfully and `current_instance` is still unset,
 this becomes the current instance.
 
-If _NA_ONLY completes successfully the PHASE_HARD is entered.
+If _PRIORITY completes successfully the PHASE_HARD is entered.
 
 If _HARD_ONLY completes successfully PHASE_SOFT is entered.
 
@@ -75,109 +75,110 @@ is finished.
 
 // Enter new phase.
 func (attdata *AutoTtData) enter_phase(p int) {
-    bdata := attdata.BaseData
-    if attdata.current_instance != nil {
-        // Adjust the initial time-out guideline.
-        attdata.cycle_timeout = (max(attdata.cycle_timeout,
-            attdata.current_instance.Ticks) *
-            attdata.Parameters.NEW_PHASE_TIMEOUT_FACTOR) / 10
-        //TODO: Does the skip-hard-testing option require a non-zero "timeout"?
-        // Perhaps a cleverer "too-slow test" would be an alternative?
-    }
+	bdata := attdata.BaseData
+	if attdata.current_instance != nil {
+		// Adjust the initial time-out guideline.
+		attdata.cycle_timeout = (max(attdata.cycle_timeout,
+			attdata.current_instance.Ticks) *
+			attdata.Parameters.NEW_PHASE_TIMEOUT_FACTOR) / 10
+		//TODO: Does the skip-hard-testing option require a non-zero "timeout"?
+		// Perhaps a cleverer "too-slow test" would be an alternative?
+	}
 new_phase:
-    attdata.phase = p
-    bdata.Logger.Result(".PHASE", strconv.Itoa(p))
+	attdata.phase = p
+	bdata.Logger.Result(".PHASE", strconv.Itoa(p))
 
-    // Abort special instances which are no longer relevant.
-    // Note that anything halted here will not be restarted, because this
-    // is a transition to a new phase. ABORT_NEW_CYCLE is used because no
-    // error message should arise for the constraints.
-    if p == PHASE_BASIC {
-        // no current instance
-        new_instance_list, _ := attdata.get_basic_constraints(attdata.null_instance)
-        attdata.set_runqueue(new_instance_list)
-        return
-    }
-    if p == PHASE_HARD && attdata.current_instance == nil {
-        bdata.Logger.Error("Unconstrained instance failed:\n:::+\n%s\n:::-",
-            attdata.null_instance.Message)
-        p = PHASE_FINISHED
-        goto new_phase
-    }
-    attdata.abort_instance(attdata.null_instance, ABORT_NEW_CYCLE)
-    attdata.abort_instance(attdata.na_instance, ABORT_NEW_CYCLE)
-    if p >= PHASE_SOFT {
-        attdata.abort_instance(attdata.hard_instance, ABORT_NEW_CYCLE)
-    }
-    if p == PHASE_FINISHED {
-        attdata.abort_instance(attdata.full_instance, ABORT_NEW_CYCLE)
-        return
-    }
+	// Abort special instances which are no longer relevant.
+	// Note that anything halted here will not be restarted, because this
+	// is a transition to a new phase. ABORT_NEW_CYCLE is used because no
+	// error message should arise for the constraints.
+	if p == PHASE_BASIC {
+		// no current instance
+		new_instance_list, _ := attdata.get_basic_constraints(attdata.null_instance)
+		attdata.set_runqueue(new_instance_list)
+		return
+	}
+	if p == PHASE_HARD && attdata.current_instance == nil {
+		bdata.Logger.Error("Unconstrained instance failed:\n:::+\n%s\n:::-",
+			attdata.null_instance.Message)
+		p = PHASE_FINISHED
+		goto new_phase
+	}
+	attdata.abort_instance(attdata.null_instance)
+	attdata.abort_instance(attdata.priority_instance)
+	if p >= PHASE_SOFT {
+		attdata.abort_instance(attdata.hard_instance)
+	}
+	if p == PHASE_FINISHED {
+		attdata.abort_instance(attdata.full_instance)
+		return
+	}
 
-    // Abort all non-special processes.
-    for _, instance := range attdata.active_instances {
-        if len(instance.Constraints) != 0 {
-            attdata.abort_instance(instance, ABORT_NEW_CYCLE)
-        }
-    }
+	// Abort all non-special processes.
+	for _, instance := range attdata.active_instances {
+		if len(instance.Constraints) != 0 {
+			attdata.abort_instance(instance)
+		}
+	}
 
-    // Initialize constraint-instance list, only in PHASE_HARD and PHASE_SOFT.
-    if new_instance_list, n := attdata.get_basic_constraints(attdata.current_instance); n == 0 {
-        // Skip to next phase
-        p++
-        goto new_phase
-    } else {
-        attdata.set_runqueue(new_instance_list)
-    }
+	// Initialize constraint-instance list, here only in PHASE_HARD and PHASE_SOFT.
+	if new_instance_list, n := attdata.get_basic_constraints(attdata.current_instance); n == 0 {
+		// Skip to next phase
+		p++
+		goto new_phase
+	} else {
+		attdata.set_runqueue(new_instance_list)
+	}
 }
 
 func (attdata *AutoTtData) tick_phase() bool {
-    bdata := attdata.BaseData
-    logger := bdata.Logger
-    p := attdata.phase
-    if p >= PHASE_FINISHED {
-        panic("Bug, tick_phase in PHASE_FINISHED+")
-    }
-    if attdata.full_instance.RunState == INSTANCE_SUCCESSFUL {
-        // Set as current and prepare to wind up process.
-        attdata.current_instance = attdata.full_instance
-        logger.Result(".ALL_OK", "All constraints OK")
-        attdata.new_current_instance(bdata, attdata.current_instance)
-        attdata.enter_phase(PHASE_FINISHED)
-        return true
-    }
-    if p <= PHASE_HARD && attdata.hard_instance.RunState == INSTANCE_SUCCESSFUL {
-        // Set as current and prepare for processing soft constraints.
-        attdata.current_instance = attdata.hard_instance
-        logger.Result(".HARD_OK", "All hard constraints OK")
-        attdata.new_current_instance(bdata, attdata.current_instance)
-        attdata.enter_phase(PHASE_SOFT)
-        return true
-    }
-    if p == PHASE_BASIC {
-        if attdata.na_instance != nil && attdata.na_instance.RunState == INSTANCE_SUCCESSFUL {
-            // Set as current.
-            attdata.current_instance = attdata.na_instance
-            bdata.Logger.Result(".NA_OK", "All hard NotAvailable constraints OK")
-            attdata.new_current_instance(bdata, attdata.current_instance)
-            attdata.enter_phase(PHASE_HARD)
-            return true
-        }
-        if attdata.null_instance.RunState == INSTANCE_SUCCESSFUL && attdata.current_instance == nil {
-            attdata.current_instance = attdata.null_instance
-            logger.Result(".NULL_OK", "Without constraints OK")
-            attdata.new_current_instance(bdata, attdata.current_instance)
-            // Don't change phase.
-        }
-    }
+	bdata := attdata.BaseData
+	logger := bdata.Logger
+	p := attdata.phase
+	if p >= PHASE_FINISHED {
+		panic("Bug, tick_phase in PHASE_FINISHED+")
+	}
+	if attdata.full_instance.RunState == INSTANCE_SUCCESSFUL {
+		// Set as current and prepare to wind up process.
+		attdata.current_instance = attdata.full_instance
+		logger.Result(".ALL_OK", "All constraints OK")
+		attdata.new_current_instance(bdata, attdata.current_instance)
+		attdata.enter_phase(PHASE_FINISHED)
+		return true
+	}
+	if p <= PHASE_HARD && attdata.hard_instance.RunState == INSTANCE_SUCCESSFUL {
+		// Set as current and prepare for processing soft constraints.
+		attdata.current_instance = attdata.hard_instance
+		logger.Result(".HARD_OK", "All hard constraints OK")
+		attdata.new_current_instance(bdata, attdata.current_instance)
+		attdata.enter_phase(PHASE_SOFT)
+		return true
+	}
+	if p == PHASE_BASIC {
+		if attdata.priority_instance.RunState == INSTANCE_SUCCESSFUL {
+			// Set as current and prepare for processing remaining hard constraints.
+			attdata.current_instance = attdata.priority_instance
+			bdata.Logger.Result(".PRIORITY_OK", "All priority constraints OK")
+			attdata.new_current_instance(bdata, attdata.current_instance)
+			attdata.enter_phase(PHASE_HARD)
+			return true
+		}
+		if attdata.null_instance.RunState == INSTANCE_SUCCESSFUL && attdata.current_instance == nil {
+			// Set current instance
+			attdata.current_instance = attdata.null_instance
+			logger.Result(".NULL_OK", "Without constraints OK")
+			attdata.new_current_instance(bdata, attdata.current_instance)
+			// Don't change phase.
+		}
+	}
 
-    // Handle the currently active constraint-adding instances.
-    // Go to next phase if no remaining constraint-adding instances.
-    if attdata.phase_main() {
-        attdata.enter_phase(p + 1)
-        return true
-    }
-    return false
+	// Handle the currently active constraint-adding instances.
+	// Go to next phase if no remaining constraint-adding instances.
+	if attdata.phase_main() {
+		attdata.enter_phase(p + 1)
+		return true
+	}
+	return false
 }
 
 /*
@@ -213,157 +214,100 @@ can be entered. Otherwise return `false`.
 */
 
 func (attdata *AutoTtData) phase_main() bool {
-    bdata := attdata.BaseData
-    logger := bdata.Logger
-    base_instance := attdata.current_instance
+	bdata := attdata.BaseData
+	logger := bdata.Logger
 
-    // Seek failed instances, which should be retried with a longer timeout or split.
-    // Also check for a successful completion. Collect instances which would need
-    // restarting in a new cycle.
-    var (
-        failed       []*TtInstance = nil
-        to_continue  []*TtInstance = nil // only relevant at the end of a "cycle"
-        next_timeout int           = 0   // set non-zero at the end of a cycle
-        n_active     int           = 0   // number of running instances
-    )
-    for _, instance := range attdata.active_instances {
-        if len(instance.Constraints) == 0 { // a special instance
-            // Handled in `tick_phase()`
-            continue
-        }
-        switch instance.RunState {
-        case INSTANCE_SUCCESSFUL: // completed successfully
-            if next_timeout == 0 {
-                // This instance will be the new base.
-                attdata.current_instance = instance
-                base_instance = instance
-                attdata.new_current_instance(bdata, instance)
-                next_timeout = max(
-                    (instance.Ticks*attdata.Parameters.NEW_BASE_TIMEOUT_FACTOR)/10,
-                    attdata.cycle_timeout)
-                /* for debugging
-                   // next_timeout != 0 and base_instance = current_instance is new
-                   fmt.Printf("$ %s  n: %d  t: %d (%d, %d)\n",
-                       instance.ConstraintType, len(instance.Constraints),
-                       next_timeout, instance.Ticks, attdata.cycle_timeout)
-                */
-            } else {
-                to_continue = append(to_continue, instance)
-            }
-        case INSTANCE_RUNNING: // running
-            n_active++
-            to_continue = append(to_continue, instance)
-        //case ABORT_NEW_CYCLE, INSTANCE_TIMED_OUT, INSTANCE_CANCELLED: //TODO?
-        case ABORT_TIMED_OUT, INSTANCE_FAILED:
-            //TODO???
-            // Gather all unsuccessfully ended constraints here, whether with >1
-            // constraints, a single constraint, timed out or with error.
-            failed = append(failed, instance)
-        }
-    }
+	// Seek failed instances, which should be retried with a longer timeout or split.
+	// Also check for a successful completion. Collect instances which would need
+	// restarting in a new cycle.
+	var (
+		// Gather all unsuccessfully ended constraints here, whether with a single
+		// or >1 constraints, timed out or with error.
+		failed []*TtInstance = nil
 
-    // Rebuild or extend run queue, according to whether a new cycle is beginning.
-    timeout := next_timeout
-    if timeout == 0 {
-        // No new base yet
-        timeout = attdata.cycle_timeout // for new split instances
-    } else {
-        // There is a new base, stop the old instances and queue them for restarting.
-        new_queue := []*TtInstance{} // restart run queue
-        old_queue := attdata.get_runqueue()
-        for _, instance := range to_continue {
-            attdata.abort_instance(instance, ABORT_NEW_CYCLE)
+		to_continue []*TtInstance = nil   // only relevant at the end of a "cycle"
+		new_cycle   bool          = false // set to true at the end of a cycle
+		n_active    int           = 0     // number of running instances
+	)
+	for _, instance := range attdata.active_instances {
+		if len(instance.Constraints) == 0 { // a special instance
+			// Handled in `tick_phase()`
+			continue
+		}
+		switch instance.RunState {
+		case INSTANCE_FAILED, ABORT_TIMED_OUT:
+			failed = append(failed, instance)
+		case INSTANCE_SUCCESSFUL:
+			if !new_cycle {
+				// Start a new cycle, with this instance as the new base.
+				attdata.current_instance = instance
+				attdata.new_current_instance(bdata, instance)
+				new_cycle = true
+				attdata.cycle_timeout = max(
+					(instance.Ticks*attdata.Parameters.NEW_BASE_TIMEOUT_FACTOR)/10,
+					attdata.cycle_timeout)
+			} else {
+				// This will need restarting in the new cycle.
+				to_continue = append(to_continue, instance)
+			}
+		case INSTANCE_RUNNING:
+			n_active++
+			to_continue = append(to_continue, instance)
+		case ABORT_NEW_CYCLE: // awaiting completion only, no action
+		default:
+			panic("Unexpected RunState: " + strconv.Itoa(instance.RunState))
+		}
+	}
 
-            //TODO: Split it if progress was slow (but not slow enough to
-            // trigger an Abort)?
+	// Rebuild or extend run queue, according to whether a new cycle is beginning.
+	if new_cycle {
+		// There is a new base, stop the old instances and queue them for restarting.
+		new_queue := []*TtInstance{} // restart run queue
+		old_queue := attdata.get_runqueue()
+		for _, instance := range to_continue {
+			attdata.abort_instance(instance)
+			if instance.Progress >= NEARLY_FINISHED {
+				// Add to the new run queue.
+				new_queue = append(new_queue, instance)
+			} else {
+				// Add to the old run queue.
+				old_queue = append(old_queue, instance)
+			}
+		}
+		// Append old_queue to new_queue.
+		new_queue = append(new_queue, old_queue...)
+		attdata.set_runqueue(new_queue)
+	}
 
-            if instance.Progress >= NEARLY_FINISHED {
-                // Build new instance and queue it.
-                new_queue = append(new_queue, attdata.new_instance(
-                    base_instance,
-                    instance.ConstraintType,
-                    instance.Weight,
-                    instance.Constraints,
-                    timeout))
-            } else {
-                // Add to the back of the old run queue, here still with the old base instance.
-                old_queue = append(old_queue, instance)
-            }
-        }
-        // Add rebased old_queue to new_queue.
-        for _, instance := range old_queue {
-            new_queue = append(new_queue, attdata.new_instance(
-                base_instance,
-                instance.ConstraintType,
-                instance.Weight,
-                instance.Constraints,
-                timeout))
-        }
-        attdata.set_runqueue(new_queue)
-    }
+	// Queue failed instances if they have more than one constraint.
+	for _, instance := range failed {
+		if len(instance.Constraints) > 1 {
+			attdata.queue_instance(instance)
+		} else if len(instance.Constraints) == 1 {
+			// Only a single constraint
+			if instance.RunState == INSTANCE_RUNNING {
+				if len(instance.Message) != 0 {
+					attdata.ConstraintErrors[instance.Constraints[0]] = instance.Message
+				} else {
+					attdata.ConstraintErrors[instance.Constraints[0]] = "UnknownFailure"
+				}
+				logger.Info("InstanceFailed: %d\n:::+\n%s\n:::-", instance.Index, instance.Message)
+				logger.Result(
+					".ELIMINATE", fmt.Sprintf("%s.%d",
+						attdata.Backend.ConstraintName(instance),
+						instance.Constraints[0]))
+			} else {
+				attdata.timed_out_instances = append(attdata.timed_out_instances, instance)
+				logger.Result(".TIMED_OUT", fmt.Sprintf("%s.%d.%d.%d",
+					attdata.Backend.ConstraintName(instance),
+					instance.Constraints[0],
+					instance.Progress, instance.Ticks))
+			}
+		} else {
+			panic("Bug, expected constraint(s)")
+		}
+	}
 
-    // Split and add failed instances.
-    for _, instance := range failed {
-        if len(instance.Constraints) > 1 {
-            sit := []string{}
-            for _, si := range attdata.split_instance(
-                instance, base_instance, timeout) {
-                attdata.queue_instance(si)
-                sit = append(sit,
-                    fmt.Sprintf("%d:%s", si.Index, si.ConstraintType))
-            }
-            logger.Info("(SPLIT) %d:%s -> %v",
-                instance.Index, instance.ConstraintType, sit)
-        } else if len(instance.Constraints) == 1 {
-            // Only a single constraint
-            switch instance.RunState {
-            case INSTANCE_FAILED:
-                if len(instance.Message) != 0 {
-                    attdata.ConstraintErrors[instance.Constraints[0]] = instance.Message
-                } else {
-                    attdata.ConstraintErrors[instance.Constraints[0]] = "UnknownFailure"
-                }
-                logger.Info("InstanceFailed: %d\n:::+\n%s\n:::-", instance.Index, instance.Message)
-                logger.Result(
-                    ".ELIMINATE", fmt.Sprintf("%s.%d",
-                        attdata.Backend.ConstraintName(instance),
-                        instance.Constraints[0]))
-
-            case ABORT_TIMED_OUT:
-                attdata.timed_out_instances = append(attdata.timed_out_instances, instance)
-                logger.Result(".TIMED_OUT", fmt.Sprintf("%s.%d.%d.%d",
-                    attdata.Backend.ConstraintName(instance),
-                    instance.Constraints[0],
-                    instance.Progress, instance.Ticks))
-            case INSTANCE_CANCELLED:
-                // No error messages
-            default:
-                panic("Unexpected RunState: " + strconv.Itoa(instance.RunState))
-            }
-        } else {
-            panic("Bug, expected constraint(s)")
-        }
-    }
-    // Return `true` if all the instances have been processed.
-    return n_active == 0 && attdata.n_queued() == 0
-}
-
-func (attdata *AutoTtData) split_instance(
-    instance *TtInstance, base_instance *TtInstance, timeout int,
-) []*TtInstance {
-    nhalf := len(instance.Constraints) / 2
-    return []*TtInstance{
-        attdata.new_instance(
-            base_instance,
-            instance.ConstraintType,
-            instance.Weight,
-            instance.Constraints[:nhalf],
-            timeout),
-        attdata.new_instance(
-            base_instance,
-            instance.ConstraintType,
-            instance.Weight,
-            instance.Constraints[nhalf:],
-            timeout),
-    }
+	// Return `true` if all the instances have been processed.
+	return n_active == 0 && attdata.n_queued() == 0
 }

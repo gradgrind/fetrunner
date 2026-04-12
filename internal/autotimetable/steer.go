@@ -215,14 +215,14 @@ func (attdata *AutoTtData) StartGeneration() {
 			}
 		}
 		if notAvailable != 0 {
-			attdata.na_instance = &TtInstance{
+			attdata.priority_instance = &TtInstance{
 				Index:          -3,
-				ConstraintType: "_NA_ONLY",
+				ConstraintType: "_PRIORITY",
 				//Timeout:           0,
 				ConstraintEnabled: enabled,
 			}
 		} else {
-			attdata.na_instance = nil
+			attdata.priority_instance = nil
 		}
 
 	}
@@ -240,7 +240,7 @@ func (attdata *AutoTtData) StartGeneration() {
 	attdata.cycle_timeout = 0
 
 	if attdata.Parameters.SKIP_HARD {
-		// Don't run null_instance, na_instance or hard_instance
+		// Don't run null_instance, priority_instance or hard_instance
 		if len(attdata.SoftConstraintMap) == 0 {
 			logger.Error("--SOFT_SKIP_HARD: Skipping hard-constraint test," +
 				" but no soft constraints")
@@ -256,8 +256,8 @@ func (attdata *AutoTtData) StartGeneration() {
 		} else {
 			attdata.start_instance(attdata.hard_instance)
 		}
-		if attdata.na_instance != nil {
-			attdata.start_instance(attdata.na_instance)
+		if attdata.priority_instance != nil {
+			attdata.start_instance(attdata.priority_instance)
 		}
 		attdata.start_instance(attdata.null_instance)
 		// Start in basic phase.
@@ -281,10 +281,10 @@ func (attdata *AutoTtData) StartGeneration() {
 			// Wait for active instances to finish, stopping them if necessary.
 			count := 0
 			for _, instance := range attdata.active_instances {
-				if instance.RunState < 0 {
+				if !instance.Finished {
 					instance.InstanceBackend.DoTick(attdata, instance)
 					count++
-					attdata.abort_instance(instance, ABORT_NEW_CYCLE)
+					attdata.abort_instance(instance)
 				}
 			}
 			if count == 0 {
@@ -341,7 +341,7 @@ tickloop:
 		// Deal with "tick" updates to the `RunState` of the running instances.
 		// First increment the ticks of running instances.
 		for _, instance := range attdata.active_instances {
-			if instance.RunState < 0 {
+			if !instance.Finished {
 				// Among other things, update the state:
 				instance.InstanceBackend.DoTick(attdata, instance)
 			}
@@ -424,57 +424,40 @@ tickloop:
 }
 
 func (attdata *AutoTtData) start_instance(instance *TtInstance) {
-	if instance.Index == 0 {
+	if instance.Index >= 0 {
 		attdata.instanceCounter++
 		instance.Index = attdata.instanceCounter
 	}
+	// Set up enabled constraints (`instance.ConstraintEnabled`) and "timeout".
+	if len(instance.Constraints) != 0 {
+		// a "normal" instance
+		enabled := slices.Clone(instance.BaseInstance.ConstraintEnabled)
+		// Add the new constraints
+		for _, c := range instance.Constraints {
+			enabled[c] = true
+		}
+		instance.ConstraintEnabled = enabled
+		if len(instance.Constraints) == 1 {
+			instance.Timeout = 0
+		} else {
+			instance.Timeout = max(attdata.cycle_timeout, MIN_TIMEOUT)
+		}
+	}
+	// Start running.
+	instance.RunState = INSTANCE_RUNNING
 	attdata.Backend.RunBackend(attdata, instance)
 	attdata.active_instances = append(attdata.active_instances, instance)
+
+	//fmt.Printf("?start %d\n", instance.Index)
+	//for _, i := range attdata.active_instances {
+	//	fmt.Printf("?active %d rs: %d done: %v p: %d\n", i.Index, i.RunState, i.Done, i.Progress)
+	//}
+
 }
 
-func (attdata *AutoTtData) abort_instance(instance *TtInstance, reason int) {
+func (attdata *AutoTtData) abort_instance(instance *TtInstance) {
 	if instance != nil && instance.RunState == INSTANCE_RUNNING {
 		instance.InstanceBackend.Abort()
-		instance.RunState = reason
+		instance.RunState = ABORT_NEW_CYCLE
 	}
-}
-
-func (attdata *AutoTtData) new_instance(
-	instance_0 *TtInstance,
-	constraint_type ConstraintType,
-	weight string,
-	constraint_indexes []ConstraintIndex,
-	timeout int,
-) *TtInstance {
-	enabled := slices.Clone(instance_0.ConstraintEnabled)
-	// Add the new constraints
-	for _, c := range constraint_indexes {
-		enabled[c] = true
-	}
-	// Single-constraint instances always have no timeout
-	if len(constraint_indexes) == 1 {
-		timeout = 0
-	} else if timeout < MIN_TIMEOUT && timeout != 0 {
-		timeout = MIN_TIMEOUT
-	}
-
-	// Make a new `TtInstance`
-	instance := &TtInstance{
-		Index:        0, // the index will be set when the instance is actually started
-		Timeout:      timeout,
-		BaseInstance: instance_0,
-
-		ConstraintEnabled: enabled,
-		ConstraintType:    constraint_type,
-		Constraints:       constraint_indexes,
-		Weight:            weight,
-
-		InstanceBackend: nil,
-		Ticks:           0,
-		RunState:        0,
-		Progress:        0,
-		LastTime:        0,
-		Message:         "",
-	}
-	return instance
 }
