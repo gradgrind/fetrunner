@@ -85,7 +85,6 @@ type AutoTtData struct {
 	hard_instance     *TtInstance
 	priority_instance *TtInstance
 
-	//TODO?
 	phase int // 0: initial phase, 1: adding hard constraints,
 	// 2: adding soft constraints, 3: finished
 	// The (successful) instance on which current trials are based:
@@ -169,7 +168,7 @@ type TtActivityPlacement struct {
 }
 
 type TtActivity struct {
-	Id string // FET: "ActivityId" ? //TODO?
+	Id string // FET: "Activity:" + ActivityId
 	// DB: NodeRef of the source activity from which this is derived.
 	Tag string // optionally usable by the back-end
 
@@ -181,7 +180,7 @@ type TtActivity struct {
 }
 
 type TtConstraint struct {
-	Id string // FET: "[index]" or "[index:weight]" //TODO?
+	Id string // FET: "[index]", or "[index:fet-weight]" if weight < 100
 	// DB: NodeRef of the source constraint from which this is derived.
 	// A single NodeRef may be referenced by multiple TtConstraints.
 
