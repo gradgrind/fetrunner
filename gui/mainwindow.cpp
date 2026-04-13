@@ -498,7 +498,7 @@ void MainWindow::iprogress(const QString &data)
     case INSTANCE_HARD_ONLY:
         ui->progress_hard_only->setText(slist[1] + "% @ " + slist[2]);
         break;
-    case INSTANCE_NOT_AVAILABLE:
+    case INSTANCE_PRIORITY:
         break;
     case INSTANCE_UNCONSTRAINED:
         ui->progress_unconstrained->setText(slist[1] + "% @ " + slist[2]);
@@ -533,7 +533,7 @@ void MainWindow::iend(const QString &data)
         break;
     case INSTANCE_UNCONSTRAINED:
         ui->progress_unconstrained->setEnabled(false);
-    case INSTANCE_NOT_AVAILABLE:
+    case INSTANCE_PRIORITY:
         break;
     default:
         auto irow = instance_row_map[key];
@@ -556,7 +556,7 @@ void MainWindow::iaccept(const QString &data)
     case INSTANCE_HARD_ONLY: // "all hard" completed
         tableProgressGroupDone(0);
         break;
-    case INSTANCE_NOT_AVAILABLE: // hard "not available" completed
+    case INSTANCE_PRIORITY: // "priority" completed
         tableProgressGroupDone(1);
         break;
     case INSTANCE_UNCONSTRAINED: // "unconstrained" completed

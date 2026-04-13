@@ -116,6 +116,7 @@ func init() {
 	OpHandlerMap["GET_FET"] = get_fet
 	OpHandlerMap["SET_FILE"] = file_loader
 	OpHandlerMap["RUN_TT_SOURCE"] = runtt_source
+	OpHandlerMap["TT_PRIORITY_CONSTRAINT_TYPES"] = priortityConstraints
 	OpHandlerMap["TT_HARD_CONSTRAINTS"] = hardConstraints
 	OpHandlerMap["TT_SOFT_CONSTRAINTS"] = softConstraints
 	OpHandlerMap["TT_ACTIVITIES"] = nActivities
@@ -367,6 +368,17 @@ func ttparameter(dsp *Dispatcher, op *DispatchOp) {
 func nprocesses(dsp *Dispatcher, op *DispatchOp) {
 	nmin, np, nopt := autotimetable.MinNpOptProcesses()
 	dsp.BaseData.Logger.Result(op.Op, fmt.Sprintf("%d.%d.%d", nmin, np, nopt))
+}
+
+// Return the high priority processes handled in autotimetable's phase 0
+func priortityConstraints(dsp *Dispatcher, op *DispatchOp) {
+	if CheckArgs(dsp.BaseData.Logger, op, 0) {
+		ctlist := []string{}
+		for _, ct := range dsp.AutoTtData.Source.GetPhase0ConstraintTypes() {
+			ctlist = append(ctlist, strings.TrimPrefix(ct, "Constraint"))
+		}
+		dsp.BaseData.Logger.Result("PRIORITY_CONSTRAINTS", strings.Join(ctlist, ":"))
+	}
 }
 
 // Return the hard constraints sorted according to priority.

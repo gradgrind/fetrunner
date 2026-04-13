@@ -23,7 +23,7 @@ QT_END_NAMESPACE
 
 const int INSTANCE_COMPLETE = -1;
 const int INSTANCE_HARD_ONLY = -2;
-const int INSTANCE_NOT_AVAILABLE = -3;
+const int INSTANCE_PRIORITY = -3;
 const int INSTANCE_UNCONSTRAINED = -4;
 
 struct instance_row
@@ -93,6 +93,7 @@ private:
 
     QString hard_count;
     QString soft_count;
+    QStringList priority_constraints;
     QHash<QString, progress_line> constraint_map;
     //QList<int> instance_rows_changed;
     QList<progress_changed> progress_rows_changed;
