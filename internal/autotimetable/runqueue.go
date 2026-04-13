@@ -1,7 +1,7 @@
 package autotimetable
 
 import (
-	"strconv"
+	"fmt"
 )
 
 // Handling the instance queue ...
@@ -143,26 +143,10 @@ split:
 // Get an instance from the start of the queue, use `attdata.current_instance`
 // for the base. Rebase if necessary and decide whether to split.
 func (attdata *AutoTtData) start_queued_instance() bool {
-
-	/* TODO--
-	attdata.BaseData.Logger.Info("###start_queued_instance0")
-	for i := attdata.run_queue_next; i < len(attdata.run_queue); i++ {
-		inst := attdata.run_queue[i]
-		attdata.BaseData.Logger.Info("### @%d/%d i=%d: rs=%d, x=%v, p=%d, %s, n=%d\n",
-			attdata.run_queue_next, len(attdata.run_queue)-attdata.run_queue_next,
-			inst.Index, inst.RunState, inst.Done, inst.Progress,
-			inst.ConstraintType, len(inst.Constraints))
-	}
-	*/
-
 	if attdata.run_queue_next >= len(attdata.run_queue) {
 		return false
 	}
 	instance_0 := attdata.run_queue[attdata.run_queue_next]
-
-	//TODO--
-	//fmt.Printf("??? %d rs: %d done: %v p: %d\n", instance_0.Index, instance_0.RunState, instance_0.Done, instance_0.Progress)
-
 	// It is possible for `attdata.current_instance` to be `nil`, at the
 	// beginning of a run. In this case only "fresh" instances should be in the queue.
 	instance_base := attdata.current_instance
@@ -171,6 +155,8 @@ func (attdata *AutoTtData) start_queued_instance() bool {
 		switch instance_0.RunState {
 		case 0, INSTANCE_SUCCESSFUL: // just rebase, if necessary
 		case INSTANCE_FAILED, ABORT_TIMED_OUT:
+			//TODO-- attdata.BaseData.Logger.Info("§1 %d %d", instance_0.Index, instance_0.RunState)
+
 			attdata.split()
 			return true
 		case ABORT_NEW_CYCLE:
@@ -178,12 +164,15 @@ func (attdata *AutoTtData) start_queued_instance() bool {
 			// Is this the right criterion?
 			// Split if running long enough and not got very far.
 			if instance_0.Ticks >= 10 && instance_0.Progress < NEARLY_FINISHED {
+				//TODO-- attdata.BaseData.Logger.Info("§2 %d %d", instance_0.Index, instance_0.RunState)
+
 				attdata.split()
 				return true
 			}
 			// otherwise just rebase
 		default:
-			panic("Unexpected RunState: " + strconv.Itoa(instance_0.RunState))
+			panic(fmt.Sprintf("Unexpected RunState, instance %d: %d",
+				instance_0.Index, instance_0.RunState))
 		}
 	}
 	if instance_base != nil && instance_0.BaseInstance != instance_base {
@@ -206,6 +195,23 @@ func (attdata *AutoTtData) start_queued_instance() bool {
 // Split the first instance in the run queue, starting the first half.
 func (attdata *AutoTtData) split() {
 	instance := attdata.run_queue[attdata.run_queue_next]
+	attdata.BaseData.Logger.Info("(SPLIT) %d:%s (%d)",
+		instance.Index, instance.ConstraintType, instance.RunState)
+
+	/*/TODO--
+	ilist := []string{}
+	for _, ii := range attdata.get_runqueue() {
+		ilist = append(ilist, fmt.Sprintf("%d:%d", ii.Index, ii.RunState))
+	}
+	attdata.BaseData.Logger.Info("§QUEUE1 %+v\n", strings.Join(ilist, ", "))
+	alist := []string{}
+	for _, ii := range attdata.active_instances {
+		alist = append(alist, fmt.Sprintf("%d:%d", ii.Index, ii.RunState))
+	}
+	attdata.BaseData.Logger.Info("§ACTIVE1 %+v\n", strings.Join(alist, ", "))
+	*/
+
+	instance.RunState = INSTANCE_ABANDONED
 	// Split, and start the first half
 	nhalf := len(instance.Constraints) / 2
 	attdata.start_instance(&TtInstance{
@@ -227,11 +233,17 @@ func (attdata *AutoTtData) split() {
 		Constraints:    instance.Constraints[nhalf:],
 		Weight:         instance.Weight,
 	}
-	attdata.BaseData.Logger.Info("(SPLIT) %d:%s",
-		instance.Index, instance.ConstraintType)
 
-	for i := attdata.run_queue_next; i < len(attdata.run_queue); i++ {
-		inst := attdata.run_queue[i]
-		attdata.BaseData.Logger.Info(" ---> %d %s %d\n", inst.Index, inst.ConstraintType, len(inst.Constraints))
+	/*/TODO--
+	ilist = []string{}
+	for _, ii := range attdata.get_runqueue() {
+		ilist = append(ilist, fmt.Sprintf("%d:%d", ii.Index, ii.RunState))
 	}
+	attdata.BaseData.Logger.Info("§QUEUE2 %+v\n", strings.Join(ilist, ", "))
+	alist = []string{}
+	for _, ii := range attdata.active_instances {
+		alist = append(alist, fmt.Sprintf("%d:%d", ii.Index, ii.RunState))
+	}
+	attdata.BaseData.Logger.Info("§ACTIVE2 %+v\n", strings.Join(alist, ", "))
+	*/
 }

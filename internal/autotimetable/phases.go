@@ -155,7 +155,7 @@ func (attdata *AutoTtData) tick_phase() bool {
 		return true
 	}
 	if p == PHASE_BASIC {
-		if attdata.priority_instance.RunState == INSTANCE_SUCCESSFUL {
+		if attdata.priority_instance != nil && attdata.priority_instance.RunState == INSTANCE_SUCCESSFUL {
 			// Set as current and prepare for processing remaining hard constraints.
 			attdata.current_instance = attdata.priority_instance
 			bdata.Logger.Result(".PRIORITY_OK", "All priority constraints OK")
@@ -230,13 +230,14 @@ func (attdata *AutoTtData) phase_main() bool {
 		n_active    int           = 0     // number of running instances
 	)
 	for _, instance := range attdata.active_instances {
-		if len(instance.Constraints) == 0 { // a special instance
+		if instance.Processed || len(instance.Constraints) == 0 { // a special instance
 			// Handled in `tick_phase()`
 			continue
 		}
 		switch instance.RunState {
 		case INSTANCE_FAILED, ABORT_TIMED_OUT:
 			failed = append(failed, instance)
+			instance.Processed = true
 		case INSTANCE_SUCCESSFUL:
 			if !new_cycle {
 				// Start a new cycle, with this instance as the new base.
@@ -253,9 +254,10 @@ func (attdata *AutoTtData) phase_main() bool {
 		case INSTANCE_RUNNING:
 			n_active++
 			to_continue = append(to_continue, instance)
-		case ABORT_NEW_CYCLE: // awaiting completion only, no action
+		case ABORT_NEW_CYCLE, INSTANCE_ABANDONED: // awaiting completion only, no action
 		default:
-			panic("Unexpected RunState: " + strconv.Itoa(instance.RunState))
+			panic(fmt.Sprintf("Unexpected RunState, instance %d: %d",
+				instance.Index, instance.RunState))
 		}
 	}
 
@@ -264,6 +266,15 @@ func (attdata *AutoTtData) phase_main() bool {
 		// There is a new base, stop the old instances and queue them for restarting.
 		new_queue := []*TtInstance{} // restart run queue
 		old_queue := attdata.get_runqueue()
+
+		/*/TODO--
+		ilist := []string{}
+		for _, ii := range old_queue {
+			ilist = append(ilist, fmt.Sprintf("%d:%d", ii.Index, ii.RunState))
+		}
+		logger.Info("§OLDQUEUE %+v\n", strings.Join(ilist, ", "))
+		*/
+
 		for _, instance := range to_continue {
 			attdata.abort_instance(instance)
 			if instance.Progress >= NEARLY_FINISHED {

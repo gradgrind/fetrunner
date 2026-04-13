@@ -118,7 +118,8 @@ type TtInstance struct {
 	// `RunState` is used in the tick-loop, but the "Done" flag is set
 	// using the back-end `DoTick` method (though still in the thread of the
 	// tick-loop).
-	RunState int // for possible values see constants below
+	RunState  int  // for possible values see constants below
+	Processed bool // set to `true` when certain run-states have been handled
 	// The following are set by the back-end:
 	Finished bool   // set to `true` by `DoTick` when run completes
 	Progress int    // percent
@@ -134,10 +135,7 @@ const (
 	ABORT_TIMED_OUT     = 3  // the instance was progressing too slowly
 	INSTANCE_SUCCESSFUL = -1 // the instance completed successfully
 	INSTANCE_FAILED     = -2 // the instance failed due to a data error
-	// If the run state is > INSTANCE_STARTED, the actual completion of the
-	// instance is uninteresting. It will have been told to abort and will
-	// be removed from the active list when it does finish. Any associated
-	// resources can then be tidied up.
+	INSTANCE_ABANDONED  = -3 // the instance is no longer relevant
 )
 
 type ActivityIndex = int
@@ -171,7 +169,7 @@ type TtActivityPlacement struct {
 }
 
 type TtActivity struct {
-	Id string // FET: "ActivityId" ? //TODO???
+	Id string // FET: "ActivityId" ? //TODO?
 	// DB: NodeRef of the source activity from which this is derived.
 	Tag string // optionally usable by the back-end
 
@@ -183,7 +181,7 @@ type TtActivity struct {
 }
 
 type TtConstraint struct {
-	Id string // FET: "[index]" or "[index:weight]" //TODO???
+	Id string // FET: "[index]" or "[index:weight]" //TODO?
 	// DB: NodeRef of the source constraint from which this is derived.
 	// A single NodeRef may be referenced by multiple TtConstraints.
 

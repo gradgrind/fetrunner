@@ -204,7 +204,7 @@ func (attdata *AutoTtData) StartGeneration() {
 		}
 	}
 
-	{ // Prepare instance with only "NotAvailable" (hard) constraints.
+	{ // Prepare instance with only prioritized (hard) constraints.
 		// If there aren't any, skip this instance.
 		notAvailable := 0
 		enabled := make([]bool, attdata.NConstraints)
@@ -346,6 +346,19 @@ tickloop:
 				instance.InstanceBackend.DoTick(attdata, instance)
 			}
 		}
+
+		/*/TODO--
+		ilist := []string{}
+		for _, ii := range attdata.get_runqueue() {
+			ilist = append(ilist, fmt.Sprintf("%d:%d", ii.Index, ii.RunState))
+		}
+		logger.Info("§Q %+v\n", strings.Join(ilist, ", "))
+		alist := []string{}
+		for _, ii := range attdata.active_instances {
+			alist = append(alist, fmt.Sprintf("%d:%d", ii.Index, ii.RunState))
+		}
+		logger.Info("§A %+v\n", strings.Join(alist, ", "))
+		*/
 
 		// Then handle the new states
 		if attdata.tick_phase() && attdata.phase == PHASE_FINISHED {
