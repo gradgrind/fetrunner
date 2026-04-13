@@ -175,10 +175,10 @@ void MainWindow::tableProgressGroupDone(int hard_only)
 {
     for (auto it = constraint_map.begin(); it != constraint_map.end(); ++it) {
         if (hard_only >= 0) {
-            if (it.key().contains(':'))
+            auto k = it.key();
+            if (k.contains(':'))
                 continue;
-            //TODO: need the covered constraints:
-            if (hard_only != 0 && !it.key().contains("NotAvailable"))
+            if (hard_only != 0 && !priority_constraints.contains(k))
                 continue;
         }
         progress_line &cdata = it.value();
