@@ -6,29 +6,33 @@ The program is divided functionally into Go *packages*. On the whole these packa
 
 The `base` package provides logging and reporting functions.
 
-Also implemented in this package is a simple database structure with information about the institution – at present focusing primarily on the data connected with timetabling, but this can be easily extended. The root of this data structure is the Go *struct* `DbTopLevel`.
+Also implemented in this package is a simple database structure with information about the institution – at present focusing primarily on the data connected with timetabling, but this can be easily extended. The root of this data structure is the `Go` *struct* `DbTopLevel`.
 
 The database structure can be loaded from and saved to JSON, but other storage forms should be fairly straightforward to implement. There are functions to assist in conversion from other structures. Only a limited set of constraints is supported at present, which is intentional – the aim is to keep it as simple as possible, whilst supporting enough constraints to make it useful. If necessary, it should be easy enough to add new constraints.
 
-The  Go *struct* `BaseData` exists to tie together all the information and data structures associated with a particular data set. This avoids global variables and allows – potentially – multiple data sets to be handled at the same time.
+The  `Go` *struct* `BaseData` exists to tie together all the information and data structures associated with a particular data set. This avoids global variables and allows, potentially, multiple data sets to be handled at the same time.
 
 ## Package `timetable`
 
-To prepare for building a timetable the data in the `base` package is preprocessed somewhat to populate the Go *struct* `TtData`, which is used as the data source, to be converted to the format needed by the back-end. This structure must be rebuilt if the underlying data (in `DbTopLevel`) is changed. This timetable "preparation" is separated out into the package `timetable`.
+To prepare for building a timetable the data in the `base` package is preprocessed somewhat to populate the `Go` *struct* `TtData`, which is used as the data source, to be converted to the format needed by the back-end. This structure must be rebuilt if the underlying data (in `DbTopLevel`) is changed. This timetable "preparation" is separated out into the package `timetable`.
 
 ## Package `autotimetable`
 
-This package provides the main algorithm for systematically testing the timetable generation with different combinations of constraints. It is initially based on the FET timetable generator, but it is designed to be not inherently dependent on FET, so in principle it could be used with a different timetable-generator back-end. It communicates with the back-end via an interface to maintain this independence.
+This package provides the main algorithm for systematically testing the timetable generation with different combinations of constraints. It is initially designed around the `FET` timetable generator, but should not be too tightly tied to it, so that it could, in principle, be used with a different timetable-generator back-end. It communicates with the back-end via an interface to maintain this independence.
 
-For managing the data connected specifically with this package the Go *struct* `AutoTtData` is used, which can be filled from the data in `TtData` and `DbTopLevel`.
+The algorithm runs multiple versions of the data, each with a different subset of the constraints enabled, in an attempt to determine any constraints which may be difficult or impossible to fulfil. It also tries to deliver a timetable – possibly not fulfilling all the constraints – within a set time.
 
-It is also possible to fill this structure directly from some source data – in particular a FET file (".fet" ending). This is useful if only the features of this package are required. Indeed there is – at present – no conversion from FET data to `DbTopLevel`. The conversion might be possible, but would be difficult to generalise to all FET files, because of the rather different structures in FET.
+It is designed around the idea of a "data source" and a "generation back-end", both of which can – in principle be implemented in various ways. The most straightforward is to use a `FET` file ("xxx.fet") as source and `FET` as the back-end. However, there is also support for a sort of JSON-like database structure as data source, which can be built or converted from the data structures of other timetable programs, if there is a suitable interface. The package "w365" supports the reading of custom data from the "Waldorf 365" school management software.
+
+For managing the data connected specifically with this package the `Go` *struct* `AutoTtData` is used, which can be filled from the data in `TtData` and `DbTopLevel`.
+
+For `FET` input files (".fet" ending), there is – at present – no conversion from `FET` data to `DbTopLevel`, the data for the back-end is derived directly from the source in this case. The conversion to `DbTopLevel` might be possible, but would be difficult to generalise to all `FET` files, because of the rather different structures in `FET`.
 
 ## Package `fet`
 
-This provides a back-end based on a FET file. It handles regeneration of the FET file with different constraints enabled and starts and monitors the FET process. The FET configuration data is supplied in a particular structure, Go *struct* `fet_build`, which can be constructed from an actual FET input file, but can also be produced from some other data – in particular, constructing it from `TtData` structures is supported by the `BuildFet` function.
+This provides a back-end based on a `FET` file. It handles regeneration of the `FET` file with different constraints enabled, and starts and monitors the `FET` process. The `FET` configuration data is supplied in a particular structure, `Go` *struct* `fet_build`, which can be constructed from an actual `FET` input file, but can also be produced from some other data – in particular, constructing it from `TtData` structures is supported by the `BuildFet` function.
 
-To handle input from an actual FET file, there is a FET-file reader, which parses a FET input file to produce a `TtSourceFet` structure, from which the `PrepareFet` function can produce the `fet_build` for the FET back-end.
+To handle input from an actual `FET` file, there is a `FET`-file reader, which parses a `FET` input file to produce a `TtSourceFet` structure, from which the `PrepareFet` function can produce the `fet_build` for the `FET` back-end.
 
 ## Package `w365tt`
 

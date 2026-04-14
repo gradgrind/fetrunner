@@ -4,6 +4,4 @@
 
 ## Running `FET` on a data set
 
-The function `RunBackend` in `fet/run_fet.go` is called to execute `FET` on a set of data supplied as a `TtInstance` structure. It first constructs a `FET` file from the `TtInstance`, then, by using `exec.CommandContext` together with a `context.WithCancel` to run `FET` on this file, a function is made available which can be called to abort the `FET` process. The actual process is started in a separate goroutine, allowing `RunBackend` to return immediately. It returns a data structure (`FetTtData`), which allows the progress of the `FET` process to be monitored and controlled.
-
-
+The function `RunBackend` in `fet/run_fet.go` is called to execute `FET` on a set of data supplied as a `TtInstance` structure. It first constructs a `FET` file from the `TtInstance`, then, by using `exec.CommandContext` together with a `context.WithCancel` to run `FET` on this file, a function is made available which can be called to abort the `FET` process. The actual process is started in a separate goroutine, allowing `RunBackend` to return immediately. It sets a data structure (`FetTtData`) as `InstanceBackend` on the `TtInstance`, which allows the progress of the `FET` process to be monitored and controlled.
