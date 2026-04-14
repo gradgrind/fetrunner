@@ -1,0 +1,6551 @@
+{
+  "W365TT" : {
+    "FirstAfternoonHour" : 6,
+    "Institution" : "Musterschule",
+    "MiddayBreak" : [ 5, 6 ]
+  },
+  "PrintTables" : [ ],
+  "Classes" : [ {
+    "Id" : "uwSh_hDdDSpYe4FYF2j8g",
+    "Type" : "Class",
+    "Shortcut" : "1",
+    "Name" : "1",
+    "Absences" : [ {
+      "Day" : 0,
+      "Hour" : 5
+    }, {
+      "Day" : 0,
+      "Hour" : 6
+    }, {
+      "Day" : 0,
+      "Hour" : 7
+    }, {
+      "Day" : 0,
+      "Hour" : 8
+    }, {
+      "Day" : 0,
+      "Hour" : 9
+    }, {
+      "Day" : 1,
+      "Hour" : 5
+    }, {
+      "Day" : 1,
+      "Hour" : 6
+    }, {
+      "Day" : 1,
+      "Hour" : 7
+    }, {
+      "Day" : 1,
+      "Hour" : 8
+    }, {
+      "Day" : 1,
+      "Hour" : 9
+    }, {
+      "Day" : 2,
+      "Hour" : 5
+    }, {
+      "Day" : 2,
+      "Hour" : 6
+    }, {
+      "Day" : 2,
+      "Hour" : 7
+    }, {
+      "Day" : 2,
+      "Hour" : 8
+    }, {
+      "Day" : 2,
+      "Hour" : 9
+    }, {
+      "Day" : 3,
+      "Hour" : 5
+    }, {
+      "Day" : 3,
+      "Hour" : 6
+    }, {
+      "Day" : 3,
+      "Hour" : 7
+    }, {
+      "Day" : 3,
+      "Hour" : 8
+    }, {
+      "Day" : 3,
+      "Hour" : 9
+    }, {
+      "Day" : 4,
+      "Hour" : 5
+    }, {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    }, {
+      "Day" : 4,
+      "Hour" : 9
+    } ],
+    "Divisions" : [ ],
+    "ForceFirstHour" : true,
+    "Letter" : "",
+    "Level" : 1,
+    "LunchBreak" : true,
+    "MaxAfternoons" : 0,
+    "MaxGapsPerDay" : 0,
+    "MaxGapsPerWeek" : 0,
+    "MaxLessonsPerDay" : 5,
+    "MinLessonsPerDay" : 4
+  }, {
+    "Id" : "x2YpHqKnpyu9HUzvmQHS9",
+    "Type" : "Class",
+    "Shortcut" : "2",
+    "Name" : "2",
+    "Absences" : [ {
+      "Day" : 0,
+      "Hour" : 5
+    }, {
+      "Day" : 0,
+      "Hour" : 6
+    }, {
+      "Day" : 0,
+      "Hour" : 7
+    }, {
+      "Day" : 0,
+      "Hour" : 8
+    }, {
+      "Day" : 0,
+      "Hour" : 9
+    }, {
+      "Day" : 1,
+      "Hour" : 5
+    }, {
+      "Day" : 1,
+      "Hour" : 6
+    }, {
+      "Day" : 1,
+      "Hour" : 7
+    }, {
+      "Day" : 1,
+      "Hour" : 8
+    }, {
+      "Day" : 1,
+      "Hour" : 9
+    }, {
+      "Day" : 2,
+      "Hour" : 5
+    }, {
+      "Day" : 2,
+      "Hour" : 6
+    }, {
+      "Day" : 2,
+      "Hour" : 7
+    }, {
+      "Day" : 2,
+      "Hour" : 8
+    }, {
+      "Day" : 2,
+      "Hour" : 9
+    }, {
+      "Day" : 3,
+      "Hour" : 5
+    }, {
+      "Day" : 3,
+      "Hour" : 6
+    }, {
+      "Day" : 3,
+      "Hour" : 7
+    }, {
+      "Day" : 3,
+      "Hour" : 8
+    }, {
+      "Day" : 3,
+      "Hour" : 9
+    }, {
+      "Day" : 4,
+      "Hour" : 5
+    }, {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    }, {
+      "Day" : 4,
+      "Hour" : 9
+    } ],
+    "Divisions" : [ ],
+    "ForceFirstHour" : true,
+    "Letter" : "",
+    "Level" : 2,
+    "LunchBreak" : true,
+    "MaxAfternoons" : 0,
+    "MaxGapsPerDay" : 0,
+    "MaxGapsPerWeek" : 0,
+    "MaxLessonsPerDay" : 5,
+    "MinLessonsPerDay" : 4
+  }, {
+    "Id" : "h7j9JAJNFk4P8s3cEFm9h",
+    "Type" : "Class",
+    "Shortcut" : "3",
+    "Name" : "3",
+    "Absences" : [ {
+      "Day" : 0,
+      "Hour" : 6
+    }, {
+      "Day" : 0,
+      "Hour" : 7
+    }, {
+      "Day" : 0,
+      "Hour" : 8
+    }, {
+      "Day" : 0,
+      "Hour" : 9
+    }, {
+      "Day" : 1,
+      "Hour" : 6
+    }, {
+      "Day" : 1,
+      "Hour" : 7
+    }, {
+      "Day" : 1,
+      "Hour" : 8
+    }, {
+      "Day" : 1,
+      "Hour" : 9
+    }, {
+      "Day" : 2,
+      "Hour" : 6
+    }, {
+      "Day" : 2,
+      "Hour" : 7
+    }, {
+      "Day" : 2,
+      "Hour" : 8
+    }, {
+      "Day" : 2,
+      "Hour" : 9
+    }, {
+      "Day" : 3,
+      "Hour" : 6
+    }, {
+      "Day" : 3,
+      "Hour" : 7
+    }, {
+      "Day" : 3,
+      "Hour" : 8
+    }, {
+      "Day" : 3,
+      "Hour" : 9
+    }, {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    }, {
+      "Day" : 4,
+      "Hour" : 9
+    } ],
+    "Divisions" : [ ],
+    "ForceFirstHour" : true,
+    "Letter" : "",
+    "Level" : 3,
+    "LunchBreak" : true,
+    "MaxAfternoons" : 0,
+    "MaxGapsPerDay" : 0,
+    "MaxGapsPerWeek" : 0,
+    "MaxLessonsPerDay" : 6,
+    "MinLessonsPerDay" : 4
+  }, {
+    "Id" : "BMf2Z-CgWRfsFBghDhvu7",
+    "Type" : "Class",
+    "Shortcut" : "4",
+    "Name" : "4",
+    "Absences" : [ {
+      "Day" : 0,
+      "Hour" : 6
+    }, {
+      "Day" : 0,
+      "Hour" : 7
+    }, {
+      "Day" : 0,
+      "Hour" : 8
+    }, {
+      "Day" : 0,
+      "Hour" : 9
+    }, {
+      "Day" : 1,
+      "Hour" : 6
+    }, {
+      "Day" : 1,
+      "Hour" : 7
+    }, {
+      "Day" : 1,
+      "Hour" : 8
+    }, {
+      "Day" : 1,
+      "Hour" : 9
+    }, {
+      "Day" : 2,
+      "Hour" : 6
+    }, {
+      "Day" : 2,
+      "Hour" : 7
+    }, {
+      "Day" : 2,
+      "Hour" : 8
+    }, {
+      "Day" : 2,
+      "Hour" : 9
+    }, {
+      "Day" : 3,
+      "Hour" : 6
+    }, {
+      "Day" : 3,
+      "Hour" : 7
+    }, {
+      "Day" : 3,
+      "Hour" : 8
+    }, {
+      "Day" : 3,
+      "Hour" : 9
+    }, {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    }, {
+      "Day" : 4,
+      "Hour" : 9
+    } ],
+    "Divisions" : [ ],
+    "ForceFirstHour" : true,
+    "Letter" : "",
+    "Level" : 4,
+    "LunchBreak" : true,
+    "MaxAfternoons" : 0,
+    "MaxGapsPerDay" : 0,
+    "MaxGapsPerWeek" : 0,
+    "MaxLessonsPerDay" : 6,
+    "MinLessonsPerDay" : 4
+  }, {
+    "Id" : "bSzDr6JDbnxMyfxWk7O7j",
+    "Type" : "Class",
+    "Shortcut" : "5",
+    "Name" : "5",
+    "Absences" : [ {
+      "Day" : 0,
+      "Hour" : 6
+    }, {
+      "Day" : 0,
+      "Hour" : 8
+    }, {
+      "Day" : 0,
+      "Hour" : 9
+    }, {
+      "Day" : 1,
+      "Hour" : 6
+    }, {
+      "Day" : 1,
+      "Hour" : 8
+    }, {
+      "Day" : 1,
+      "Hour" : 9
+    }, {
+      "Day" : 2,
+      "Hour" : 6
+    }, {
+      "Day" : 2,
+      "Hour" : 8
+    }, {
+      "Day" : 2,
+      "Hour" : 9
+    }, {
+      "Day" : 3,
+      "Hour" : 6
+    }, {
+      "Day" : 3,
+      "Hour" : 8
+    }, {
+      "Day" : 3,
+      "Hour" : 9
+    }, {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    }, {
+      "Day" : 4,
+      "Hour" : 9
+    } ],
+    "Divisions" : [ {
+      "Id" : "tOJ51foIULuXOwt4fJfBK",
+      "Type" : "Division",
+      "Groups" : [ "Fmr7yJ6g6_c3c5wfUsHX2", "0J1fYQHlke9r978JyryTa" ],
+      "Name" : "AB Gruppen"
+    }, {
+      "Id" : "oOXVmtI92uf7tRLEciB-I",
+      "Type" : "Division",
+      "Groups" : [ "SYQ1hrOGooc69P4l_8F_q", "Gof1nvfOYOJO3OVTv0f45" ],
+      "Name" : "M und W Sportgruppen"
+    } ],
+    "ForceFirstHour" : true,
+    "Letter" : "",
+    "Level" : 5,
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxGapsPerDay" : 0,
+    "MaxGapsPerWeek" : 0,
+    "MaxLessonsPerDay" : 7,
+    "MinLessonsPerDay" : 4
+  }, {
+    "Id" : "pOwbBU8w6wvoB4IHB1I91",
+    "Type" : "Class",
+    "Shortcut" : "6",
+    "Name" : "6",
+    "Absences" : [ {
+      "Day" : 0,
+      "Hour" : 9
+    }, {
+      "Day" : 1,
+      "Hour" : 9
+    }, {
+      "Day" : 2,
+      "Hour" : 9
+    }, {
+      "Day" : 3,
+      "Hour" : 9
+    }, {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    }, {
+      "Day" : 4,
+      "Hour" : 9
+    } ],
+    "Divisions" : [ {
+      "Id" : "TQ71NgNHZuqjDcqF66gvX",
+      "Type" : "Division",
+      "Groups" : [ "iyZp2--8TvR_D3D4TtcTh", "zsxrhH3OnlR0KSnZPB718" ],
+      "Name" : "AB Gruppen"
+    }, {
+      "Id" : "lgotmlpkU1ebm4fqXIVC8",
+      "Type" : "Division",
+      "Groups" : [ "I2gV9ZFSeixLKXJEGPpoJ", "3xDTiKiqkEX2kTPyvq7Ks" ],
+      "Name" : "M und W Sportgruppen"
+    } ],
+    "ForceFirstHour" : true,
+    "Letter" : "",
+    "Level" : 6,
+    "LunchBreak" : true,
+    "MaxAfternoons" : 3,
+    "MaxGapsPerDay" : 0,
+    "MaxGapsPerWeek" : 0,
+    "MaxLessonsPerDay" : 7,
+    "MinLessonsPerDay" : 4
+  }, {
+    "Id" : "rXm8K3GD7CsIxghFcMA0d",
+    "Type" : "Class",
+    "Shortcut" : "7",
+    "Name" : "7",
+    "Absences" : [ {
+      "Day" : 0,
+      "Hour" : 9
+    }, {
+      "Day" : 1,
+      "Hour" : 9
+    }, {
+      "Day" : 2,
+      "Hour" : 9
+    }, {
+      "Day" : 3,
+      "Hour" : 9
+    }, {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    }, {
+      "Day" : 4,
+      "Hour" : 9
+    } ],
+    "Divisions" : [ {
+      "Id" : "zt3_MMDlzdzomA84uyC9j",
+      "Type" : "Division",
+      "Groups" : [ "k5YWqlVknYA0k-d1teUF8", "Z7aG5ByNMC9ASwa1qXsqz" ],
+      "Name" : "AB Gruppen"
+    }, {
+      "Id" : "6xATcQX6HDMl-snrgDI1e",
+      "Type" : "Division",
+      "Groups" : [ "zhL0E5uyZDpdyKLHARWTG", "1FRuI_bzp9V4i06rK8s2v" ],
+      "Name" : "M und W Sportgruppen"
+    } ],
+    "ForceFirstHour" : true,
+    "Letter" : "",
+    "Level" : 7,
+    "LunchBreak" : true,
+    "MaxAfternoons" : 3,
+    "MaxGapsPerDay" : 0,
+    "MaxGapsPerWeek" : 0,
+    "MaxLessonsPerDay" : 7,
+    "MinLessonsPerDay" : 4
+  }, {
+    "Id" : "OvdZ00UzLmeQ3-DkC42Gd",
+    "Type" : "Class",
+    "Shortcut" : "8",
+    "Name" : "8",
+    "Absences" : [ {
+      "Day" : 0,
+      "Hour" : 9
+    }, {
+      "Day" : 1,
+      "Hour" : 9
+    }, {
+      "Day" : 2,
+      "Hour" : 9
+    }, {
+      "Day" : 3,
+      "Hour" : 9
+    }, {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    }, {
+      "Day" : 4,
+      "Hour" : 9
+    } ],
+    "Divisions" : [ {
+      "Id" : "Eo8ATpQhAzvU6WsIoflzE",
+      "Type" : "Division",
+      "Groups" : [ "T1z_p7FOdIprMs_Q7pB0m", "aLj0dhl0Lx_N0J44xP1MK" ],
+      "Name" : "AB Gruppen"
+    }, {
+      "Id" : "72B1uOVY2dt53Tew3N8Qk",
+      "Type" : "Division",
+      "Groups" : [ "i7nWKZfPkfg7vl0Ob7_qr", "L9ULvsyxlUFTawXs4QqTQ" ],
+      "Name" : "M und W Sportgruppen"
+    } ],
+    "ForceFirstHour" : true,
+    "Letter" : "",
+    "Level" : 8,
+    "LunchBreak" : true,
+    "MaxAfternoons" : 4,
+    "MaxGapsPerDay" : 0,
+    "MaxGapsPerWeek" : 0,
+    "MaxLessonsPerDay" : 7,
+    "MinLessonsPerDay" : 4
+  }, {
+    "Id" : "LZiKYNhpuleTdgH1DXq0R",
+    "Type" : "Class",
+    "Shortcut" : "9",
+    "Name" : "9",
+    "Absences" : [ {
+      "Day" : 0,
+      "Hour" : 9
+    }, {
+      "Day" : 1,
+      "Hour" : 9
+    }, {
+      "Day" : 2,
+      "Hour" : 9
+    }, {
+      "Day" : 3,
+      "Hour" : 9
+    }, {
+      "Day" : 4,
+      "Hour" : 9
+    } ],
+    "Divisions" : [ {
+      "Id" : "5qLbWZO_r02g9tKwllsWc",
+      "Type" : "Division",
+      "Groups" : [ "jver6GKP962Pbxa-H8oe9", "REErLHfrLe493Jq7-5yj9" ],
+      "Name" : "AB Gruppen"
+    }, {
+      "Id" : "__dWLLymSP0Z9IOMrHpb7",
+      "Type" : "Division",
+      "Groups" : [ "ht7fEGf9LfJpOfdCUBAyg", "JYcw-BUJPsb0M85aynQ3v", "-1Yb5L2aYYYAb5-eLKsph" ],
+      "Name" : "Drittelung"
+    }, {
+      "Id" : "cRKlCL7jOd9PudWjNFWBI",
+      "Type" : "Division",
+      "Groups" : [ "SSH3za8-yz0G-U_lil2xQ", "3a1tM6Ub2pFLN-WFGqS9d" ],
+      "Name" : "M und W Sportgruppen"
+    } ],
+    "ForceFirstHour" : true,
+    "Letter" : "",
+    "Level" : 9,
+    "LunchBreak" : true,
+    "MaxAfternoons" : 4,
+    "MaxGapsPerDay" : 0,
+    "MaxGapsPerWeek" : 0,
+    "MaxLessonsPerDay" : 9,
+    "MinLessonsPerDay" : 4
+  }, {
+    "Id" : "shTObCVLLF_rgrMdBI7WS",
+    "Type" : "Class",
+    "Shortcut" : "10",
+    "Name" : "10",
+    "Absences" : [ {
+      "Day" : 0,
+      "Hour" : 9
+    }, {
+      "Day" : 1,
+      "Hour" : 9
+    }, {
+      "Day" : 2,
+      "Hour" : 9
+    }, {
+      "Day" : 3,
+      "Hour" : 9
+    }, {
+      "Day" : 4,
+      "Hour" : 9
+    } ],
+    "Divisions" : [ {
+      "Id" : "PIP0lqXoPRBEk_ViQbhJ2",
+      "Type" : "Division",
+      "Groups" : [ "kY6YdtCZAo7HMoWtfJ2eV", "hxeB3WwDRnnIifXp6-p-M" ],
+      "Name" : "AB Gruppen"
+    }, {
+      "Id" : "uS0lAUb7-tdylVWOrVVYA",
+      "Type" : "Division",
+      "Groups" : [ "8UZK-ZGGTf0OKBzNWWd0G", "SM83uHA55Q4pHeSlNVocd" ],
+      "Name" : "M und W Sportgruppen"
+    } ],
+    "ForceFirstHour" : true,
+    "Letter" : "",
+    "Level" : 10,
+    "LunchBreak" : true,
+    "MaxAfternoons" : 4,
+    "MaxGapsPerDay" : 0,
+    "MaxGapsPerWeek" : 0,
+    "MaxLessonsPerDay" : 9,
+    "MinLessonsPerDay" : 4
+  }, {
+    "Id" : "gEH-_5wlZUIImnyXhHiRQ",
+    "Type" : "Class",
+    "Shortcut" : "11",
+    "Name" : "11",
+    "Absences" : [ {
+      "Day" : 0,
+      "Hour" : 9
+    }, {
+      "Day" : 1,
+      "Hour" : 9
+    }, {
+      "Day" : 2,
+      "Hour" : 9
+    }, {
+      "Day" : 3,
+      "Hour" : 9
+    }, {
+      "Day" : 4,
+      "Hour" : 9
+    } ],
+    "Divisions" : [ {
+      "Id" : "_4w7YJEnuu0MXrpkCX2JS",
+      "Type" : "Division",
+      "Groups" : [ "554vazPK-ZN4JnhJjWDI2", "yIj7OF-VvuffkniZI81jd" ],
+      "Name" : "AB Gruppen"
+    } ],
+    "ForceFirstHour" : true,
+    "Letter" : "",
+    "Level" : 11,
+    "LunchBreak" : true,
+    "MaxAfternoons" : 4,
+    "MaxGapsPerDay" : 0,
+    "MaxGapsPerWeek" : 0,
+    "MaxLessonsPerDay" : 9,
+    "MinLessonsPerDay" : 4
+  }, {
+    "Id" : "JOijGzDVlL4568NaOpJ65",
+    "Type" : "Class",
+    "Shortcut" : "12",
+    "Name" : "12",
+    "Absences" : [ ],
+    "Divisions" : [ {
+      "Id" : "aetOA4zueQ1Qzf3oDAs6o",
+      "Type" : "Division",
+      "Groups" : [ "y7bt_WocoGs-RR0z4U07N", "B4BbO0bIG0YNVDsa1pvt5" ],
+      "Name" : "AB Gruppen"
+    }, {
+      "Id" : "iESupVuSGVfDq262i1uIQ",
+      "Type" : "Division",
+      "Groups" : [ "mRlu2y9sAAfN2O7SbVJoJ", "h406DVgX4KwhphlYoZDvR" ],
+      "Name" : "Abschlussgruppen"
+    } ],
+    "ForceFirstHour" : true,
+    "Letter" : "",
+    "Level" : 12,
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxGapsPerDay" : 0,
+    "MaxGapsPerWeek" : 0,
+    "MaxLessonsPerDay" : 9,
+    "MinLessonsPerDay" : 4
+  }, {
+    "Id" : "hPUp1o5kulRYWZYE3uZC6",
+    "Type" : "Class",
+    "Shortcut" : "13A",
+    "Name" : "13A",
+    "Absences" : [ ],
+    "Divisions" : [ ],
+    "ForceFirstHour" : true,
+    "Letter" : "A",
+    "Level" : 13,
+    "LunchBreak" : true,
+    "MaxAfternoons" : 5,
+    "MaxGapsPerDay" : 0,
+    "MaxGapsPerWeek" : 0,
+    "MaxLessonsPerDay" : 9,
+    "MinLessonsPerDay" : 4
+  }, {
+    "Id" : "0T1Ju4e1XtPxQKJMUI_Fw",
+    "Type" : "Class",
+    "Shortcut" : "13MR",
+    "Name" : "13MR",
+    "Absences" : [ ],
+    "Divisions" : [ ],
+    "ForceFirstHour" : true,
+    "Letter" : "MR",
+    "Level" : 13,
+    "LunchBreak" : true,
+    "MaxAfternoons" : 4,
+    "MaxGapsPerDay" : 0,
+    "MaxGapsPerWeek" : 0,
+    "MaxLessonsPerDay" : 9,
+    "MinLessonsPerDay" : 4
+  }, {
+    "Id" : "6aMQ7Mz7I0xWvRYnbuJxo",
+    "Type" : "Class",
+    "Shortcut" : "20",
+    "Name" : "20",
+    "Absences" : [ ],
+    "Divisions" : [ ],
+    "ForceFirstHour" : true,
+    "Letter" : "",
+    "Level" : 20,
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxGapsPerDay" : 0,
+    "MaxGapsPerWeek" : 0,
+    "MaxLessonsPerDay" : 9,
+    "MinLessonsPerDay" : 4
+  }, {
+    "Id" : "32Mr4zYPcpBbP1R7RBvyC",
+    "Type" : "Class",
+    "Shortcut" : "0",
+    "Name" : "0",
+    "Absences" : [ ],
+    "Divisions" : [ ],
+    "ForceFirstHour" : true,
+    "Letter" : "",
+    "Level" : 0,
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxGapsPerDay" : 0,
+    "MaxGapsPerWeek" : 0,
+    "MaxLessonsPerDay" : 9,
+    "MinLessonsPerDay" : 4
+  } ],
+  "Constraints" : [ {
+    "ConsecutiveIfSameDay" : true,
+    "Constraint" : "DAYS_BETWEEN_JOIN",
+    "Course1" : "GAon2XnER7QHzTVUMNEZy",
+    "Course2" : "L4herFwYQ-Uu1twvMU5oQ",
+    "DaysBetween" : 1,
+    "Weight" : 100
+  }, {
+    "ConsecutiveIfSameDay" : true,
+    "Constraint" : "DAYS_BETWEEN_JOIN",
+    "Course1" : "L4herFwYQ-Uu1twvMU5oQ",
+    "Course2" : "GAon2XnER7QHzTVUMNEZy",
+    "DaysBetween" : 1,
+    "Weight" : 100
+  }, {
+    "ConsecutiveIfSameDay" : true,
+    "Constraint" : "DAYS_BETWEEN_JOIN",
+    "Course1" : "lD_FcbqSfcZWh2Wk8vboP",
+    "Course2" : "hkz6dHkSIY9cWrw4qtgiq",
+    "DaysBetween" : 1,
+    "Weight" : 100
+  }, {
+    "ConsecutiveIfSameDay" : true,
+    "Constraint" : "DAYS_BETWEEN_JOIN",
+    "Course1" : "hkz6dHkSIY9cWrw4qtgiq",
+    "Course2" : "lD_FcbqSfcZWh2Wk8vboP",
+    "DaysBetween" : 1,
+    "Weight" : 100
+  }, {
+    "ConsecutiveIfSameDay" : true,
+    "Constraint" : "DAYS_BETWEEN_JOIN",
+    "Course1" : "lw0GOnIiRU9xHdZS5RHdX",
+    "Course2" : "L4herFwYQ-Uu1twvMU5oQ",
+    "DaysBetween" : 1,
+    "Weight" : 100
+  }, {
+    "ConsecutiveIfSameDay" : true,
+    "Constraint" : "DAYS_BETWEEN_JOIN",
+    "Course1" : "L4herFwYQ-Uu1twvMU5oQ",
+    "Course2" : "lw0GOnIiRU9xHdZS5RHdX",
+    "DaysBetween" : 1,
+    "Weight" : 100
+  }, {
+    "ConsecutiveIfSameDay" : true,
+    "Constraint" : "DAYS_BETWEEN",
+    "Courses" : [ "L4herFwYQ-Uu1twvMU5oQ", "hkz6dHkSIY9cWrw4qtgiq", "LF0D1SuNyG3A_0NGMsd-Y", "GAon2XnER7QHzTVUMNEZy", "lD_FcbqSfcZWh2Wk8vboP", "lw0GOnIiRU9xHdZS5RHdX" ],
+    "DaysBetween" : 1,
+    "Weight" : 100
+  }, {
+    "Constraint" : "DOUBLE_LESSON_NOT_OVER_BREAKS",
+    "Hours" : [ 2, 4, 6 ],
+    "Weight" : 100
+  } ],
+  "Courses" : [ {
+    "Id" : "tfSKxp30V9NLVf0n0MNbo",
+    "Type" : "Course",
+    "Groups" : [ "0T1Ju4e1XtPxQKJMUI_Fw" ],
+    "PreferredRooms" : [ "xI1KUaDd8VU0VefOlMK3e" ],
+    "Subjects" : [ "-PBVxGtsYc8_PVVWicNdQ" ],
+    "Teachers" : [ "yCkTpjmDclaQAJcSwFV8d" ]
+  }, {
+    "Id" : "b_PausYYuabpiQuKr1qC4",
+    "Type" : "Course",
+    "Groups" : [ "jver6GKP962Pbxa-H8oe9" ],
+    "PreferredRooms" : [ "sGYDLEXXN5JkJX04G0Qpt" ],
+    "Subjects" : [ "8j7fyo5PpvtVX7qAzXLny" ],
+    "Teachers" : [ "yCkTpjmDclaQAJcSwFV8d" ]
+  }, {
+    "Id" : "tpRP98pb3edHjUXnGmsmN",
+    "Type" : "Course",
+    "Groups" : [ "uwSh_hDdDSpYe4FYF2j8g" ],
+    "PreferredRooms" : [ "ZALYA2dX9VPRKNqzWngu8" ],
+    "Subjects" : [ "oDCyi__7oN3hECWhnivjg" ],
+    "Teachers" : [ "b7wK1Pa7ntYqFXQruPoot" ]
+  }, {
+    "Id" : "6dLrI57VFB80TPQMFPQYc",
+    "Type" : "Course",
+    "Groups" : [ "x2YpHqKnpyu9HUzvmQHS9" ],
+    "PreferredRooms" : [ "1a78SIco6wY1OvBlFToPT" ],
+    "Subjects" : [ "oDCyi__7oN3hECWhnivjg" ],
+    "Teachers" : [ "HBW5v_v4Vqmc_nTDJUOvN" ]
+  }, {
+    "Id" : "3ChdtfcavyDo0wzyl5Urv",
+    "Type" : "Course",
+    "Groups" : [ "h7j9JAJNFk4P8s3cEFm9h" ],
+    "PreferredRooms" : [ "0Skp1uJBzfjPSZs924Duw" ],
+    "Subjects" : [ "oDCyi__7oN3hECWhnivjg" ],
+    "Teachers" : [ "Q2gu7hDv1cU6McixmryCN" ]
+  }, {
+    "Id" : "8u_tIqb4wWtnaizaPv-Uj",
+    "Type" : "Course",
+    "Groups" : [ "BMf2Z-CgWRfsFBghDhvu7" ],
+    "PreferredRooms" : [ "j6BNELOjpT_KBxIbWRkVE" ],
+    "Subjects" : [ "oDCyi__7oN3hECWhnivjg" ],
+    "Teachers" : [ "EIc3dSYj1UN422vB7a6Ep" ]
+  }, {
+    "Id" : "r8rnrQjJhLsNnxXqz9KNL",
+    "Type" : "Course",
+    "Groups" : [ "bSzDr6JDbnxMyfxWk7O7j" ],
+    "PreferredRooms" : [ "OXT0MI1-fHzX7hplQJdZv" ],
+    "Subjects" : [ "oDCyi__7oN3hECWhnivjg" ],
+    "Teachers" : [ "6q-zHyfDr7SWk5vjLpDWR" ]
+  }, {
+    "Id" : "bxb3nUIx-wTTXR76UXsrY",
+    "Type" : "Course",
+    "Groups" : [ "pOwbBU8w6wvoB4IHB1I91" ],
+    "PreferredRooms" : [ "PqfR5vxuW1k8MrHLtuiVB" ],
+    "Subjects" : [ "oDCyi__7oN3hECWhnivjg" ],
+    "Teachers" : [ "Zl-lb6oBdBfg245JkuCzd" ]
+  }, {
+    "Id" : "YLL8iDuIQDkeL-KYvHTfL",
+    "Type" : "Course",
+    "Groups" : [ "rXm8K3GD7CsIxghFcMA0d" ],
+    "PreferredRooms" : [ "9csRlM2j3XMlEUem5BiaK" ],
+    "Subjects" : [ "oDCyi__7oN3hECWhnivjg" ],
+    "Teachers" : [ "PUYNAvKWnEMAD-BXwnfWo" ]
+  }, {
+    "Id" : "En8kN9GfQpY0ojvY3w4Y8",
+    "Type" : "Course",
+    "Groups" : [ "OvdZ00UzLmeQ3-DkC42Gd" ],
+    "PreferredRooms" : [ "1YFPFbnIeAf6dFQMUBt1a" ],
+    "Subjects" : [ "oDCyi__7oN3hECWhnivjg" ],
+    "Teachers" : [ "v6Z1v0_jmNyVKVNRVhLqt" ]
+  }, {
+    "Id" : "dcbtmPhL6TGOK4wPRnvIy",
+    "Type" : "Course",
+    "Groups" : [ "h7j9JAJNFk4P8s3cEFm9h" ],
+    "PreferredRooms" : [ "hmHeksfCeyiI2LlfOsD2M" ],
+    "Subjects" : [ "-DeCbazJkoInxgJDnO09z" ],
+    "Teachers" : [ "eMW340328a4Bvf5OaIzNX" ]
+  }, {
+    "Id" : "gtIB2EW475pVj0WEUqixy",
+    "Type" : "Course",
+    "Groups" : [ "BMf2Z-CgWRfsFBghDhvu7" ],
+    "PreferredRooms" : [ "hmHeksfCeyiI2LlfOsD2M" ],
+    "Subjects" : [ "-DeCbazJkoInxgJDnO09z" ],
+    "Teachers" : [ "eMW340328a4Bvf5OaIzNX" ]
+  }, {
+    "Id" : "sd5o7-aUi7PDoJPcZqphP",
+    "Type" : "Course",
+    "Groups" : [ "SYQ1hrOGooc69P4l_8F_q" ],
+    "PreferredRooms" : [ "hmHeksfCeyiI2LlfOsD2M" ],
+    "Subjects" : [ "D_reiRks2XkUZxVbb-CiI" ],
+    "Teachers" : [ "eMW340328a4Bvf5OaIzNX" ]
+  }, {
+    "Id" : "WppISl5RBIYFXXKUG5NYQ",
+    "Type" : "Course",
+    "Groups" : [ "I2gV9ZFSeixLKXJEGPpoJ" ],
+    "PreferredRooms" : [ "hmHeksfCeyiI2LlfOsD2M" ],
+    "Subjects" : [ "D_reiRks2XkUZxVbb-CiI" ],
+    "Teachers" : [ "eMW340328a4Bvf5OaIzNX" ]
+  }, {
+    "Id" : "h7RO1S5TQYNML1_j6e5i6",
+    "Type" : "Course",
+    "Groups" : [ "1FRuI_bzp9V4i06rK8s2v" ],
+    "PreferredRooms" : [ "hmHeksfCeyiI2LlfOsD2M" ],
+    "Subjects" : [ "D_reiRks2XkUZxVbb-CiI" ],
+    "Teachers" : [ "eMW340328a4Bvf5OaIzNX" ]
+  }, {
+    "Id" : "aijoQ3o08whljBHxW-Rpi",
+    "Type" : "Course",
+    "Groups" : [ "i7nWKZfPkfg7vl0Ob7_qr" ],
+    "PreferredRooms" : [ "hmHeksfCeyiI2LlfOsD2M" ],
+    "Subjects" : [ "D_reiRks2XkUZxVbb-CiI" ],
+    "Teachers" : [ "eMW340328a4Bvf5OaIzNX" ]
+  }, {
+    "Id" : "Qyu0m6kZKzYf4Ix55UWOK",
+    "Type" : "Course",
+    "Groups" : [ "SSH3za8-yz0G-U_lil2xQ" ],
+    "PreferredRooms" : [ "hmHeksfCeyiI2LlfOsD2M" ],
+    "Subjects" : [ "D_reiRks2XkUZxVbb-CiI" ],
+    "Teachers" : [ "eMW340328a4Bvf5OaIzNX" ]
+  }, {
+    "Id" : "mQCkCXaoppCaY38Lgr-sH",
+    "Type" : "Course",
+    "Groups" : [ "8UZK-ZGGTf0OKBzNWWd0G" ],
+    "PreferredRooms" : [ "hmHeksfCeyiI2LlfOsD2M" ],
+    "Subjects" : [ "D_reiRks2XkUZxVbb-CiI" ],
+    "Teachers" : [ "eMW340328a4Bvf5OaIzNX" ]
+  }, {
+    "Id" : "UDMevRr5eOAdBlULJoVUm",
+    "Type" : "Course",
+    "Groups" : [ "gEH-_5wlZUIImnyXhHiRQ" ],
+    "PreferredRooms" : [ "hmHeksfCeyiI2LlfOsD2M" ],
+    "Subjects" : [ "-DeCbazJkoInxgJDnO09z" ],
+    "Teachers" : [ "eMW340328a4Bvf5OaIzNX" ]
+  }, {
+    "Id" : "0rRMv-W1ngThINUmRTQhS",
+    "Type" : "Course",
+    "Groups" : [ "JOijGzDVlL4568NaOpJ65" ],
+    "PreferredRooms" : [ "hmHeksfCeyiI2LlfOsD2M" ],
+    "Subjects" : [ "-DeCbazJkoInxgJDnO09z" ],
+    "Teachers" : [ "eMW340328a4Bvf5OaIzNX" ]
+  }, {
+    "Id" : "2lPAnA_c2l_BIhKZwFAT5",
+    "Type" : "Course",
+    "Groups" : [ "hPUp1o5kulRYWZYE3uZC6" ],
+    "PreferredRooms" : [ "EWj1Lcxb4LVMlThS5JwVt" ],
+    "Subjects" : [ "f89d81a9-f43b-4647-919b-d6965b4fa2e3" ],
+    "Teachers" : [ "FgRRw8qu9VSU5F8hXE-Ub" ]
+  }, {
+    "Id" : "40ZgMRbvMew1IKmf_Q6ih",
+    "Type" : "Course",
+    "Groups" : [ "0T1Ju4e1XtPxQKJMUI_Fw" ],
+    "PreferredRooms" : [ "xI1KUaDd8VU0VefOlMK3e" ],
+    "Subjects" : [ "f89d81a9-f43b-4647-919b-d6965b4fa2e3" ],
+    "Teachers" : [ "CJdB-AMqbhN5SlAIqwPwk" ]
+  }, {
+    "Id" : "cRzK3q_dfivLLVtlUo613",
+    "Type" : "Course",
+    "Groups" : [ "Gof1nvfOYOJO3OVTv0f45" ],
+    "PreferredRooms" : [ "sEbMujihOc9lRq2zn5mts" ],
+    "Subjects" : [ "ZqVDRTkbwDoyLLrUyNP6b" ],
+    "Teachers" : [ "KzXW3neVexOSaXOmF4TSL" ]
+  }, {
+    "Id" : "V-qJ6xi8WXAKZKYm6ptwV",
+    "Type" : "Course",
+    "Groups" : [ "0J1fYQHlke9r978JyryTa" ],
+    "PreferredRooms" : [ "P_cCOHLaFDbwelRMpktva" ],
+    "Subjects" : [ "9mnfzUVAJiq025RJeYRwy" ],
+    "Teachers" : [ "IOxfOul3Tc7JLxwq3ng6_" ]
+  }, {
+    "Id" : "w3iiuWiO_zT_fjFZZqhVu",
+    "Type" : "Course",
+    "Groups" : [ "zhL0E5uyZDpdyKLHARWTG" ],
+    "PreferredRooms" : [ "sEbMujihOc9lRq2zn5mts" ],
+    "Subjects" : [ "ZqVDRTkbwDoyLLrUyNP6b" ],
+    "Teachers" : [ "KzXW3neVexOSaXOmF4TSL" ]
+  }, {
+    "Id" : "tnxoxwTPiyEThAABZ5wht",
+    "Type" : "Course",
+    "Groups" : [ "Z7aG5ByNMC9ASwa1qXsqz" ],
+    "PreferredRooms" : [ "P_cCOHLaFDbwelRMpktva" ],
+    "Subjects" : [ "9mnfzUVAJiq025RJeYRwy" ],
+    "Teachers" : [ "IOxfOul3Tc7JLxwq3ng6_" ]
+  }, {
+    "Id" : "ewWTtWhslBZ1JCQ0im25a",
+    "Type" : "Course",
+    "Groups" : [ "3xDTiKiqkEX2kTPyvq7Ks" ],
+    "PreferredRooms" : [ "sEbMujihOc9lRq2zn5mts" ],
+    "Subjects" : [ "ZqVDRTkbwDoyLLrUyNP6b" ],
+    "Teachers" : [ "KzXW3neVexOSaXOmF4TSL" ]
+  }, {
+    "Id" : "pbrvo5lLzvctcCHJX7f9M",
+    "Type" : "Course",
+    "Groups" : [ "k5YWqlVknYA0k-d1teUF8" ],
+    "PreferredRooms" : [ "P_cCOHLaFDbwelRMpktva" ],
+    "Subjects" : [ "9mnfzUVAJiq025RJeYRwy" ],
+    "Teachers" : [ "IOxfOul3Tc7JLxwq3ng6_" ]
+  }, {
+    "Id" : "mEhiPABkndVgxpPHXmQ6s",
+    "Type" : "Course",
+    "Groups" : [ "L9ULvsyxlUFTawXs4QqTQ" ],
+    "PreferredRooms" : [ "sEbMujihOc9lRq2zn5mts" ],
+    "Subjects" : [ "ZqVDRTkbwDoyLLrUyNP6b" ],
+    "Teachers" : [ "KzXW3neVexOSaXOmF4TSL" ]
+  }, {
+    "Id" : "L4herFwYQ-Uu1twvMU5oQ",
+    "Type" : "Course",
+    "Groups" : [ "mRlu2y9sAAfN2O7SbVJoJ" ],
+    "PreferredRooms" : [ "FRpas9G8UCxj5WRszNGU_" ],
+    "Subjects" : [ "kfIynLnttjvkYNkQGxIzO" ],
+    "Teachers" : [ "ftZmmEG2BzDqTWptTfEQm" ]
+  }, {
+    "Id" : "hkz6dHkSIY9cWrw4qtgiq",
+    "Type" : "Course",
+    "Groups" : [ "hPUp1o5kulRYWZYE3uZC6" ],
+    "PreferredRooms" : [ "EWj1Lcxb4LVMlThS5JwVt" ],
+    "Subjects" : [ "kfIynLnttjvkYNkQGxIzO" ],
+    "Teachers" : [ "ftZmmEG2BzDqTWptTfEQm" ]
+  }, {
+    "Id" : "k6HRt5Fw8EnWjNRq2zrsk",
+    "Type" : "Course",
+    "Groups" : [ "hPUp1o5kulRYWZYE3uZC6" ],
+    "PreferredRooms" : [ "EWj1Lcxb4LVMlThS5JwVt" ],
+    "Subjects" : [ "52vCUAp_zyxc54pxtBud7" ],
+    "Teachers" : [ "CRE36f4cisN52DBSVAmsG" ]
+  }, {
+    "Id" : "7F6f4zHlevxdnWUTmm1V3",
+    "Type" : "Course",
+    "Groups" : [ "hPUp1o5kulRYWZYE3uZC6" ],
+    "PreferredRooms" : [ "EWj1Lcxb4LVMlThS5JwVt" ],
+    "Subjects" : [ "k7lWiMhG5Zo6yTd7oi9aH" ],
+    "Teachers" : [ "CRE36f4cisN52DBSVAmsG" ]
+  }, {
+    "Id" : "gJUUMd4yM4hh-nWsB8a4k",
+    "Type" : "Course",
+    "Groups" : [ "h406DVgX4KwhphlYoZDvR" ],
+    "PreferredRooms" : [ "TQNFFMW0D7xJBlP2Ljh_Q" ],
+    "Subjects" : [ "52vCUAp_zyxc54pxtBud7" ],
+    "Teachers" : [ "CRE36f4cisN52DBSVAmsG" ]
+  }, {
+    "Id" : "P7-xGs_nt-9UCBUTLpexa",
+    "Type" : "Course",
+    "Groups" : [ "mRlu2y9sAAfN2O7SbVJoJ" ],
+    "PreferredRooms" : [ "FRpas9G8UCxj5WRszNGU_" ],
+    "Subjects" : [ "52vCUAp_zyxc54pxtBud7" ],
+    "Teachers" : [ "CRE36f4cisN52DBSVAmsG" ]
+  }, {
+    "Id" : "TcismkFN2gctdLyVuc4fy",
+    "Type" : "Course",
+    "Groups" : [ "0T1Ju4e1XtPxQKJMUI_Fw" ],
+    "PreferredRooms" : [ "xI1KUaDd8VU0VefOlMK3e" ],
+    "Subjects" : [ "52vCUAp_zyxc54pxtBud7" ],
+    "Teachers" : [ "qsc4yF2_C0QajrKJ7ha0F" ]
+  }, {
+    "Id" : "LF0D1SuNyG3A_0NGMsd-Y",
+    "Type" : "Course",
+    "Groups" : [ "0T1Ju4e1XtPxQKJMUI_Fw" ],
+    "PreferredRooms" : [ "xI1KUaDd8VU0VefOlMK3e" ],
+    "Subjects" : [ "AkGD5Sx_xeOe4kUw9aiWe" ],
+    "Teachers" : [ "qsc4yF2_C0QajrKJ7ha0F" ]
+  }, {
+    "Id" : "GAon2XnER7QHzTVUMNEZy",
+    "Type" : "Course",
+    "Groups" : [ "h406DVgX4KwhphlYoZDvR" ],
+    "PreferredRooms" : [ "TQNFFMW0D7xJBlP2Ljh_Q" ],
+    "Subjects" : [ "AkGD5Sx_xeOe4kUw9aiWe" ],
+    "Teachers" : [ "CkvHX4FJDbuNqH9Q8QZaV" ]
+  }, {
+    "Id" : "lD_FcbqSfcZWh2Wk8vboP",
+    "Type" : "Course",
+    "Groups" : [ "hPUp1o5kulRYWZYE3uZC6" ],
+    "PreferredRooms" : [ "EWj1Lcxb4LVMlThS5JwVt" ],
+    "Subjects" : [ "AkGD5Sx_xeOe4kUw9aiWe" ],
+    "Teachers" : [ "CkvHX4FJDbuNqH9Q8QZaV" ]
+  }, {
+    "Id" : "PVjKjSgYDJufPYpFtCBmJ",
+    "Type" : "Course",
+    "Groups" : [ "0T1Ju4e1XtPxQKJMUI_Fw" ],
+    "PreferredRooms" : [ "xI1KUaDd8VU0VefOlMK3e" ],
+    "Subjects" : [ "4G2ZsMAFY69kPLq2raYa9" ],
+    "Teachers" : [ "EIc3dSYj1UN422vB7a6Ep" ]
+  }, {
+    "Id" : "2Zbk4R5KO9iCnGcADLO9R",
+    "Type" : "Course",
+    "Groups" : [ "Fmr7yJ6g6_c3c5wfUsHX2" ],
+    "PreferredRooms" : [ "P_cCOHLaFDbwelRMpktva" ],
+    "Subjects" : [ "9mnfzUVAJiq025RJeYRwy" ],
+    "Teachers" : [ "IOxfOul3Tc7JLxwq3ng6_" ]
+  }, {
+    "Id" : "k-VCYRG7IAm0Z0Wf8ePDY",
+    "Type" : "Course",
+    "Groups" : [ "mRlu2y9sAAfN2O7SbVJoJ" ],
+    "PreferredRooms" : [ "3iAne-Y2Pb9GHRZ7NIlyC" ],
+    "Subjects" : [ "ccs5-Y2yDBhR2k1RId70E" ],
+    "Teachers" : [ "c38y0og1XhnecMVKPbt4c" ]
+  }, {
+    "Id" : "1hq44sW3k6CkOum1wWeuP",
+    "Type" : "Course",
+    "Groups" : [ "h406DVgX4KwhphlYoZDvR" ],
+    "PreferredRooms" : [ "3iAne-Y2Pb9GHRZ7NIlyC" ],
+    "Subjects" : [ "ccs5-Y2yDBhR2k1RId70E" ],
+    "Teachers" : [ "c38y0og1XhnecMVKPbt4c" ]
+  }, {
+    "Id" : "209EqQVr0GB0lI_fmok5K",
+    "Type" : "Course",
+    "Groups" : [ "hPUp1o5kulRYWZYE3uZC6" ],
+    "PreferredRooms" : [ "3iAne-Y2Pb9GHRZ7NIlyC" ],
+    "Subjects" : [ "ccs5-Y2yDBhR2k1RId70E" ],
+    "Teachers" : [ "c38y0og1XhnecMVKPbt4c" ]
+  }, {
+    "Id" : "gIPeA7cyrrfBMLaZ4AR1J",
+    "Type" : "Course",
+    "Groups" : [ "0T1Ju4e1XtPxQKJMUI_Fw" ],
+    "PreferredRooms" : [ "3iAne-Y2Pb9GHRZ7NIlyC" ],
+    "Subjects" : [ "ccs5-Y2yDBhR2k1RId70E", "02vL88396MgBPowlENudM" ],
+    "Teachers" : [ "c38y0og1XhnecMVKPbt4c" ]
+  }, {
+    "Id" : "WREvTvQZHUCEr8ArGvp-a",
+    "Type" : "Course",
+    "Groups" : [ "iyZp2--8TvR_D3D4TtcTh" ],
+    "PreferredRooms" : [ "MQ5cqNaHFCQ2so9GreX1K" ],
+    "Subjects" : [ "9mnfzUVAJiq025RJeYRwy" ],
+    "Teachers" : [ "PhVYgS_liQ4RZjG2vujZX" ]
+  }, {
+    "Id" : "PfIya1KQV85VZ5LSD8ax7",
+    "Type" : "Course",
+    "Groups" : [ "T1z_p7FOdIprMs_Q7pB0m" ],
+    "PreferredRooms" : [ "MQ5cqNaHFCQ2so9GreX1K" ],
+    "Subjects" : [ "9mnfzUVAJiq025RJeYRwy" ],
+    "Teachers" : [ "PhVYgS_liQ4RZjG2vujZX" ]
+  }, {
+    "Id" : "5MSz0JTr7Yn8suAn2tT87",
+    "Type" : "Course",
+    "Groups" : [ "zsxrhH3OnlR0KSnZPB718" ],
+    "PreferredRooms" : [ "MQ5cqNaHFCQ2so9GreX1K" ],
+    "Subjects" : [ "9mnfzUVAJiq025RJeYRwy" ],
+    "Teachers" : [ "PhVYgS_liQ4RZjG2vujZX" ]
+  }, {
+    "Id" : "2xy1zffzH7Cs85uIK_7x7",
+    "Type" : "Course",
+    "Groups" : [ "aLj0dhl0Lx_N0J44xP1MK" ],
+    "PreferredRooms" : [ "MQ5cqNaHFCQ2so9GreX1K" ],
+    "Subjects" : [ "9mnfzUVAJiq025RJeYRwy" ],
+    "Teachers" : [ "PhVYgS_liQ4RZjG2vujZX" ]
+  }, {
+    "Id" : "vwK3LxC0kLHHKc-7KnaDa",
+    "Type" : "Course",
+    "Groups" : [ "iyZp2--8TvR_D3D4TtcTh" ],
+    "PreferredRooms" : [ "7H-OcxF2bJfhEk2dZgFWT", "Ak6c2yhDgX_waK8SB8tFC" ],
+    "Subjects" : [ "sn9lKogG63siA6SMK_9u5" ],
+    "Teachers" : [ "-4izQiGLHHWKNW5lKLcPf" ]
+  }, {
+    "Id" : "_9mT2tArKqo2L4l4_tujD",
+    "Type" : "Course",
+    "Groups" : [ "Z7aG5ByNMC9ASwa1qXsqz" ],
+    "PreferredRooms" : [ "7H-OcxF2bJfhEk2dZgFWT", "Ak6c2yhDgX_waK8SB8tFC" ],
+    "Subjects" : [ "sn9lKogG63siA6SMK_9u5" ],
+    "Teachers" : [ "-4izQiGLHHWKNW5lKLcPf" ]
+  }, {
+    "Id" : "e1opKHxzT-PzRZh5Psr5O",
+    "Type" : "Course",
+    "Groups" : [ "T1z_p7FOdIprMs_Q7pB0m" ],
+    "PreferredRooms" : [ "7H-OcxF2bJfhEk2dZgFWT", "Ak6c2yhDgX_waK8SB8tFC" ],
+    "Subjects" : [ "sn9lKogG63siA6SMK_9u5" ],
+    "Teachers" : [ "-4izQiGLHHWKNW5lKLcPf" ]
+  }, {
+    "Id" : "P0jFt37lVtAFgnngxRGUR",
+    "Type" : "Course",
+    "Groups" : [ "zsxrhH3OnlR0KSnZPB718" ],
+    "PreferredRooms" : [ "7H-OcxF2bJfhEk2dZgFWT", "Ak6c2yhDgX_waK8SB8tFC" ],
+    "Subjects" : [ "sn9lKogG63siA6SMK_9u5" ],
+    "Teachers" : [ "-4izQiGLHHWKNW5lKLcPf" ]
+  }, {
+    "Id" : "A4XXnmc9r5YRgb0eds_2K",
+    "Type" : "Course",
+    "Groups" : [ "iyZp2--8TvR_D3D4TtcTh" ],
+    "PreferredRooms" : [ "fDvHxm5lDt0BFSyM6RBE1" ],
+    "Subjects" : [ "3iJhKqKyk4Ecfb3z8l78P" ],
+    "Teachers" : [ "8k5dcSYnnYlLi00MwNDC-" ]
+  }, {
+    "Id" : "SC2QNy16XjodAL9UiOMBi",
+    "Type" : "Course",
+    "Groups" : [ "aLj0dhl0Lx_N0J44xP1MK" ],
+    "PreferredRooms" : [ "7H-OcxF2bJfhEk2dZgFWT", "Ak6c2yhDgX_waK8SB8tFC" ],
+    "Subjects" : [ "sn9lKogG63siA6SMK_9u5" ],
+    "Teachers" : [ "-4izQiGLHHWKNW5lKLcPf" ]
+  }, {
+    "Id" : "9ZFey47E9fkhwrArZfq4P",
+    "Type" : "Course",
+    "Groups" : [ "T1z_p7FOdIprMs_Q7pB0m" ],
+    "PreferredRooms" : [ "fDvHxm5lDt0BFSyM6RBE1" ],
+    "Subjects" : [ "3iJhKqKyk4Ecfb3z8l78P" ],
+    "Teachers" : [ "8k5dcSYnnYlLi00MwNDC-" ]
+  }, {
+    "Id" : "l7z0ywe8FsIFGoVLSX7gm",
+    "Type" : "Course",
+    "Groups" : [ "h406DVgX4KwhphlYoZDvR" ],
+    "PreferredRooms" : [ "fDvHxm5lDt0BFSyM6RBE1" ],
+    "Subjects" : [ "tX-roEc7Y6QVRMNydjpEx" ],
+    "Teachers" : [ "8k5dcSYnnYlLi00MwNDC-" ]
+  }, {
+    "Id" : "Dc2lTj_4piwxxbMABo5hQ",
+    "Type" : "Course",
+    "Groups" : [ "0T1Ju4e1XtPxQKJMUI_Fw" ],
+    "PreferredRooms" : [ "xI1KUaDd8VU0VefOlMK3e" ],
+    "Subjects" : [ "SbzWesQfzm4tsttMdAQVe" ],
+    "Teachers" : [ "MHEOQx4dzIvnXp2rw9n28" ]
+  }, {
+    "Id" : "R9YeqCgZH5Ch_pcjvzXI1",
+    "Type" : "Course",
+    "Groups" : [ "k5YWqlVknYA0k-d1teUF8" ],
+    "PreferredRooms" : [ "7H-OcxF2bJfhEk2dZgFWT", "Ak6c2yhDgX_waK8SB8tFC" ],
+    "Subjects" : [ "sn9lKogG63siA6SMK_9u5" ],
+    "Teachers" : [ "-4izQiGLHHWKNW5lKLcPf" ]
+  }, {
+    "Id" : "UKDK140R8g5JeuVBpaPp0",
+    "Type" : "Course",
+    "Groups" : [ "h406DVgX4KwhphlYoZDvR" ],
+    "PreferredRooms" : [ "FJQ2dtjhPh0Sp23JFW0KX" ],
+    "Subjects" : [ "u2sOSFBGBlOSvpJezwA63" ],
+    "Teachers" : [ "Q4y1oZazuZ2WVBTD6OLRl" ]
+  }, {
+    "Id" : "LEuMtNilzg6mOP_bDZhcR",
+    "Type" : "Course",
+    "Groups" : [ "mRlu2y9sAAfN2O7SbVJoJ" ],
+    "PreferredRooms" : [ "FJQ2dtjhPh0Sp23JFW0KX" ],
+    "Subjects" : [ "u2sOSFBGBlOSvpJezwA63" ],
+    "Teachers" : [ "Q4y1oZazuZ2WVBTD6OLRl" ]
+  }, {
+    "Id" : "80So_vBjFP4G25mqbso1K",
+    "Type" : "Course",
+    "Groups" : [ "zsxrhH3OnlR0KSnZPB718" ],
+    "PreferredRooms" : [ "fDvHxm5lDt0BFSyM6RBE1" ],
+    "Subjects" : [ "3iJhKqKyk4Ecfb3z8l78P" ],
+    "Teachers" : [ "8k5dcSYnnYlLi00MwNDC-" ]
+  }, {
+    "Id" : "26_follZMe6A102KjH1R2",
+    "Type" : "Course",
+    "Groups" : [ "aLj0dhl0Lx_N0J44xP1MK" ],
+    "PreferredRooms" : [ "fDvHxm5lDt0BFSyM6RBE1" ],
+    "Subjects" : [ "3iJhKqKyk4Ecfb3z8l78P" ],
+    "Teachers" : [ "8k5dcSYnnYlLi00MwNDC-" ]
+  }, {
+    "Id" : "lw0GOnIiRU9xHdZS5RHdX",
+    "Type" : "Course",
+    "Groups" : [ "mRlu2y9sAAfN2O7SbVJoJ" ],
+    "PreferredRooms" : [ "FRpas9G8UCxj5WRszNGU_" ],
+    "Subjects" : [ "AkGD5Sx_xeOe4kUw9aiWe" ],
+    "Teachers" : [ "W1Xp85vZ9FbO7dZmpPHd-" ]
+  }, {
+    "Id" : "t9LrKTtsvKejNF_-nPHUa",
+    "Type" : "Course",
+    "Groups" : [ "hPUp1o5kulRYWZYE3uZC6" ],
+    "PreferredRooms" : [ "EWj1Lcxb4LVMlThS5JwVt" ],
+    "Subjects" : [ "SbzWesQfzm4tsttMdAQVe" ],
+    "Teachers" : [ "JUKpTOrZedl9mk5qArOjV" ]
+  }, {
+    "Id" : "RDyoSF8_q4I_txLL2_R4q",
+    "Type" : "Course",
+    "Groups" : [ "mRlu2y9sAAfN2O7SbVJoJ" ],
+    "PreferredRooms" : [ "FRpas9G8UCxj5WRszNGU_" ],
+    "Subjects" : [ "SbzWesQfzm4tsttMdAQVe" ],
+    "Teachers" : [ "JUKpTOrZedl9mk5qArOjV" ]
+  }, {
+    "Id" : "13dGPRq0mxIlTUCYDeTbN",
+    "Type" : "Course",
+    "Groups" : [ "mRlu2y9sAAfN2O7SbVJoJ" ],
+    "PreferredRooms" : [ "FRpas9G8UCxj5WRszNGU_" ],
+    "Subjects" : [ "f89d81a9-f43b-4647-919b-d6965b4fa2e3" ],
+    "Teachers" : [ "FgRRw8qu9VSU5F8hXE-Ub" ]
+  }, {
+    "Id" : "0qf7OGXLILLpqQ7FUuYi_",
+    "Type" : "Course",
+    "Groups" : [ "h406DVgX4KwhphlYoZDvR" ],
+    "PreferredRooms" : [ "TQNFFMW0D7xJBlP2Ljh_Q" ],
+    "Subjects" : [ "SbzWesQfzm4tsttMdAQVe" ],
+    "Teachers" : [ "MHEOQx4dzIvnXp2rw9n28" ]
+  }, {
+    "Id" : "pUCfjEo5NQSngXXwj9gZb",
+    "Type" : "Course",
+    "Groups" : [ "h406DVgX4KwhphlYoZDvR" ],
+    "PreferredRooms" : [ "TQNFFMW0D7xJBlP2Ljh_Q" ],
+    "Subjects" : [ "f89d81a9-f43b-4647-919b-d6965b4fa2e3" ],
+    "Teachers" : [ "CJdB-AMqbhN5SlAIqwPwk" ]
+  }, {
+    "Id" : "3sMYFNO9fjnhBTsEZJCzM",
+    "Type" : "Course",
+    "Groups" : [ "0J1fYQHlke9r978JyryTa" ],
+    "PreferredRooms" : [ "fDvHxm5lDt0BFSyM6RBE1" ],
+    "Subjects" : [ "nXdUhEaYia9wpMJ1pDNJS" ],
+    "Teachers" : [ "9YwnccI7utV1bue7mHqTy", "-4izQiGLHHWKNW5lKLcPf" ]
+  }, {
+    "Id" : "_d2Ipcdd9LVIUZYSJchly",
+    "Type" : "Course",
+    "Groups" : [ "Z7aG5ByNMC9ASwa1qXsqz" ],
+    "PreferredRooms" : [ "fDvHxm5lDt0BFSyM6RBE1" ],
+    "Subjects" : [ "3iJhKqKyk4Ecfb3z8l78P" ],
+    "Teachers" : [ "9YwnccI7utV1bue7mHqTy" ]
+  }, {
+    "Id" : "ZAUt2cRIK_m748Y_0mMQx",
+    "Type" : "Course",
+    "Groups" : [ "Fmr7yJ6g6_c3c5wfUsHX2" ],
+    "PreferredRooms" : [ "fDvHxm5lDt0BFSyM6RBE1" ],
+    "Subjects" : [ "nXdUhEaYia9wpMJ1pDNJS" ],
+    "Teachers" : [ "9YwnccI7utV1bue7mHqTy", "-4izQiGLHHWKNW5lKLcPf" ]
+  }, {
+    "Id" : "YCGAUesCMnMUZl3A0Y2oa",
+    "Type" : "Course",
+    "Groups" : [ "k5YWqlVknYA0k-d1teUF8" ],
+    "PreferredRooms" : [ "fDvHxm5lDt0BFSyM6RBE1" ],
+    "Subjects" : [ "3iJhKqKyk4Ecfb3z8l78P" ],
+    "Teachers" : [ "9YwnccI7utV1bue7mHqTy" ]
+  }, {
+    "Id" : "WRDZKA32atVPY11D3It7v",
+    "Type" : "Course",
+    "Groups" : [ "3a1tM6Ub2pFLN-WFGqS9d" ],
+    "PreferredRooms" : [ "sEbMujihOc9lRq2zn5mts" ],
+    "Subjects" : [ "ZqVDRTkbwDoyLLrUyNP6b" ],
+    "Teachers" : [ "KzXW3neVexOSaXOmF4TSL" ]
+  }, {
+    "Id" : "3phP-B0_Ppm9kWvZe0cPw",
+    "Type" : "Course",
+    "Groups" : [ "SM83uHA55Q4pHeSlNVocd" ],
+    "PreferredRooms" : [ "sEbMujihOc9lRq2zn5mts" ],
+    "Subjects" : [ "ZqVDRTkbwDoyLLrUyNP6b" ],
+    "Teachers" : [ "KzXW3neVexOSaXOmF4TSL" ]
+  }, {
+    "Id" : "fAFOyx9xVwAgWQM1xHHsb",
+    "Type" : "Course",
+    "Groups" : [ "6aMQ7Mz7I0xWvRYnbuJxo" ],
+    "PreferredRooms" : [ ],
+    "Subjects" : [ "rVUgHWLAwNN1kp6O0ZpGF" ],
+    "Teachers" : [ "ipdcHkR9lYdWKX_SONWOr" ]
+  }, {
+    "Id" : "pBJYkGFp278vxQDaJCKub",
+    "Type" : "Course",
+    "Groups" : [ "6aMQ7Mz7I0xWvRYnbuJxo" ],
+    "PreferredRooms" : [ ],
+    "Subjects" : [ "gkn03jb2V_5ezlozKdP5s" ],
+    "Teachers" : [ "ipdcHkR9lYdWKX_SONWOr" ]
+  }, {
+    "Id" : "dL7xToPh8OPe4srUXCHfz",
+    "Type" : "Course",
+    "Groups" : [ "6aMQ7Mz7I0xWvRYnbuJxo" ],
+    "PreferredRooms" : [ ],
+    "Subjects" : [ "5T7F1WpZEyYnglw_IaShY" ],
+    "Teachers" : [ "ipdcHkR9lYdWKX_SONWOr" ]
+  }, {
+    "Id" : "drhoOjiG9G7cRVYLC2v6F",
+    "Type" : "Course",
+    "Groups" : [ "6aMQ7Mz7I0xWvRYnbuJxo" ],
+    "PreferredRooms" : [ ],
+    "Subjects" : [ "tij4ka60Ad4gJFfPlTeuQ" ],
+    "Teachers" : [ "ipdcHkR9lYdWKX_SONWOr" ]
+  }, {
+    "Id" : "sd8RfovYI0MhXgrIHJQZ5",
+    "Type" : "Course",
+    "Groups" : [ "6aMQ7Mz7I0xWvRYnbuJxo" ],
+    "PreferredRooms" : [ ],
+    "Subjects" : [ "a0zwbqSfY53sbGb_vySnP" ],
+    "Teachers" : [ "ipdcHkR9lYdWKX_SONWOr" ]
+  }, {
+    "Id" : "UUawmXmIorlmPXqYu2jhL",
+    "Type" : "Course",
+    "Groups" : [ "6aMQ7Mz7I0xWvRYnbuJxo" ],
+    "PreferredRooms" : [ ],
+    "Subjects" : [ "Dy37T-XlWTU90qw9eU94P" ],
+    "Teachers" : [ "ipdcHkR9lYdWKX_SONWOr" ]
+  }, {
+    "Id" : "UMmhuyA93W5QDThmRx4dM",
+    "Type" : "Course",
+    "Groups" : [ "6aMQ7Mz7I0xWvRYnbuJxo" ],
+    "PreferredRooms" : [ ],
+    "Subjects" : [ "WyNZuNLffcb8tFQPNALjo" ],
+    "Teachers" : [ "ipdcHkR9lYdWKX_SONWOr" ]
+  }, {
+    "Id" : "aNpkd3uAtXpWWLg4Ad8L-",
+    "Type" : "Course",
+    "Groups" : [ "6aMQ7Mz7I0xWvRYnbuJxo" ],
+    "PreferredRooms" : [ ],
+    "Subjects" : [ "7e_093BymxVbghyk6ESK8" ],
+    "Teachers" : [ "ipdcHkR9lYdWKX_SONWOr" ]
+  }, {
+    "Id" : "baLfEr7Fich-Sy6BzOmyz",
+    "Type" : "Course",
+    "Groups" : [ "6aMQ7Mz7I0xWvRYnbuJxo" ],
+    "PreferredRooms" : [ ],
+    "Subjects" : [ "FZS06jepc0FsSXWvUtraG" ],
+    "Teachers" : [ "ipdcHkR9lYdWKX_SONWOr" ]
+  }, {
+    "Id" : "o9C_JhunxLGsOfd71GTsi",
+    "Type" : "Course",
+    "Groups" : [ "6aMQ7Mz7I0xWvRYnbuJxo" ],
+    "PreferredRooms" : [ ],
+    "Subjects" : [ "KIMkS-zk0ms_MHqXNSwM-" ],
+    "Teachers" : [ "ipdcHkR9lYdWKX_SONWOr" ]
+  }, {
+    "Id" : "KfranVVp5cfOh7_8_xTkb",
+    "Type" : "Course",
+    "Groups" : [ "6aMQ7Mz7I0xWvRYnbuJxo" ],
+    "PreferredRooms" : [ ],
+    "Subjects" : [ "qXDxoIMhAufOrr4kgth5e" ],
+    "Teachers" : [ "ipdcHkR9lYdWKX_SONWOr" ]
+  }, {
+    "Id" : "Z5XJLoeZkYhO-dxhL32G5",
+    "Type" : "Course",
+    "Groups" : [ "32Mr4zYPcpBbP1R7RBvyC" ],
+    "PreferredRooms" : [ ],
+    "Subjects" : [ "jiqZNP-GJFH_1TcFM4gjm" ],
+    "Teachers" : [ "sZtwATipRhoTgdjIbJRlN" ]
+  } ],
+  "Days" : [ {
+    "Id" : "c855b21f-021e-4c87-83bc-fc5557da0499",
+    "Type" : "Day",
+    "Shortcut" : "Mo.",
+    "Name" : "Montag"
+  }, {
+    "Id" : "778838fe-fddc-4641-ad5e-bf4beb9a50dc",
+    "Type" : "Day",
+    "Shortcut" : "Di.",
+    "Name" : "Dienstag"
+  }, {
+    "Id" : "67678400-ca17-4279-a154-e69723ae2fdb",
+    "Type" : "Day",
+    "Shortcut" : "Mi.",
+    "Name" : "Mittwoch"
+  }, {
+    "Id" : "59866e4f-aa26-4a6e-91a2-663da8c8fab2",
+    "Type" : "Day",
+    "Shortcut" : "Do.",
+    "Name" : "Donnerstag"
+  }, {
+    "Id" : "386eb027-3471-4737-a7d2-2c8fd2c73f6c",
+    "Type" : "Day",
+    "Shortcut" : "Fr.",
+    "Name" : "Freitag"
+  } ],
+  "EpochPlans" : [ {
+    "Id" : "FSnEH0Zpt73dhWQ7yFp_v",
+    "Type" : "EpochPlan",
+    "Shortcut" : "Küp10",
+    "Name" : "Epochenschiene Küpra 10"
+  }, {
+    "Id" : "AKcMhnJb_ww1hNy6nztH4",
+    "Type" : "EpochPlan",
+    "Shortcut" : "Küp11",
+    "Name" : "Epochenschiene Küpra 11"
+  }, {
+    "Id" : "zeuyTsv13tMe2Sz2UDf1U",
+    "Type" : "EpochPlan",
+    "Shortcut" : "Küp9",
+    "Name" : "Epochenschiene Küpra 9"
+  }, {
+    "Id" : "_3X0fSV7Jr62UxlEO3n5D",
+    "Type" : "EpochPlan",
+    "Shortcut" : "Küp12",
+    "Name" : "Epochenschiene Küpra 12"
+  } ],
+  "Groups" : [ {
+    "Id" : "B4BbO0bIG0YNVDsa1pvt5",
+    "Type" : "Group",
+    "Shortcut" : "B"
+  }, {
+    "Id" : "y7bt_WocoGs-RR0z4U07N",
+    "Type" : "Group",
+    "Shortcut" : "A"
+  }, {
+    "Id" : "yIj7OF-VvuffkniZI81jd",
+    "Type" : "Group",
+    "Shortcut" : "B"
+  }, {
+    "Id" : "554vazPK-ZN4JnhJjWDI2",
+    "Type" : "Group",
+    "Shortcut" : "A"
+  }, {
+    "Id" : "kY6YdtCZAo7HMoWtfJ2eV",
+    "Type" : "Group",
+    "Shortcut" : "A"
+  }, {
+    "Id" : "hxeB3WwDRnnIifXp6-p-M",
+    "Type" : "Group",
+    "Shortcut" : "B"
+  }, {
+    "Id" : "REErLHfrLe493Jq7-5yj9",
+    "Type" : "Group",
+    "Shortcut" : "B"
+  }, {
+    "Id" : "JYcw-BUJPsb0M85aynQ3v",
+    "Type" : "Group",
+    "Shortcut" : "D"
+  }, {
+    "Id" : "ht7fEGf9LfJpOfdCUBAyg",
+    "Type" : "Group",
+    "Shortcut" : "C"
+  }, {
+    "Id" : "-1Yb5L2aYYYAb5-eLKsph",
+    "Type" : "Group",
+    "Shortcut" : "E"
+  }, {
+    "Id" : "jver6GKP962Pbxa-H8oe9",
+    "Type" : "Group",
+    "Shortcut" : "A"
+  }, {
+    "Id" : "SYQ1hrOGooc69P4l_8F_q",
+    "Type" : "Group",
+    "Shortcut" : "w"
+  }, {
+    "Id" : "I2gV9ZFSeixLKXJEGPpoJ",
+    "Type" : "Group",
+    "Shortcut" : "w"
+  }, {
+    "Id" : "1FRuI_bzp9V4i06rK8s2v",
+    "Type" : "Group",
+    "Shortcut" : "w"
+  }, {
+    "Id" : "i7nWKZfPkfg7vl0Ob7_qr",
+    "Type" : "Group",
+    "Shortcut" : "w"
+  }, {
+    "Id" : "SSH3za8-yz0G-U_lil2xQ",
+    "Type" : "Group",
+    "Shortcut" : "w"
+  }, {
+    "Id" : "8UZK-ZGGTf0OKBzNWWd0G",
+    "Type" : "Group",
+    "Shortcut" : "w"
+  }, {
+    "Id" : "Gof1nvfOYOJO3OVTv0f45",
+    "Type" : "Group",
+    "Shortcut" : "m"
+  }, {
+    "Id" : "0J1fYQHlke9r978JyryTa",
+    "Type" : "Group",
+    "Shortcut" : "A"
+  }, {
+    "Id" : "zhL0E5uyZDpdyKLHARWTG",
+    "Type" : "Group",
+    "Shortcut" : "m"
+  }, {
+    "Id" : "Z7aG5ByNMC9ASwa1qXsqz",
+    "Type" : "Group",
+    "Shortcut" : "A"
+  }, {
+    "Id" : "3xDTiKiqkEX2kTPyvq7Ks",
+    "Type" : "Group",
+    "Shortcut" : "m"
+  }, {
+    "Id" : "k5YWqlVknYA0k-d1teUF8",
+    "Type" : "Group",
+    "Shortcut" : "B"
+  }, {
+    "Id" : "L9ULvsyxlUFTawXs4QqTQ",
+    "Type" : "Group",
+    "Shortcut" : "m"
+  }, {
+    "Id" : "mRlu2y9sAAfN2O7SbVJoJ",
+    "Type" : "Group",
+    "Shortcut" : "Abi"
+  }, {
+    "Id" : "h406DVgX4KwhphlYoZDvR",
+    "Type" : "Group",
+    "Shortcut" : "Mr"
+  }, {
+    "Id" : "Fmr7yJ6g6_c3c5wfUsHX2",
+    "Type" : "Group",
+    "Shortcut" : "B"
+  }, {
+    "Id" : "iyZp2--8TvR_D3D4TtcTh",
+    "Type" : "Group",
+    "Shortcut" : "A"
+  }, {
+    "Id" : "T1z_p7FOdIprMs_Q7pB0m",
+    "Type" : "Group",
+    "Shortcut" : "A"
+  }, {
+    "Id" : "zsxrhH3OnlR0KSnZPB718",
+    "Type" : "Group",
+    "Shortcut" : "B"
+  }, {
+    "Id" : "aLj0dhl0Lx_N0J44xP1MK",
+    "Type" : "Group",
+    "Shortcut" : "B"
+  }, {
+    "Id" : "3a1tM6Ub2pFLN-WFGqS9d",
+    "Type" : "Group",
+    "Shortcut" : "m"
+  }, {
+    "Id" : "SM83uHA55Q4pHeSlNVocd",
+    "Type" : "Group",
+    "Shortcut" : "m"
+  } ],
+  "Hours" : [ {
+    "Id" : "90582602-8199-41c1-a730-ebdd1db04bf7",
+    "Type" : "Hour",
+    "Shortcut" : "1",
+    "Name" : "HU 1",
+    "End" : "08:45:00",
+    "Start" : "07:55:00"
+  }, {
+    "Id" : "3waJmnkwTzqpVZQZlqpb0",
+    "Type" : "Hour",
+    "Shortcut" : "2",
+    "Name" : "HU 2",
+    "End" : "09:35:00",
+    "Start" : "08:45:00"
+  }, {
+    "Id" : "2e6bd9c4-0c8a-409d-b400-dd84d889a9ae",
+    "Type" : "Hour",
+    "Shortcut" : "3",
+    "Name" : "1. FS",
+    "End" : "10:35:00",
+    "Start" : "09:50:00"
+  }, {
+    "Id" : "7e6ad86a-2d95-4de9-b6f6-89011d20040f",
+    "Type" : "Hour",
+    "Shortcut" : "4",
+    "Name" : "2. FS",
+    "End" : "11:20:00",
+    "Start" : "10:35:00"
+  }, {
+    "Id" : "e0970e95-982a-4692-ac0e-59f5266dfd38",
+    "Type" : "Hour",
+    "Shortcut" : "5",
+    "Name" : "3. FS",
+    "End" : "12:20:00",
+    "Start" : "11:35:00"
+  }, {
+    "Id" : "fedf1e4a-d8fc-43fa-81c7-5db08392998c",
+    "Type" : "Hour",
+    "Shortcut" : "6",
+    "Name" : "4.1 FS",
+    "End" : "13:05:00",
+    "Start" : "12:20:00"
+  }, {
+    "Id" : "590d50bd-38c9-4df8-be01-a2f2a4ca50c9",
+    "Type" : "Hour",
+    "Shortcut" : "7",
+    "Name" : "4.2 FS",
+    "End" : "14:00:00",
+    "Start" : "13:15:00"
+  }, {
+    "Id" : "41009361-b26a-43ac-bc03-802e009bc91b",
+    "Type" : "Hour",
+    "Shortcut" : "8",
+    "Name" : "5.1 FS",
+    "End" : "14:20:00",
+    "Start" : "13:35:00"
+  }, {
+    "Id" : "72dea8d3-5c40-4799-9a25-8df4e2ea1f80",
+    "Type" : "Hour",
+    "Shortcut" : "9",
+    "Name" : "5.2 FS",
+    "End" : "14:45:00",
+    "Start" : "14:00:00"
+  }, {
+    "Id" : "kBVzybisMfEhk8KCcSJ0Z",
+    "Type" : "Hour",
+    "Shortcut" : "10",
+    "Name" : "6.1 FS",
+    "End" : "15:05:00",
+    "Start" : "14:20:00"
+  } ],
+  "Lessons" : [ {
+    "Id" : "GcLOlUcGJpSUG-8UQkBrd",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "tfSKxp30V9NLVf0n0MNbo",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 3,
+    "LocalRooms" : [ "xI1KUaDd8VU0VefOlMK3e" ]
+  }, {
+    "Id" : "vIIDZJas52L1C35CxX6Xa",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "tfSKxp30V9NLVf0n0MNbo",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 2,
+    "LocalRooms" : [ "xI1KUaDd8VU0VefOlMK3e" ]
+  }, {
+    "Id" : "w8cNzQk-2k2zqeJy9LF7n",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "b_PausYYuabpiQuKr1qC4",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 4,
+    "LocalRooms" : [ "sGYDLEXXN5JkJX04G0Qpt" ]
+  }, {
+    "Id" : "kKfYXvjV3Nt7jf5K4gymn",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "b_PausYYuabpiQuKr1qC4",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 5,
+    "LocalRooms" : [ "sGYDLEXXN5JkJX04G0Qpt" ]
+  }, {
+    "Id" : "mvOKlfOHT9tmGSAuhPVN8",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "tpRP98pb3edHjUXnGmsmN",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "ZALYA2dX9VPRKNqzWngu8" ]
+  }, {
+    "Id" : "a2qtLwsKEJz8rbQGPJRov",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "tpRP98pb3edHjUXnGmsmN",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "ZALYA2dX9VPRKNqzWngu8" ]
+  }, {
+    "Id" : "V_fwUt90B1tRXgOZlwq2Q",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "tpRP98pb3edHjUXnGmsmN",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "ZALYA2dX9VPRKNqzWngu8" ]
+  }, {
+    "Id" : "_uhK4ExbqJBthTL29RPe0",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "tpRP98pb3edHjUXnGmsmN",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "ZALYA2dX9VPRKNqzWngu8" ]
+  }, {
+    "Id" : "tbFqbXPHC2mc5pGQ0m-0J",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "tpRP98pb3edHjUXnGmsmN",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "ZALYA2dX9VPRKNqzWngu8" ]
+  }, {
+    "Id" : "5wrLOQEwX7-iaoflreBZ2",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "tpRP98pb3edHjUXnGmsmN",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "ZALYA2dX9VPRKNqzWngu8" ]
+  }, {
+    "Id" : "1KrASsd2QFRDH3da1pkpy",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "tpRP98pb3edHjUXnGmsmN",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "ZALYA2dX9VPRKNqzWngu8" ]
+  }, {
+    "Id" : "scwXG2X5WeHoqzBJcXCd2",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "tpRP98pb3edHjUXnGmsmN",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "ZALYA2dX9VPRKNqzWngu8" ]
+  }, {
+    "Id" : "TVIu5J7Ip-SQForzONE5P",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "tpRP98pb3edHjUXnGmsmN",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "ZALYA2dX9VPRKNqzWngu8" ]
+  }, {
+    "Id" : "golTWpWXSfccRj0PrN6Jl",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "tpRP98pb3edHjUXnGmsmN",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "ZALYA2dX9VPRKNqzWngu8" ]
+  }, {
+    "Id" : "Z9TrKEZUPT_HcX60aKyND",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "6dLrI57VFB80TPQMFPQYc",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "1a78SIco6wY1OvBlFToPT" ]
+  }, {
+    "Id" : "QQ6bzAcV-Qmbb8XbwK90h",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "6dLrI57VFB80TPQMFPQYc",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "1a78SIco6wY1OvBlFToPT" ]
+  }, {
+    "Id" : "5zFnbp3wjDhR6IKXu237Q",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "6dLrI57VFB80TPQMFPQYc",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "1a78SIco6wY1OvBlFToPT" ]
+  }, {
+    "Id" : "wkDQSv573JWi8GLlgN8mD",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "6dLrI57VFB80TPQMFPQYc",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "1a78SIco6wY1OvBlFToPT" ]
+  }, {
+    "Id" : "Kg7l3v6weRSRA8UNXzdu-",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "6dLrI57VFB80TPQMFPQYc",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "1a78SIco6wY1OvBlFToPT" ]
+  }, {
+    "Id" : "g0Rz4KV8lr3GOt_l-Y2mU",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "6dLrI57VFB80TPQMFPQYc",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "1a78SIco6wY1OvBlFToPT" ]
+  }, {
+    "Id" : "6q_JcBmC0SC1TCmRuZz24",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "6dLrI57VFB80TPQMFPQYc",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "1a78SIco6wY1OvBlFToPT" ]
+  }, {
+    "Id" : "JkPuebUAuyq90K8dy_Evw",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "6dLrI57VFB80TPQMFPQYc",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "1a78SIco6wY1OvBlFToPT" ]
+  }, {
+    "Id" : "j8vvd4w_otVTMC7orA3ZQ",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "6dLrI57VFB80TPQMFPQYc",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "1a78SIco6wY1OvBlFToPT" ]
+  }, {
+    "Id" : "1dyAPNpAGvZbJmLsX1Zxm",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "6dLrI57VFB80TPQMFPQYc",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "1a78SIco6wY1OvBlFToPT" ]
+  }, {
+    "Id" : "VHtygsPlVoM71Kd4w_2r8",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "3ChdtfcavyDo0wzyl5Urv",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "0Skp1uJBzfjPSZs924Duw" ]
+  }, {
+    "Id" : "Ju0yocB0qXzbXCq90O9EG",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "3ChdtfcavyDo0wzyl5Urv",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "0Skp1uJBzfjPSZs924Duw" ]
+  }, {
+    "Id" : "Mi0qYqvu7aU0YuXRdokoC",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "3ChdtfcavyDo0wzyl5Urv",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "0Skp1uJBzfjPSZs924Duw" ]
+  }, {
+    "Id" : "3J1WKKdMw5aYopCMhq5Sv",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "3ChdtfcavyDo0wzyl5Urv",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "0Skp1uJBzfjPSZs924Duw" ]
+  }, {
+    "Id" : "j9L_RBJajOBeVVu12iL5g",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "3ChdtfcavyDo0wzyl5Urv",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "0Skp1uJBzfjPSZs924Duw" ]
+  }, {
+    "Id" : "tZk1G2ZlyW3Fli95CgzrA",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "3ChdtfcavyDo0wzyl5Urv",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "0Skp1uJBzfjPSZs924Duw" ]
+  }, {
+    "Id" : "UyEcc1dMNyR_VrXRdl7rU",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "3ChdtfcavyDo0wzyl5Urv",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "0Skp1uJBzfjPSZs924Duw" ]
+  }, {
+    "Id" : "GVySAmS0VUh7xYKypkhU3",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "3ChdtfcavyDo0wzyl5Urv",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "0Skp1uJBzfjPSZs924Duw" ]
+  }, {
+    "Id" : "kZOBvSavmwEnk-8X0klTZ",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "3ChdtfcavyDo0wzyl5Urv",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "0Skp1uJBzfjPSZs924Duw" ]
+  }, {
+    "Id" : "P-GynN7Z9N27fExz_D6fb",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "3ChdtfcavyDo0wzyl5Urv",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "0Skp1uJBzfjPSZs924Duw" ]
+  }, {
+    "Id" : "etire0b7PN9PRxs2LOyR_",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "8u_tIqb4wWtnaizaPv-Uj",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "j6BNELOjpT_KBxIbWRkVE" ]
+  }, {
+    "Id" : "pHpbvmDuDlRdvTVxlo2eo",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "8u_tIqb4wWtnaizaPv-Uj",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "j6BNELOjpT_KBxIbWRkVE" ]
+  }, {
+    "Id" : "eas_idbNFQ2F96FpxfNLh",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "8u_tIqb4wWtnaizaPv-Uj",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "j6BNELOjpT_KBxIbWRkVE" ]
+  }, {
+    "Id" : "1K49FWOMdFCfsmPSgmQ8A",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "8u_tIqb4wWtnaizaPv-Uj",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "j6BNELOjpT_KBxIbWRkVE" ]
+  }, {
+    "Id" : "a_BQHYd0L5O0tco2s68YM",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "8u_tIqb4wWtnaizaPv-Uj",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "j6BNELOjpT_KBxIbWRkVE" ]
+  }, {
+    "Id" : "UXTxxqUQpn0ututMmgC7U",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "8u_tIqb4wWtnaizaPv-Uj",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "j6BNELOjpT_KBxIbWRkVE" ]
+  }, {
+    "Id" : "qRdmLJfXvB-US9CFEhu9_",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "8u_tIqb4wWtnaizaPv-Uj",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "j6BNELOjpT_KBxIbWRkVE" ]
+  }, {
+    "Id" : "-TQF7U7XsDZpBgGaPySly",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "8u_tIqb4wWtnaizaPv-Uj",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "j6BNELOjpT_KBxIbWRkVE" ]
+  }, {
+    "Id" : "M3lYlIZWdEevTbbHju08w",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "8u_tIqb4wWtnaizaPv-Uj",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "j6BNELOjpT_KBxIbWRkVE" ]
+  }, {
+    "Id" : "yeXcpmOB5Powwkd5mfifX",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "8u_tIqb4wWtnaizaPv-Uj",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "j6BNELOjpT_KBxIbWRkVE" ]
+  }, {
+    "Id" : "xbVMiJedtcbw26Hg4IWM2",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "r8rnrQjJhLsNnxXqz9KNL",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "OXT0MI1-fHzX7hplQJdZv" ]
+  }, {
+    "Id" : "GwDMV1p4P79Wc-eQo7_p1",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "r8rnrQjJhLsNnxXqz9KNL",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "OXT0MI1-fHzX7hplQJdZv" ]
+  }, {
+    "Id" : "WhvY26WljP4wdXsA_rnK3",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "r8rnrQjJhLsNnxXqz9KNL",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "OXT0MI1-fHzX7hplQJdZv" ]
+  }, {
+    "Id" : "DXCCbQWvs3cn01PbCRYeE",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "r8rnrQjJhLsNnxXqz9KNL",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "OXT0MI1-fHzX7hplQJdZv" ]
+  }, {
+    "Id" : "bwmeYP1ktqfd4B698P3b9",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "r8rnrQjJhLsNnxXqz9KNL",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "OXT0MI1-fHzX7hplQJdZv" ]
+  }, {
+    "Id" : "MTIYtj_zxHDJbo_mzKyw7",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "r8rnrQjJhLsNnxXqz9KNL",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "OXT0MI1-fHzX7hplQJdZv" ]
+  }, {
+    "Id" : "945T8FNushvqa4dhbbJnW",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "r8rnrQjJhLsNnxXqz9KNL",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "OXT0MI1-fHzX7hplQJdZv" ]
+  }, {
+    "Id" : "bImTJDu3u_RCjsjDy8rTb",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "r8rnrQjJhLsNnxXqz9KNL",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "OXT0MI1-fHzX7hplQJdZv" ]
+  }, {
+    "Id" : "wVubWcwJcgBvesVQS0JIW",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "r8rnrQjJhLsNnxXqz9KNL",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "OXT0MI1-fHzX7hplQJdZv" ]
+  }, {
+    "Id" : "VNZfyOBTktEoapOvm57Jy",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "r8rnrQjJhLsNnxXqz9KNL",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "OXT0MI1-fHzX7hplQJdZv" ]
+  }, {
+    "Id" : "OUejYbrOsZWScdD2cuaJT",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "bxb3nUIx-wTTXR76UXsrY",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "PqfR5vxuW1k8MrHLtuiVB" ]
+  }, {
+    "Id" : "yoS78pvRCvNzy2LxoFR6v",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "bxb3nUIx-wTTXR76UXsrY",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "PqfR5vxuW1k8MrHLtuiVB" ]
+  }, {
+    "Id" : "fUYL1SvmGnf7_n4khUwWr",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "bxb3nUIx-wTTXR76UXsrY",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "PqfR5vxuW1k8MrHLtuiVB" ]
+  }, {
+    "Id" : "A7MxhgF7CMM-B7r7OagA-",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "bxb3nUIx-wTTXR76UXsrY",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "PqfR5vxuW1k8MrHLtuiVB" ]
+  }, {
+    "Id" : "h0g2-3Lq2K0aOzxpe70es",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "bxb3nUIx-wTTXR76UXsrY",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "PqfR5vxuW1k8MrHLtuiVB" ]
+  }, {
+    "Id" : "FvoCTqoPslTxMNH0Oxx-U",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "bxb3nUIx-wTTXR76UXsrY",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "PqfR5vxuW1k8MrHLtuiVB" ]
+  }, {
+    "Id" : "fMvX3hsHbhK3ATTF7mRau",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "bxb3nUIx-wTTXR76UXsrY",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "PqfR5vxuW1k8MrHLtuiVB" ]
+  }, {
+    "Id" : "pkJrAbEly4z52QPSwETNM",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "bxb3nUIx-wTTXR76UXsrY",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "PqfR5vxuW1k8MrHLtuiVB" ]
+  }, {
+    "Id" : "VJI9qyE6qqr0ShzgN-64L",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "bxb3nUIx-wTTXR76UXsrY",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "PqfR5vxuW1k8MrHLtuiVB" ]
+  }, {
+    "Id" : "olkPPEq-ZYL2ikjLL25p1",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "bxb3nUIx-wTTXR76UXsrY",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "PqfR5vxuW1k8MrHLtuiVB" ]
+  }, {
+    "Id" : "bSozQGrT4f7tMv-cOq5w_",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "YLL8iDuIQDkeL-KYvHTfL",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "9csRlM2j3XMlEUem5BiaK" ]
+  }, {
+    "Id" : "ZLTOgw7moT_lw938mUiZH",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "YLL8iDuIQDkeL-KYvHTfL",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "9csRlM2j3XMlEUem5BiaK" ]
+  }, {
+    "Id" : "JGwyboNhgavn7vJp6aA0H",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "YLL8iDuIQDkeL-KYvHTfL",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "9csRlM2j3XMlEUem5BiaK" ]
+  }, {
+    "Id" : "mUS4PlNwyRZJqqwl2QJoo",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "YLL8iDuIQDkeL-KYvHTfL",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "9csRlM2j3XMlEUem5BiaK" ]
+  }, {
+    "Id" : "b7mFN3_o_yBMRY5p36pdq",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "YLL8iDuIQDkeL-KYvHTfL",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "9csRlM2j3XMlEUem5BiaK" ]
+  }, {
+    "Id" : "BFxCZ2twEDXXKB_XUkLgl",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "YLL8iDuIQDkeL-KYvHTfL",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "9csRlM2j3XMlEUem5BiaK" ]
+  }, {
+    "Id" : "vWngQ4L8i8pxXS8eeG9Ve",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "YLL8iDuIQDkeL-KYvHTfL",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "9csRlM2j3XMlEUem5BiaK" ]
+  }, {
+    "Id" : "rdDlcfQFBlqWeuglBkOIf",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "YLL8iDuIQDkeL-KYvHTfL",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "9csRlM2j3XMlEUem5BiaK" ]
+  }, {
+    "Id" : "7MCffu8gq-hLxARBtLxG9",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "YLL8iDuIQDkeL-KYvHTfL",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "9csRlM2j3XMlEUem5BiaK" ]
+  }, {
+    "Id" : "0ByiqlNfOQk1QEIN9MtqF",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "YLL8iDuIQDkeL-KYvHTfL",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "9csRlM2j3XMlEUem5BiaK" ]
+  }, {
+    "Id" : "JsBBx4Y9TdTBGbisJzr3U",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "En8kN9GfQpY0ojvY3w4Y8",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "1YFPFbnIeAf6dFQMUBt1a" ]
+  }, {
+    "Id" : "nMeKNTqui1Z4hbItH_WdD",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "En8kN9GfQpY0ojvY3w4Y8",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "1YFPFbnIeAf6dFQMUBt1a" ]
+  }, {
+    "Id" : "pf5WdFeAgfreXV0-fK5Qc",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "En8kN9GfQpY0ojvY3w4Y8",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "1YFPFbnIeAf6dFQMUBt1a" ]
+  }, {
+    "Id" : "PySSgrZwdBnmCNuiQF8cX",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "En8kN9GfQpY0ojvY3w4Y8",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "1YFPFbnIeAf6dFQMUBt1a" ]
+  }, {
+    "Id" : "e3RbuVKU3eppi1OcFTolK",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "En8kN9GfQpY0ojvY3w4Y8",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 0,
+    "LocalRooms" : [ "1YFPFbnIeAf6dFQMUBt1a" ]
+  }, {
+    "Id" : "AiGaeGHyF9EP-J_eVGCR5",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "En8kN9GfQpY0ojvY3w4Y8",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "1YFPFbnIeAf6dFQMUBt1a" ]
+  }, {
+    "Id" : "RObbKwMd-JggHRncL7DTy",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "En8kN9GfQpY0ojvY3w4Y8",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "1YFPFbnIeAf6dFQMUBt1a" ]
+  }, {
+    "Id" : "rvsjcvxHjxwakLs-p5gvi",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "En8kN9GfQpY0ojvY3w4Y8",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "1YFPFbnIeAf6dFQMUBt1a" ]
+  }, {
+    "Id" : "bUKf79zkb0ut1wJa5Jl5z",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "En8kN9GfQpY0ojvY3w4Y8",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "1YFPFbnIeAf6dFQMUBt1a" ]
+  }, {
+    "Id" : "NH7R7O7WnYnazBTrKmoHg",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "En8kN9GfQpY0ojvY3w4Y8",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 1,
+    "LocalRooms" : [ "1YFPFbnIeAf6dFQMUBt1a" ]
+  }, {
+    "Id" : "Qty6No1FR-_XSFlwdliQS",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "dcbtmPhL6TGOK4wPRnvIy",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "FhfV0VJdw4jeB9OQO9uCB",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "gtIB2EW475pVj0WEUqixy",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "V9S66h8-6QoldYjdDgKWW",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "sd5o7-aUi7PDoJPcZqphP",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "YyYjTTxaqIxeeVg5bKH8C",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "WppISl5RBIYFXXKUG5NYQ",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "svAX7KlrhSpkvqCY_Txk1",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "h7RO1S5TQYNML1_j6e5i6",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "alOlThJvzS8UnktnrxSOO",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "aijoQ3o08whljBHxW-Rpi",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "OW4mmowZpjvDg4LV2hn1M",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Qyu0m6kZKzYf4Ix55UWOK",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "YOA5gxMdNmMv3_BLYUz1B",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "mQCkCXaoppCaY38Lgr-sH",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "nFFzJliNUMDI8WQdtvyxN",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "UDMevRr5eOAdBlULJoVUm",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "OtTvy_WyLyuHw2yfqZOt2",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "UDMevRr5eOAdBlULJoVUm",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "XBpX7LTSlJnougQecOGGG",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "0rRMv-W1ngThINUmRTQhS",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "x3JwSSiHOJtoYWkfHZAfU",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "2lPAnA_c2l_BIhKZwFAT5",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "_sBklaeiWuIfCBmesH302",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "2lPAnA_c2l_BIhKZwFAT5",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "pm5f0-5amQFkh192Hn5cy",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "2lPAnA_c2l_BIhKZwFAT5",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "cshOEXh-s8p6YcHhnXUP1",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "40ZgMRbvMew1IKmf_Q6ih",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "EVd3o08nUysm7O2pL2WUi",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "40ZgMRbvMew1IKmf_Q6ih",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "ejEAWiD_NySVG7pNlrNwr",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "40ZgMRbvMew1IKmf_Q6ih",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "XYZ6y9wcP8b4gEOdKGQSx",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "cRzK3q_dfivLLVtlUo613",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "GWarnQeIqcDwEJQGUu2xT",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "V-qJ6xi8WXAKZKYm6ptwV",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "eQXX6DS4y4zN3UvHE2IYj",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "w3iiuWiO_zT_fjFZZqhVu",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "k4Mo83_iCTDBzXPLHh8tP",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "tnxoxwTPiyEThAABZ5wht",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "y5pkeJEhK7AWwQk75hN8c",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "ewWTtWhslBZ1JCQ0im25a",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "VyKhSFrMbL562tdUgs8rC",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "pbrvo5lLzvctcCHJX7f9M",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "u-CdTiAQ7y15qlrJuvpa5",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "mEhiPABkndVgxpPHXmQ6s",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "pTxjxAhgxov_rLjsJE_x8",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "L4herFwYQ-Uu1twvMU5oQ",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "zRVCxl2eAr9FZC1ayYEx3",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "L4herFwYQ-Uu1twvMU5oQ",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "OaQTg4Ez8cJ6p6b48UeU1",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "hkz6dHkSIY9cWrw4qtgiq",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "g-Dj5WqQiPCYlJ9DQtbdm",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "hkz6dHkSIY9cWrw4qtgiq",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "63gVo06LbAMo4v1AkHK6y",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "hkz6dHkSIY9cWrw4qtgiq",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "kQza4nhl5RqZvbYjCrYg9",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "k6HRt5Fw8EnWjNRq2zrsk",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "xEGMhYu5SXYW_IsLGhAsz",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "k6HRt5Fw8EnWjNRq2zrsk",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "0DqC5ftZKXE2g3kZdSYII",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "7F6f4zHlevxdnWUTmm1V3",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "GRhvKdVh7fxZDcIVGlMcl",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "7F6f4zHlevxdnWUTmm1V3",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "UIsYb1ImCz4uFFjLFY0Hn",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "gJUUMd4yM4hh-nWsB8a4k",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "2zKDUZKay8U17B2K1g1iZ",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "gJUUMd4yM4hh-nWsB8a4k",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "nUofMuP1OkvdPfWIYVWfO",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "P7-xGs_nt-9UCBUTLpexa",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "Vk5vnEMEYKgcgRb8P5-Lw",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "P7-xGs_nt-9UCBUTLpexa",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "C1NYGau0m1TmENdvSLw-b",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "TcismkFN2gctdLyVuc4fy",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "K9lixj-kWIuOBm06YIzDY",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "TcismkFN2gctdLyVuc4fy",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "1AJw-dffMT8qiHicOQE50",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "LF0D1SuNyG3A_0NGMsd-Y",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "j-DPQ1YxConraZeW2nIjb",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "LF0D1SuNyG3A_0NGMsd-Y",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "58QVN-QG0Kjg7bRlNiUUw",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "GAon2XnER7QHzTVUMNEZy",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "txum4zngeaVe1g6TYi4PN",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "GAon2XnER7QHzTVUMNEZy",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "kucc9J4IbiCWW0UJTcjxK",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "lD_FcbqSfcZWh2Wk8vboP",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "SwugFAjyDd8cRhwf1EIBu",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "lD_FcbqSfcZWh2Wk8vboP",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "z4krl6dHspb2jE5z93OCd",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "lD_FcbqSfcZWh2Wk8vboP",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "17qu_auxt44e6OvFEG3en",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "PVjKjSgYDJufPYpFtCBmJ",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "ZYTJzANCUqCPtBS2tHxpX",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "PVjKjSgYDJufPYpFtCBmJ",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "VSnrdect6ntzJDSsuvjh4",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "2Zbk4R5KO9iCnGcADLO9R",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "lWwvTdiI0rYGK7wl7QoKa",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "k-VCYRG7IAm0Z0Wf8ePDY",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "UZhXROen-_FJn6OfNWoVF",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "k-VCYRG7IAm0Z0Wf8ePDY",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "ttY1hlAh0LA1yQeJE4XSC",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "1hq44sW3k6CkOum1wWeuP",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "jtcZgU1SSe5f9OIJAEXFs",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "209EqQVr0GB0lI_fmok5K",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "DJNBN2gnzz1M7RrhH7Jif",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "209EqQVr0GB0lI_fmok5K",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "HnIvRRHHOKAxBk_JyG03O",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "209EqQVr0GB0lI_fmok5K",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "Lc8gUGRRNARsa0nwlJbvA",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "gIPeA7cyrrfBMLaZ4AR1J",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "XmfLbVbhAVvFNhI178uDa",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "gIPeA7cyrrfBMLaZ4AR1J",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "4ONKthrfzekmnM9qX8aY_",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "WREvTvQZHUCEr8ArGvp-a",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "FSE26abTHKOZrhJTJK0WY",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "PfIya1KQV85VZ5LSD8ax7",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "neA5P_oklQRwWc4J3HKhy",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "5MSz0JTr7Yn8suAn2tT87",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "h2gXgClauOTZE0dMtaALb",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "2xy1zffzH7Cs85uIK_7x7",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "HmYh69l4zpXWg2m01idcH",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "vwK3LxC0kLHHKc-7KnaDa",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "O6NwPK8x0TkCJuU4ksQsw",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "_9mT2tArKqo2L4l4_tujD",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "yGdY6SzP501jBVpZ9Cmhc",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "e1opKHxzT-PzRZh5Psr5O",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "4PVTUlVUCGTHPbKeYGL_p",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "P0jFt37lVtAFgnngxRGUR",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "7lOYzmZRjHlpQhG2inmxc",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "A4XXnmc9r5YRgb0eds_2K",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "fj-6m-8LU0ZdzddIAyJS5",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "SC2QNy16XjodAL9UiOMBi",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "rGPWuPQ2ss5YZju9h6FHE",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "9ZFey47E9fkhwrArZfq4P",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "SNL9ZI63uj3FRr2aX438y",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "l7z0ywe8FsIFGoVLSX7gm",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "g-aK2Cp3crJVvPaOZD2Lr",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Dc2lTj_4piwxxbMABo5hQ",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "T7W5o4E7F2nAf4_Vi0D_8",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Dc2lTj_4piwxxbMABo5hQ",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "JcrUj1WJdk96ANYyYmBzc",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Dc2lTj_4piwxxbMABo5hQ",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "EembYmeu94DsG_jA-pJFU",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "R9YeqCgZH5Ch_pcjvzXI1",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "tCgK8qT-pZgLz6muhQqT1",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "UKDK140R8g5JeuVBpaPp0",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "kCHsXQCxKm4T9JI6CLIZ_",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "LEuMtNilzg6mOP_bDZhcR",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "QTjurOCxR0tG3Q7ZnloZQ",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "80So_vBjFP4G25mqbso1K",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "zSPnioaLcKjX0egVa-aM8",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "26_follZMe6A102KjH1R2",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "kplIInfkgqFr0bz6cKv2S",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "lw0GOnIiRU9xHdZS5RHdX",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "2D0akk7o9-CEUPimKKn0M",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "lw0GOnIiRU9xHdZS5RHdX",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "RjrSWwOBB4POlP81fLuCb",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "t9LrKTtsvKejNF_-nPHUa",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "LxHorupjJnPOI_yrqUGmm",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "t9LrKTtsvKejNF_-nPHUa",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "8ye9wFEsRPHlDjy-pBlbz",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "t9LrKTtsvKejNF_-nPHUa",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "1GDVGn5NlY7PrfupWE0Lr",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "RDyoSF8_q4I_txLL2_R4q",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "yZkypHCWGGnNPOMxZkRdP",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "RDyoSF8_q4I_txLL2_R4q",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "zEZvFSxEHe2CskKVcmomQ",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "13dGPRq0mxIlTUCYDeTbN",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "Nw51tXq-IGVc0XW8WLIln",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "13dGPRq0mxIlTUCYDeTbN",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "d0QuuibgZge2yFjZIqh-P",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "0qf7OGXLILLpqQ7FUuYi_",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "u9u-1q8DaFJPdkE_To_6S",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "0qf7OGXLILLpqQ7FUuYi_",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "47yf-q23cCJW6eltvTXU-",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "pUCfjEo5NQSngXXwj9gZb",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "t-fT6V21SiHimRKGq_6uG",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "pUCfjEo5NQSngXXwj9gZb",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "w03Lt_fPeN5YbE2KC3S1-",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "3sMYFNO9fjnhBTsEZJCzM",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "Ih4rMZbqNP5AWo27ypweb",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "_d2Ipcdd9LVIUZYSJchly",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "c90cn6bKJHKA9xq_SbOuC",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "ZAUt2cRIK_m748Y_0mMQx",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "VRKA5JWlwP6eS4d8illfC",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "YCGAUesCMnMUZl3A0Y2oa",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "UGhY2foyQ7wNm_PWCFPtT",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "WRDZKA32atVPY11D3It7v",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "b-TDyJJjXgF36TdU8yfQY",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "3phP-B0_Ppm9kWvZe0cPw",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "sPutB9J9vwwmQ5LAZTny7",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "fAFOyx9xVwAgWQM1xHHsb",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "qiQ4B3aMxeCwccczdDpi-",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "fAFOyx9xVwAgWQM1xHHsb",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "NeB_og4VG9N7zpefP6n-J",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "pBJYkGFp278vxQDaJCKub",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "CRnroW6KWfkRjHP7o-t_n",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "pBJYkGFp278vxQDaJCKub",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "dKsRXEoxa0kPy_OOCad_5",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "dL7xToPh8OPe4srUXCHfz",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "FQkdU0pM2u_GtIw5hJWJz",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "dL7xToPh8OPe4srUXCHfz",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "2AVZS8uYt6rbDYqUP4n8Y",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "drhoOjiG9G7cRVYLC2v6F",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "BUXqwVuyJzfBvUxPvqIfp",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "drhoOjiG9G7cRVYLC2v6F",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "h9nfYldZ9Yef0SHuBHcHU",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "sd8RfovYI0MhXgrIHJQZ5",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "y9VFPgKMCuaMF1sRXm1g9",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "sd8RfovYI0MhXgrIHJQZ5",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "b2WmTZmlG7POpGYzEE1bE",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "sd8RfovYI0MhXgrIHJQZ5",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "BOMdRdZslR2-zHotNuesn",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "UUawmXmIorlmPXqYu2jhL",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "9-pqbxZkDF2IISgvs2mal",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "UUawmXmIorlmPXqYu2jhL",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "wnwGZbDJvVQWKU37aqccL",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "UMmhuyA93W5QDThmRx4dM",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "89ybDlanylyVxKLvRup0J",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "UMmhuyA93W5QDThmRx4dM",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "3whmg-9byTaholkrEZ765",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "aNpkd3uAtXpWWLg4Ad8L-",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "fOs9Bs9OkIT_tO1JjW71m",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "aNpkd3uAtXpWWLg4Ad8L-",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "PsqmZbVBPUoIYqOc6-x0o",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "baLfEr7Fich-Sy6BzOmyz",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "2CnJRZXtdd7AWP-F0wjrp",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "baLfEr7Fich-Sy6BzOmyz",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "vKNMSqVvtXbcgzy6UvRg8",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "baLfEr7Fich-Sy6BzOmyz",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "APY-d5-H5-mHzzoISUGuV",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "o9C_JhunxLGsOfd71GTsi",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "kQf1vg3om_CelbOV-Bgko",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "o9C_JhunxLGsOfd71GTsi",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "hjiFIOgekIwQYh6EPCQHt",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "KfranVVp5cfOh7_8_xTkb",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "IsFATyCWW0KN7ueyB_g_5",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "KfranVVp5cfOh7_8_xTkb",
+    "Day" : -1,
+    "Duration" : 1,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "zsGV097R0ltpyhWf9BVIA",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Z5XJLoeZkYhO-dxhL32G5",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "R5JB8C2fBRlAKHYSpzoF4",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Z5XJLoeZkYhO-dxhL32G5",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "91xbil36VCkFAxswpMpGz",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Z5XJLoeZkYhO-dxhL32G5",
+    "Day" : -1,
+    "Duration" : 2,
+    "Fixed" : false,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : -1,
+    "LocalRooms" : [ ]
+  }, {
+    "Id" : "X3bNJjg40iORYgiKlxKeo",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp10-10",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 3,
+    "LocalRooms" : [ "YcwKmU2hsZpf7F_czQ6RL", "ZALYA2dX9VPRKNqzWngu8", "vUvR9dI15HjUZky6OgVKF", "bl8cFwFyy09h72dBj517i", "fDvHxm5lDt0BFSyM6RBE1", "sGYDLEXXN5JkJX04G0Qpt" ]
+  }, {
+    "Id" : "GvyPdAsN7cqzR5MWQNGKL",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp11-11",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 3,
+    "LocalRooms" : [ "YGl6YmD4q-RCyuh6KNqCK", "zVhNx-yebB4UMbvJEaz8X", "G2i9YkNJFTJ9b7CHYaZwj", "h26E6Bp39hO1SqZVQMhBX", "sGYDLEXXN5JkJX04G0Qpt" ]
+  }, {
+    "Id" : "kl58oXUA-NN7nYNhhHtB_",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp9-9",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 4,
+    "LocalRooms" : [ "bl8cFwFyy09h72dBj517i", "85XVqqAcV1An6ARKqpKf1", "h26E6Bp39hO1SqZVQMhBX", "fDvHxm5lDt0BFSyM6RBE1", "ENOSFnwKsqBTG8jCQULBP", "t890QsfsD_Q4dO2yVq8Hw" ]
+  }, {
+    "Id" : "voIeReL1RwwOQ5Hwsdh8n",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp10-10",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 6,
+    "LocalRooms" : [ "YcwKmU2hsZpf7F_czQ6RL", "ZALYA2dX9VPRKNqzWngu8", "vUvR9dI15HjUZky6OgVKF", "bl8cFwFyy09h72dBj517i", "fDvHxm5lDt0BFSyM6RBE1", "sGYDLEXXN5JkJX04G0Qpt" ]
+  }, {
+    "Id" : "g32cN4Ww4uS8pWkkh9k_F",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp10-10",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 4,
+    "LocalRooms" : [ "YcwKmU2hsZpf7F_czQ6RL", "ZALYA2dX9VPRKNqzWngu8", "vUvR9dI15HjUZky6OgVKF", "bl8cFwFyy09h72dBj517i", "fDvHxm5lDt0BFSyM6RBE1", "sGYDLEXXN5JkJX04G0Qpt" ]
+  }, {
+    "Id" : "PQFK7uOI3YckUmlY97O7c",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp11-11",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 2,
+    "LocalRooms" : [ "YGl6YmD4q-RCyuh6KNqCK", "zVhNx-yebB4UMbvJEaz8X", "G2i9YkNJFTJ9b7CHYaZwj", "h26E6Bp39hO1SqZVQMhBX", "sGYDLEXXN5JkJX04G0Qpt" ]
+  }, {
+    "Id" : "sMGhJdQdJUsVf1mW2ADmw",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp12-12",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 8,
+    "LocalRooms" : [ "sGYDLEXXN5JkJX04G0Qpt" ]
+  }, {
+    "Id" : "8avbYlgMskltjO5OrUYFN",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp12-12",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 5,
+    "LocalRooms" : [ "sGYDLEXXN5JkJX04G0Qpt" ]
+  }, {
+    "Id" : "AstRSGLFkv4zdNlcIZ7Ql",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp10-10",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 5,
+    "LocalRooms" : [ "YcwKmU2hsZpf7F_czQ6RL", "ZALYA2dX9VPRKNqzWngu8", "vUvR9dI15HjUZky6OgVKF", "bl8cFwFyy09h72dBj517i", "fDvHxm5lDt0BFSyM6RBE1", "sGYDLEXXN5JkJX04G0Qpt" ]
+  }, {
+    "Id" : "zgrBkMEbl7yoRmqMm317L",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp11-11",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 3,
+    "LocalRooms" : [ "YGl6YmD4q-RCyuh6KNqCK", "zVhNx-yebB4UMbvJEaz8X", "G2i9YkNJFTJ9b7CHYaZwj", "h26E6Bp39hO1SqZVQMhBX", "sGYDLEXXN5JkJX04G0Qpt" ]
+  }, {
+    "Id" : "nLYG2AUtdyPYYO9G56sHC",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp9-9",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 6,
+    "LocalRooms" : [ "bl8cFwFyy09h72dBj517i", "85XVqqAcV1An6ARKqpKf1", "h26E6Bp39hO1SqZVQMhBX", "fDvHxm5lDt0BFSyM6RBE1", "ENOSFnwKsqBTG8jCQULBP", "t890QsfsD_Q4dO2yVq8Hw" ]
+  }, {
+    "Id" : "KsRkh-pF940xdJBvPRo_w",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp10-10",
+    "Day" : 3,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 8,
+    "LocalRooms" : [ "YcwKmU2hsZpf7F_czQ6RL", "ZALYA2dX9VPRKNqzWngu8", "vUvR9dI15HjUZky6OgVKF", "bl8cFwFyy09h72dBj517i", "fDvHxm5lDt0BFSyM6RBE1", "sGYDLEXXN5JkJX04G0Qpt" ]
+  }, {
+    "Id" : "OZZ4y5mNUQPLVMj6rfAdY",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp11-11",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 2,
+    "LocalRooms" : [ "YGl6YmD4q-RCyuh6KNqCK", "zVhNx-yebB4UMbvJEaz8X", "G2i9YkNJFTJ9b7CHYaZwj", "h26E6Bp39hO1SqZVQMhBX", "sGYDLEXXN5JkJX04G0Qpt" ]
+  }, {
+    "Id" : "Dr4SU5m-P-EQ3NYgGLazw",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp9-9",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 8,
+    "LocalRooms" : [ "bl8cFwFyy09h72dBj517i", "85XVqqAcV1An6ARKqpKf1", "h26E6Bp39hO1SqZVQMhBX", "fDvHxm5lDt0BFSyM6RBE1", "ENOSFnwKsqBTG8jCQULBP", "t890QsfsD_Q4dO2yVq8Hw" ]
+  }, {
+    "Id" : "hAgt1Fp8iB6v3kUy-XZFw",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp11-11",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 3,
+    "LocalRooms" : [ "YGl6YmD4q-RCyuh6KNqCK", "zVhNx-yebB4UMbvJEaz8X", "G2i9YkNJFTJ9b7CHYaZwj", "h26E6Bp39hO1SqZVQMhBX", "sGYDLEXXN5JkJX04G0Qpt" ]
+  }, {
+    "Id" : "IhcLfR6KOM5-4zwIsEYDc",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp12-12",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 6,
+    "LocalRooms" : [ "sGYDLEXXN5JkJX04G0Qpt" ]
+  }, {
+    "Id" : "MqEXSp-KFbzuE_E0Oi6Fy",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp9-9",
+    "Day" : 0,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 8,
+    "LocalRooms" : [ "bl8cFwFyy09h72dBj517i", "85XVqqAcV1An6ARKqpKf1", "h26E6Bp39hO1SqZVQMhBX", "fDvHxm5lDt0BFSyM6RBE1", "ENOSFnwKsqBTG8jCQULBP", "t890QsfsD_Q4dO2yVq8Hw" ]
+  }, {
+    "Id" : "n67dySx-a-ctGHZ61JANy",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp11-11",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 2,
+    "LocalRooms" : [ "YGl6YmD4q-RCyuh6KNqCK", "zVhNx-yebB4UMbvJEaz8X", "G2i9YkNJFTJ9b7CHYaZwj", "h26E6Bp39hO1SqZVQMhBX", "sGYDLEXXN5JkJX04G0Qpt" ]
+  }, {
+    "Id" : "4NbLeuVa3Vxbavl4vKDRY",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp12-12",
+    "Day" : 4,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 4,
+    "LocalRooms" : [ "sGYDLEXXN5JkJX04G0Qpt" ]
+  }, {
+    "Id" : "EQf0TSmts5vZ1Gwedh2VJ",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp9-9",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 6,
+    "LocalRooms" : [ "bl8cFwFyy09h72dBj517i", "85XVqqAcV1An6ARKqpKf1", "h26E6Bp39hO1SqZVQMhBX", "fDvHxm5lDt0BFSyM6RBE1", "ENOSFnwKsqBTG8jCQULBP", "t890QsfsD_Q4dO2yVq8Hw" ]
+  }, {
+    "Id" : "BslvXDp-letcz3AtMc4bt",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp10-10",
+    "Day" : 1,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 2,
+    "LocalRooms" : [ "YcwKmU2hsZpf7F_czQ6RL", "ZALYA2dX9VPRKNqzWngu8", "vUvR9dI15HjUZky6OgVKF", "bl8cFwFyy09h72dBj517i", "fDvHxm5lDt0BFSyM6RBE1", "sGYDLEXXN5JkJX04G0Qpt" ]
+  }, {
+    "Id" : "SjG9u9TFyWK_nNBYub4xF",
+    "Type" : "Lesson",
+    "Background" : "#e6e6e6",
+    "Course" : "Küp9-9",
+    "Day" : 2,
+    "Duration" : 1,
+    "Fixed" : true,
+    "Flags" : [ ],
+    "Footnote" : "",
+    "Hour" : 5,
+    "LocalRooms" : [ "bl8cFwFyy09h72dBj517i", "85XVqqAcV1An6ARKqpKf1", "h26E6Bp39hO1SqZVQMhBX", "fDvHxm5lDt0BFSyM6RBE1", "ENOSFnwKsqBTG8jCQULBP", "t890QsfsD_Q4dO2yVq8Hw" ]
+  } ],
+  "RoomGroups" : [ ],
+  "Rooms" : [ {
+    "Id" : "ZALYA2dX9VPRKNqzWngu8",
+    "Type" : "Room",
+    "Shortcut" : "KR01",
+    "Name" : "1. Klasszimmer",
+    "absences" : [ ]
+  }, {
+    "Id" : "1a78SIco6wY1OvBlFToPT",
+    "Type" : "Room",
+    "Shortcut" : "KR02",
+    "Name" : "2. Klasszimmer",
+    "absences" : [ ]
+  }, {
+    "Id" : "0Skp1uJBzfjPSZs924Duw",
+    "Type" : "Room",
+    "Shortcut" : "KR03",
+    "Name" : "3. Klasszimmer",
+    "absences" : [ ]
+  }, {
+    "Id" : "j6BNELOjpT_KBxIbWRkVE",
+    "Type" : "Room",
+    "Shortcut" : "KR04",
+    "Name" : "4. Klasszimmer",
+    "absences" : [ ]
+  }, {
+    "Id" : "OXT0MI1-fHzX7hplQJdZv",
+    "Type" : "Room",
+    "Shortcut" : "KR05",
+    "Name" : "5. Klasszimmer ",
+    "absences" : [ ]
+  }, {
+    "Id" : "PqfR5vxuW1k8MrHLtuiVB",
+    "Type" : "Room",
+    "Shortcut" : "KR06",
+    "Name" : "6. Klasszimmer",
+    "absences" : [ ]
+  }, {
+    "Id" : "9csRlM2j3XMlEUem5BiaK",
+    "Type" : "Room",
+    "Shortcut" : "KR07",
+    "Name" : "7. Klasszimmer",
+    "absences" : [ ]
+  }, {
+    "Id" : "1YFPFbnIeAf6dFQMUBt1a",
+    "Type" : "Room",
+    "Shortcut" : "KR08",
+    "Name" : "8. Klasszimmer",
+    "absences" : [ ]
+  }, {
+    "Id" : "ENOSFnwKsqBTG8jCQULBP",
+    "Type" : "Room",
+    "Shortcut" : "KR09",
+    "Name" : "9. Klasszimmer",
+    "absences" : [ ]
+  }, {
+    "Id" : "vUvR9dI15HjUZky6OgVKF",
+    "Type" : "Room",
+    "Shortcut" : "KR10",
+    "Name" : "10. Klasszimmer",
+    "absences" : [ ]
+  }, {
+    "Id" : "YGl6YmD4q-RCyuh6KNqCK",
+    "Type" : "Room",
+    "Shortcut" : "KR11",
+    "Name" : "11. Klasszimmer",
+    "absences" : [ ]
+  }, {
+    "Id" : "TQNFFMW0D7xJBlP2Ljh_Q",
+    "Type" : "Room",
+    "Shortcut" : "KR12",
+    "Name" : "12. Klasszimmer",
+    "absences" : [ ]
+  }, {
+    "Id" : "FRpas9G8UCxj5WRszNGU_",
+    "Type" : "Room",
+    "Shortcut" : "KR12A",
+    "Name" : "12. Klasszimmer Abitur",
+    "absences" : [ ]
+  }, {
+    "Id" : "xI1KUaDd8VU0VefOlMK3e",
+    "Type" : "Room",
+    "Shortcut" : "KR13MR",
+    "Name" : "13. Klasszimmer MR",
+    "absences" : [ ]
+  }, {
+    "Id" : "EWj1Lcxb4LVMlThS5JwVt",
+    "Type" : "Room",
+    "Shortcut" : "KR13A",
+    "Name" : "13. Klasszimmer Abitur",
+    "absences" : [ ]
+  }, {
+    "Id" : "YcwKmU2hsZpf7F_czQ6RL",
+    "Type" : "Room",
+    "Shortcut" : "BP10",
+    "Name" : "Betriebspraktikum 10",
+    "absences" : [ ]
+  }, {
+    "Id" : "FJQ2dtjhPh0Sp23JFW0KX",
+    "Type" : "Room",
+    "Shortcut" : "EU2",
+    "Name" : "Eurythmie 2",
+    "absences" : [ ]
+  }, {
+    "Id" : "Vst4SJmk79u_WJ-Lcmigk",
+    "Type" : "Room",
+    "Shortcut" : "FMP10",
+    "Name" : "Feldmessen 10",
+    "absences" : [ ]
+  }, {
+    "Id" : "Ak6c2yhDgX_waK8SB8tFC",
+    "Type" : "Room",
+    "Shortcut" : "GAR",
+    "Name" : "Garten",
+    "absences" : [ ]
+  }, {
+    "Id" : "7H-OcxF2bJfhEk2dZgFWT",
+    "Type" : "Room",
+    "Shortcut" : "GBR",
+    "Name" : "Gartenbauraum",
+    "absences" : [ ]
+  }, {
+    "Id" : "P_cCOHLaFDbwelRMpktva",
+    "Type" : "Room",
+    "Shortcut" : "HAB",
+    "Name" : "Handarbeitsraum 1",
+    "absences" : [ ]
+  }, {
+    "Id" : "MQ5cqNaHFCQ2so9GreX1K",
+    "Type" : "Room",
+    "Shortcut" : "HAL",
+    "Name" : "Handarbeitsraum 2",
+    "absences" : [ ]
+  }, {
+    "Id" : "fDvHxm5lDt0BFSyM6RBE1",
+    "Type" : "Room",
+    "Shortcut" : "HW",
+    "Name" : "Holzwerkstatt",
+    "absences" : [ ]
+  }, {
+    "Id" : "t890QsfsD_Q4dO2yVq8Hw",
+    "Type" : "Room",
+    "Shortcut" : "LWP9",
+    "Name" : "Landwirtschaftspraktikum 9",
+    "absences" : [ ]
+  }, {
+    "Id" : "zVhNx-yebB4UMbvJEaz8X",
+    "Type" : "Room",
+    "Shortcut" : "MUK",
+    "Name" : "Musikraum",
+    "absences" : [ ]
+  }, {
+    "Id" : "3iAne-Y2Pb9GHRZ7NIlyC",
+    "Type" : "Room",
+    "Shortcut" : "NAWI",
+    "Name" : "Naturwissenschaftsraum",
+    "absences" : [ ]
+  }, {
+    "Id" : "bl8cFwFyy09h72dBj517i",
+    "Type" : "Room",
+    "Shortcut" : "PR",
+    "Name" : "Plastizierraum",
+    "absences" : [ ]
+  }, {
+    "Id" : "85XVqqAcV1An6ARKqpKf1",
+    "Type" : "Room",
+    "Shortcut" : "SNR",
+    "Name" : "Schneiderraum",
+    "absences" : [ ]
+  }, {
+    "Id" : "G2i9YkNJFTJ9b7CHYaZwj",
+    "Type" : "Room",
+    "Shortcut" : "SP11",
+    "Name" : "Sozialpraktikum 11",
+    "absences" : [ ]
+  }, {
+    "Id" : "hmHeksfCeyiI2LlfOsD2M",
+    "Type" : "Room",
+    "Shortcut" : "SPH1",
+    "Name" : "Sporthalle 1",
+    "absences" : [ ]
+  }, {
+    "Id" : "sEbMujihOc9lRq2zn5mts",
+    "Type" : "Room",
+    "Shortcut" : "SPH2",
+    "Name" : "Sporthalle 2",
+    "absences" : [ ]
+  }, {
+    "Id" : "h26E6Bp39hO1SqZVQMhBX",
+    "Type" : "Room",
+    "Shortcut" : "WEH",
+    "Name" : "Werkhof",
+    "absences" : [ ]
+  }, {
+    "Id" : "sGYDLEXXN5JkJX04G0Qpt",
+    "Type" : "Room",
+    "Shortcut" : "ZS",
+    "Name" : "Zeichensaal",
+    "absences" : [ ]
+  } ],
+  "Subjects" : [ {
+    "Id" : "AlAs10o4fQNNzhZySQLVu",
+    "Type" : "Subject",
+    "Shortcut" : "Küp12",
+    "Name" : "Küpra12"
+  }, {
+    "Id" : "H7GncD_1UkQt-YTKtt752",
+    "Type" : "Subject",
+    "Shortcut" : "MalO",
+    "Name" : "Malen Obst"
+  }, {
+    "Id" : "Z33Bz-kK_G5F4zkbgmHWG",
+    "Type" : "Subject",
+    "Shortcut" : "MuP",
+    "Name" : "Musikprojekt"
+  }, {
+    "Id" : "e56_bjyi8cpgCMsQo-M-F",
+    "Type" : "Subject",
+    "Shortcut" : "WiAKüp",
+    "Name" : "Wissenschaftliches Arbeiten Küp"
+  }, {
+    "Id" : "hCZZ9qsuwuYuu6n0tzI54",
+    "Type" : "Subject",
+    "Shortcut" : "Stm",
+    "Name" : "Steinmetzen"
+  }, {
+    "Id" : "xnED6saDwwjyMtrVqMqkb",
+    "Type" : "Subject",
+    "Shortcut" : "SZP",
+    "Name" : "Sozialpraktikum"
+  }, {
+    "Id" : "1KEQFoE3iWyd1yWPEp6rT",
+    "Type" : "Subject",
+    "Shortcut" : "Bub",
+    "Name" : "Buchbinden"
+  }, {
+    "Id" : "6MdiCKXO0PKgzDghOIUji",
+    "Type" : "Subject",
+    "Shortcut" : "Dg",
+    "Name" : "Druckgrafik"
+  }, {
+    "Id" : "aI6GI4qaOyAWw-QqnWTFQ",
+    "Type" : "Subject",
+    "Shortcut" : "Srn",
+    "Name" : "Schreinern"
+  }, {
+    "Id" : "qi0uUyO8VwFV1oswLyvTV",
+    "Type" : "Subject",
+    "Shortcut" : "BP",
+    "Name" : "Betriebspraktikum"
+  }, {
+    "Id" : "r3ig0FSeLhVlGKcxFrc_t",
+    "Type" : "Subject",
+    "Shortcut" : "FM",
+    "Name" : "Feldmesspraktikum"
+  }, {
+    "Id" : "xIja9GEgkP7zllPeqSTkx",
+    "Type" : "Subject",
+    "Shortcut" : "Pla",
+    "Name" : "Plastizieren"
+  }, {
+    "Id" : "_ZxPZyL81sKK_So9qJQec",
+    "Type" : "Subject",
+    "Shortcut" : "Smd",
+    "Name" : "Schmieden"
+  }, {
+    "Id" : "oYtMNQWFOD9KICt1ppufv",
+    "Type" : "Subject",
+    "Shortcut" : "Kt",
+    "Name" : "Kupfertreiben"
+  }, {
+    "Id" : "6TjY71DvDlZSAVQMMhevf",
+    "Type" : "Subject",
+    "Shortcut" : "LWP",
+    "Name" : "Landwirtschaftspraktikum"
+  }, {
+    "Id" : "deoJ4U3pc6soviuNJSN0T",
+    "Type" : "Subject",
+    "Shortcut" : "Sn",
+    "Name" : "Schneidern"
+  }, {
+    "Id" : "-PBVxGtsYc8_PVVWicNdQ",
+    "Type" : "Subject",
+    "Shortcut" : "WeT",
+    "Name" : "Werken Theorie"
+  }, {
+    "Id" : "8j7fyo5PpvtVX7qAzXLny",
+    "Type" : "Subject",
+    "Shortcut" : "Ze",
+    "Name" : "Zeichnen"
+  }, {
+    "Id" : "oDCyi__7oN3hECWhnivjg",
+    "Type" : "Subject",
+    "Shortcut" : "HU",
+    "Name" : "Hauptunterricht"
+  }, {
+    "Id" : "-DeCbazJkoInxgJDnO09z",
+    "Type" : "Subject",
+    "Shortcut" : "Spwm",
+    "Name" : "Sport wm"
+  }, {
+    "Id" : "D_reiRks2XkUZxVbb-CiI",
+    "Type" : "Subject",
+    "Shortcut" : "Sp w",
+    "Name" : "Sport w"
+  }, {
+    "Id" : "f89d81a9-f43b-4647-919b-d6965b4fa2e3",
+    "Type" : "Subject",
+    "Shortcut" : "Ma",
+    "Name" : "Mathematik"
+  }, {
+    "Id" : "ZqVDRTkbwDoyLLrUyNP6b",
+    "Type" : "Subject",
+    "Shortcut" : "Sp m",
+    "Name" : "Sport m"
+  }, {
+    "Id" : "9mnfzUVAJiq025RJeYRwy",
+    "Type" : "Subject",
+    "Shortcut" : "Ha",
+    "Name" : "Handarbeit"
+  }, {
+    "Id" : "kfIynLnttjvkYNkQGxIzO",
+    "Type" : "Subject",
+    "Shortcut" : "Frz",
+    "Name" : "Französisch"
+  }, {
+    "Id" : "52vCUAp_zyxc54pxtBud7",
+    "Type" : "Subject",
+    "Shortcut" : "Ge",
+    "Name" : "Geschichte"
+  }, {
+    "Id" : "k7lWiMhG5Zo6yTd7oi9aH",
+    "Type" : "Subject",
+    "Shortcut" : "Sk",
+    "Name" : "Sozialkunde"
+  }, {
+    "Id" : "AkGD5Sx_xeOe4kUw9aiWe",
+    "Type" : "Subject",
+    "Shortcut" : "En",
+    "Name" : "Englisch"
+  }, {
+    "Id" : "4G2ZsMAFY69kPLq2raYa9",
+    "Type" : "Subject",
+    "Shortcut" : "Eth",
+    "Name" : "Ethik"
+  }, {
+    "Id" : "ccs5-Y2yDBhR2k1RId70E",
+    "Type" : "Subject",
+    "Shortcut" : "Bio",
+    "Name" : "Biologie"
+  }, {
+    "Id" : "02vL88396MgBPowlENudM",
+    "Type" : "Subject",
+    "Shortcut" : "Ch",
+    "Name" : "Chemie"
+  }, {
+    "Id" : "sn9lKogG63siA6SMK_9u5",
+    "Type" : "Subject",
+    "Shortcut" : "Ga",
+    "Name" : "Gartenbau"
+  }, {
+    "Id" : "3iJhKqKyk4Ecfb3z8l78P",
+    "Type" : "Subject",
+    "Shortcut" : "We",
+    "Name" : "Werken"
+  }, {
+    "Id" : "tX-roEc7Y6QVRMNydjpEx",
+    "Type" : "Subject",
+    "Shortcut" : "WeP",
+    "Name" : "Werken Praxis"
+  }, {
+    "Id" : "SbzWesQfzm4tsttMdAQVe",
+    "Type" : "Subject",
+    "Shortcut" : "De",
+    "Name" : "Deutsch"
+  }, {
+    "Id" : "u2sOSFBGBlOSvpJezwA63",
+    "Type" : "Subject",
+    "Shortcut" : "Eu",
+    "Name" : "Eurythmie"
+  }, {
+    "Id" : "nXdUhEaYia9wpMJ1pDNJS",
+    "Type" : "Subject",
+    "Shortcut" : "WeGa",
+    "Name" : "Werken/Gartenbau"
+  }, {
+    "Id" : "rVUgHWLAwNN1kp6O0ZpGF",
+    "Type" : "Subject",
+    "Shortcut" : "EuB1",
+    "Name" : "Eurythmiebegleitung "
+  }, {
+    "Id" : "gkn03jb2V_5ezlozKdP5s",
+    "Type" : "Subject",
+    "Shortcut" : "EuB2",
+    "Name" : "Eurythmiebegleitung "
+  }, {
+    "Id" : "5T7F1WpZEyYnglw_IaShY",
+    "Type" : "Subject",
+    "Shortcut" : "EuB3",
+    "Name" : "Eurythmiebegleitung "
+  }, {
+    "Id" : "tij4ka60Ad4gJFfPlTeuQ",
+    "Type" : "Subject",
+    "Shortcut" : "EuB4",
+    "Name" : "Eurythmiebegleitung "
+  }, {
+    "Id" : "a0zwbqSfY53sbGb_vySnP",
+    "Type" : "Subject",
+    "Shortcut" : "EuB5",
+    "Name" : "Eurythmiebegleitung "
+  }, {
+    "Id" : "Dy37T-XlWTU90qw9eU94P",
+    "Type" : "Subject",
+    "Shortcut" : "EuB7",
+    "Name" : "Eurythmiebegleitung "
+  }, {
+    "Id" : "WyNZuNLffcb8tFQPNALjo",
+    "Type" : "Subject",
+    "Shortcut" : "EuB8",
+    "Name" : "Eurythmiebegleitung "
+  }, {
+    "Id" : "7e_093BymxVbghyk6ESK8",
+    "Type" : "Subject",
+    "Shortcut" : "EuB9",
+    "Name" : "Eurythmiebegleitung "
+  }, {
+    "Id" : "FZS06jepc0FsSXWvUtraG",
+    "Type" : "Subject",
+    "Shortcut" : "EuB10",
+    "Name" : "Eurythmiebegleitung "
+  }, {
+    "Id" : "KIMkS-zk0ms_MHqXNSwM-",
+    "Type" : "Subject",
+    "Shortcut" : "EuB11",
+    "Name" : "Eurythmiebegleitung "
+  }, {
+    "Id" : "qXDxoIMhAufOrr4kgth5e",
+    "Type" : "Subject",
+    "Shortcut" : "EuB12",
+    "Name" : "Eurythmiebegleitung "
+  }, {
+    "Id" : "jiqZNP-GJFH_1TcFM4gjm",
+    "Type" : "Subject",
+    "Shortcut" : "HaBetr",
+    "Name" : "Hausaufgabenbetreuung"
+  } ],
+  "SuperCourses" : [ {
+    "Id" : "Küp9-9",
+    "Type" : "SuperCourse",
+    "EpochPlan" : "zeuyTsv13tMe2Sz2UDf1U",
+    "SubCourses" : [ {
+      "Id" : "fgPIOC9BkZ3_lirVyfUQY",
+      "Type" : "SubCourse",
+      "Groups" : [ "JYcw-BUJPsb0M85aynQ3v" ],
+      "PreferredRooms" : [ "h26E6Bp39hO1SqZVQMhBX" ],
+      "Subjects" : [ "_ZxPZyL81sKK_So9qJQec" ],
+      "Teachers" : [ "yCkTpjmDclaQAJcSwFV8d" ]
+    }, {
+      "Id" : "aqMwNx7iKOgZZQTY2OvOZ",
+      "Type" : "SubCourse",
+      "Groups" : [ "LZiKYNhpuleTdgH1DXq0R" ],
+      "PreferredRooms" : [ "t890QsfsD_Q4dO2yVq8Hw" ],
+      "Subjects" : [ "6TjY71DvDlZSAVQMMhevf" ],
+      "Teachers" : [ ]
+    }, {
+      "Id" : "nQmgt4cqqab3wqIwnUa0v",
+      "Type" : "SubCourse",
+      "Groups" : [ "jver6GKP962Pbxa-H8oe9" ],
+      "PreferredRooms" : [ "bl8cFwFyy09h72dBj517i" ],
+      "Subjects" : [ "xIja9GEgkP7zllPeqSTkx" ],
+      "Teachers" : [ "yCkTpjmDclaQAJcSwFV8d" ]
+    }, {
+      "Id" : "ni7axI4u2Cgy1DkaQtNOr",
+      "Type" : "SubCourse",
+      "Groups" : [ "-1Yb5L2aYYYAb5-eLKsph" ],
+      "PreferredRooms" : [ "85XVqqAcV1An6ARKqpKf1" ],
+      "Subjects" : [ "deoJ4U3pc6soviuNJSN0T" ],
+      "Teachers" : [ "IOxfOul3Tc7JLxwq3ng6_" ]
+    }, {
+      "Id" : "wRwLqJf-OxmFREM6Vp_al",
+      "Type" : "SubCourse",
+      "Groups" : [ "jver6GKP962Pbxa-H8oe9" ],
+      "PreferredRooms" : [ "fDvHxm5lDt0BFSyM6RBE1" ],
+      "Subjects" : [ "oYtMNQWFOD9KICt1ppufv" ],
+      "Teachers" : [ "8k5dcSYnnYlLi00MwNDC-" ]
+    }, {
+      "Id" : "FUBOSxQ6SV_vQks-0cnt1",
+      "Type" : "SubCourse",
+      "Groups" : [ "-1Yb5L2aYYYAb5-eLKsph" ],
+      "PreferredRooms" : [ "h26E6Bp39hO1SqZVQMhBX" ],
+      "Subjects" : [ "_ZxPZyL81sKK_So9qJQec" ],
+      "Teachers" : [ "yCkTpjmDclaQAJcSwFV8d" ]
+    }, {
+      "Id" : "Hg8IzSTFLnbO3NJ-PyPIw",
+      "Type" : "SubCourse",
+      "Groups" : [ "ht7fEGf9LfJpOfdCUBAyg" ],
+      "PreferredRooms" : [ "h26E6Bp39hO1SqZVQMhBX" ],
+      "Subjects" : [ "_ZxPZyL81sKK_So9qJQec" ],
+      "Teachers" : [ "yCkTpjmDclaQAJcSwFV8d" ]
+    }, {
+      "Id" : "tk_3GSP_ttl3vKfR0wCLu",
+      "Type" : "SubCourse",
+      "Groups" : [ "JYcw-BUJPsb0M85aynQ3v" ],
+      "PreferredRooms" : [ "ENOSFnwKsqBTG8jCQULBP" ],
+      "Subjects" : [ "e56_bjyi8cpgCMsQo-M-F" ],
+      "Teachers" : [ "3APQiKMTve0_uPGffSTK7" ]
+    }, {
+      "Id" : "BARcGcGbHZmQ3smAb3AIG",
+      "Type" : "SubCourse",
+      "Groups" : [ "REErLHfrLe493Jq7-5yj9" ],
+      "PreferredRooms" : [ "fDvHxm5lDt0BFSyM6RBE1" ],
+      "Subjects" : [ "oYtMNQWFOD9KICt1ppufv" ],
+      "Teachers" : [ "8k5dcSYnnYlLi00MwNDC-" ]
+    }, {
+      "Id" : "lj6WfduOIOoDfsebNGSys",
+      "Type" : "SubCourse",
+      "Groups" : [ "REErLHfrLe493Jq7-5yj9" ],
+      "PreferredRooms" : [ "bl8cFwFyy09h72dBj517i" ],
+      "Subjects" : [ "xIja9GEgkP7zllPeqSTkx" ],
+      "Teachers" : [ "yCkTpjmDclaQAJcSwFV8d" ]
+    }, {
+      "Id" : "j16ANyYs9ouV5R_9dm8tk",
+      "Type" : "SubCourse",
+      "Groups" : [ "ht7fEGf9LfJpOfdCUBAyg" ],
+      "PreferredRooms" : [ "ENOSFnwKsqBTG8jCQULBP" ],
+      "Subjects" : [ "e56_bjyi8cpgCMsQo-M-F" ],
+      "Teachers" : [ "3APQiKMTve0_uPGffSTK7" ]
+    }, {
+      "Id" : "QKFtp4GnhzSLiTJx7ojJA",
+      "Type" : "SubCourse",
+      "Groups" : [ "ht7fEGf9LfJpOfdCUBAyg" ],
+      "PreferredRooms" : [ "85XVqqAcV1An6ARKqpKf1" ],
+      "Subjects" : [ "deoJ4U3pc6soviuNJSN0T" ],
+      "Teachers" : [ "IOxfOul3Tc7JLxwq3ng6_" ]
+    }, {
+      "Id" : "MPi1gfS25gmSqHxal2zp5",
+      "Type" : "SubCourse",
+      "Groups" : [ "JYcw-BUJPsb0M85aynQ3v" ],
+      "PreferredRooms" : [ "85XVqqAcV1An6ARKqpKf1" ],
+      "Subjects" : [ "deoJ4U3pc6soviuNJSN0T" ],
+      "Teachers" : [ "IOxfOul3Tc7JLxwq3ng6_" ]
+    }, {
+      "Id" : "04Tb6yvYio4tQ6xyFOuVJ",
+      "Type" : "SubCourse",
+      "Groups" : [ "-1Yb5L2aYYYAb5-eLKsph" ],
+      "PreferredRooms" : [ "ENOSFnwKsqBTG8jCQULBP" ],
+      "Subjects" : [ "e56_bjyi8cpgCMsQo-M-F" ],
+      "Teachers" : [ "3APQiKMTve0_uPGffSTK7" ]
+    } ]
+  }, {
+    "Id" : "Küp10-10",
+    "Type" : "SuperCourse",
+    "EpochPlan" : "FSnEH0Zpt73dhWQ7yFp_v",
+    "SubCourses" : [ {
+      "Id" : "GzibNAYm0TBYLdkOIt-h9",
+      "Type" : "SubCourse",
+      "Groups" : [ "kY6YdtCZAo7HMoWtfJ2eV" ],
+      "PreferredRooms" : [ "fDvHxm5lDt0BFSyM6RBE1" ],
+      "Subjects" : [ "aI6GI4qaOyAWw-QqnWTFQ" ],
+      "Teachers" : [ "8k5dcSYnnYlLi00MwNDC-" ]
+    }, {
+      "Id" : "Czn69PMFAwusTN2taLxUZ",
+      "Type" : "SubCourse",
+      "Groups" : [ "hxeB3WwDRnnIifXp6-p-M" ],
+      "PreferredRooms" : [ "vUvR9dI15HjUZky6OgVKF" ],
+      "Subjects" : [ "e56_bjyi8cpgCMsQo-M-F" ],
+      "Teachers" : [ "3APQiKMTve0_uPGffSTK7" ]
+    }, {
+      "Id" : "IG3EPH9Sl48JpdMghfF8y",
+      "Type" : "SubCourse",
+      "Groups" : [ "hxeB3WwDRnnIifXp6-p-M" ],
+      "PreferredRooms" : [ "sGYDLEXXN5JkJX04G0Qpt" ],
+      "Subjects" : [ "6MdiCKXO0PKgzDghOIUji" ],
+      "Teachers" : [ "yCkTpjmDclaQAJcSwFV8d" ]
+    }, {
+      "Id" : "tDUiswTd2-RV1tl8Bdqrs",
+      "Type" : "SubCourse",
+      "Groups" : [ "kY6YdtCZAo7HMoWtfJ2eV" ],
+      "PreferredRooms" : [ "bl8cFwFyy09h72dBj517i" ],
+      "Subjects" : [ "xIja9GEgkP7zllPeqSTkx" ],
+      "Teachers" : [ "yCkTpjmDclaQAJcSwFV8d" ]
+    }, {
+      "Id" : "AGt70rSNR_OkjgITp0N4Y",
+      "Type" : "SubCourse",
+      "Groups" : [ "hxeB3WwDRnnIifXp6-p-M" ],
+      "PreferredRooms" : [ "bl8cFwFyy09h72dBj517i" ],
+      "Subjects" : [ "xIja9GEgkP7zllPeqSTkx" ],
+      "Teachers" : [ "yCkTpjmDclaQAJcSwFV8d" ]
+    }, {
+      "Id" : "ZKQ4JyuCOFKrZXMkEPenI",
+      "Type" : "SubCourse",
+      "Groups" : [ "shTObCVLLF_rgrMdBI7WS" ],
+      "PreferredRooms" : [ "Vst4SJmk79u_WJ-Lcmigk" ],
+      "Subjects" : [ "r3ig0FSeLhVlGKcxFrc_t" ],
+      "Teachers" : [ "3APQiKMTve0_uPGffSTK7" ]
+    }, {
+      "Id" : "yzxumuJYauVMkKWM7dRPe",
+      "Type" : "SubCourse",
+      "Groups" : [ "hxeB3WwDRnnIifXp6-p-M" ],
+      "PreferredRooms" : [ "fDvHxm5lDt0BFSyM6RBE1" ],
+      "Subjects" : [ "aI6GI4qaOyAWw-QqnWTFQ" ],
+      "Teachers" : [ "8k5dcSYnnYlLi00MwNDC-" ]
+    }, {
+      "Id" : "UWpkk7lMYJRY_N9vgu8tB",
+      "Type" : "SubCourse",
+      "Groups" : [ "shTObCVLLF_rgrMdBI7WS" ],
+      "PreferredRooms" : [ "YcwKmU2hsZpf7F_czQ6RL" ],
+      "Subjects" : [ "qi0uUyO8VwFV1oswLyvTV" ],
+      "Teachers" : [ ]
+    }, {
+      "Id" : "a2XDmcDWze-Uspjc88zAZ",
+      "Type" : "SubCourse",
+      "Groups" : [ "kY6YdtCZAo7HMoWtfJ2eV" ],
+      "PreferredRooms" : [ "vUvR9dI15HjUZky6OgVKF" ],
+      "Subjects" : [ "e56_bjyi8cpgCMsQo-M-F" ],
+      "Teachers" : [ "3APQiKMTve0_uPGffSTK7" ]
+    }, {
+      "Id" : "qbJHXG_t5jOZjj-L159Z8",
+      "Type" : "SubCourse",
+      "Groups" : [ "kY6YdtCZAo7HMoWtfJ2eV" ],
+      "PreferredRooms" : [ "sGYDLEXXN5JkJX04G0Qpt" ],
+      "Subjects" : [ "6MdiCKXO0PKgzDghOIUji" ],
+      "Teachers" : [ "yCkTpjmDclaQAJcSwFV8d" ]
+    } ]
+  }, {
+    "Id" : "Küp11-11",
+    "Type" : "SuperCourse",
+    "EpochPlan" : "AKcMhnJb_ww1hNy6nztH4",
+    "SubCourses" : [ {
+      "Id" : "tIcbwfGdNVBorRbNT_X09",
+      "Type" : "SubCourse",
+      "Groups" : [ "gEH-_5wlZUIImnyXhHiRQ" ],
+      "PreferredRooms" : [ "G2i9YkNJFTJ9b7CHYaZwj" ],
+      "Subjects" : [ "xnED6saDwwjyMtrVqMqkb" ],
+      "Teachers" : [ ]
+    }, {
+      "Id" : "BY6eS_dpJeIijEmRBluOd",
+      "Type" : "SubCourse",
+      "Groups" : [ "yIj7OF-VvuffkniZI81jd" ],
+      "PreferredRooms" : [ "sGYDLEXXN5JkJX04G0Qpt" ],
+      "Subjects" : [ "1KEQFoE3iWyd1yWPEp6rT" ],
+      "Teachers" : [ "Q2gu7hDv1cU6McixmryCN" ]
+    }, {
+      "Id" : "ahfcZfYHL8OwtHLBRB5Yd",
+      "Type" : "SubCourse",
+      "Groups" : [ "554vazPK-ZN4JnhJjWDI2" ],
+      "PreferredRooms" : [ "h26E6Bp39hO1SqZVQMhBX" ],
+      "Subjects" : [ "hCZZ9qsuwuYuu6n0tzI54" ],
+      "Teachers" : [ "yCkTpjmDclaQAJcSwFV8d" ]
+    }, {
+      "Id" : "nOibthFjFvyXiAg2UNuzI",
+      "Type" : "SubCourse",
+      "Groups" : [ "yIj7OF-VvuffkniZI81jd" ],
+      "PreferredRooms" : [ "sGYDLEXXN5JkJX04G0Qpt" ],
+      "Subjects" : [ "H7GncD_1UkQt-YTKtt752" ],
+      "Teachers" : [ "yCkTpjmDclaQAJcSwFV8d" ]
+    }, {
+      "Id" : "Wh6SNeFoB0_BAMkNCSzdm",
+      "Type" : "SubCourse",
+      "Groups" : [ "yIj7OF-VvuffkniZI81jd" ],
+      "PreferredRooms" : [ "YGl6YmD4q-RCyuh6KNqCK" ],
+      "Subjects" : [ "e56_bjyi8cpgCMsQo-M-F" ],
+      "Teachers" : [ "3APQiKMTve0_uPGffSTK7" ]
+    }, {
+      "Id" : "3RwlaVMJFCByVAEqdBNaG",
+      "Type" : "SubCourse",
+      "Groups" : [ "554vazPK-ZN4JnhJjWDI2" ],
+      "PreferredRooms" : [ "YGl6YmD4q-RCyuh6KNqCK" ],
+      "Subjects" : [ "e56_bjyi8cpgCMsQo-M-F" ],
+      "Teachers" : [ "3APQiKMTve0_uPGffSTK7" ]
+    }, {
+      "Id" : "WoREiAmXfsvDKptcejfIl",
+      "Type" : "SubCourse",
+      "Groups" : [ "yIj7OF-VvuffkniZI81jd" ],
+      "PreferredRooms" : [ "h26E6Bp39hO1SqZVQMhBX" ],
+      "Subjects" : [ "hCZZ9qsuwuYuu6n0tzI54" ],
+      "Teachers" : [ "yCkTpjmDclaQAJcSwFV8d" ]
+    }, {
+      "Id" : "drEolHwiRVNk3nTjYCuGC",
+      "Type" : "SubCourse",
+      "Groups" : [ "554vazPK-ZN4JnhJjWDI2" ],
+      "PreferredRooms" : [ "sGYDLEXXN5JkJX04G0Qpt" ],
+      "Subjects" : [ "H7GncD_1UkQt-YTKtt752" ],
+      "Teachers" : [ "yCkTpjmDclaQAJcSwFV8d" ]
+    }, {
+      "Id" : "zQfYr2-zkL0pzP3ITlwFN",
+      "Type" : "SubCourse",
+      "Groups" : [ "gEH-_5wlZUIImnyXhHiRQ" ],
+      "PreferredRooms" : [ "zVhNx-yebB4UMbvJEaz8X" ],
+      "Subjects" : [ "Z33Bz-kK_G5F4zkbgmHWG" ],
+      "Teachers" : [ "4lxZP2Owg4zK3q9XyAxGK" ]
+    }, {
+      "Id" : "Mfbf8R-ilX9DSUPwYPVMQ",
+      "Type" : "SubCourse",
+      "Groups" : [ "554vazPK-ZN4JnhJjWDI2" ],
+      "PreferredRooms" : [ "sGYDLEXXN5JkJX04G0Qpt" ],
+      "Subjects" : [ "1KEQFoE3iWyd1yWPEp6rT" ],
+      "Teachers" : [ "Q2gu7hDv1cU6McixmryCN" ]
+    } ]
+  }, {
+    "Id" : "Küp12-12",
+    "Type" : "SuperCourse",
+    "EpochPlan" : "_3X0fSV7Jr62UxlEO3n5D",
+    "SubCourses" : [ {
+      "Id" : "dhS5zUBcUotOJa5eEP9S4",
+      "Type" : "SubCourse",
+      "Groups" : [ "B4BbO0bIG0YNVDsa1pvt5" ],
+      "PreferredRooms" : [ "sGYDLEXXN5JkJX04G0Qpt" ],
+      "Subjects" : [ "AlAs10o4fQNNzhZySQLVu" ],
+      "Teachers" : [ "yCkTpjmDclaQAJcSwFV8d" ]
+    }, {
+      "Id" : "laVqG0rNGyCkZHBmbTozk",
+      "Type" : "SubCourse",
+      "Groups" : [ "y7bt_WocoGs-RR0z4U07N" ],
+      "PreferredRooms" : [ "sGYDLEXXN5JkJX04G0Qpt" ],
+      "Subjects" : [ "AlAs10o4fQNNzhZySQLVu" ],
+      "Teachers" : [ "yCkTpjmDclaQAJcSwFV8d" ]
+    } ]
+  } ],
+  "Teachers" : [ {
+    "Id" : "FgRRw8qu9VSU5F8hXE-Ub",
+    "Type" : "Teacher",
+    "Shortcut" : "Ap",
+    "Name" : "Apfel",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 2
+    }, {
+      "Day" : 4,
+      "Hour" : 3
+    }, {
+      "Day" : 4,
+      "Hour" : 4
+    }, {
+      "Day" : 4,
+      "Hour" : 5
+    }, {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Adam",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "IOxfOul3Tc7JLxwq3ng6_",
+    "Type" : "Teacher",
+    "Shortcut" : "Wa",
+    "Name" : "Wagner",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Richard",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 5,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 2
+  }, {
+    "Id" : "ftZmmEG2BzDqTWptTfEQm",
+    "Type" : "Teacher",
+    "Shortcut" : "Me",
+    "Name" : "Merz",
+    "Absences" : [ {
+      "Day" : 0,
+      "Hour" : 0
+    }, {
+      "Day" : 0,
+      "Hour" : 1
+    }, {
+      "Day" : 1,
+      "Hour" : 6
+    }, {
+      "Day" : 1,
+      "Hour" : 7
+    }, {
+      "Day" : 1,
+      "Hour" : 8
+    }, {
+      "Day" : 2,
+      "Hour" : 0
+    }, {
+      "Day" : 2,
+      "Hour" : 1
+    }, {
+      "Day" : 3,
+      "Hour" : 0
+    }, {
+      "Day" : 3,
+      "Hour" : 1
+    } ],
+    "Firstname" : "Mara",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 4,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "4TxcIT-sAQA7zj068N_TI",
+    "Type" : "Teacher",
+    "Shortcut" : "Fr",
+    "Name" : "Frey",
+    "Absences" : [ ],
+    "Firstname" : "Fritz",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "Zl-lb6oBdBfg245JkuCzd",
+    "Type" : "Teacher",
+    "Shortcut" : "Be",
+    "Name" : "Bernoulli",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Jakob",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "CRE36f4cisN52DBSVAmsG",
+    "Type" : "Teacher",
+    "Shortcut" : "Xe",
+    "Name" : "Xenophanes",
+    "Absences" : [ ],
+    "Firstname" : "Xenia",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 4,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "qsc4yF2_C0QajrKJ7ha0F",
+    "Type" : "Teacher",
+    "Shortcut" : "Va",
+    "Name" : "Valencia",
+    "Absences" : [ {
+      "Day" : 0,
+      "Hour" : 0
+    }, {
+      "Day" : 0,
+      "Hour" : 1
+    }, {
+      "Day" : 0,
+      "Hour" : 2
+    }, {
+      "Day" : 0,
+      "Hour" : 3
+    }, {
+      "Day" : 0,
+      "Hour" : 4
+    }, {
+      "Day" : 0,
+      "Hour" : 5
+    }, {
+      "Day" : 0,
+      "Hour" : 6
+    }, {
+      "Day" : 0,
+      "Hour" : 7
+    }, {
+      "Day" : 0,
+      "Hour" : 8
+    }, {
+      "Day" : 1,
+      "Hour" : 0
+    }, {
+      "Day" : 1,
+      "Hour" : 1
+    }, {
+      "Day" : 1,
+      "Hour" : 2
+    }, {
+      "Day" : 1,
+      "Hour" : 3
+    }, {
+      "Day" : 2,
+      "Hour" : 0
+    }, {
+      "Day" : 2,
+      "Hour" : 1
+    }, {
+      "Day" : 2,
+      "Hour" : 2
+    }, {
+      "Day" : 2,
+      "Hour" : 3
+    }, {
+      "Day" : 2,
+      "Hour" : 4
+    }, {
+      "Day" : 2,
+      "Hour" : 5
+    }, {
+      "Day" : 2,
+      "Hour" : 6
+    }, {
+      "Day" : 2,
+      "Hour" : 7
+    }, {
+      "Day" : 2,
+      "Hour" : 8
+    }, {
+      "Day" : 3,
+      "Hour" : 0
+    }, {
+      "Day" : 3,
+      "Hour" : 1
+    }, {
+      "Day" : 3,
+      "Hour" : 2
+    }, {
+      "Day" : 3,
+      "Hour" : 3
+    }, {
+      "Day" : 4,
+      "Hour" : 0
+    }, {
+      "Day" : 4,
+      "Hour" : 1
+    }, {
+      "Day" : 4,
+      "Hour" : 2
+    }, {
+      "Day" : 4,
+      "Hour" : 3
+    }, {
+      "Day" : 4,
+      "Hour" : 4
+    }, {
+      "Day" : 4,
+      "Hour" : 5
+    }, {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Valentin",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "eMW340328a4Bvf5OaIzNX",
+    "Type" : "Teacher",
+    "Shortcut" : "Da",
+    "Name" : "Darwin",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Charles",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 4,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 4
+  }, {
+    "Id" : "PUYNAvKWnEMAD-BXwnfWo",
+    "Type" : "Teacher",
+    "Shortcut" : "Yu",
+    "Name" : "Yurevich",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Yuri",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "Q2gu7hDv1cU6McixmryCN",
+    "Type" : "Teacher",
+    "Shortcut" : "Ha",
+    "Name" : "Hampelmann",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Hans",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "yfjHK1Ghwxw3yA0Bw0fSD",
+    "Type" : "Teacher",
+    "Shortcut" : "Sc",
+    "Name" : "Scholl",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Sophie",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "yCkTpjmDclaQAJcSwFV8d",
+    "Type" : "Teacher",
+    "Shortcut" : "Tu",
+    "Name" : "Tulpe",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Tina",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 4,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "FhsUfcahRs1JjfvFsWMFb",
+    "Type" : "Teacher",
+    "Shortcut" : "Ka",
+    "Name" : "Kant",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Immanuel",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "CJdB-AMqbhN5SlAIqwPwk",
+    "Type" : "Teacher",
+    "Shortcut" : "Wo",
+    "Name" : "Wolf",
+    "Absences" : [ {
+      "Day" : 1,
+      "Hour" : 2
+    }, {
+      "Day" : 1,
+      "Hour" : 3
+    }, {
+      "Day" : 1,
+      "Hour" : 4
+    }, {
+      "Day" : 1,
+      "Hour" : 5
+    }, {
+      "Day" : 1,
+      "Hour" : 6
+    }, {
+      "Day" : 1,
+      "Hour" : 7
+    }, {
+      "Day" : 1,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Wotan",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 3,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "MHEOQx4dzIvnXp2rw9n28",
+    "Type" : "Teacher",
+    "Shortcut" : "Pa",
+    "Name" : "Panzer",
+    "Absences" : [ {
+      "Day" : 1,
+      "Hour" : 2
+    }, {
+      "Day" : 1,
+      "Hour" : 3
+    }, {
+      "Day" : 1,
+      "Hour" : 4
+    }, {
+      "Day" : 1,
+      "Hour" : 5
+    }, {
+      "Day" : 1,
+      "Hour" : 6
+    }, {
+      "Day" : 1,
+      "Hour" : 7
+    }, {
+      "Day" : 1,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Paul",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "CkvHX4FJDbuNqH9Q8QZaV",
+    "Type" : "Teacher",
+    "Shortcut" : "Ig",
+    "Name" : "Igel",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Ida",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "EIc3dSYj1UN422vB7a6Ep",
+    "Type" : "Teacher",
+    "Shortcut" : "No",
+    "Name" : "Nonne",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Nina",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "sZtwATipRhoTgdjIbJRlN",
+    "Type" : "Teacher",
+    "Shortcut" : "Ge",
+    "Name" : "Gegenspieler",
+    "Absences" : [ {
+      "Day" : 0,
+      "Hour" : 0
+    }, {
+      "Day" : 0,
+      "Hour" : 1
+    }, {
+      "Day" : 0,
+      "Hour" : 2
+    }, {
+      "Day" : 0,
+      "Hour" : 3
+    }, {
+      "Day" : 0,
+      "Hour" : 4
+    }, {
+      "Day" : 2,
+      "Hour" : 0
+    }, {
+      "Day" : 2,
+      "Hour" : 1
+    }, {
+      "Day" : 2,
+      "Hour" : 2
+    }, {
+      "Day" : 2,
+      "Hour" : 3
+    }, {
+      "Day" : 2,
+      "Hour" : 4
+    }, {
+      "Day" : 3,
+      "Hour" : 0
+    }, {
+      "Day" : 3,
+      "Hour" : 1
+    }, {
+      "Day" : 3,
+      "Hour" : 2
+    }, {
+      "Day" : 3,
+      "Hour" : 3
+    }, {
+      "Day" : 3,
+      "Hour" : 4
+    }, {
+      "Day" : 3,
+      "Hour" : 5
+    }, {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Gustav",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "c38y0og1XhnecMVKPbt4c",
+    "Type" : "Teacher",
+    "Shortcut" : "Mu",
+    "Name" : "Mustermann",
+    "Absences" : [ ],
+    "Firstname" : "Max",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 3,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "pMCg-Q0b29dUIJ800Bcb_",
+    "Type" : "Teacher",
+    "Shortcut" : "Ol",
+    "Name" : "Olivera",
+    "Absences" : [ ],
+    "Firstname" : "Olivia",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "PhVYgS_liQ4RZjG2vujZX",
+    "Type" : "Teacher",
+    "Shortcut" : "Sc1",
+    "Name" : "Schiller",
+    "Absences" : [ {
+      "Day" : 2,
+      "Hour" : 6
+    }, {
+      "Day" : 2,
+      "Hour" : 7
+    }, {
+      "Day" : 2,
+      "Hour" : 8
+    }, {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Friedrich",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "6AFpHrprNtnrlTS91RSoK",
+    "Type" : "Teacher",
+    "Shortcut" : "Ri",
+    "Name" : "Riese",
+    "Absences" : [ {
+      "Day" : 0,
+      "Hour" : 0
+    }, {
+      "Day" : 0,
+      "Hour" : 1
+    }, {
+      "Day" : 0,
+      "Hour" : 2
+    }, {
+      "Day" : 0,
+      "Hour" : 3
+    }, {
+      "Day" : 0,
+      "Hour" : 4
+    }, {
+      "Day" : 0,
+      "Hour" : 5
+    }, {
+      "Day" : 0,
+      "Hour" : 6
+    }, {
+      "Day" : 0,
+      "Hour" : 7
+    }, {
+      "Day" : 0,
+      "Hour" : 8
+    }, {
+      "Day" : 2,
+      "Hour" : 0
+    }, {
+      "Day" : 2,
+      "Hour" : 1
+    }, {
+      "Day" : 2,
+      "Hour" : 2
+    }, {
+      "Day" : 2,
+      "Hour" : 3
+    }, {
+      "Day" : 2,
+      "Hour" : 4
+    }, {
+      "Day" : 2,
+      "Hour" : 5
+    }, {
+      "Day" : 2,
+      "Hour" : 6
+    }, {
+      "Day" : 2,
+      "Hour" : 7
+    }, {
+      "Day" : 2,
+      "Hour" : 8
+    }, {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Adam",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "ipdcHkR9lYdWKX_SONWOr",
+    "Type" : "Teacher",
+    "Shortcut" : "Ro",
+    "Name" : "Rohr",
+    "Absences" : [ ],
+    "Firstname" : "Rolf",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "nHj-h_yNhUu7YRQh7ZC0r",
+    "Type" : "Teacher",
+    "Shortcut" : "Ba",
+    "Name" : "Bach",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Sebastian",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "b7wK1Pa7ntYqFXQruPoot",
+    "Type" : "Teacher",
+    "Shortcut" : "Ca",
+    "Name" : "Canowitz",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Can",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "5E5VGKNblltM2_Fs4pvs7",
+    "Type" : "Teacher",
+    "Shortcut" : "Ba1",
+    "Name" : "Baumeister",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Bob",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "Njr9kRiXcuT1Dv6NVp65k",
+    "Type" : "Teacher",
+    "Shortcut" : "Kr",
+    "Name" : "Krummbein",
+    "Absences" : [ {
+      "Day" : 0,
+      "Hour" : 0
+    }, {
+      "Day" : 0,
+      "Hour" : 1
+    }, {
+      "Day" : 0,
+      "Hour" : 2
+    }, {
+      "Day" : 0,
+      "Hour" : 3
+    }, {
+      "Day" : 0,
+      "Hour" : 4
+    }, {
+      "Day" : 0,
+      "Hour" : 5
+    }, {
+      "Day" : 0,
+      "Hour" : 6
+    }, {
+      "Day" : 0,
+      "Hour" : 7
+    }, {
+      "Day" : 0,
+      "Hour" : 8
+    }, {
+      "Day" : 1,
+      "Hour" : 0
+    }, {
+      "Day" : 1,
+      "Hour" : 1
+    }, {
+      "Day" : 1,
+      "Hour" : 2
+    }, {
+      "Day" : 1,
+      "Hour" : 3
+    }, {
+      "Day" : 1,
+      "Hour" : 4
+    }, {
+      "Day" : 1,
+      "Hour" : 5
+    }, {
+      "Day" : 1,
+      "Hour" : 6
+    }, {
+      "Day" : 1,
+      "Hour" : 7
+    }, {
+      "Day" : 1,
+      "Hour" : 8
+    }, {
+      "Day" : 2,
+      "Hour" : 0
+    }, {
+      "Day" : 2,
+      "Hour" : 1
+    }, {
+      "Day" : 2,
+      "Hour" : 2
+    }, {
+      "Day" : 2,
+      "Hour" : 3
+    }, {
+      "Day" : 2,
+      "Hour" : 4
+    }, {
+      "Day" : 2,
+      "Hour" : 5
+    }, {
+      "Day" : 2,
+      "Hour" : 6
+    }, {
+      "Day" : 2,
+      "Hour" : 7
+    }, {
+      "Day" : 2,
+      "Hour" : 8
+    }, {
+      "Day" : 3,
+      "Hour" : 0
+    }, {
+      "Day" : 3,
+      "Hour" : 1
+    }, {
+      "Day" : 3,
+      "Hour" : 2
+    }, {
+      "Day" : 3,
+      "Hour" : 3
+    }, {
+      "Day" : 3,
+      "Hour" : 4
+    }, {
+      "Day" : 3,
+      "Hour" : 5
+    }, {
+      "Day" : 3,
+      "Hour" : 6
+    }, {
+      "Day" : 3,
+      "Hour" : 7
+    }, {
+      "Day" : 3,
+      "Hour" : 8
+    }, {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Karlheinz",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "v6Z1v0_jmNyVKVNRVhLqt",
+    "Type" : "Teacher",
+    "Shortcut" : "De",
+    "Name" : "Detektiv",
+    "Absences" : [ {
+      "Day" : 0,
+      "Hour" : 2
+    }, {
+      "Day" : 0,
+      "Hour" : 3
+    }, {
+      "Day" : 0,
+      "Hour" : 4
+    }, {
+      "Day" : 0,
+      "Hour" : 5
+    }, {
+      "Day" : 0,
+      "Hour" : 6
+    }, {
+      "Day" : 0,
+      "Hour" : 7
+    }, {
+      "Day" : 0,
+      "Hour" : 8
+    }, {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Emil",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "IzvwLJ504_H-sAg7rQ90I",
+    "Type" : "Teacher",
+    "Shortcut" : "Du",
+    "Name" : "Durst",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Dieter",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "-4izQiGLHHWKNW5lKLcPf",
+    "Type" : "Teacher",
+    "Shortcut" : "Za",
+    "Name" : "Zahn",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 2
+    }, {
+      "Day" : 4,
+      "Hour" : 3
+    }, {
+      "Day" : 4,
+      "Hour" : 4
+    }, {
+      "Day" : 4,
+      "Hour" : 5
+    }, {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Zora",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 4,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "8k5dcSYnnYlLi00MwNDC-",
+    "Type" : "Teacher",
+    "Shortcut" : "Fa",
+    "Name" : "Faulpelz",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Franz",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 4,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "C4MfzjiOf7qBjW5n87S8L",
+    "Type" : "Teacher",
+    "Shortcut" : "Bo",
+    "Name" : "Bohr",
+    "Absences" : [ ],
+    "Firstname" : "Niels",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "Q4y1oZazuZ2WVBTD6OLRl",
+    "Type" : "Teacher",
+    "Shortcut" : "Sa",
+    "Name" : "Sauermilch",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 2
+    }, {
+      "Day" : 4,
+      "Hour" : 3
+    }, {
+      "Day" : 4,
+      "Hour" : 4
+    }, {
+      "Day" : 4,
+      "Hour" : 5
+    } ],
+    "Firstname" : "Saskia",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 2
+  }, {
+    "Id" : "JUKpTOrZedl9mk5qArOjV",
+    "Type" : "Teacher",
+    "Shortcut" : "Li",
+    "Name" : "Lippe",
+    "Absences" : [ ],
+    "Firstname" : "Lisa",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 3,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "W1Xp85vZ9FbO7dZmpPHd-",
+    "Type" : "Teacher",
+    "Shortcut" : "Ne",
+    "Name" : "Newton",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Isaac",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "bVwALnfdpl4V13etRwSIp",
+    "Type" : "Teacher",
+    "Shortcut" : "Be1",
+    "Name" : "Beethoven",
+    "Absences" : [ ],
+    "Firstname" : "Ludwig",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "3APQiKMTve0_uPGffSTK7",
+    "Type" : "Teacher",
+    "Shortcut" : "Uh",
+    "Name" : "Uhrmacher",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Udo",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 4,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "KzXW3neVexOSaXOmF4TSL",
+    "Type" : "Teacher",
+    "Shortcut" : "Ju",
+    "Name" : "Jubilar",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Justus",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 4,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "jqjmI0_pcSe-s7lkCrH_U",
+    "Type" : "Teacher",
+    "Shortcut" : "Pa1",
+    "Name" : "Panzer",
+    "Absences" : [ {
+      "Day" : 3,
+      "Hour" : 0
+    }, {
+      "Day" : 3,
+      "Hour" : 1
+    }, {
+      "Day" : 3,
+      "Hour" : 2
+    }, {
+      "Day" : 3,
+      "Hour" : 3
+    }, {
+      "Day" : 3,
+      "Hour" : 4
+    }, {
+      "Day" : 3,
+      "Hour" : 5
+    }, {
+      "Day" : 3,
+      "Hour" : 6
+    }, {
+      "Day" : 3,
+      "Hour" : 7
+    }, {
+      "Day" : 3,
+      "Hour" : 8
+    }, {
+      "Day" : 3,
+      "Hour" : 9
+    }, {
+      "Day" : 4,
+      "Hour" : 0
+    }, {
+      "Day" : 4,
+      "Hour" : 1
+    }, {
+      "Day" : 4,
+      "Hour" : 2
+    }, {
+      "Day" : 4,
+      "Hour" : 3
+    }, {
+      "Day" : 4,
+      "Hour" : 4
+    }, {
+      "Day" : 4,
+      "Hour" : 5
+    }, {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Gustav",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "HBW5v_v4Vqmc_nTDJUOvN",
+    "Type" : "Teacher",
+    "Shortcut" : "Ka1",
+    "Name" : "Kant",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Friedrich",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "4lxZP2Owg4zK3q9XyAxGK",
+    "Type" : "Teacher",
+    "Shortcut" : "Fr1",
+    "Name" : "Frey",
+    "Absences" : [ ],
+    "Firstname" : "Isaac",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "9YwnccI7utV1bue7mHqTy",
+    "Type" : "Teacher",
+    "Shortcut" : "Bo1",
+    "Name" : "Bohr",
+    "Absences" : [ {
+      "Day" : 2,
+      "Hour" : 0
+    }, {
+      "Day" : 2,
+      "Hour" : 1
+    }, {
+      "Day" : 2,
+      "Hour" : 2
+    }, {
+      "Day" : 2,
+      "Hour" : 3
+    }, {
+      "Day" : 2,
+      "Hour" : 4
+    }, {
+      "Day" : 2,
+      "Hour" : 5
+    }, {
+      "Day" : 2,
+      "Hour" : 6
+    }, {
+      "Day" : 2,
+      "Hour" : 7
+    }, {
+      "Day" : 2,
+      "Hour" : 8
+    }, {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Olivia",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  }, {
+    "Id" : "6q-zHyfDr7SWk5vjLpDWR",
+    "Type" : "Teacher",
+    "Shortcut" : "Xe1",
+    "Name" : "Xenophanes",
+    "Absences" : [ {
+      "Day" : 4,
+      "Hour" : 6
+    }, {
+      "Day" : 4,
+      "Hour" : 7
+    }, {
+      "Day" : 4,
+      "Hour" : 8
+    } ],
+    "Firstname" : "Paul",
+    "LunchBreak" : true,
+    "MaxAfternoons" : 2,
+    "MaxDays" : 6,
+    "MaxGapsPerDay" : 2,
+    "MaxGapsPerWeek" : 4,
+    "MaxLessonsPerDay" : 8,
+    "MinLessonsPerDay" : 1
+  } ]
+}

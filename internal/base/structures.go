@@ -13,29 +13,26 @@
 package base
 
 type BaseData struct {
-    Id       string // empty for single-data-set usage
-    Logger   *Logger
-    StopFlag bool // used to interrupt long-running processes
+	Id       string // empty for single-data-set usage
+	Logger   *Logger
+	StopFlag bool // used to interrupt long-running processes
 
-    SourceDir string // the directory containing the source file
-    Name      string // the name of this data set, derived from the source file name
-    Source    SourceData
-    Db        *DbTopLevel
+	SourceDir string // the directory containing the source file
+	Name      string // the name of this data set, derived from the source file name
+	Source    SourceData
+	Db        *DbTopLevel
 }
 
 type SourceData interface {
-    SourceType() string
+	SourceType() string
 }
 
 type SourceDB struct {
 }
 
 func (s *SourceDB) SourceType() string {
-    return "DB"
+	return "DB"
 }
-
-// TODO?
-var ErrorMessages = map[string]string{}
 
 // A NodeRef is used to identify the constituent elements of the database.
 type NodeRef string // Element Id
@@ -45,97 +42,97 @@ type NodeRef string // Element Id
 // periods), which are usually not 60 minutes in length. Each day has the
 // same number of activities.
 type TimeSlot struct {
-    Day  int // index to `DbTopLevel.Days`
-    Hour int // index to `DbTopLevel.Hours`
+	Day  int // index to `DbTopLevel.Days`
+	Hour int // index to `DbTopLevel.Hours`
 }
 
 type ElementBase struct {
-    Id  NodeRef
-    Tag string // abbreviation/acronym, not used by all elements
+	Id  NodeRef
+	Tag string // abbreviation/acronym, not used by all elements
 }
 
 type Element interface {
-    GetRef() NodeRef
-    GetTag() string
-    setTag(string)
+	GetRef() NodeRef
+	GetTag() string
+	setTag(string)
 }
 
 func (e *ElementBase) GetRef() NodeRef {
-    return e.Id
+	return e.Id
 }
 
 func (e *ElementBase) GetTag() string {
-    return e.Tag
+	return e.Tag
 }
 
 func (e *ElementBase) setTag(tag string) {
-    e.Tag = tag
+	e.Tag = tag
 }
 
 // A Day represents a day of the timetable's week
 type Day struct {
-    ElementBase
-    Name string
+	ElementBase
+	Name string
 }
 
 // An Hour represents an activity period ("hour") of a timetable's day
 type Hour struct {
-    ElementBase
-    Name  string
-    Start string // start time, format hour:mins, e.g. "13:45"
-    End   string // end time, format hour:mins, e.g. "14:30"
+	ElementBase
+	Name  string
+	Start string // start time, format hour:mins, e.g. "13:45"
+	End   string // end time, format hour:mins, e.g. "14:30"
 }
 
 // A Teacher represents a member of staff, including various constraint
 // information relevant for the timetable.
 // It can be specified as a recourse for an activity.
 type Teacher struct {
-    ElementBase
-    Name      string
-    Firstname string
+	ElementBase
+	Name      string
+	Firstname string
 }
 
 // A Subject represents a taught subject, used for labelling an activitiy, but
 // it can also be used for any other activities which are timetabled (say,
 // conferences).
 type Subject struct {
-    ElementBase
-    Name string
+	ElementBase
+	Name string
 }
 
 // A Room is a resource which can be specified for an activity.
 type Room struct {
-    ElementBase
-    Name string
+	ElementBase
+	Name string
 }
 
 // IsReal reports whether r is an actual [Room], rather than a [RoomGroup] or
 // [RoomChoiceGroup].
 func (r *Room) IsReal() bool {
-    return true
+	return true
 }
 
 // A RoomGroup is a collection of [Room] items, all of which are "required".
 type RoomGroup struct {
-    ElementBase
-    Name  string
-    Rooms []NodeRef
+	ElementBase
+	Name  string
+	Rooms []NodeRef
 }
 
 func (r *RoomGroup) IsReal() bool {
-    return false
+	return false
 }
 
 // A RoomChoiceGroup is a collection of [Room] items, one of which is
 // "required".
 type RoomChoiceGroup struct {
-    ElementBase
-    Name  string
-    Rooms []NodeRef
+	ElementBase
+	Name  string
+	Rooms []NodeRef
 }
 
 func (r *RoomChoiceGroup) IsReal() bool {
-    return false
+	return false
 }
 
 // A Class represents a collection of students and will generally correspond
@@ -147,18 +144,18 @@ func (r *RoomChoiceGroup) IsReal() bool {
 // than one letter). The `Name` field can be used for a longer description
 // of the class.
 type Class struct {
-    ElementBase
-    Name       string
-    Year       int
-    Letter     string
-    Divisions  []Division
-    ClassGroup NodeRef // the `Group` representing the whole class
+	ElementBase
+	Name       string
+	Year       int
+	Letter     string
+	Divisions  []Division
+	ClassGroup NodeRef // the `Group` representing the whole class
 }
 
 type Group struct {
-    ElementBase
-    // These fields do not belong in the JSON object:
-    Class *Class `json:"-"`
+	ElementBase
+	// These fields do not belong in the JSON object:
+	Class *Class `json:"-"`
 }
 
 // A Division specifies a particular splitting of a school "class" (the
@@ -171,55 +168,55 @@ type Group struct {
 // Group names must be unique within a class and groups from different
 // divisions may not have activities at the same time.
 type Division struct {
-    Name   string
-    Groups []NodeRef
+	Name   string
+	Groups []NodeRef
 }
 
 // A Course specifies a collection of resources needed for a set of
 // activities (`Activity` elements). The `Subject` field is a sort of label.
 type Course struct {
-    ElementBase
-    Subject  NodeRef
-    Groups   []NodeRef // always `Group`: class references use the ClassGroup
-    Teachers []NodeRef
-    Room     NodeRef // `Room`, `RoomGroup` or `RoomChoiceGroup` element
-    // These fields do not belong in the JSON object:
-    Activities []*Activity `json:"-"`
+	ElementBase
+	Subject  NodeRef
+	Groups   []NodeRef // always `Group`: class references use the ClassGroup
+	Teachers []NodeRef
+	Room     NodeRef // `Room`, `RoomGroup` or `RoomChoiceGroup` element
+	// These fields do not belong in the JSON object:
+	Activities []*Activity `json:"-"`
 }
 
 func (c *Course) GetActivityList() []*Activity {
-    return c.Activities
+	return c.Activities
 }
 
 func (c *Course) SetActivityList(ll []*Activity) {
-    c.Activities = ll
+	c.Activities = ll
 }
 
 func (c *Course) IsSuperCourse() bool {
-    return false
+	return false
 }
 
 // A SuperCourse specifies a collection of `SubCourse` elements which are
 // associated with a set of activities (`Activity` elements). The `Subject`
 // field is a sort of label.
 type SuperCourse struct {
-    ElementBase
-    Subject NodeRef
-    // These fields do not belong in the JSON object:
-    SubCourses []*SubCourse `json:"-"`
-    Activities []*Activity  `json:"-"`
+	ElementBase
+	Subject NodeRef
+	// These fields do not belong in the JSON object:
+	SubCourses []*SubCourse `json:"-"`
+	Activities []*Activity  `json:"-"`
 }
 
 func (c *SuperCourse) IsSuperCourse() bool {
-    return true
+	return true
 }
 
 func (c *SuperCourse) GetActivityList() []*Activity {
-    return c.Activities
+	return c.Activities
 }
 
 func (c *SuperCourse) SetActivityList(ll []*Activity) {
-    c.Activities = ll
+	c.Activities = ll
 }
 
 // A SubCourse has no activities of its own, but shares those of its parent
@@ -227,120 +224,120 @@ func (c *SuperCourse) SetActivityList(ll []*Activity) {
 // `SuperCourse`. Otherwise it is much like a `Course`, bundling the
 // necessary resources.
 type SubCourse struct {
-    ElementBase
-    SuperCourses []NodeRef
-    Subject      NodeRef
-    Groups       []NodeRef // always `Group`: class references use the ClassGroup
-    Teachers     []NodeRef
-    Room         NodeRef //  `Room`, `RoomGroup` or `RoomChoiceGroup` element
+	ElementBase
+	SuperCourses []NodeRef
+	Subject      NodeRef
+	Groups       []NodeRef // always `Group`: class references use the ClassGroup
+	Teachers     []NodeRef
+	Room         NodeRef //  `Room`, `RoomGroup` or `RoomChoiceGroup` element
 }
 
 // A GeneralRoom covers  `Room`, `RoomGroup` and `RoomChoiceGroup`.
 type GeneralRoom interface {
-    IsReal() bool
+	IsReal() bool
 }
 
 // An Activity is an activity which needs placing in the timetable.
 // Its resources are determined by the course (`Course` or `SuperCourse`) to
 // which it belongs.
 type Activity struct {
-    ElementBase
-    Course   NodeRef // `Course` or `SuperCourse` element
-    Duration int     // number of "hours" covered
+	ElementBase
+	Course   NodeRef // `Course` or `SuperCourse` element
+	Duration int     // number of "hours" covered
 }
 
 // Placement details for an Activity, possibly the result of a generator run.
 type ActivityPlacement struct {
-    Activity NodeRef
-    Day      int
-    Hour     int
-    Rooms    []NodeRef // "real" rooms
+	Activity NodeRef
+	Day      int
+	Hour     int
+	Rooms    []NodeRef // "real" rooms
 }
 
 // ActivityCourse is a type of course which can have activities, i.e. a
 // `Course` or a `SuperCourse`.
 type ActivityCourse interface {
-    IsSuperCourse() bool // whether this is a `SuperCourse`
+	IsSuperCourse() bool // whether this is a `SuperCourse`
 
-    // When the data is initially loaded the courses have no attached
-    // activities.
-    // The activity list is built from the course references in the `Activity`
-    // elements. The individual activities are inserted such that they are
-    // ordered with the longest (duration) first. The following functions
-    // are used in the building of these lists.
-    GetActivityList() []*Activity
-    SetActivityList([]*Activity)
+	// When the data is initially loaded the courses have no attached
+	// activities.
+	// The activity list is built from the course references in the `Activity`
+	// elements. The individual activities are inserted such that they are
+	// ordered with the longest (duration) first. The following functions
+	// are used in the building of these lists.
+	GetActivityList() []*Activity
+	SetActivityList([]*Activity)
 }
 
 // A constraint is a rule used in the construction of a timetable.
 // These can be very varied and they may have very little in common. Each
 // implementation must have a distinguishing `CType`.
 type BaseConstraint struct {
-    CType  string  // constraint type
-    Id     NodeRef // reference to external source, if there is such a reference
-    Weight int     // range 0 (inactive) - 100 (hard)
-    Data   any     // contents depend on `CType`
-    //Disabled bool TODO?
+	CType  string  // constraint type
+	Id     NodeRef // reference to external source, if there is such a reference
+	Weight int     // range 0 (inactive) - 100 (hard)
+	Data   any     // contents depend on `CType`
+	//Disabled bool TODO?
 }
 
 func (c *BaseConstraint) IsHard() bool {
-    return c.Weight == MAXWEIGHT
+	return c.Weight == MAXWEIGHT
 }
 
 // A `DbTopLevel` is the root of a data set.
 // In general, the list fields should be ordered, where this is relevant.
 type DbTopLevel struct {
-    // Institution can be the name of the school. It may be used in printed
-    // output, for example.
-    Institution string
-    // FirstAfternoonHour is the first "hour" (0-based index) which is to
-    // be regarded as "afternoon".
-    FirstAfternoonHour int
-    // Reference can be used to distinguish this particular data set from
-    // others. It is not used in the code.
-    Reference string
-    // Start and end "hour" (0-based index) for the lunch break; if 0
-    // there is no lunch break.
-    MiddayBreak0 int
-    MiddayBreak1 int
-    // ModuleData is for data supplied and managed by other packages
-    ModuleData map[string]any
+	// Institution can be the name of the school. It may be used in printed
+	// output, for example.
+	Institution string
+	// FirstAfternoonHour is the first "hour" (0-based index) which is to
+	// be regarded as "afternoon".
+	FirstAfternoonHour int
+	// Reference can be used to distinguish this particular data set from
+	// others. It is not used in the code.
+	Reference string
+	// Start and end "hour" (0-based index) for the lunch break; if 0
+	// there is no lunch break.
+	MiddayBreak0 int
+	MiddayBreak1 int
+	// ModuleData is for data supplied and managed by other packages
+	ModuleData map[string]any
 
-    Days             []*Day
-    Hours            []*Hour
-    Teachers         []*Teacher
-    Subjects         []*Subject
-    Rooms            []*Room
-    RoomGroups       []*RoomGroup       `json:",omitempty"`
-    RoomChoiceGroups []*RoomChoiceGroup `json:",omitempty"`
-    Classes          []*Class
-    Groups           []*Group                        `json:",omitempty"`
-    Courses          []*Course                       `json:",omitempty"`
-    SuperCourses     []*SuperCourse                  `json:",omitempty"`
-    SubCourses       []*SubCourse                    `json:",omitempty"`
-    Activities       []*Activity                     `json:",omitempty"`
-    Placements       map[string][]*ActivityPlacement `json:",omitempty"`
-    Constraints      map[string][]*BaseConstraint    `json:",omitempty"`
+	Days             []*Day
+	Hours            []*Hour
+	Teachers         []*Teacher
+	Subjects         []*Subject
+	Rooms            []*Room
+	RoomGroups       []*RoomGroup       `json:",omitempty"`
+	RoomChoiceGroups []*RoomChoiceGroup `json:",omitempty"`
+	Classes          []*Class
+	Groups           []*Group                        `json:",omitempty"`
+	Courses          []*Course                       `json:",omitempty"`
+	SuperCourses     []*SuperCourse                  `json:",omitempty"`
+	SubCourses       []*SubCourse                    `json:",omitempty"`
+	Activities       []*Activity                     `json:",omitempty"`
+	Placements       map[string][]*ActivityPlacement `json:",omitempty"`
+	Constraints      map[string][]*BaseConstraint    `json:",omitempty"`
 
-    // The following fields are not persistent, they are created when a data
-    // set is loaded and the are not saved when the data set is saved.
+	// The following fields are not persistent, they are created when a data
+	// set is loaded and the are not saved when the data set is saved.
 
-    ElementMap map[NodeRef]Element `json:"-"` // a convenience structure
-    // built from the elements of the `DbTopLevel`
+	ElementMap map[NodeRef]Element `json:"-"` // a convenience structure
+	// built from the elements of the `DbTopLevel`
 }
 
 func (db *DbTopLevel) GetElement(ref NodeRef) Element {
-    e, ok := db.ElementMap[ref]
-    if !ok {
-        panic("GetElement, unknown Ref: " + ref)
-    }
-    return e
+	e, ok := db.ElementMap[ref]
+	if !ok {
+		panic("GetElement, unknown Ref: " + ref)
+	}
+	return e
 }
 
 func (db *DbTopLevel) Ref2Tag(ref NodeRef) string {
-    e, ok := db.ElementMap[ref]
-    if !ok {
-        panic("No Ref2Tag for " + ref)
-    }
-    return e.GetTag()
+	e, ok := db.ElementMap[ref]
+	if !ok {
+		panic("No Ref2Tag for " + ref)
+	}
+	return e.GetTag()
 }

@@ -1,0 +1,122 @@
+{
+  "W365TT" : {
+    "FirstAfternoonHour" : 6,
+    "Institution" : "Planlos",
+    "MiddayBreak" : [ 5 ]
+  },
+  "Classes" : [ ],
+  "Constraints" : [ ],
+  "Courses" : [ ],
+  "Days" : [ {
+    "Id" : "ufP2d6rU7_1mQ74Jbi9SB",
+    "Type" : "Day",
+    "Shortcut" : "Mo.",
+    "Name" : "Montag"
+  }, {
+    "Id" : "A4NhV6svrDwLcA-trvKMn",
+    "Type" : "Day",
+    "Shortcut" : "Di.",
+    "Name" : "Dienstag"
+  }, {
+    "Id" : "hyduB_4r5AqQGfgEUJhvc",
+    "Type" : "Day",
+    "Shortcut" : "Mi.",
+    "Name" : "Mittwoch"
+  }, {
+    "Id" : "NVoGgqrl5rqYGTYbXKw8e",
+    "Type" : "Day",
+    "Shortcut" : "Do.",
+    "Name" : "Donnerstag"
+  }, {
+    "Id" : "41Ae5mWVsEz_mffJ6Ar8S",
+    "Type" : "Day",
+    "Shortcut" : "Fr.",
+    "Name" : "Freitag"
+  } ],
+  "EpochPlans" : [ ],
+  "Groups" : [ ],
+  "Hours" : [ {
+    "Id" : "t596NnD1nn1pMoH0BK9_i",
+    "Type" : "Hour",
+    "Shortcut" : "1",
+    "Name" : "",
+    "End" : "08:30:00",
+    "Start" : "07:45:00"
+  }, {
+    "Id" : "X1tKFsn_nN_ODs0KQILDv",
+    "Type" : "Hour",
+    "Shortcut" : "2",
+    "Name" : "",
+    "End" : "09:20:00",
+    "Start" : "08:35:00"
+  }, {
+    "Id" : "UXp_gtmarOgatRKX8eeUg",
+    "Type" : "Hour",
+    "Shortcut" : "3",
+    "Name" : "",
+    "End" : "10:10:00",
+    "Start" : "09:25:00"
+  }, {
+    "Id" : "zYoq0VXdx5VqqKY_DZvV3",
+    "Type" : "Hour",
+    "Shortcut" : "4",
+    "Name" : "",
+    "End" : "11:00:00",
+    "Start" : "10:15:00"
+  }, {
+    "Id" : "p7FRQkeFIq9jwObzAH3u3",
+    "Type" : "Hour",
+    "Shortcut" : "5",
+    "Name" : "",
+    "End" : "11:50:00",
+    "Start" : "11:05:00"
+  }, {
+    "Id" : "qLZzIQPhFIZmUjpBZCsdA",
+    "Type" : "Hour",
+    "Shortcut" : "6",
+    "Name" : "",
+    "End" : "12:40:00",
+    "Start" : "11:55:00"
+  }, {
+    "Id" : "ZR6zoJMxTt8w93uKRxrfO",
+    "Type" : "Hour",
+    "Shortcut" : "7",
+    "Name" : "",
+    "End" : "13:30:00",
+    "Start" : "12:45:00"
+  }, {
+    "Id" : "JPJppg3YguHUsos2_lFTr",
+    "Type" : "Hour",
+    "Shortcut" : "8",
+    "Name" : "",
+    "End" : "14:20:00",
+    "Start" : "13:35:00"
+  }, {
+    "Id" : "ES8gfmSXUuapaZc4sifmM",
+    "Type" : "Hour",
+    "Shortcut" : "9",
+    "Name" : "",
+    "End" : "15:10:00",
+    "Start" : "14:25:00"
+  }, {
+    "Id" : "M2eWoFtxbW9jxjte7nMH0",
+    "Type" : "Hour",
+    "Shortcut" : "10",
+    "Name" : "",
+    "End" : "16:00:00",
+    "Start" : "15:15:00"
+  }, {
+    "Id" : "hmrD-XjEvuq_c2XnukkGL",
+    "Type" : "Hour",
+    "Shortcut" : "11",
+    "Name" : "",
+    "End" : "16:50:00",
+    "Start" : "16:05:00"
+  } ],
+  "Lessons" : [ ],
+  "RoomGroups" : [ ],
+  "Rooms" : [ ],
+  "Subjects" : [ ],
+  "SuperCourses" : [ ],
+  "Teachers" : [ ]
+}
