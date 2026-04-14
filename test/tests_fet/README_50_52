@@ -1,0 +1,3 @@
+Data sets 50, 51 and 52 differ only in the enabled constraints.
+
+They show that the fetrunner can't always point clearly at a problem area. Here certain starting time constraints get disabled although these are not directly responsible for the impossibility of the layout. It is the interaction between these activities and others, which are difficult to identify, which block the generation.

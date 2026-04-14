@@ -1,0 +1,7 @@
+# Changes in v.0.30.0
+
+The run queue, including run states and phase handling, has been changed so that any splitting of constraint lists is done only when an instance which is to be "restarted" is removed from the queue to be run. Now, failed (whether because of data error or "timeout") instances are simply added to the queue "as is". The code to remove an instance from the queue and start it running now handles rebasing and splitting, where necessary. As not all queued instances are guaranteed to be run, this saves some unnecessary creation of new instances.
+
+Only instances which are actually run are given instance indexes, so the log no longer has jumps in index numbers.
+
+Add a bash script (test/test.sh) to run a collection of test input files automatically on Linux.

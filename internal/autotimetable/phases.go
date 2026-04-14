@@ -6,27 +6,30 @@ import (
 )
 
 const (
-	PHASE_BASIC = iota
-	PHASE_HARD
-	PHASE_SOFT
-	PHASE_FINISHED
+	PHASE_BASIC    = 0
+	PHASE_HARD     = 1
+	PHASE_SOFT     = 2
+	PHASE_FINISHED = 3
 )
 
 const NEARLY_FINISHED = 80 // (progress, %) TODO: experimental, what is a good value?
 
 /* On entering each phase, all running instances except the special
-processes appropriate to the new phase are aborted.
+instances appropriate to the new phase are aborted.
 
-## In PHASE_BASIC all the special constraints are running initially:
+Initially there is no `current_instance`. This is set when a run completes
+successfully. Only PHASE_HARD is guaranteed to be entered with a valid
+`current_instance` (if "Parameter" SKIP_HARD is not set, then also PHASE_SOFT).
+
+## In PHASE_BASIC all the special instances are running initially:
 
 - _UNCONSTRAINED
 - _PRIORITY (if there are any "priority" constraints)
 - _HARD_ONLY
 - _COMPLETE
 
-There is no `current_instance` (it is `nil`) until a run has completed
-successfully. Hard constraints restricting the availablity of classes, teachers
-and rooms are added (see `GetPhase0ConstraintTypes()`).
+Hard constraints restricting the availablity of classes, teachers and rooms,
+and fixed activity placements are added (see `GetPhase0ConstraintTypes()`).
 These are regarded as especially important constraints.
 
 If _UNCONSTRAINED completes successfully and `current_instance` is still unset,
@@ -38,11 +41,11 @@ If _HARD_ONLY completes successfully PHASE_SOFT is entered.
 
 If _COMPLETE completes successfully PHASE_FINISHED is entered.
 
-If no more instances are running, PHASE_HARD is entered if there is a
-current instance – otherwise the whole process finishes unsuccessfuly.
+If no more constraint-addition instances are running, PHASE_HARD is entered
+if there is a current instance – otherwise the whole process finishes unsuccessfuly.
 
-If SKIP_HARD is set, processing starts in PHASE_SOFT, so PHASE_BASIC
-will not be entered.
+If the "Parameter" SKIP_HARD is set, processing starts in PHASE_SOFT, so
+PHASE_BASIC will not be entered.
 
 ## In PHASE_HARD the only special constraints which may be running are:
 
@@ -53,7 +56,7 @@ If _HARD_ONLY completes successfully PHASE_SOFT is entered.
 
 If _COMPLETE completes successfully PHASE_FINISHED is entered.
 
-Also if there are no remaining constraint-addition processes running,
+Also if there are no remaining constraint-addition instances running,
 PHASE_SOFT is entered.
 
 If SKIP_HARD is set, processing starts in PHASE_SOFT, so PHASE_HARD
@@ -180,7 +183,7 @@ func (attdata *AutoTtData) tick_phase() bool {
 }
 
 /*
-    Main processing phase(s), accumulating constraints.
+	Tick processing for non-special instances, accumulating constraints.
 
 `phase_main()` is run in all phases except PHASE_FINISHED.
 Generator instances are run which try to add the (as yet not included)
@@ -195,38 +198,35 @@ TODO: There might be useful tweaks to the ordering of the constraint
 instances (and splitting?) in the next cycle, based on their progress in
 the current one.
 
-If an instance seems to be progressing too slowly, it will be halted, and
-removed from the instance list. This allows another instance to be started.
-The halted process is split into two, each with half of the constraints,
-the new instances being added to the end of the run-queue.
+If an instance seems to be progressing too slowly, it will be halted. If it
+adds more than a single constraint, it is added to the back of the queue.
+Otherwise it is added to a "timed-out" list, which is currently unused (TODO?).
+As an active process is thus halted, this allows another instance to be started.
+Before the halted process is started again (from the queue), it is split into
+two, each with half of the constraints.
 
 If an instance has only one constraint to add, it is run without a "timeout",
 which means that different criteria may apply for checking whether it is stuck.
-Once this instance is deemed to be stuck or too slow, it is discarded completely
-(its constraint is judged to be "impossible").
-TODO: Might there be circumstances under which a further attempt is made
-to include this constraint?
 
 If there are no more instances to run, return `true`, so that the next phase
 can be entered. Otherwise return `false`.
 */
-
 func (attdata *AutoTtData) phase_main() bool {
 	bdata := attdata.BaseData
 	logger := bdata.Logger
 
-	// Seek failed instances, which should be retried with a longer timeout or split.
-	// Also check for a successful completion. Collect instances which would need
-	// restarting in a new cycle.
 	var (
 		// Gather all unsuccessfully ended constraints here, whether with a single
 		// or >1 constraints, timed out or with error.
-		failed []*TtInstance = nil
-
+		failed      []*TtInstance = nil
 		to_continue []*TtInstance = nil   // only relevant at the end of a "cycle"
 		new_cycle   bool          = false // set to true at the end of a cycle
 		n_active    int           = 0     // number of running instances
 	)
+
+	// Seek failed instances, which should be retried with a longer timeout or split.
+	// Also check for a successful completion. Collect instances which would need
+	// restarting in a new cycle.
 	for _, instance := range attdata.active_instances {
 		if instance.Processed || len(instance.Constraints) == 0 { // a special instance
 			// Handled in `tick_phase()`
@@ -234,9 +234,10 @@ func (attdata *AutoTtData) phase_main() bool {
 		}
 		switch instance.RunState {
 		case INSTANCE_FAILED, ABORT_TIMED_OUT:
-			failed = append(failed, instance)
 			instance.Processed = true
+			failed = append(failed, instance)
 		case INSTANCE_SUCCESSFUL:
+			instance.Processed = true
 			if !new_cycle {
 				// Start a new cycle, with this instance as the new base.
 				attdata.current_instance = instance
@@ -306,7 +307,10 @@ func (attdata *AutoTtData) phase_main() bool {
 						attdata.Backend.ConstraintName(instance),
 						instance.Constraints[0]))
 			} else {
+				// Collect timed-out single-constraint instances.
 				attdata.timed_out_instances = append(attdata.timed_out_instances, instance)
+				//TODO: At present these are not used, but there may be circumstances
+				// under which they should be tried again?
 				logger.Result(".TIMED_OUT", fmt.Sprintf("%s.%d.%d.%d",
 					attdata.Backend.ConstraintName(instance),
 					instance.Constraints[0],
