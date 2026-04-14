@@ -1,5 +1,9 @@
 #!/bin/bash
 
+timeout=100
+
+echo "Using fetrunner -t $timeout"
+
 # Trap SIGINT (Ctrl+C), etc. to quit properly
 trap "exit 0" SIGINT SIGTERM SIGKILL
 
@@ -13,7 +17,7 @@ runtest () {
     f="$d/$b"
     cp "$1" "$f"
     echo "***** $f"
-    go run ../cmd/fetrunner "$f"
+    go run ../cmd/fetrunner -t $timeout "$f"
     sub_pid=$!
     tac "${f%.*}.log" | grep -m1 ".NCONSTRAINTS="
     tac "${f%.*}.log" | grep -m2 ".TICK=" | grep -v "=-1"
