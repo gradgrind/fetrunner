@@ -2,5 +2,11 @@
     <qresource prefix="/">
         <file>help/using_fetrunner.md</file>
         <file>help/using_the_gui.md</file>
+        <file>help/images/Screenshot_01.png</file>
+        <file>help/images/Screenshot_02.png</file>
+        <file>help/images/Screenshot_03.png</file>
+        <file>help/images/Screenshot_03a.png</file>
+        <file>help/images/Screenshot_04.png</file>
+        <file>help/images/Screenshot_05.png</file>
     </qresource>
 </RCC>
