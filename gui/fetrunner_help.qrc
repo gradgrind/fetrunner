@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>help/using_fetrunner.md</file>
+        <file>help/using_the_gui.md</file>
+    </qresource>
+</RCC>
