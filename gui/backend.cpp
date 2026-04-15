@@ -16,6 +16,8 @@ Backend::Backend()
     : QObject()
 {}
 
+Backend *backend;
+
 QList<KeyVal> Backend::op(QString cmd, QStringList data)
 {
     QList<KeyVal> results;

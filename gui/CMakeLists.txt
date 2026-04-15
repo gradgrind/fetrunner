@@ -15,6 +15,7 @@ find_package(Qt6 REQUIRED COMPONENTS LinguistTools)
 
 # Qt >= 6.3. I18N_TRANSLATED_LANGUAGES: Qt >= 6.7
 qt_standard_project_setup(I18N_TRANSLATED_LANGUAGES de)
+set(CMAKE_AUTORCC ON)
 
 add_library(libfetrunner STATIC IMPORTED) # STATIC or SHARED
 set_target_properties(libfetrunner PROPERTIES
@@ -30,6 +31,7 @@ qt_add_executable(fetrunner-gui
     mainwindow.ui
     backend.h backend.cpp
     fetrunner_help.qrc
+    globals.h
 )
 
 qt_add_translations(fetrunner-gui MERGE_QT_TRANSLATIONS
