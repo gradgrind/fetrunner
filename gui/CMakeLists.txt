@@ -32,6 +32,10 @@ qt_add_executable(fetrunner-gui
     backend.h backend.cpp
     fetrunner_help.qrc
     globals.h
+    fetrunner.ui
+    fetrunner.cpp
+    fetrunner.h
+    threadrun.cpp threadrun.h ttgen_tables.cpp
 )
 
 qt_add_translations(fetrunner-gui MERGE_QT_TRANSLATIONS

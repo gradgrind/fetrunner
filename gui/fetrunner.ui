@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>fetrunner_main</class>
- <widget class="QWidget" name="fetrunner_main">
+ <class>FetRunner</class>
+ <widget class="QWidget" name="FetRunner">
   <property name="geometry">
    <rect>
     <x>0</x>

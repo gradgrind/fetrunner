@@ -1,10 +1,11 @@
 #include <QDir>
 #include <QTimer>
 #include "backend.h"
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include "fetrunner.h"
+#include "globals.h"
+#include "ui_fetrunner.h"
 
-void MainWindow::init_ttgen_tables()
+void FetRunner::init_ttgen_tables()
 {
     //ui->instance_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     //ui->instance_table->resizeColumnsToContents();
@@ -35,7 +36,7 @@ void MainWindow::init_ttgen_tables()
     */
 }
 
-void MainWindow::setup_progress_table()
+void FetRunner::setup_progress_table()
 {
     constraint_map.clear();
     auto row = ui->progress_table->rowCount();
@@ -76,7 +77,7 @@ void MainWindow::setup_progress_table()
     backend->op("TT_ACTIVITIES");
 }
 
-void MainWindow::nconstraints(const QString &data)
+void FetRunner::nconstraints(const QString &data)
 {
     auto slist = data.split(u'.');
     auto h = slist[0];
@@ -115,9 +116,9 @@ void MainWindow::nconstraints(const QString &data)
     }
 }
 
-bool MainWindow::dump_log(QString fname)
+bool FetRunner::dump_log(QString fname)
 {
-    QDir fdir{ui->currentDir->text()};
+    QDir fdir{file_dir};
     auto log = ui->logview->toPlainText();
     QFile file(fdir.filePath(fname));
     // Open the file in WriteOnly mode; Truncate to overwrite existing content; Text for line endings
@@ -135,16 +136,16 @@ bool MainWindow::dump_log(QString fname)
     return true;
 }
 
-void MainWindow::fail(QString msg)
+void FetRunner::fail(QString msg)
 {
-    dump_log(ui->currentFile->text() + ".logdump");
+    dump_log(file_name + ".logdump");
 
     close();
     QMessageBox::critical(this, "", msg);
     qApp->quit();
 }
 
-void MainWindow::tableProgress(progress_changed update)
+void FetRunner::tableProgress(progress_changed update)
 {
     auto constraint = update.constraint;
     auto delta = update.number.toInt();
@@ -171,7 +172,7 @@ void MainWindow::tableProgress(progress_changed update)
     ui->progress_table->item(cdata.index, 2)->setText("@ " + timeTicks);
 }
 
-void MainWindow::tableProgressGroupDone(int hard_only)
+void FetRunner::tableProgressGroupDone(int hard_only)
 {
     for (auto it = constraint_map.begin(); it != constraint_map.end(); ++it) {
         if (hard_only >= 0) {
@@ -190,7 +191,7 @@ void MainWindow::tableProgressGroupDone(int hard_only)
     }
 }
 
-void MainWindow::instanceRowProgress(int key, QStringList parms)
+void FetRunner::instanceRowProgress(int key, QStringList parms)
 {
     // If the entry is not in the map, add a new entry.
     auto irow = instance_row_map.value(key);

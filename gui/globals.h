@@ -17,6 +17,7 @@ class Notifier : public QObject
 signals:
     void fileChanged();
     void setBusy(bool on);
+    void errorPopup(QString msg);
 };
 
 extern Notifier *notifier;

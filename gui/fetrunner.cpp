@@ -6,17 +6,12 @@
 #include "globals.h"
 #include "ui_fetrunner.h"
 
-Backend *backend;
-
 FetRunner::FetRunner(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::FetRunner)
 {
     ui->setupUi(this);
     init_ttgen_tables();
-
-    //TODO: Move to main window (somewhere)
-    ui->fetrunner_version->setText(backend->op1("VERSION", {}, "FETRUNNER_VERSION").val);
 
     // Get range for number of processes.
     // Do this before connecting the "valueChanged" signal, to
@@ -165,7 +160,7 @@ void FetRunner::nprocesses(int n)
     auto nn = QString::number(n);
     auto mp = backend->op1("TT_PARAMETER", {"MAXPROCESSES", nn}, "MAXPROCESSES");
     if (mp.val != nn)
-        error_popup("BUG: invalid number of processes: " + nn);
+        notifier->emit errorPopup("BUG: invalid number of processes: " + nn);
     ui->tt_processes->setValue(mp.val.toInt());
 }
 
@@ -276,6 +271,9 @@ bool FetRunner::set_fet_path(QString fetpath0)
             fetpath.clear();
             continue;
         }
+
+        // Show log tab in case the warnings are useful.
+        ui->tabWidget->setCurrentWidget(ui->tab_log);
 
         QMessageBox::warning( //
             this,
@@ -406,11 +404,12 @@ void FetRunner::ticker(const QString &data)
     progress_rows_changed.clear();
 }
 
-void FetRunner::add_completed_instance( //
+void FetRunner::add_completed_instance(
+    //
     QString number,
     QString total,
-    QString ctype,
-    QString message)
+    QString ctype)
+//QString message)
 {
     auto nrow = ui->completed_instance_table->rowCount();
     ui->completed_instance_table->insertRow(nrow);
@@ -420,9 +419,9 @@ void FetRunner::add_completed_instance( //
     auto item0 = new QTableWidgetItem(ctype);
     auto item1 = new QTableWidgetItem(number); // number of constraints
     auto item2 = new QTableWidgetItem(total);
-    if (!message.isEmpty()) {
-        item1->setToolTip(message);
-    }
+    //if (!message.isEmpty()) {
+    //    item1->setToolTip(message);
+    //}
     item1->setTextAlignment(Qt::AlignCenter);
     item2->setTextAlignment(Qt::AlignCenter);
     ui->completed_instance_table->setItem(nrow, 0, item1);
@@ -430,39 +429,37 @@ void FetRunner::add_completed_instance( //
     ui->completed_instance_table->setItem(nrow, 2, item0);
 }
 
-const int INSTANCE0 = 3;
-
 void FetRunner::iprogress(const QString &data)
 {
+    //qDebug() << "iprogress:" << data;
     QStringList slist = data.split(u'.');
     // slist: instance index, percent complete, instance run time
-    // Instance 0: fully constrained
-    // Instance 1: all hard constraints
-    // Instance 2: no constraints
-    // Other instances: constraint-type tests
     auto key = slist[0].toInt();
     switch (key) {
-    case 0:
+    case INSTANCE_COMPLETE:
         ui->progress_complete->setText(slist[1] + "% @ " + slist[2]);
         break;
-    case 1:
+    case INSTANCE_HARD_ONLY:
         ui->progress_hard_only->setText(slist[1] + "% @ " + slist[2]);
         break;
-    case 2:
+    case INSTANCE_PRIORITY:
+        break;
+    case INSTANCE_UNCONSTRAINED:
         ui->progress_unconstrained->setText(slist[1] + "% @ " + slist[2]);
         break;
-    default:
+    default: // constaint-type tests
         instanceRowProgress(key, slist);
     }
 }
 
 void FetRunner::istart(const QString &data)
 {
+    //qDebug() << "istart:" << data;
     auto slist = data.split(u'.');
     // slist: instance index, constraint type,
     // number of individual constraints, time-out
     auto key = slist[0].toInt();
-    if (key < INSTANCE0)
+    if (key < 0)
         return;
     instance_row_map[key] = {slist, nullptr, 0};
 }
@@ -472,14 +469,15 @@ void FetRunner::iend(const QString &data)
     auto slist = data.split(u'.');
     auto key = slist[0].toInt();
     switch (key) {
-    case 0:
+    case INSTANCE_COMPLETE:
         ui->progress_complete->setEnabled(false);
         break;
-    case 1:
+    case INSTANCE_HARD_ONLY:
         ui->progress_hard_only->setEnabled(false);
         break;
-    case 2:
+    case INSTANCE_UNCONSTRAINED:
         ui->progress_unconstrained->setEnabled(false);
+    case INSTANCE_PRIORITY:
         break;
     default:
         auto irow = instance_row_map[key];
@@ -492,17 +490,21 @@ void FetRunner::iend(const QString &data)
 
 void FetRunner::iaccept(const QString &data)
 {
+    //qDebug() << "iaccept:" << data;
     auto slist = data.split(u'.');
     auto key = slist[0].toInt();
     switch (key) {
-    case 0: // "full" completed
-        tableProgressGroupDone(false);
+    case INSTANCE_COMPLETE: // "full" completed
+        tableProgressGroupDone(-1);
         break;
-    case 1: // "all hard" completed
-        tableProgressGroupDone(true);
+    case INSTANCE_HARD_ONLY: // "all hard" completed
+        tableProgressGroupDone(0);
         break;
-    case 2: // "unconstrained" completed
-        return;
+    case INSTANCE_PRIORITY: // "priority" completed
+        tableProgressGroupDone(1);
+        break;
+    case INSTANCE_UNCONSTRAINED: // "unconstrained" completed
+        break;
     default:
         instance_row &irow = instance_row_map[key];
         irow.state = 1;
@@ -515,10 +517,9 @@ void FetRunner::iaccept(const QString &data)
 void FetRunner::ieliminate(const QString &data)
 {
     auto slist = data.split(u'.');
-    auto ctype = slist[0];  //TODO: Has "Constraint"!
+    auto ctype = slist[0];
     add_completed_instance( //
         QString{"--- [%1]"}.arg(slist[1]),
         QString{"/ %1"}.arg(constraint_map[ctype].total),
-        ctype,
-        slist[2]);
+        ctype);
 }

@@ -3,7 +3,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include "backend.h"
-//#include "fetrunner.h"
+#include "fetrunner.h"
 #include "globals.h"
 //#include "ttview.h"
 #include "ui_mainwindow.h"
@@ -23,11 +23,12 @@ MainWindow::MainWindow(QWidget *parent)
     notifier = new Notifier();
 
     ui->help_view->setSource(QUrl("qrc:/help/using_fetrunner.md"));
+    ui->fetrunner_version->setText(backend->op1("VERSION", {}, "FETRUNNER_VERSION").val);
 
-    /*
     auto ttsolver = new FetRunner();
     ui->main_panel->addWidget(ttsolver);
 
+    /*
     auto ttview = new TtView();
     ui->main_panel->addWidget(ttview);
     */
@@ -67,6 +68,11 @@ MainWindow::MainWindow(QWidget *parent)
         this,
         &MainWindow::set_busy);
     connect( //
+        notifier,
+        &Notifier::errorPopup,
+        this,
+        &MainWindow::error_popup);
+    connect( //
         backend,
         &Backend::error,
         this,
@@ -86,7 +92,7 @@ MainWindow::~MainWindow()
     delete backend;
 }
 
-void MainWindow::error_popup(const QString &msg)
+void MainWindow::error_popup(const QString msg)
 {
     QMessageBox::critical(this, "", msg);
 }

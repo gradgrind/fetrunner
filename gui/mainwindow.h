@@ -24,7 +24,7 @@ private:
     void set_busy(bool on);
 
 public slots:
-    void error_popup(const QString &msg);
+    void error_popup(const QString msg);
 };
 
 #endif // MAINWINDOW_H
