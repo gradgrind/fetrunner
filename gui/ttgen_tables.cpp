@@ -57,7 +57,7 @@ void FetRunner::setup_progress_table()
     auto kv = backend->op1("TT_PRIORITY_CONSTRAINT_TYPES", {}, "PRIORITY_CONSTRAINTS");
     if (kv.key != "") {
         priority_constraints = kv.val.split(":");
-        qDebug() << "priority_constraints:" << priority_constraints;
+        //qDebug() << "priority_constraints:" << priority_constraints;
     }
     for (const auto &kv : backend->op("TT_HARD_CONSTRAINTS")) {
         add_table_line(kv.key, kv.val);

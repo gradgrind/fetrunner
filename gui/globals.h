@@ -18,6 +18,9 @@ signals:
     void fileChanged();
     void setBusy(bool on);
     void errorPopup(QString msg);
+    void closeRequest();
+    void quit_register_wait(QString module);
+    void finished(QString module);
 };
 
 extern Notifier *notifier;

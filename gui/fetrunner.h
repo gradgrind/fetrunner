@@ -59,7 +59,6 @@ public:
 
 private:
     Ui::FetRunner *ui;
-    void closeEvent(QCloseEvent *e) override;
     void fail(QString msg);
     void init2();
     void init_ttgen_tables();    // at start of program
@@ -75,7 +74,6 @@ private:
     void set_tmp_dir(QString tdir);
     bool set_fet_path(QString fetpath);
 
-    bool quit_requested{false};
     bool thread_running{false};
     //QString filename{};
     //QString filedir{};
@@ -112,5 +110,6 @@ private slots:
     void iaccept(const QString &data);
     void ieliminate(const QString &data);
     void runThreadWorkerDone();
+    void close_request();
 };
 #endif // FETRUNNER_H

@@ -92,6 +92,43 @@ MainWindow::~MainWindow()
     delete backend;
 }
 
+void MainWindow::closeEvent(QCloseEvent *e)
+{
+    if (quit_confirmed) {
+        QWidget::closeEvent(e);
+        return;
+    }
+    if (!quit_requested) {
+        quit_requested = true;
+        notifier->emit closeRequest();
+        // Assume the signal used Qt::DirectConnection, so that all
+        // entries in `waiting_on` are now set.
+        if (waiting_on.length() == 0) {
+            QWidget::closeEvent(e);
+            return;
+        }
+    }
+    e->ignore();
+}
+
+void MainWindow::quit_register_wait(QString module)
+{
+    if (!waiting_on.contains(module)) {
+        waiting_on.append(module);
+    }
+}
+
+void MainWindow::handle_finished(QString module)
+{
+    if (quit_requested) {
+        waiting_on.removeOne(module);
+        if (waiting_on.length() == 0) {
+            quit_confirmed = true;
+            close();
+        }
+    }
+}
+
 void MainWindow::error_popup(const QString msg)
 {
     QMessageBox::critical(this, "", msg);

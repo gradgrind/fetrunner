@@ -29,6 +29,11 @@ FetRunner::FetRunner(QWidget *parent)
 
     connect( //
         notifier,
+        &Notifier::closeRequest,
+        this,
+        &FetRunner::close_request);
+    connect( //
+        notifier,
         &Notifier::fileChanged,
         this,
         &FetRunner::reset_display);
@@ -143,16 +148,6 @@ void FetRunner::init2()
 FetRunner::~FetRunner()
 {
     delete ui;
-}
-
-void FetRunner::closeEvent(QCloseEvent *e)
-{
-    quit_requested = true;
-    if (thread_running) {
-        push_stop();
-        e->ignore();
-    } else
-        QWidget::closeEvent(e);
 }
 
 void FetRunner::nprocesses(int n)
@@ -338,8 +333,17 @@ void FetRunner::runThreadWorkerDone()
     //qDebug() << "threadRunFinished";
     threadRunActivated(false);
     closingMessageBox.hide();
-    if (quit_requested)
-        close();
+    notifier->emit finished("FetRunner");
+}
+
+void FetRunner::close_request()
+{
+    if (thread_running) {
+        notifier->emit quit_register_wait("FetRunner");
+        push_stop();
+    } else {
+        notifier->emit finished("FetRunner");
+    }
 }
 
 void FetRunner::threadRunActivated(bool active)
