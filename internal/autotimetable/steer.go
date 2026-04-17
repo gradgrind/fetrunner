@@ -295,9 +295,9 @@ func (attdata *AutoTtData) StartGeneration() {
 			attdata.Backend.Tidy(bdata)
 		}
 
-		if attdata.current_instance.RunState != INSTANCE_SUCCESSFUL {
+		if attdata.current_instance.RunState != INSTANCE_ACCEPTED {
 			// If no successes have been booked, there is no result.
-			logger.Error("!!! NO_RESULT !!!")
+			logger.Error("--NO_RESULT")
 		} else {
 			//TODO: Where (whether?) to save the Result.json file
 			jsonbytes := attdata.GetLastResult()
@@ -344,16 +344,16 @@ tickloop:
 		}
 
 		/*/TODO--
-		ilist := []string{}
-		for _, ii := range attdata.get_runqueue() {
-			ilist = append(ilist, fmt.Sprintf("%d:%d", ii.Index, ii.RunState))
-		}
-		logger.Info("§Q %+v\n", strings.Join(ilist, ", "))
-		alist := []string{}
-		for _, ii := range attdata.active_instances {
-			alist = append(alist, fmt.Sprintf("%d:%d", ii.Index, ii.RunState))
-		}
-		logger.Info("§A %+v\n", strings.Join(alist, ", "))
+		  ilist := []string{}
+		  for _, ii := range attdata.get_runqueue() {
+		      ilist = append(ilist, fmt.Sprintf("%d:%d", ii.Index, ii.RunState))
+		  }
+		  logger.Info("§Q %+v\n", strings.Join(ilist, ", "))
+		  alist := []string{}
+		  for _, ii := range attdata.active_instances {
+		      alist = append(alist, fmt.Sprintf("%d:%d", ii.Index, ii.RunState))
+		  }
+		  logger.Info("§A %+v\n", strings.Join(alist, ", "))
 		*/
 
 		// Then handle the new states
@@ -368,7 +368,7 @@ tickloop:
 
 	} // tickloop: end
 	result := attdata.current_instance
-	if result.RunState != INSTANCE_SUCCESSFUL {
+	if result.RunState != INSTANCE_ACCEPTED {
 		return // failed
 	}
 	logger.Info("... finalizing ...")
@@ -460,7 +460,7 @@ func (attdata *AutoTtData) start_instance(instance *TtInstance) {
 
 	//fmt.Printf("?start %d\n", instance.Index)
 	//for _, i := range attdata.active_instances {
-	//	fmt.Printf("?active %d rs: %d done: %v p: %d\n", i.Index, i.RunState, i.Done, i.Progress)
+	//  fmt.Printf("?active %d rs: %d done: %v p: %d\n", i.Index, i.RunState, i.Done, i.Progress)
 	//}
 
 }

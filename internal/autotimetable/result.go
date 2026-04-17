@@ -28,11 +28,13 @@ type Result struct {
 
 // Get the result of the current instance as a `Result` structure.
 // Save as JSON if debugging.
-func (attdata *AutoTtData) new_current_instance(
-	bdata *base.BaseData, instance *TtInstance,
-) {
-	bdata.Logger.Result(".ACCEPT", strconv.Itoa(instance.Index))
-	alist := attdata.Backend.Results(bdata.Logger, instance) // read placements
+func (attdata *AutoTtData) new_current_instance() {
+	bdata := attdata.BaseData
+	logger := bdata.Logger
+	instance := attdata.current_instance
+	instance.RunState = INSTANCE_ACCEPTED
+	logger.Result(".ACCEPT", strconv.Itoa(instance.Index))
+	alist := attdata.Backend.Results(logger, instance) // read placements
 	clist := attdata.Source.GetConstraints()
 	cl_list0 := attdata.Source.GetClasses()
 	cl_list := make([]base.ElementBase, len(cl_list0))

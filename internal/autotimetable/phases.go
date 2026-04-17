@@ -17,9 +17,12 @@ const NEARLY_FINISHED = 80 // (progress, %) TODO: experimental, what is a good v
 /* On entering each phase, all running instances except the special
 instances appropriate to the new phase are aborted.
 
-Initially there is no `current_instance`. This is set when a run completes
-successfully. Only PHASE_HARD is guaranteed to be entered with a valid
-`current_instance` (if "Parameter" SKIP_HARD is not set, then also PHASE_SOFT).
+Initially there is no `current_instance`. Entering at PHASE_BASIC (the normal case) sets
+it to `null_instance`, which is initially running. Entering at PHASE_SOFT (with
+SKIP_HARD set), it is set to `hard_instance`, which is initially running. After an
+instance has completed successfully, `current_instance` will always be an
+instance which has completed successfully and having run-state INSTANCE_ACCEPTED. This
+run-state can be used to determine whether there is a final result.
 
 ## In PHASE_BASIC all the special instances are running initially:
 
@@ -32,17 +35,19 @@ Hard constraints restricting the availablity of classes, teachers and rooms,
 and fixed activity placements are added (see `GetPhase0ConstraintTypes()`).
 These are regarded as especially important constraints.
 
-If _UNCONSTRAINED completes successfully and `current_instance` is still unset,
-this becomes the current instance.
+If _UNCONSTRAINED completes successfully, at least this is available as a result, but
+if there are "priority" constraints the phase is not yet changed. If this instance
+fails, the whole process ends unsuccessfully.
 
-If _PRIORITY completes successfully the PHASE_HARD is entered.
+If _PRIORITY completes successfully PHASE_HARD is entered.
 
 If _HARD_ONLY completes successfully PHASE_SOFT is entered.
 
 If _COMPLETE completes successfully PHASE_FINISHED is entered.
 
 If no more constraint-addition instances are running, PHASE_HARD is entered
-if there is a current instance – otherwise the whole process finishes unsuccessfuly.
+if there is an "accepted" current instance – otherwise the whole process finishes
+unsuccessfuly.
 
 If the "Parameter" SKIP_HARD is set, processing starts in PHASE_SOFT, so
 PHASE_BASIC will not be entered.
@@ -89,7 +94,6 @@ func (attdata *AutoTtData) enter_phase(p int) {
 			attdata.current_instance.Ticks) * attdata.Parameters.NEW_PHASE_TIMEOUT_FACTOR) / 10
 	}
 
-new_phase:
 	attdata.phase = p
 	bdata.Logger.Result(".PHASE", strconv.Itoa(p))
 
@@ -103,12 +107,8 @@ new_phase:
 		attdata.get_basic_constraints()
 		return
 	case PHASE_HARD:
-		if attdata.current_instance.RunState != INSTANCE_SUCCESSFUL {
-			bdata.Logger.Error("--UNCONSTRAINED_FAILED:\n:::+\n%s\n:::-",
-				attdata.null_instance.Message)
-			p = PHASE_FINISHED
-			goto new_phase
-		}
+		attdata.abort_instance(attdata.null_instance)
+		attdata.abort_instance(attdata.priority_instance)
 	case PHASE_SOFT:
 		if attdata.current_instance == nil {
 			// SKIP_HARD
@@ -124,8 +124,6 @@ new_phase:
 		return
 	}
 	// From here only in PHASE_HARD and PHASE_SOFT ...
-	attdata.abort_instance(attdata.null_instance)
-	attdata.abort_instance(attdata.priority_instance)
 
 	// Abort all non-special processes.
 	for _, instance := range attdata.active_instances {
@@ -149,33 +147,52 @@ func (attdata *AutoTtData) tick_phase() bool {
 		// Set as current and prepare to wind up process.
 		attdata.current_instance = attdata.full_instance
 		logger.Result(".ALL_OK", "All constraints OK")
-		attdata.new_current_instance(bdata, attdata.current_instance)
+		attdata.new_current_instance()
 		attdata.enter_phase(PHASE_FINISHED)
 		return true
 	}
-	if p <= PHASE_HARD && attdata.hard_instance.RunState == INSTANCE_SUCCESSFUL {
-		// Set as current and prepare for processing soft constraints.
-		attdata.current_instance = attdata.hard_instance
+	if attdata.hard_instance.RunState == INSTANCE_SUCCESSFUL {
 		logger.Result(".HARD_OK", "All hard constraints OK")
-		attdata.new_current_instance(bdata, attdata.current_instance)
-		attdata.enter_phase(PHASE_SOFT)
-		return true
+		if p == PHASE_SOFT {
+			// If `hard_instance` is no longer `current_instance` it should have been halted,
+			// and thus have a different run state.
+			if attdata.hard_instance != attdata.current_instance {
+				panic("current_instance should be hard_instance")
+			}
+		} else {
+			// Set as current and prepare for processing soft constraints.
+			attdata.current_instance = attdata.hard_instance
+			attdata.new_current_instance()
+			attdata.enter_phase(PHASE_SOFT)
+			return true
+		}
+		attdata.new_current_instance()
+		// Don't change phase.
 	}
 	if p == PHASE_BASIC {
 		if attdata.priority_instance != nil && attdata.priority_instance.RunState == INSTANCE_SUCCESSFUL {
 			// Set as current and prepare for processing remaining hard constraints.
 			attdata.current_instance = attdata.priority_instance
 			bdata.Logger.Result(".PRIORITY_OK", "All priority constraints OK")
-			attdata.new_current_instance(bdata, attdata.current_instance)
+			attdata.new_current_instance()
 			attdata.enter_phase(PHASE_HARD)
 			return true
 		}
-		if attdata.null_instance.RunState == INSTANCE_SUCCESSFUL && attdata.current_instance == nil {
-			// Set current instance
-			attdata.current_instance = attdata.null_instance
+		switch attdata.null_instance.RunState {
+		case INSTANCE_SUCCESSFUL:
+			// If `null_instance` is no longer `current_instance` it should have been halted,
+			// and thus have a different run state.
+			if attdata.null_instance != attdata.current_instance {
+				panic("current_instance should be null_instance")
+			}
 			logger.Result(".NULL_OK", "Without constraints OK")
-			attdata.new_current_instance(bdata, attdata.current_instance)
+			attdata.new_current_instance()
 			// Don't change phase.
+		case INSTANCE_FAILED:
+			logger.Error("--UNCONSTRAINED_FAILED:\n:::+\n%s\n:::-",
+				attdata.null_instance.Message)
+			attdata.enter_phase(PHASE_FINISHED)
+			return true
 		}
 	}
 
@@ -248,7 +265,7 @@ func (attdata *AutoTtData) phase_main() bool {
 			if !new_cycle {
 				// Start a new cycle, with this instance as the new base.
 				attdata.current_instance = instance
-				attdata.new_current_instance(bdata, instance)
+				attdata.new_current_instance()
 				new_cycle = true
 				attdata.cycle_timeout = max(
 					(instance.Ticks*attdata.Parameters.NEW_BASE_TIMEOUT_FACTOR)/10,
@@ -261,6 +278,7 @@ func (attdata *AutoTtData) phase_main() bool {
 			n_active++
 			to_continue = append(to_continue, instance)
 		case ABORT_NEW_CYCLE, INSTANCE_ABANDONED: // awaiting completion only, no action
+		case INSTANCE_ACCEPTED: // nothing to do, already processed
 		default:
 			panic(fmt.Sprintf("Unexpected RunState, instance %d: %d",
 				instance.Index, instance.RunState))
@@ -280,6 +298,14 @@ func (attdata *AutoTtData) phase_main() bool {
 		}
 		logger.Info("§OLDQUEUE %+v\n", strings.Join(ilist, ", "))
 		*/
+
+		// Stop superfluous base instances in PHASE_BASIC and PHASE_SOFT
+		switch attdata.phase {
+		case PHASE_BASIC:
+			attdata.abort_instance(attdata.null_instance)
+		case PHASE_SOFT:
+			attdata.abort_instance(attdata.hard_instance)
+		}
 
 		for _, instance := range to_continue {
 			attdata.abort_instance(instance)
