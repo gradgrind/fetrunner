@@ -79,12 +79,16 @@ is finished.
 // Enter new phase.
 func (attdata *AutoTtData) enter_phase(p int) {
 	bdata := attdata.BaseData
-	if attdata.current_instance != nil {
-		// Adjust the initial time-out guideline.
-		attdata.cycle_timeout = (max(attdata.cycle_timeout,
-			attdata.current_instance.Ticks) *
-			attdata.Parameters.NEW_PHASE_TIMEOUT_FACTOR) / 10
+	// Adjust the initial time-out guideline.
+	if attdata.current_instance == nil {
+		attdata.cycle_timeout = MIN_TIMEOUT
+	} else {
+		attdata.cycle_timeout = (max(
+			MIN_TIMEOUT,
+			attdata.cycle_timeout,
+			attdata.current_instance.Ticks) * attdata.Parameters.NEW_PHASE_TIMEOUT_FACTOR) / 10
 	}
+
 new_phase:
 	attdata.phase = p
 	bdata.Logger.Result(".PHASE", strconv.Itoa(p))
@@ -93,27 +97,35 @@ new_phase:
 	// Note that anything halted here will not be restarted, because this
 	// is a transition to a new phase. ABORT_NEW_CYCLE is used because no
 	// error message should arise for the constraints.
-	if p == PHASE_BASIC {
-		// no current instance
-		new_instance_list, _ := attdata.get_basic_constraints(attdata.null_instance)
-		attdata.set_runqueue(new_instance_list)
+	switch p {
+	case PHASE_BASIC:
+		attdata.current_instance = attdata.null_instance
+		attdata.get_basic_constraints()
 		return
-	}
-	if p == PHASE_HARD && attdata.current_instance == nil {
-		bdata.Logger.Error("Unconstrained instance failed:\n:::+\n%s\n:::-",
-			attdata.null_instance.Message)
-		p = PHASE_FINISHED
-		goto new_phase
-	}
-	attdata.abort_instance(attdata.null_instance)
-	attdata.abort_instance(attdata.priority_instance)
-	if p >= PHASE_SOFT {
+	case PHASE_HARD:
+		if attdata.current_instance.RunState != INSTANCE_SUCCESSFUL {
+			bdata.Logger.Error("--UNCONSTRAINED_FAILED:\n:::+\n%s\n:::-",
+				attdata.null_instance.Message)
+			p = PHASE_FINISHED
+			goto new_phase
+		}
+	case PHASE_SOFT:
+		if attdata.current_instance == nil {
+			// SKIP_HARD
+			attdata.current_instance = attdata.hard_instance
+		} else {
+			attdata.abort_instance(attdata.hard_instance)
+		}
+	case PHASE_FINISHED:
+		attdata.abort_instance(attdata.null_instance)
+		attdata.abort_instance(attdata.priority_instance)
 		attdata.abort_instance(attdata.hard_instance)
-	}
-	if p == PHASE_FINISHED {
 		attdata.abort_instance(attdata.full_instance)
 		return
 	}
+	// From here only in PHASE_HARD and PHASE_SOFT ...
+	attdata.abort_instance(attdata.null_instance)
+	attdata.abort_instance(attdata.priority_instance)
 
 	// Abort all non-special processes.
 	for _, instance := range attdata.active_instances {
@@ -122,14 +134,8 @@ new_phase:
 		}
 	}
 
-	// Initialize constraint-instance list, here only in PHASE_HARD and PHASE_SOFT.
-	if new_instance_list, n := attdata.get_basic_constraints(attdata.current_instance); n == 0 {
-		// Skip to next phase
-		p++
-		goto new_phase
-	} else {
-		attdata.set_runqueue(new_instance_list)
-	}
+	// Initialize constraint-instance list.
+	attdata.get_basic_constraints()
 }
 
 func (attdata *AutoTtData) tick_phase() bool {
@@ -174,8 +180,9 @@ func (attdata *AutoTtData) tick_phase() bool {
 	}
 
 	// Handle the currently active constraint-adding instances.
-	// Go to next phase if no remaining constraint-adding instances.
-	if attdata.phase_main() {
+	// Go to next phase if no remaining constraint-adding instances and `current_instance`
+	// no longer running – it can only be running before any successful completion.
+	if attdata.phase_main() && attdata.current_instance.RunState != INSTANCE_RUNNING {
 		attdata.enter_phase(p + 1)
 		return true
 	}

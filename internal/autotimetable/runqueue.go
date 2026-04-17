@@ -81,7 +81,7 @@ func (attdata *AutoTtData) start_queued_instance() bool {
 	}
 	instance_0 := attdata.run_queue[attdata.run_queue_next]
 	// It is possible for `attdata.current_instance` to be `nil`, at the
-	// beginning of a run. In this case only "fresh" instances should be in the queue.
+	// beginning of a run.
 	instance_base := attdata.current_instance
 	// Single-constraint instances always have no timeout
 	if len(instance_0.Constraints) > 1 {

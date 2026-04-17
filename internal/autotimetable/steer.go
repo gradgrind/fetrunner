@@ -239,23 +239,20 @@ func (attdata *AutoTtData) StartGeneration() {
 
 	attdata.cycle_timeout = 0
 
+	if len(attdata.HardConstraintMap) == 0 {
+		logger.Warning("--HARD: No hard constraints")
+		// But start the instance anyway, either as extra null instance or
+		// as basis for SKIP_HARD.
+	}
+	attdata.start_instance(attdata.hard_instance)
 	if attdata.Parameters.SKIP_HARD {
-		// Don't run null_instance, priority_instance or hard_instance
+		// Don't run null_instance or priority_instance.
 		if len(attdata.SoftConstraintMap) == 0 {
-			logger.Error("--SOFT_SKIP_HARD: Skipping hard-constraint test," +
+			logger.Warning("--SOFT_SKIP_HARD: Skipping hard-constraint test," +
 				" but no soft constraints")
-			attdata.enter_phase(PHASE_FINISHED) // skip to end phase
-		} else {
-			// Start handling soft constraints.
-			attdata.current_instance = attdata.hard_instance
-			attdata.enter_phase(PHASE_SOFT)
 		}
+		attdata.enter_phase(PHASE_SOFT)
 	} else {
-		if len(attdata.HardConstraintMap) == 0 {
-			logger.Warning("--HARD: No hard constraints")
-		} else {
-			attdata.start_instance(attdata.hard_instance)
-		}
 		if attdata.priority_instance != nil {
 			attdata.start_instance(attdata.priority_instance)
 		}
@@ -298,9 +295,8 @@ func (attdata *AutoTtData) StartGeneration() {
 			attdata.Backend.Tidy(bdata)
 		}
 
-		if attdata.current_instance == nil || attdata.current_instance.InstanceBackend == nil {
-			// If there is no current instance or, if skipping hard-constraint-testing and
-			// no successes have been booked, there is no result.
+		if attdata.current_instance.RunState != INSTANCE_SUCCESSFUL {
+			// If no successes have been booked, there is no result.
 			logger.Error("!!! NO_RESULT !!!")
 		} else {
 			//TODO: Where (whether?) to save the Result.json file
@@ -372,7 +368,7 @@ tickloop:
 
 	} // tickloop: end
 	result := attdata.current_instance
-	if result == nil {
+	if result.RunState != INSTANCE_SUCCESSFUL {
 		return // failed
 	}
 	logger.Info("... finalizing ...")
@@ -451,9 +447,10 @@ func (attdata *AutoTtData) start_instance(instance *TtInstance) {
 		}
 		instance.ConstraintEnabled = enabled
 		if len(instance.Constraints) == 1 {
+			// When only one constraint is being tested, no "timeout"
 			instance.Timeout = 0
 		} else {
-			instance.Timeout = max(attdata.cycle_timeout, MIN_TIMEOUT)
+			instance.Timeout = attdata.cycle_timeout
 		}
 	}
 	// Start running.

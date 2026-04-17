@@ -16,12 +16,11 @@ type weighted_constraint_list struct {
 // Collect the individual constraints by type, including only those which
 // are disabled. Hard constraints are ordered as in the `ConstraintTypes`
 // list. Soft constraints are ordered according to weight.
+// Use this list as the new run queue.
 // Return the list of instances and the total number of individual constraints.
-func (attdata *AutoTtData) get_basic_constraints(
-	instance0 *TtInstance,
-) ([]*TtInstance, int) {
+func (attdata *AutoTtData) get_basic_constraints() {
 	instances := []*TtInstance{} // one instance per constraint type
-	nconstraints := 0            // count constraints
+	//nconstraints := 0            // count constraints
 	wlist := []weighted_constraint_list{}
 	p := attdata.phase
 	switch p {
@@ -65,6 +64,7 @@ func (attdata *AutoTtData) get_basic_constraints(
 	default:
 		panic("Bug: Unexpected PHASE: " + strconv.Itoa(p))
 	}
+	instance0 := attdata.current_instance
 	for _, wcl := range wlist {
 		cixlist := []ConstraintIndex{}
 		for _, i := range wcl.indexes {
@@ -75,7 +75,7 @@ func (attdata *AutoTtData) get_basic_constraints(
 		if len(cixlist) == 0 {
 			continue
 		}
-		nconstraints += len(cixlist)
+		//nconstraints += len(cixlist)
 		instances = append(instances, &TtInstance{
 			// Make a new `TtInstance`
 			Timeout:      attdata.cycle_timeout,
@@ -86,7 +86,7 @@ func (attdata *AutoTtData) get_basic_constraints(
 			Weight:         wcl.weight,
 		})
 	}
-	return instances, nconstraints
+	attdata.set_runqueue(instances)
 }
 
 func SortConstraintTypes(
