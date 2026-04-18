@@ -13,7 +13,6 @@
 package base
 
 type BaseData struct {
-	Id       string // empty for single-data-set usage
 	Logger   *Logger
 	StopFlag bool // used to interrupt long-running processes
 
