@@ -2,8 +2,10 @@ package base
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 /*
@@ -17,30 +19,27 @@ A TICK is output directly, not as part of an operation,
 so it has no OP_END.
 */
 
-type LogType int
+type MsgType int
 
 const (
-	none LogType = iota
+	none MsgType = iota
 	INFO
 	WARNING
 	ERROR
 	BUG
 
-	OP_START
-	OP_END
+	OP_START = "+++"
+	OP_END   = "---"
 )
 
-var logType = map[LogType]string{
+var logType = map[MsgType]string{
 	INFO:    "*INFO*",
 	WARNING: "*WARNING*",
 	ERROR:   "*ERROR*",
 	BUG:     "*BUG*",
-
-	OP_START: "+++",
-	OP_END:   "---",
 }
 
-func (ltype LogType) String() string {
+func (ltype MsgType) String() string {
 	s, ok := logType[ltype]
 	if !ok {
 		panic(fmt.Sprintf("Invalid LogType: %d", ltype))
@@ -48,15 +47,66 @@ func (ltype LogType) String() string {
 	return s
 }
 
+var logger *Logger
+
 type Logger struct {
+	ch      chan string
+	Running bool
+	file    *os.File // set only if logging to file
+	Ticker  chan string
+}
+
+func (l *Logger) log(s string) {
+	l.ch <- s
+}
+
+func (l *Logger) Take() string {
+	return <-l.ch
 }
 
 func NewLogger() *Logger {
-	return &Logger{}
+	return &Logger{
+		// The channel buffer should be large enough for the writer not to be held up.
+		ch:     make(chan string, 100),
+		Ticker: make(chan string),
+	}
 }
 
-func (l *Logger) logMessage(ltype LogType, s string, a ...any) {
-	fmt.Printf(ltype.String()+" "+s, a...)
+func LogToFile(logfile *os.File) *Logger {
+	logger = NewLogger()
+	logger.file = logfile
+	go logToFile()
+	return logger
+}
+
+func logToFile() {
+	//TODO: Note that this at present will only work for a single long-running
+	// operation. When that finishes (.TICK=-1), the logger will exit.
+	for {
+		line := logger.Take()
+		logger.file.WriteString(line + "\n")
+		if strings.HasPrefix(line, "$ .TICK=") {
+			_, t, _ := strings.Cut(line, "=")
+			logger.Ticker <- t
+			if t == "-1" {
+				break
+			}
+		}
+	}
+}
+
+func (l *Logger) Command(slist []string) {
+	l.Running = true
+	l.log(fmt.Sprintf("%s %s %+v", OP_START, slist[0], slist[1:]))
+}
+
+func (l *Logger) CommandEnd() {
+	l.Running = false
+	l.log(OP_END)
+}
+
+func (l *Logger) logMessage(ltype MsgType, s string, a ...any) {
+	l.log(fmt.Sprintf(ltype.String()+" "+s, a...))
 	//TODO: Do I need to trim? lstring := strings.TrimSpace(fmt.Sprintf(s, a...))
 }
 
@@ -65,7 +115,7 @@ func (l *Logger) Info(s string, a ...any) {
 }
 
 func (l *Logger) Result(key string, value any) {
-	fmt.Printf("$ %s=%v\n", key, value)
+	l.log(fmt.Sprintf("$ %s=%v\n", key, value))
 }
 
 func (l *Logger) Warning(s string, a ...any) {

@@ -1,7 +1,6 @@
 package fetrunner
 
 import (
-	"encoding/json"
 	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
 	"fetrunner/internal/fet"
@@ -19,7 +18,7 @@ import (
 )
 
 var (
-	Base         *base.BaseData
+	DataBase     *base.BaseData
 	AutoTt       *autotimetable.AutoTtData
 	TtParameters *autotimetable.Parameters
 )
@@ -27,52 +26,58 @@ var (
 func init() {
 	// Set up Dispatcher
 	TtParameters = autotimetable.DefaultParameters()
-	Base = &base.BaseData{
+	DataBase = &base.BaseData{
 		Logger: base.NewLogger(),
 	}
 }
+
+//TODO: Note that at present the commands actually used have a very simple structure.
+// They have 0, 1 or two arguments, which consist of fairly short strings. No complex
+// data is passed in. So a simple text line should be quite enough. I can split this
+// to build a DispatchOp structure.
+// If this is now such that Dispatch returns only when the command is completed, it
+// should probably return a boolean indicating whether the command completed
+// successfully, whatever than means. Perhaps with no errors logged? That seems to
+// be the case with the old version, returning `true` if no errors.
 
 type DispatchOp struct {
 	Op   string
 	Data []string
 }
 
-var OpHandlerMap map[string]func(*DispatchOp) = map[string]func(*DispatchOp){}
+var OpHandlerMap map[string]func(*DispatchOp) bool = map[string]func(*DispatchOp) bool{}
 
-// Read a command from a STARTOP for it, look up the corresponding
-// function in `OpHandlerMap` and call it. On return log an ENDOP.
-func Dispatch(cmd0 string) string {
-	logger := Base.Logger
-	var op DispatchOp
-	if err := json.Unmarshal([]byte(cmd0), &op); err != nil {
-		logger.Error("!InvalidOp_JSON: %s", err)
-	} else {
-		opLog(logger, &op)
-		f, ok := OpHandlerMap[op.Op]
-		if ok {
-			// The valid commands are dependent on the run-state of the timetable
-			// generation. Those valid when running have a "_" prefix.
-			if logger.Running {
-				if op.Op[0] != '_' {
-					panic("!InvalidOp_Running: " + op.Op)
-					//goto opdone
-				}
-			} else if op.Op[0] == '_' {
-				panic("!InvalidOp_NotRunning: " + op.Op)
-				//goto opdone
+// A command is supplied as a string with separator "|". The first item is the
+// command name, which is looked up in `OpHandlerMap`. This provides the actual
+// function to call. Normally a command will only be accepted when no other is
+// running, but to handle long-running commands there is also the possibility of
+// using a command beginning with "_", which will only be accepted when another
+// command is running.
+func Dispatch(cmd0 string) {
+	slist := strings.Split(cmd0, "|")
+	op := DispatchOp{Op: slist[0], Data: slist[1:]}
+
+	logger := DataBase.Logger
+
+	f, ok := OpHandlerMap[op.Op]
+	if ok {
+		if logger.Running {
+			if op.Op[0] != '_' {
+				panic("!InvalidOp_Running: " + op.Op)
 			}
-
-			f(dsp, &op)
+			// Don't log this command.
 		} else {
-			logger.Error("!InvalidOp_Op: %s", op.Op)
+			if op.Op[0] == '_' {
+				panic("!InvalidOp_NotRunning: " + op.Op)
+			}
+			logger.Command(slist)
 		}
+		if f(&op) {
+			logger.CommandEnd()
+		}
+	} else {
+		panic("!InvalidOp: " + op.Op)
 	}
-	//opdone:
-	// At the end of an operation the log entries must be collected.
-	// To ensure that none are missed, the logger channels are used to
-	// synchronize the accesses.
-	logger.LogChan <- base.LogEntry{Type: base.OP_END}
-	return <-logger.ResultChan
 }
 
 func opLog(logger *base.Logger, op *DispatchOp) {
@@ -81,7 +86,7 @@ func opLog(logger *base.Logger, op *DispatchOp) {
 
 func CheckArgs(op *DispatchOp, n int) bool {
 	if len(op.Data) != n {
-		Base.Logger.Error("!InvalidOp_Data: %s", op.Op)
+		DataBase.Logger.Error("--INVALID_OP_DATA: %s", op.Op)
 		return false
 	}
 	return true
@@ -97,7 +102,6 @@ func init() {
 	OpHandlerMap["TT_SOFT_CONSTRAINTS"] = softConstraints
 	OpHandlerMap["TT_ACTIVITIES"] = nActivities
 	OpHandlerMap["RUN_TT"] = runtt
-	OpHandlerMap["_POLL_TT"] = polltt
 	OpHandlerMap["_STOP_TT"] = stoptt
 	OpHandlerMap["RESULT_TT"] = ttresult
 
@@ -106,17 +110,19 @@ func init() {
 	OpHandlerMap["N_PROCESSES"] = nprocesses
 }
 
-func fetrunner_version(op *DispatchOp) {
-	if CheckArgs(dsp.BaseData.Logger, op, 0) {
-		dsp.BaseData.Logger.Result("FETRUNNER_VERSION", VERSION)
+func fetrunner_version(op *DispatchOp) bool {
+	if CheckArgs(op, 0) {
+		DataBase.Logger.Result("FETRUNNER_VERSION", VERSION)
 	}
+	return true
 }
 
-func set_tmp(op *DispatchOp) {
-	if CheckArgs(dsp.BaseData.Logger, op, 1) {
+func set_tmp(op *DispatchOp) bool {
+	if CheckArgs(op, 1) {
 		base.TEMPORARY_BASEDIR = op.Data[0]
-		dsp.BaseData.SetTmpDir()
+		DataBase.SetTmpDir()
 	}
+	return true
 }
 
 func check_fet(logger *base.Logger, fetpath string) bool {
@@ -138,9 +144,9 @@ func check_fet(logger *base.Logger, fetpath string) bool {
 }
 
 // Check path to FET command-line executable and get FET version.
-func get_fet(op *DispatchOp) {
-	logger := dsp.BaseData.Logger
-	if CheckArgs(logger, op, 2) {
+func get_fet(op *DispatchOp) bool {
+	logger := DataBase.Logger
+	if CheckArgs(op, 2) {
 		fetpath := op.Data[0]
 		if fetpath == "" {
 			// Get the bare command without path.
@@ -160,7 +166,7 @@ func get_fet(op *DispatchOp) {
 					fetpath0 := filepath.Join(filepath.Dir(p), fetpath)
 					if check_fet(logger, fetpath0) {
 						fet.FETPATH = fetpath0
-						return
+						return true
 					}
 				}
 			}
@@ -170,14 +176,15 @@ func get_fet(op *DispatchOp) {
 			fet.FETPATH = fetpath
 		}
 	}
+	return true
 }
 
 // Handle (currently) ".fet" and "_w365.json" input files.
-func file_loader(op *DispatchOp) {
-	bd := dsp.BaseData
+func file_loader(op *DispatchOp) bool {
+	bd := DataBase
 	logger := bd.Logger
-	if !CheckArgs(logger, op, 1) {
-		return
+	if !CheckArgs(op, 1) {
+		return true
 	}
 	fpath := op.Data[0]
 
@@ -191,7 +198,7 @@ func file_loader(op *DispatchOp) {
 			logger.Result(op.Op, fpath)
 			logger.Result("DATA_TYPE", "FET")
 			bd.Db = nil
-			return
+			return true
 		}
 	} else if strings.HasSuffix(strings.ToLower(fpath), "_w365.json") {
 		db0 := bd.Db // save old Db in case loading of new data fails
@@ -204,20 +211,21 @@ func file_loader(op *DispatchOp) {
 			bd.PrepareDb()
 			logger.Result(op.Op, fpath)
 			logger.Result("DATA_TYPE", "DB")
-			return
+			return true
 		}
 		bd.Db = db0
 	} else {
-		logger.Error("LoadFile_InvalidSuffix: %s", fpath)
-		return
+		logger.Error("--LOAD_FILE_INVALID_SUFFIX: %s", fpath)
+		return true
 	}
-	logger.Error("LoadFile_InvalidContent: %s", fpath)
+	logger.Error("--LOAD_FILE_INVALID_CONTENT: %s", fpath)
+	return true
 }
 
 // `runtt_source` must be run before `runtt` to ensure that there is source data.
-func runtt_source(op *DispatchOp) {
-	if CheckArgs(dsp.BaseData.Logger, op, 0) {
-		bdata := dsp.BaseData
+func runtt_source(op *DispatchOp) bool {
+	if CheckArgs(op, 0) {
+		bdata := DataBase
 		logger := bdata.Logger
 		if logger.Running {
 			panic("Attempt to start generation when already running")
@@ -225,7 +233,7 @@ func runtt_source(op *DispatchOp) {
 		if bdata.Source == nil {
 			logger.Error("No source")
 			logger.Result("OK", "false")
-			return
+			return true
 		}
 		var ttsource autotimetable.TtSource
 		switch stype := bdata.Source.SourceType(); stype {
@@ -239,7 +247,7 @@ func runtt_source(op *DispatchOp) {
 		// Set up FET back-end and start processing
 		hcmap, scmap := ttsource.GetConstraintMaps()
 		attdata := &autotimetable.AutoTtData{
-			Parameters:        dsp.TtParameters,
+			Parameters:        TtParameters,
 			BaseData:          bdata,
 			Source:            ttsource,
 			NActivities:       len(ttsource.GetActivities()),
@@ -248,53 +256,51 @@ func runtt_source(op *DispatchOp) {
 			HardConstraintMap: hcmap,
 			SoftConstraintMap: scmap,
 		}
-		dsp.AutoTtData = attdata
+		AutoTt = attdata
 
 		logger.Result("OK", "true")
 	}
+	return true
 }
 
-func runtt(op *DispatchOp) {
-	if CheckArgs(dsp.BaseData.Logger, op, 0) {
-		switch dsp.TtParameters.BACKEND {
+func runtt(op *DispatchOp) bool {
+	if CheckArgs(op, 0) {
+		switch TtParameters.BACKEND {
 		case "", "FET":
-			fet.InitBackend(dsp.AutoTtData)
+			fet.InitBackend(AutoTt)
 		default:
-			panic("Unsupported timetable-generation back-end: " + dsp.TtParameters.BACKEND)
+			panic("Unsupported timetable-generation back-end: " + TtParameters.BACKEND)
 		}
 
 		// Need an extra goroutine so that this can return immediately.
-		dsp.BaseData.Logger.StartRun()
-		go dsp.AutoTtData.StartGeneration()
+		go AutoTt.StartGeneration()
+		return false
 	}
+	return true
 }
 
-func polltt(op *DispatchOp) {
-	if CheckArgs(dsp.BaseData.Logger, op, 0) {
-		dsp.BaseData.Logger.Poll()
+func stoptt(op *DispatchOp) bool {
+	if CheckArgs(op, 0) {
+		DataBase.StopFlag = true
 	}
-}
-
-func stoptt(op *DispatchOp) {
-	if CheckArgs(dsp.BaseData.Logger, op, 0) {
-		dsp.BaseData.StopFlag = true
-	}
+	return true
 }
 
 // Get the result data as a JSON string.
-func ttresult(op *DispatchOp) {
-	if CheckArgs(dsp.BaseData.Logger, op, 0) {
-		result := dsp.AutoTtData.GetLastResult()
+func ttresult(op *DispatchOp) bool {
+	if CheckArgs(op, 0) {
+		result := AutoTt.GetLastResult()
 		//TODO: At present the JSON result is generated automatically as a
 		// file. It might be preferable to return the data as a string result
 		// instead.
 		_ = result
 	}
+	return true
 }
 
 // Set a parameter for autotimetable.
-func ttparameter(op *DispatchOp) {
-	logger := dsp.BaseData.Logger
+func ttparameter(op *DispatchOp) bool {
+	logger := DataBase.Logger
 	key := op.Data[0]
 	val := op.Data[1]
 	switch key {
@@ -303,93 +309,99 @@ func ttparameter(op *DispatchOp) {
 		n, err := strconv.Atoi(val)
 		if err != nil {
 			logger.Error("BadNumber: %s=%s", key, val)
-			return
+			return true
 		} else {
-			dsp.TtParameters.TIMEOUT = n
+			TtParameters.TIMEOUT = n
 		}
 
 	case "MAXPROCESSES":
 		n, err := strconv.Atoi(val)
 		if err != nil {
 			logger.Error("BadNumber: %s=%s", key, val)
-			return
+			return true
 		} else {
-			dsp.TtParameters.MAXPROCESSES = autotimetable.MaxProcesses(n)
-			val = strconv.Itoa(dsp.TtParameters.MAXPROCESSES)
+			TtParameters.MAXPROCESSES = autotimetable.MaxProcesses(n)
+			val = strconv.Itoa(TtParameters.MAXPROCESSES)
 		}
 
 	case "WRITE_FET_FILE":
-		dsp.TtParameters.WRITE_FET_FILE = (val == "true")
+		TtParameters.WRITE_FET_FILE = (val == "true")
 
 	case "DEBUG":
-		dsp.TtParameters.DEBUG = (val == "true")
+		TtParameters.DEBUG = (val == "true")
 
 	case "TESTING":
-		dsp.TtParameters.TESTING = (val == "true")
+		TtParameters.TESTING = (val == "true")
 
 	case "SKIP_HARD":
-		dsp.TtParameters.SKIP_HARD = (val == "true")
+		TtParameters.SKIP_HARD = (val == "true")
 
 	case "REAL_SOFT":
-		dsp.TtParameters.REAL_SOFT = (val == "true")
+		TtParameters.REAL_SOFT = (val == "true")
 
 	default:
 		logger.Error("UnknownParameter: %s", key)
-		return
+		return true
 	}
 
-	dsp.BaseData.Logger.Result(key, val)
+	DataBase.Logger.Result(key, val)
+	return true
 }
 
-func nprocesses(op *DispatchOp) {
+func nprocesses(op *DispatchOp) bool {
 	nmin, np, nopt := autotimetable.MinNpOptProcesses()
-	Base.Logger.Result(op.Op, fmt.Sprintf("%d.%d.%d", nmin, np, nopt))
+	DataBase.Logger.Result(op.Op, fmt.Sprintf("%d.%d.%d", nmin, np, nopt))
+	return true
 }
 
 // Return the high priority processes handled in autotimetable's phase 0
-func priortityConstraints(op *DispatchOp) {
+func priortityConstraints(op *DispatchOp) bool {
 	if CheckArgs(op, 0) {
 		ctlist := []string{}
 		for _, ct := range AutoTt.Source.GetPhase0ConstraintTypes() {
 			ctlist = append(ctlist, strings.TrimPrefix(ct, "Constraint"))
 		}
-		Base.Logger.Result("PRIORITY_CONSTRAINTS", strings.Join(ctlist, ":"))
+		DataBase.Logger.Result("PRIORITY_CONSTRAINTS", strings.Join(ctlist, ":"))
 	}
+	return true
 }
 
 // Return the hard constraints sorted according to priority.
-func hardConstraints(op *DispatchOp) {
+func hardConstraints(op *DispatchOp) bool {
 	if CheckArgs(op, 0) {
 		for _, c := range AutoTt.Constraint_Types {
 			ilist, ok := AutoTt.HardConstraintMap[c]
 			if ok {
-				Base.Logger.Result(
+				DataBase.Logger.Result(
 					strings.TrimPrefix(c, "Constraint"),
 					strconv.Itoa(len(ilist)))
 			}
 		}
 	}
+	return true
 }
 
 // Return the soft constraints sort according to weight.
-func softConstraints(op *DispatchOp) {
+func softConstraints(op *DispatchOp) bool {
 	if CheckArgs(op, 0) {
 		clist := slices.SortedFunc(maps.Keys(AutoTt.SoftConstraintMap),
 			func(a, b string) int { return strings.Compare(b, a) })
 		for _, c := range clist {
-			Base.Logger.Result(
+			DataBase.Logger.Result(
 				strings.Replace(c, ":Constraint", ":", 1),
 				strconv.Itoa(len(AutoTt.SoftConstraintMap[c])))
 		}
 	}
+	return true
 }
 
-func nActivities(op *DispatchOp) {
+func nActivities(op *DispatchOp) bool {
 	if CheckArgs(op, 0) {
 		n := AutoTt.NActivities
 		if n == 0 {
-			Base.Logger.Error("--NO_ACTIVITIES")
+			DataBase.Logger.Error("--NO_ACTIVITIES")
 		}
-		Base.Logger.Result("N_ACTIVITIES", strconv.Itoa(n))
+		DataBase.Logger.Result("N_ACTIVITIES", strconv.Itoa(n))
 	}
+	return true
 }
