@@ -11,11 +11,11 @@ import (
 )
 
 // Read to the local, tweaked DbTopLevel
-func ReadJSON(logger *base.Logger, jsonpath string) *W365TopLevel {
+func ReadJSON(jsonpath string) *W365TopLevel {
 	// Open the  JSON file
 	jsonFile, err := os.Open(jsonpath)
 	if err != nil {
-		logger.Error("%v", err)
+		base.LogError("%v", err)
 		return nil
 	}
 	// Remember to close the file at the end of the function
@@ -25,18 +25,18 @@ func ReadJSON(logger *base.Logger, jsonpath string) *W365TopLevel {
 	v := W365TopLevel{}
 	err = json.Unmarshal(byteValue, &v)
 	if err != nil {
-		logger.Error("Could not unmarshal json: %s", err)
+		base.LogError("Could not unmarshal json: %s", err)
 		return nil
 	}
 	return &v
 }
 
-func LoadJSON(newdb *base.BaseData, jsonpath string) bool {
-	dbi := ReadJSON(newdb.Logger, jsonpath)
+func LoadJSON(jsonpath string) bool {
+	dbi := ReadJSON(jsonpath)
 	if dbi == nil {
 		return false
 	}
-	ndb := newdb.Db
+	ndb := base.DataBase.Db
 	ndb.Institution = dbi.Info.Institution
 	ndb.FirstAfternoonHour = dbi.Info.FirstAfternoonHour
 	ndb.Reference = dbi.Info.Reference
@@ -50,7 +50,7 @@ func LoadJSON(newdb *base.BaseData, jsonpath string) bool {
 			mb0 := mb[0]
 			mb1 := mb[len(mb)-1]
 			if mb1-mb0 >= len(mb) {
-				newdb.Logger.Error("MiddayBreak hours not contiguous")
+				base.LogError("MiddayBreak hours not contiguous")
 			} else {
 				ndb.MiddayBreak0 = mb0
 				ndb.MiddayBreak1 = mb1
@@ -60,38 +60,38 @@ func LoadJSON(newdb *base.BaseData, jsonpath string) bool {
 	ndb.ModuleData = map[string]any{
 		"FetData": dbi.FetData,
 	}
-	dbi.readDays(newdb)
-	dbi.readHours(newdb)
-	dbi.readTeachers(newdb)
-	dbi.readSubjects(newdb)
-	dbi.readRooms(newdb)
-	dbi.readRoomGroups(newdb)
+	dbi.readDays()
+	dbi.readHours()
+	dbi.readTeachers()
+	dbi.readSubjects()
+	dbi.readRooms()
+	dbi.readRoomGroups()
 	// To manage potentially incomplete Tag and Name fields for RoomGroups
 	// from W365, perform the checking after all room types have been "read".
-	dbi.checkRoomGroups(newdb)
-	dbi.readClasses(newdb)
-	dbi.readCourses(newdb)
-	dbi.readSuperCourses(newdb)
-	dbi.readLessons(newdb)
-	dbi.readConstraints(newdb)
+	dbi.checkRoomGroups()
+	dbi.readClasses()
+	dbi.readCourses()
+	dbi.readSuperCourses()
+	dbi.readLessons()
+	dbi.readConstraints()
 	return true
 }
 
-func (dbi *W365TopLevel) readDays(newdb *base.BaseData) {
+func (dbi *W365TopLevel) readDays() {
 	for _, e := range dbi.Days {
-		n := newdb.NewDay(e.Id)
+		n := base.NewDay(e.Id)
 		n.Tag = e.Tag
 		n.Name = e.Name
 	}
 }
 
-func (dbi *W365TopLevel) readHours(newdb *base.BaseData) {
+func (dbi *W365TopLevel) readHours() {
 	for i, e := range dbi.Hours {
 		tag := e.Tag
 		if tag == "" {
 			tag = "(" + strconv.Itoa(i+1) + ")"
 		}
-		n := newdb.NewHour(e.Id)
+		n := base.NewHour(e.Id)
 		n.Tag = tag
 		n.Name = e.Name
 		// If the input times have seconds, strip these off.
@@ -110,14 +110,14 @@ func (dbi *W365TopLevel) readHours(newdb *base.BaseData) {
 	}
 }
 
-func (dbi *W365TopLevel) readTeachers(newdb *base.BaseData) {
+func (dbi *W365TopLevel) readTeachers() {
 	dbi.TeacherMap = map[NodeRef]struct{}{}
 	tagmap := map[string]struct{}{} // to test for duplicate tags
 	for _, e := range dbi.Teachers {
 		// Perform some checks and add to the tag map.
 		_, nok := tagmap[e.Tag]
 		if nok {
-			newdb.Logger.Error(
+			base.LogError(
 				"Teacher Tag (Shortcut) defined twice: %s",
 				e.Tag)
 			continue
@@ -125,7 +125,7 @@ func (dbi *W365TopLevel) readTeachers(newdb *base.BaseData) {
 		tagmap[e.Tag] = struct{}{}
 
 		// Make new teacher node
-		n := newdb.NewTeacher(e.Id)
+		n := base.NewTeacher(e.Id)
 		n.Tag = e.Tag
 		n.Name = e.Name
 		n.Firstname = e.Firstname
@@ -133,7 +133,7 @@ func (dbi *W365TopLevel) readTeachers(newdb *base.BaseData) {
 		dbi.TeacherMap[e.Id] = struct{}{} // flag the Id as valid teacher
 
 		// +++ Add constraints ...
-		ndb := newdb.Db
+		ndb := base.DataBase.Db
 
 		// MaxAfternoons = 0 has a special meaning (all blocked), so the
 		// corresponding constraint is not needed, see `handleZeroAfternoons`.

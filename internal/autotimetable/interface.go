@@ -10,16 +10,16 @@ import "fetrunner/internal/base"
 
 type TtBackend interface {
 	RunBackend(*AutoTtData, *TtInstance)
-	Tidy(*base.BaseData)
+	Tidy()
 	ConstraintName(*TtInstance) string
-	Results(*base.Logger, *TtInstance) []TtActivityPlacement
+	Results(*TtInstance) []TtActivityPlacement
 }
 
 type TtInstanceBackend interface {
 	Abort()
 	DoTick(*AutoTtData, *TtInstance)
 	Clear()
-	FinalizeResult(*base.BaseData, *AutoTtData)
+	FinalizeResult(*AutoTtData)
 }
 
 type TtSource interface {

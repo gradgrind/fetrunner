@@ -6,7 +6,6 @@ import (
 )
 
 func (dbi *W365TopLevel) readClasses(newdb *base.BaseData) {
-	logger := newdb.Logger
 	// Every Class-Group must be within one – and only one – Class-Division.
 	// To handle that, the Group references are first gathered here. Then,
 	// when a Group is "used" it is flagged. At the end, any unused Groups
@@ -32,7 +31,7 @@ func (dbi *W365TopLevel) readClasses(newdb *base.BaseData) {
 				flag, ok := pregroups[g]
 				if ok {
 					if flag {
-						logger.Error(
+						base.LogError(
 							"Group Defined in multiple Divisions:\n  -- %s", g)
 						continue dloop
 					}
@@ -40,14 +39,14 @@ func (dbi *W365TopLevel) readClasses(newdb *base.BaseData) {
 					pregroups[g] = true
 					glist = append(glist, g)
 				} else {
-					logger.Error(
+					base.LogError(
 						"Unknown Group in Class %s, Division %s:\n  -- %s",
 						e.Tag, wdiv.Name, g)
 				}
 			}
 			// Accept Divisions which have too few Groups at this stage.
 			if len(glist) < 2 {
-				logger.Warning(
+				base.LogWarning(
 					"In Class %s, not enough valid Groups (>1) in Division %s",
 					e.Tag, wdiv.Name)
 			}
@@ -58,11 +57,11 @@ func (dbi *W365TopLevel) readClasses(newdb *base.BaseData) {
 		}
 
 		// Add a Group for the whole class (not provided by W365).
-		classGroup := newdb.NewGroup("")
+		classGroup := base.NewGroup("")
 		classGroup.Tag = ""
 		dbi.GroupRefMap[e.Id] = classGroup.Id
 
-		n := newdb.NewClass(e.Id)
+		n := base.NewClass(e.Id)
 		n.Tag = e.Tag
 		n.Year = e.Year
 		n.Letter = e.Letter
@@ -122,11 +121,11 @@ func (dbi *W365TopLevel) readClasses(newdb *base.BaseData) {
 	// Copy Groups.
 	for _, n := range dbi.Groups {
 		if pregroups[n.Id] {
-			g := newdb.NewGroup(n.Id)
+			g := base.NewGroup(n.Id)
 			g.Tag = n.Tag
 			dbi.GroupRefMap[n.Id] = n.Id // mapping to itself is correct!
 		} else {
-			logger.Error("Group not in Division, removing: %s", n.Id)
+			base.LogError("Group not in Division, removing: %s", n.Id)
 		}
 	}
 }

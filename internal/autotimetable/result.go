@@ -29,12 +29,10 @@ type Result struct {
 // Get the result of the current instance as a `Result` structure.
 // Save as JSON if debugging.
 func (attdata *AutoTtData) new_current_instance() {
-	bdata := attdata.BaseData
-	logger := bdata.Logger
 	instance := attdata.current_instance
 	instance.RunState = INSTANCE_ACCEPTED
-	logger.Result(".ACCEPT", strconv.Itoa(instance.Index))
-	alist := attdata.Backend.Results(logger, instance) // read placements
+	base.LogResult(".ACCEPT", strconv.Itoa(instance.Index))
+	alist := attdata.Backend.Results(instance) // read placements
 	clist := attdata.Source.GetConstraints()
 	cl_list0 := attdata.Source.GetClasses()
 	cl_list := make([]base.ElementBase, len(cl_list0))
@@ -60,13 +58,13 @@ func (attdata *AutoTtData) new_current_instance() {
 
 	attdata.log_nconstraints(instance.ConstraintEnabled)
 
-	if attdata.Parameters.DEBUG {
+	if TtParameters.DEBUG {
 		//b, err := json.Marshal(LastResult)
 		b, err := json.MarshalIndent(attdata.lastResult, "", "  ")
 		if err != nil {
 			panic(err)
 		}
-		fpath := filepath.Join(bdata.SourceDir,
+		fpath := filepath.Join(base.DataBase.SourceDir,
 			fmt.Sprintf("%s_%d.json", instance.ConstraintType, instance.Index))
 		f, err := os.Create(fpath)
 		if err != nil {
@@ -117,7 +115,7 @@ func (attdata *AutoTtData) log_nconstraints(enabled []bool) {
 		sunfulfilled[ctype] = ulist
 		snall += len(clist)
 	}
-	attdata.BaseData.Logger.Result(".NCONSTRAINTS", fmt.Sprintf("%d.%d.%d.%d",
+	base.LogResult(".NCONSTRAINTS", fmt.Sprintf("%d.%d.%d.%d",
 		hn, hnall, sn, snall))
 
 	if attdata.lastResult != nil {

@@ -19,6 +19,15 @@ A TICK is output directly, not as part of an operation,
 so it has no OP_END.
 */
 
+var (
+	DataBase *BaseData
+	logger   *Logger
+)
+
+func init() {
+	DataBase = &BaseData{}
+}
+
 type MsgType int
 
 const (
@@ -47,8 +56,6 @@ func (ltype MsgType) String() string {
 	return s
 }
 
-var logger *Logger
-
 type Logger struct {
 	ch      chan string
 	Running bool
@@ -56,25 +63,23 @@ type Logger struct {
 	Ticker  chan string
 }
 
-func (l *Logger) log(s string) {
-	l.ch <- s
+func log(s string) {
+	fmt.Println(">>>", s)
+	logger.ch <- s
 }
 
-func (l *Logger) Take() string {
-	return <-l.ch
-}
-
-func NewLogger() *Logger {
-	return &Logger{
-		// The channel buffer should be large enough for the writer not to be held up.
-		ch:     make(chan string, 100),
-		Ticker: make(chan string),
-	}
+func LogTake() string {
+	fmt.Println("Take()")
+	return <-logger.ch
 }
 
 func LogToFile(logfile *os.File) *Logger {
-	logger = NewLogger()
-	logger.file = logfile
+	logger = &Logger{
+		// The channel buffer should be large enough for the writer not to be held up.
+		ch:     make(chan string, 100),
+		Ticker: make(chan string),
+		file:   logfile,
+	}
 	go logToFile()
 	return logger
 }
@@ -83,7 +88,7 @@ func logToFile() {
 	//TODO: Note that this at present will only work for a single long-running
 	// operation. When that finishes (.TICK=-1), the logger will exit.
 	for {
-		line := logger.Take()
+		line := LogTake()
 		logger.file.WriteString(line + "\n")
 		if strings.HasPrefix(line, "$ .TICK=") {
 			_, t, _ := strings.Cut(line, "=")
@@ -95,38 +100,38 @@ func logToFile() {
 	}
 }
 
-func (l *Logger) Command(slist []string) {
-	l.Running = true
-	l.log(fmt.Sprintf("%s %s %+v", OP_START, slist[0], slist[1:]))
+func LogCommand(slist []string) {
+	logger.Running = true
+	log(fmt.Sprintf("%s %s %+v", OP_START, slist[0], slist[1:]))
 }
 
-func (l *Logger) CommandEnd() {
-	l.Running = false
-	l.log(OP_END)
+func LogCommandEnd() {
+	logger.Running = false
+	log(OP_END)
 }
 
-func (l *Logger) logMessage(ltype MsgType, s string, a ...any) {
-	l.log(fmt.Sprintf(ltype.String()+" "+s, a...))
+func logMessage(ltype MsgType, s string, a ...any) {
+	log(fmt.Sprintf(ltype.String()+" "+s, a...))
 	//TODO: Do I need to trim? lstring := strings.TrimSpace(fmt.Sprintf(s, a...))
 }
 
-func (l *Logger) Info(s string, a ...any) {
-	l.logMessage(INFO, s, a...)
+func LogInfo(s string, a ...any) {
+	logMessage(INFO, s, a...)
 }
 
-func (l *Logger) Result(key string, value any) {
-	l.log(fmt.Sprintf("$ %s=%v\n", key, value))
+func LogResult(key string, value any) {
+	log(fmt.Sprintf("$ %s=%v\n", key, value))
 }
 
-func (l *Logger) Warning(s string, a ...any) {
-	l.logMessage(WARNING, s, a...)
+func LogWarning(s string, a ...any) {
+	logMessage(WARNING, s, a...)
 }
 
-func (l *Logger) Error(s string, a ...any) {
-	l.logMessage(ERROR, s, a...)
+func LogError(s string, a ...any) {
+	logMessage(ERROR, s, a...)
 }
 
-func (l *Logger) Bug(s string, a ...any) {
+func LogBug(s string, a ...any) {
 	var p string
 	_, f, ln, ok := runtime.Caller(1)
 	if ok {
@@ -136,9 +141,9 @@ func (l *Logger) Bug(s string, a ...any) {
 	} else {
 		p = "Location?: "
 	}
-	l.logMessage(BUG, p+s, a...)
+	logMessage(BUG, p+s, a...)
 }
 
-func (l *Logger) Tick(n int) {
-	l.Result(".TICK", n)
+func LogTick(n int) {
+	LogResult(".TICK", n)
 }

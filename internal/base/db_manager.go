@@ -25,118 +25,116 @@ func NewId() NodeRef {
 	return NodeRef(u2.String())
 }
 
-func (bd *BaseData) addElement(ref NodeRef, element Element) NodeRef {
+func addElement(ref NodeRef, element Element) NodeRef {
 	if ref == "" {
 		ref = NewId()
 	} else {
-		_, known := bd.Db.ElementMap[ref]
+		_, known := DataBase.Db.ElementMap[ref]
 		if known {
-			bd.Logger.Error("Element Id defined more than once:  %s", ref)
+			LogError("Element Id defined more than once:  %s", ref)
 			ref = NewId()
 		}
 	}
-	bd.Db.ElementMap[ref] = element
+	DataBase.Db.ElementMap[ref] = element
 	return ref
 }
 
-func (bd *BaseData) NewDay(ref NodeRef) *Day {
+func NewDay(ref NodeRef) *Day {
 	e := &Day{}
-	e.Id = bd.addElement(ref, e)
-	bd.Db.Days = append(bd.Db.Days, e)
+	e.Id = addElement(ref, e)
+	DataBase.Db.Days = append(DataBase.Db.Days, e)
 	return e
 }
 
-func (bd *BaseData) NewHour(ref NodeRef) *Hour {
+func NewHour(ref NodeRef) *Hour {
 	e := &Hour{}
-	e.Id = bd.addElement(ref, e)
-	bd.Db.Hours = append(bd.Db.Hours, e)
+	e.Id = addElement(ref, e)
+	DataBase.Db.Hours = append(DataBase.Db.Hours, e)
 	return e
 }
 
-func (bd *BaseData) NewTeacher(ref NodeRef) *Teacher {
+func NewTeacher(ref NodeRef) *Teacher {
 	e := &Teacher{}
-	e.Id = bd.addElement(ref, e)
-	bd.Db.Teachers = append(bd.Db.Teachers, e)
+	e.Id = addElement(ref, e)
+	DataBase.Db.Teachers = append(DataBase.Db.Teachers, e)
 	return e
 }
 
-func (bd *BaseData) NewSubject(ref NodeRef) *Subject {
+func NewSubject(ref NodeRef) *Subject {
 	e := &Subject{}
-	e.Id = bd.addElement(ref, e)
-	bd.Db.Subjects = append(bd.Db.Subjects, e)
+	e.Id = addElement(ref, e)
+	DataBase.Db.Subjects = append(DataBase.Db.Subjects, e)
 	return e
 }
 
-func (bd *BaseData) NewRoom(ref NodeRef) *Room {
+func NewRoom(ref NodeRef) *Room {
 	e := &Room{}
-	e.Id = bd.addElement(ref, e)
-	bd.Db.Rooms = append(bd.Db.Rooms, e)
+	e.Id = addElement(ref, e)
+	DataBase.Db.Rooms = append(DataBase.Db.Rooms, e)
 	return e
 }
 
-func (bd *BaseData) NewRoomGroup(ref NodeRef) *RoomGroup {
+func NewRoomGroup(ref NodeRef) *RoomGroup {
 	e := &RoomGroup{}
-	e.Id = bd.addElement(ref, e)
-	bd.Db.RoomGroups = append(bd.Db.RoomGroups, e)
+	e.Id = addElement(ref, e)
+	DataBase.Db.RoomGroups = append(DataBase.Db.RoomGroups, e)
 	return e
 }
 
-func (bd *BaseData) NewRoomChoiceGroup(ref NodeRef) *RoomChoiceGroup {
+func NewRoomChoiceGroup(ref NodeRef) *RoomChoiceGroup {
 	e := &RoomChoiceGroup{}
-	e.Id = bd.addElement(ref, e)
-	bd.Db.RoomChoiceGroups = append(bd.Db.RoomChoiceGroups, e)
+	e.Id = addElement(ref, e)
+	DataBase.Db.RoomChoiceGroups = append(DataBase.Db.RoomChoiceGroups, e)
 	return e
 }
 
-func (bd *BaseData) NewClass(ref NodeRef) *Class {
+func NewClass(ref NodeRef) *Class {
 	e := &Class{}
-	e.Id = bd.addElement(ref, e)
-	bd.Db.Classes = append(bd.Db.Classes, e)
+	e.Id = addElement(ref, e)
+	DataBase.Db.Classes = append(DataBase.Db.Classes, e)
 	return e
 }
 
-func (bd *BaseData) NewGroup(ref NodeRef) *Group {
+func NewGroup(ref NodeRef) *Group {
 	e := &Group{}
-	e.Id = bd.addElement(ref, e)
-	bd.Db.Groups = append(bd.Db.Groups, e)
+	e.Id = addElement(ref, e)
+	DataBase.Db.Groups = append(DataBase.Db.Groups, e)
 	return e
 }
 
-func (bd *BaseData) NewCourse(ref NodeRef) *Course {
+func NewCourse(ref NodeRef) *Course {
 	e := &Course{}
-	e.Id = bd.addElement(ref, e)
-	bd.Db.Courses = append(bd.Db.Courses, e)
+	e.Id = addElement(ref, e)
+	DataBase.Db.Courses = append(DataBase.Db.Courses, e)
 	return e
 }
 
-func (bd *BaseData) NewSuperCourse(ref NodeRef) *SuperCourse {
+func NewSuperCourse(ref NodeRef) *SuperCourse {
 	e := &SuperCourse{}
-	e.Id = bd.addElement(ref, e)
-	bd.Db.SuperCourses = append(bd.Db.SuperCourses, e)
+	e.Id = addElement(ref, e)
+	DataBase.Db.SuperCourses = append(DataBase.Db.SuperCourses, e)
 	return e
 }
 
-func (bd *BaseData) NewSubCourse(ref NodeRef) *SubCourse {
+func NewSubCourse(ref NodeRef) *SubCourse {
 	e := &SubCourse{}
-	e.Id = bd.addElement(ref, e)
-	bd.Db.SubCourses = append(bd.Db.SubCourses, e)
+	e.Id = addElement(ref, e)
+	DataBase.Db.SubCourses = append(DataBase.Db.SubCourses, e)
 	return e
 }
 
-func (bd *BaseData) NewActivity(ref NodeRef) *Activity {
+func NewActivity(ref NodeRef) *Activity {
 	e := &Activity{}
-	e.Id = bd.addElement(ref, e)
-	bd.Db.Activities = append(bd.Db.Activities, e)
+	e.Id = addElement(ref, e)
+	DataBase.Db.Activities = append(DataBase.Db.Activities, e)
 	return e
 }
 
 // `PrepareDb` must be called after the data has been initially loaded into
 // the `DbTopLevel` structure. It processes the data by performing checks and
 // completing the initialization of the internal data structures.
-func (bd *BaseData) PrepareDb() {
-	db := bd.Db
-	logger := bd.Logger
-
+func PrepareDb() {
+	db := DataBase.Db
 	// Collect the SubCourses for each SuperCourse
 	for _, sbc := range db.SubCourses {
 		for _, spcref := range sbc.SuperCourses {
@@ -184,9 +182,9 @@ func (bd *BaseData) PrepareDb() {
 	}
 
 	// Check that element tags are unique
-	newtags(logger, "Subject", db.Subjects)
-	newtags(logger, "Room", db.Rooms)
-	newtags(logger, "Teacher", db.Teachers)
+	newtags("Subject", db.Subjects)
+	newtags("Room", db.Rooms)
+	newtags("Teacher", db.Teachers)
 
 	// Check that the Rooms in RoomGroups and RoomChoiceGroups are valid.
 	for _, rg := range db.RoomGroups {
@@ -195,8 +193,7 @@ func (bd *BaseData) PrepareDb() {
 			if _, ok := db.ElementMap[r].(*Room); ok {
 				rlist = append(rlist, r)
 			} else {
-				logger.Error(
-					"Invalid Room (%s) in RoomGroup %s", r, rg.Tag)
+				LogError("Invalid Room (%s) in RoomGroup %s", r, rg.Tag)
 			}
 		}
 		rg.Rooms = rlist
@@ -207,7 +204,7 @@ func (bd *BaseData) PrepareDb() {
 			if _, ok := db.ElementMap[r].(*Room); ok {
 				rlist = append(rlist, r)
 			} else {
-				logger.Error(
+				LogError(
 					"Invalid Room (%s) in RoomChoiceGroup %s", r, rg.Tag)
 			}
 		}
@@ -215,7 +212,7 @@ func (bd *BaseData) PrepareDb() {
 	}
 }
 
-func newtags[T Element](logger *Logger, etype string, elist []T) {
+func newtags[T Element](etype string, elist []T) {
 	checktags := map[string]bool{}
 	errortags := []Element{}
 	for _, e0 := range elist {
@@ -239,39 +236,38 @@ func newtags[T Element](logger *Logger, etype string, elist []T) {
 		}
 		checktags[tag] = true
 		e.setTag(tag)
-		logger.Error(
+		LogError(
 			"%s tag <%s> not unique: Element %s changed to <%s>",
 			etype, tag0, e.GetRef(), tag)
 	}
 }
 
-func (bd *BaseData) CheckDbBasics() bool {
-	db := bd.Db
-	logger := bd.Logger
+func CheckDbBasics() bool {
+	db := DataBase.Db
 	// This function is provided for use by code which needs the following
 	// Elements to be provided.
 	if len(db.Days) == 0 {
-		logger.Error("No Days")
+		LogError("No Days")
 		return false
 	}
 	if len(db.Hours) == 0 {
-		logger.Error("No Hours")
+		LogError("No Hours")
 		return false
 	}
 	if len(db.Teachers) == 0 {
-		logger.Error("No Teachers")
+		LogError("No Teachers")
 		return false
 	}
 	if len(db.Subjects) == 0 {
-		logger.Error("No Subjects")
+		LogError("No Subjects")
 		return false
 	}
 	if len(db.Rooms) == 0 {
-		logger.Error("No Rooms")
+		LogError("No Rooms")
 		return false
 	}
 	if len(db.Classes) == 0 {
-		logger.Error("No Classes")
+		LogError("No Classes")
 		return false
 	}
 	return true

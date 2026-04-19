@@ -5,10 +5,7 @@ import (
 	"strings"
 )
 
-func (tt_data *TtData) prepare_days_between(
-	bdata *base.BaseData,
-	constraint_map map[string][]*base.BaseConstraint,
-) {
+func (tt_data *TtData) prepare_days_between(constraint_map map[string][]*base.BaseConstraint) {
 	// If an "AutomaticDifferentDays" constraint is present (at most one is
 	// permitted), the `auto_weight` and `auto_consec` variables will be set
 	// accordingly, otherwise the default weight (`base.MAXWEIGHT`, i.e.
@@ -37,7 +34,7 @@ func (tt_data *TtData) prepare_days_between(
 				// Override default constraint
 				noauto_ddays[course] = struct{}{}
 			}
-			alists := tt_data.days_between_activities(course, c.Weight, data.ConsecutiveIfSameDay, bdata)
+			alists := tt_data.days_between_activities(course, c.Weight, data.ConsecutiveIfSameDay)
 			for _, alist := range alists {
 				tt_data.constraints = append(tt_data.constraints, &ttConstraint{
 					Id:     string(c.Id),
@@ -61,7 +58,7 @@ func (tt_data *TtData) prepare_days_between(
 	for _, cinfo := range tt_data.courseInfoList {
 		cref := cinfo.Id
 		if _, ok := noauto_ddays[cref]; len(cinfo.Activities) > 1 && !ok {
-			alists := tt_data.days_between_activities(cref, auto_weight, auto_consec, bdata)
+			alists := tt_data.days_between_activities(cref, auto_weight, auto_consec)
 			for _, alist := range alists {
 				tt_data.constraints = append(tt_data.constraints, &ttConstraint{
 					Id:     auto_id,
@@ -97,12 +94,8 @@ func (tt_data *TtData) prepare_days_between(
 }
 
 // Parallel courses.
-func (tt_data *TtData) prepare_parallels(
-	bdata *base.BaseData,
-	constraint_map map[string][]*base.BaseConstraint,
-) {
-	logger := bdata.Logger
-	db := bdata.Db
+func (tt_data *TtData) prepare_parallels(constraint_map map[string][]*base.BaseConstraint) {
+	db := base.DataBase.Db
 
 cloop:
 	for _, c := range constraint_map[base.C_ParallelCourses] {
@@ -125,7 +118,7 @@ cloop:
 				for _, cr := range courses {
 					clist = append(clist, string(cr))
 				}
-				logger.Error(
+				base.LogError(
 					"Parallel courses have different activities: %s",
 					strings.Join(clist, ","))
 				continue cloop
@@ -140,7 +133,7 @@ cloop:
 					for _, cr := range courses {
 						clist = append(clist, string(cr))
 					}
-					logger.Error(
+					base.LogError(
 						"Parallel courses have activity mismatch: %s",
 						strings.Join(clist, ","))
 					continue cloop
@@ -163,9 +156,8 @@ cloop:
 
 // Construct the activity relationships for a `DaysBetween` constraint.
 func (tt_data *TtData) days_between_activities(
-	course nodeRef, weight int, consecutiveIfSameDay bool, bdata *base.BaseData,
+	course nodeRef, weight int, consecutiveIfSameDay bool,
 ) [][]activityIndex {
-	logger := bdata.Logger
 	allist := [][]activityIndex{}
 	cinfo := tt_data.ref2courseInfo[course]
 	fixeds := []activityIndex{}
@@ -181,9 +173,9 @@ func (tt_data *TtData) days_between_activities(
 	if len(unfixeds) == 0 || (len(fixeds) == 0 && len(unfixeds) == 1) {
 		// No constraints necessary
 		//TODO?
-		logger.Warning(
+		base.LogWarning(
 			"Ignoring superfluous DaysBetween constraint on course:\n  -- %s",
-			tt_data.View(cinfo, bdata.Db))
+			tt_data.View(cinfo))
 		return allist
 	}
 	// Collect the activity groups to which the constraint is to be applied
@@ -208,9 +200,9 @@ func (tt_data *TtData) days_between_activities(
 		for _, alist := range aidlists {
 			if len(alist) > tt_data.ndays {
 				//TODO?
-				logger.Warning(
+				base.LogWarning(
 					"Course has too many activities for DifferentDays constraint:\n  -- %s",
-					tt_data.View(cinfo, bdata.Db))
+					tt_data.View(cinfo))
 				continue
 			}
 			allist = append(allist, alist)

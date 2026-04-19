@@ -147,8 +147,8 @@ type classDivision struct {
 
 // MakeTimetableData performs the initialization of a TtData structure, collecting
 // "resources" (atomic student groups, teachers and rooms) and "activities".
-func MakeTimetableData(bd *base.BaseData) *TtData {
-	db := bd.Db
+func MakeTimetableData() *TtData {
+	db := base.DataBase.Db
 	tt_data := &TtData{
 		db: db,
 
@@ -168,7 +168,7 @@ func MakeTimetableData(bd *base.BaseData) *TtData {
 	tt_data.RoomResources()
 
 	// Get the courses (-> courseInfo) and activities for the timetable
-	tt_data.CollectCourses(bd)
+	tt_data.CollectCourses()
 
 	// Use a copy of the constraints map so that it can be used destructively,
 	// deleting entries as they are processed.
@@ -180,15 +180,15 @@ func MakeTimetableData(bd *base.BaseData) *TtData {
 	// by certain special constraints. This must be after the call to
 	// `placement_constraints` as that sets up the hard fixed starting times,
 	// which are needed for the generation of the days-between constraints.
-	tt_data.prepare_days_between(bd, constraint_map)
-	tt_data.prepare_parallels(bd, constraint_map)
+	tt_data.prepare_days_between(constraint_map)
+	tt_data.prepare_parallels(constraint_map)
 
 	// Collect the remaining constraints.
 	tt_data.activity_constraints(constraint_map)
 	tt_data.class_constraints(constraint_map)
 	tt_data.teacher_constraints(constraint_map)
 	for c := range constraint_map {
-		bd.Logger.Error("UnhandledConstraintType: %s", c)
+		base.LogError("UnhandledConstraintType: %s", c)
 	}
 
 	return tt_data

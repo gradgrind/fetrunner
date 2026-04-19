@@ -19,10 +19,9 @@ func FetRead(
 	bdata *base.BaseData,
 	fetpath string,
 ) *TtSourceFet {
-	logger := bdata.Logger
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(fetpath); err != nil {
-		logger.Error("%s", err)
+		base.LogError("%s", err)
 		return nil
 	}
 	weightTable := MakeFetWeights()
@@ -34,17 +33,17 @@ func FetRead(
 	sourcefet.read_elements(fetroot)
 	// Collect the activities, inactive ones will be ignored.
 	if inactive := sourcefet.read_activities(fetroot); inactive != 0 {
-		logger.Result("INACTIVE_ACTIVITIES", strconv.Itoa(inactive))
+		base.LogResult("INACTIVE_ACTIVITIES", strconv.Itoa(inactive))
 	}
 	{
 		// Collect the constraints, dividing into soft and hard groups.
 		// Inactive constraints will be ignored.
 		t_inactive, s_inactive := sourcefet.read_constraints(fetroot)
 		if t_inactive != 0 {
-			logger.Result("INACTIVE_TIME_CONSTRAINTS", strconv.Itoa(t_inactive))
+			base.LogResult("INACTIVE_TIME_CONSTRAINTS", strconv.Itoa(t_inactive))
 		}
 		if s_inactive != 0 {
-			logger.Result("INACTIVE_SPACE_CONSTRAINTS", strconv.Itoa(s_inactive))
+			base.LogResult("INACTIVE_SPACE_CONSTRAINTS", strconv.Itoa(s_inactive))
 		}
 	}
 	return sourcefet

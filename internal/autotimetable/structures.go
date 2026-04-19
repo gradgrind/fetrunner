@@ -12,6 +12,15 @@ type ConstraintIndex = int
 
 const MIN_TIMEOUT int = 3 // minimum "timeout" value for all non-special instances
 
+var (
+	AutoTt       *AutoTtData
+	TtParameters *Parameters
+)
+
+func init() {
+	TtParameters = DefaultParameters()
+}
+
 type Parameters struct {
 	// The behaviour of the TESTING flag depends on the back-end. It
 	// might, for example, use fixed seeds for random number generators
@@ -59,9 +68,6 @@ type Parameters struct {
 // The `AutoTtData` structure is set up once for the handling of a set of
 // timetable data (based on a source file, for example).
 type AutoTtData struct {
-	Parameters *Parameters
-	BaseData   *base.BaseData
-
 	Source  TtSource
 	Backend TtBackend
 

@@ -5,7 +5,7 @@ import (
 	"slices"
 )
 
-func (tt_data *TtData) roomChoiceFilter(cinfo *courseInfo, bdata *base.BaseData) {
+func (tt_data *TtData) roomChoiceFilter(cinfo *courseInfo) {
 	necessary := slices.Clone(cinfo.FixedRooms)
 	rclist := cinfo.RoomChoices
 	failures := false
@@ -106,8 +106,8 @@ stage1:
 	//fmt.Printf("§§§== FIXED: %+v\n", necessary)
 	//fmt.Printf("§§§== CHOICES: %v\n", rclist)
 	if failures {
-		bdata.Logger.Warning(
+		base.LogWarning(
 			"RoomChoiceGroupsFailure: Course %s, room choices may be represented inaccurately",
-			tt_data.View(cinfo, bdata.Db))
+			tt_data.View(cinfo))
 	}
 }

@@ -31,7 +31,7 @@ func a2r(logger *base.Logger, r any) NodeRef {
 		return NodeRef(rr)
 	}
 	if r != nil {
-		logger.Error("Invalid NodeRef in Constraint: %+v", r)
+		base.LogError("Invalid NodeRef in Constraint: %+v", r)
 	}
 	return ""
 }
@@ -39,7 +39,7 @@ func a2r(logger *base.Logger, r any) NodeRef {
 func a2i(logger *base.Logger, i any) int {
 	ii, ok := i.(float64)
 	if !ok {
-		logger.Error("Invalid number in Constraint: %+v", i)
+		base.LogError("Invalid number in Constraint: %+v", i)
 		return 0
 	}
 	return int(ii)
@@ -53,7 +53,7 @@ func a2rr(logger *base.Logger, rr any) []NodeRef {
 			rlist = append(rlist, a2r(logger, r))
 		}
 	} else if rr != nil {
-		logger.Error("Invalid NodeRef list in Constraint: %+v", rr)
+		base.LogError("Invalid NodeRef list in Constraint: %+v", rr)
 	}
 	return rlist
 }
@@ -66,7 +66,7 @@ func a2ii(logger *base.Logger, ii any) []int {
 			ilist = append(ilist, a2i(logger, i))
 		}
 	} else if ii != nil {
-		logger.Error("Invalid number list in Constraint: %+v", ii)
+		base.LogError("Invalid number list in Constraint: %+v", ii)
 	}
 	return ilist
 }
@@ -107,7 +107,7 @@ func (db0 *W365TopLevel) readConstraints(newdb *base.BaseData) {
 				a2i(logger, e["Hour"]))
 		case base.C_AutomaticDifferentDays:
 			if automatic_different_days {
-				logger.Error("Multiple constraints of type %s", base.C_AutomaticDifferentDays)
+				base.LogError("Multiple constraints of type %s", base.C_AutomaticDifferentDays)
 			} else {
 				automatic_different_days = true
 				ndb.NewAutomaticDifferentDays(
@@ -139,7 +139,7 @@ func (db0 *W365TopLevel) readConstraints(newdb *base.BaseData) {
 				a2i(logger, e["Hours"]))
 		case base.C_DoubleActivityNotOverBreaks:
 			if double_activity_not_over_breaks {
-				logger.Error("Multiple constraints of type %s", base.C_DoubleActivityNotOverBreaks)
+				base.LogError("Multiple constraints of type %s", base.C_DoubleActivityNotOverBreaks)
 			} else {
 				double_activity_not_over_breaks = true
 				ndb.NewDoubleActivityNotOverBreaks(
@@ -153,7 +153,7 @@ func (db0 *W365TopLevel) readConstraints(newdb *base.BaseData) {
 				a2i(logger, e["Weight"]),
 				a2rr(logger, e["Courses"]))
 		default:
-			logger.Error(" @W365 ConstraintInvalid: %s", cw365)
+			base.LogError(" @W365 ConstraintInvalid: %s", cw365)
 		}
 	}
 }

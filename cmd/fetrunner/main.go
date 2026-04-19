@@ -121,11 +121,11 @@ func main() {
 	fetrunner.Dispatch("VERSION")
 	fetrunner.Dispatch("TT_PARAMETER|TIMEOUT|" + strconv.Itoa(*timeout))
 	fetrunner.Dispatch("TT_PARAMETER|MAXPROCESSES|" + strconv.Itoa(*nprocesses))
-	fetrunner.Dispatch("TT_PARAMETER|DEBUG" + strconv.FormatBool(*debug))
-	fetrunner.Dispatch("TT_PARAMETER|TESTING" + strconv.FormatBool(*testing))
-	fetrunner.Dispatch("TT_PARAMETER|SKIP_HARD" + strconv.FormatBool(*skip_hard))
-	fetrunner.Dispatch("TT_PARAMETER|REAL_SOFT" + strconv.FormatBool(*real_soft))
-	fetrunner.Dispatch("TT_PARAMETER|WRITE_FET_FILE" + strconv.FormatBool(*write_fet_file))
+	fetrunner.Dispatch("TT_PARAMETER|DEBUG|" + strconv.FormatBool(*debug))
+	fetrunner.Dispatch("TT_PARAMETER|TESTING|" + strconv.FormatBool(*testing))
+	fetrunner.Dispatch("TT_PARAMETER|SKIP_HARD|" + strconv.FormatBool(*skip_hard))
+	fetrunner.Dispatch("TT_PARAMETER|REAL_SOFT|" + strconv.FormatBool(*real_soft))
+	fetrunner.Dispatch("TT_PARAMETER|WRITE_FET_FILE|" + strconv.FormatBool(*write_fet_file))
 
 	if *tmppath != "" {
 		// Set base directory for temporary files
@@ -146,11 +146,11 @@ func main() {
 	// Get the path to `fet-cl`, and its version number.
 	fetrunner.Dispatch("GET_FET|" + *fetpath + "|")
 	if len(fet.FETPATH) == 0 {
-		logger.Error("--NO_FET")
+		base.LogError("--NO_FET")
 		return
 	}
 	fetrunner.Dispatch("SET_FILE|" + abspath)
-	if len(fetrunner.DataBase.Name) == 0 {
+	if len(base.DataBase.Name) == 0 {
 		return
 	}
 	fetrunner.Dispatch("RUN_TT_SOURCE")

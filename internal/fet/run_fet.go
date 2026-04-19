@@ -25,7 +25,7 @@ var (
 )
 
 func InitBackend(attdata *autotimetable.AutoTtData) {
-	bdata := attdata.BaseData
+	bdata := base.DataBase
 	if base.TEMPORARY_DIR == "" {
 		bdata.SetTmpDir()
 	}
@@ -48,7 +48,7 @@ func PrepareFet(attdata *autotimetable.AutoTtData) *fet_build {
 	source := attdata.Source
 	fetsource := source.(*TtSourceFet) // source
 	cllist := make([][]*etree.Element, len(fetsource.constraintElements))
-	real_soft := attdata.Parameters.REAL_SOFT
+	real_soft := autotimetable.TtParameters.REAL_SOFT
 	for _, sw := range fetsource.softWeights {
 		c := fetsource.constraintElements[sw.Index]
 		if real_soft {
@@ -62,7 +62,7 @@ func PrepareFet(attdata *autotimetable.AutoTtData) *fet_build {
 	}
 	fetbuild := &fet_build{
 		real_soft:           real_soft,
-		no_room_constraints: attdata.Parameters.WITHOUT_ROOM_CONSTRAINTS,
+		no_room_constraints: autotimetable.TtParameters.WITHOUT_ROOM_CONSTRAINTS,
 		ttsource:            source,
 
 		Doc: fetsource.doc,
@@ -112,7 +112,7 @@ func PrepareFet(attdata *autotimetable.AutoTtData) *fet_build {
 	return fetbuild
 }
 
-func (fetbuild *fet_build) Tidy(bdata *base.BaseData) {
+func (fetbuild *fet_build) Tidy() {
 	os.RemoveAll(fetbuild.tmpdir)
 }
 
@@ -121,7 +121,7 @@ func (fetbuild *fet_build) RunBackend(
 	instance *autotimetable.TtInstance,
 ) {
 	instance.InstanceBackend = nil
-	bdata := attdata.BaseData
+	bdata := base.DataBase
 	fname := fmt.Sprintf("z%05d~%s", instance.Index, instance.ConstraintType)
 	var odir string
 	odir = filepath.Join(fetbuild.tmpdir, fname)
@@ -156,7 +156,7 @@ func (fetbuild *fet_build) RunBackend(
 		panic("WRITE_TMP_FET_FILE_FAILED: " + fetfile)
 	}
 	if instance.ConstraintType == "_COMPLETE" &&
-		attdata.Parameters.WRITE_FET_FILE {
+		autotimetable.TtParameters.WRITE_FET_FILE {
 		// Save "complete" fet file with "_" prefix in working directory.
 		cfile := filepath.Join(bdata.SourceDir, "_"+bdata.Name+".fet")
 		err = os.WriteFile(cfile, fet_xml, 0600)
@@ -198,7 +198,7 @@ func (fetbuild *fet_build) RunBackend(
 		"--outputdir=" + odir,
 	}
 
-	if attdata.Parameters.TESTING {
+	if autotimetable.TtParameters.TESTING {
 		params = append(params,
 			"--randomseeds10=10",
 			"--randomseeds11=11",
@@ -210,7 +210,7 @@ func (fetbuild *fet_build) RunBackend(
 
 	runCmd := exec.CommandContext(ctx, FETPATH, params...)
 
-	bdata.Logger.Result(".START", fmt.Sprintf("%d.%s.%d.%d",
+	base.LogResult(".START", fmt.Sprintf("%d.%s.%d.%d",
 		instance.Index,
 		fetbuild.ConstraintName(instance),
 		len(instance.Constraints),
@@ -285,7 +285,6 @@ func (data *FetTtData) DoTick(
 	instance *autotimetable.TtInstance,
 ) {
 	instance.Ticks++
-	logger := attdata.BaseData.Logger
 	progressed := false
 	if data.reader == nil {
 		// Await the existence of the log file
@@ -317,7 +316,7 @@ func (data *FetTtData) DoTick(
 					percent := (count * 100) / int(attdata.NActivities)
 					if percent > instance.Progress {
 						instance.Progress = percent
-						logger.Result(".PROGRESS",
+						base.LogResult(".PROGRESS",
 							fmt.Sprintf("%d.%d.%d",
 								instance.Index,
 								instance.Progress,
@@ -329,7 +328,7 @@ func (data *FetTtData) DoTick(
 		}
 	}
 	if !progressed && data.finished == 0 {
-		logger.Result(".NOPROGRESS",
+		base.LogResult(".NOPROGRESS",
 			fmt.Sprintf("%d.%d",
 				instance.Index,
 				instance.Ticks))
@@ -348,7 +347,7 @@ exit:
 				instance.RunState = autotimetable.INSTANCE_FAILED
 			}
 		}
-		logger.Result(".END", fmt.Sprintf("%d.%d.%d",
+		base.LogResult(".END", fmt.Sprintf("%d.%d.%d",
 			instance.Index, instance.Progress, instance.RunState))
 		efile, err := os.ReadFile(filepath.Join(data.odir, "logs", "errors.txt"))
 		if err == nil {
@@ -368,7 +367,7 @@ exit:
 		   if prog != 0 {
 		       expect := (100 - prog) * ticks / prog
 		       if expect > remaining {
-		           logger.Info("FET_TooSlow %d:%s @ %d, p: %d%% n: %d",
+		           base.LogInfo("FET_TooSlow %d:%s @ %d, p: %d%% n: %d",
 		               instance.Index,
 		               instance.ConstraintType,
 		               ticks,
@@ -384,7 +383,7 @@ exit:
 		// It may need tweaking.
 		if instance.LastTime < 2 &&
 			instance.Ticks-instance.LastTime > 10 {
-			logger.Info("FET_Stuck_0 %d:%s @ %d, p: %d%% n: %d",
+			base.LogInfo("FET_Stuck_0 %d:%s @ %d, p: %d%% n: %d",
 				instance.Index,
 				instance.ConstraintType,
 				instance.Ticks,
@@ -397,10 +396,10 @@ exit:
 		t := instance.Timeout
 		if t == 0 {
 			// Check for lack of progress for instances with no timeout
-			if instance.LastTime < attdata.Parameters.LAST_TIME_0 &&
-				instance.Ticks >= attdata.Parameters.LAST_TIME_1 {
+			if instance.LastTime < autotimetable.TtParameters.LAST_TIME_0 &&
+				instance.Ticks >= autotimetable.TtParameters.LAST_TIME_1 {
 				// Stop instance
-				logger.Info(
+				base.LogInfo(
 					"FET_Slow_0 %d:%s @ %d, p: %d n: %d",
 					instance.Index,
 					instance.ConstraintType,
@@ -416,7 +415,7 @@ exit:
 			// It's more of a "progress on course" criterion.
 			if instance.Progress < limit {
 				// Progress is too slow ...
-				logger.Info("FET_Slow_1 %d:%s @ %d, p: %d n: %d",
+				base.LogInfo("FET_Slow_1 %d:%s @ %d, p: %d n: %d",
 					instance.Index,
 					instance.ConstraintType,
 					instance.Ticks,
@@ -438,7 +437,7 @@ func (data *FetTtData) FinalizeResult(
 	fetfile := filepath.Join(bdata.SourceDir, bdata.Name+"_Result.fet")
 	err := os.WriteFile(fetfile, data.fetxml, 0644)
 	if err != nil {
-		bdata.Logger.Error("%s", err)
+		base.LogError("%s", err)
 	}
 }
 
@@ -452,18 +451,18 @@ func (fetbuild *fet_build) Results(
 	// Open the XML file
 	xmlFile, err := os.Open(xmlpath)
 	if err != nil {
-		logger.Bug("%v", err)
+		base.LogBug("%v", err)
 		return nil
 	}
 	// Remember to close the file at the end of the function
 	defer xmlFile.Close()
 	// read the opened XML file as a byte array.
-	logger.Info("Reading: %s", xmlpath)
+	base.LogInfo("Reading: %s", xmlpath)
 	byteValue, _ := io.ReadAll(xmlFile)
 	v := fetResultRoot{}
 	err = xml.Unmarshal(byteValue, &v)
 	if err != nil {
-		logger.Bug("XML error in %s:\n %v\n", xmlpath, err)
+		base.LogBug("XML error in %s:\n %v\n", xmlpath, err)
 		return nil
 	}
 	// Need to prepare the `ActivityPlacement` fields: activities, days,

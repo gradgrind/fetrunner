@@ -1,6 +1,7 @@
 package autotimetable
 
 import (
+	"fetrunner/internal/base"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -141,9 +142,7 @@ been produced by the generator back-end).
 */
 
 func (attdata *AutoTtData) StartGeneration() {
-	bdata := attdata.BaseData
-	logger := bdata.Logger
-	bdata.StopFlag = false
+	base.DataBase.StopFlag = false
 
 	attdata.lastResult = nil
 	attdata.ConstraintErrors = map[ConstraintIndex]string{}
@@ -240,15 +239,15 @@ func (attdata *AutoTtData) StartGeneration() {
 	attdata.cycle_timeout = 0
 
 	if len(attdata.HardConstraintMap) == 0 {
-		logger.Warning("--HARD: No hard constraints")
+		base.LogWarning("--HARD: No hard constraints")
 		// But start the instance anyway, either as extra null instance or
 		// as basis for SKIP_HARD.
 	}
 	attdata.start_instance(attdata.hard_instance)
-	if attdata.Parameters.SKIP_HARD {
+	if TtParameters.SKIP_HARD {
 		// Don't run null_instance or priority_instance.
 		if len(attdata.SoftConstraintMap) == 0 {
-			logger.Warning("--SOFT_SKIP_HARD: Skipping hard-constraint test," +
+			base.LogWarning("--SOFT_SKIP_HARD: Skipping hard-constraint test," +
 				" but no soft constraints")
 		}
 		attdata.enter_phase(PHASE_SOFT)
@@ -269,7 +268,7 @@ func (attdata *AutoTtData) StartGeneration() {
 		// Tidy up
 		r := recover()
 		if r != nil {
-			logger.Bug("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---",
+			base.LogBug("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---",
 				attdata.Ticks, r, debug.Stack())
 			fmt.Printf("[%d] !!! RECOVER !!!\n=== %v\n+++\n%s\n---\n",
 				attdata.Ticks, r, debug.Stack())
@@ -290,30 +289,30 @@ func (attdata *AutoTtData) StartGeneration() {
 			}
 			<-ticker.C
 		}
-		if !attdata.Parameters.DEBUG {
+		if !TtParameters.DEBUG {
 			// Remove all remaining temporary files
-			attdata.Backend.Tidy(bdata)
+			attdata.Backend.Tidy()
 		}
 
 		if attdata.current_instance.RunState != INSTANCE_ACCEPTED {
 			// If no successes have been booked, there is no result.
-			logger.Error("--NO_RESULT")
+			base.LogError("--NO_RESULT")
 		} else {
 			//TODO: Where (whether?) to save the Result.json file
 			jsonbytes := attdata.GetLastResult()
 			if len(jsonbytes) != 0 {
-				fpath := filepath.Join(bdata.SourceDir, bdata.Name+"_Result.json")
+				fpath := filepath.Join(base.DataBase.SourceDir, base.DataBase.Name+"_Result.json")
 				err := os.WriteFile(fpath, jsonbytes, 0644)
 				if err != nil {
-					logger.Error("%s", err)
+					base.LogError("%s", err)
 				}
 			}
 			//TODO: Where (whether?) to save the FET file ...
 			// Perhaps return a JSON object containing anything relevant as a field?
-			attdata.current_instance.InstanceBackend.FinalizeResult(bdata, attdata)
+			attdata.current_instance.InstanceBackend.FinalizeResult(attdata)
 		}
 
-		logger.Tick(-1) // signal end of process
+		base.LogTick(-1) // signal end of process
 	}()
 
 tickloop:
@@ -321,18 +320,18 @@ tickloop:
 		// Remove completed and aborted instances, start queued instances if
 		// there are free processors.
 		if attdata.update_queue() == 0 {
-			logger.Info("Run-queue empty")
+			base.LogInfo("Run-queue empty")
 		}
 
 		<-ticker.C // wait for "tick"
 
-		if bdata.StopFlag {
-			logger.Info("!!! INTERRUPTED !!!")
+		if base.DataBase.StopFlag {
+			base.LogInfo("!!! INTERRUPTED !!!")
 			break tickloop
 		}
 
 		attdata.Ticks++
-		logger.Tick(attdata.Ticks)
+		base.LogTick(attdata.Ticks)
 
 		// Deal with "tick" updates to the `RunState` of the running instances.
 		// First increment the ticks of running instances.
@@ -348,12 +347,12 @@ tickloop:
 		  for _, ii := range attdata.get_runqueue() {
 		      ilist = append(ilist, fmt.Sprintf("%d:%d", ii.Index, ii.RunState))
 		  }
-		  logger.Info("§Q %+v\n", strings.Join(ilist, ", "))
+		  base.LogInfo("§Q %+v\n", strings.Join(ilist, ", "))
 		  alist := []string{}
 		  for _, ii := range attdata.active_instances {
 		      alist = append(alist, fmt.Sprintf("%d:%d", ii.Index, ii.RunState))
 		  }
-		  logger.Info("§A %+v\n", strings.Join(alist, ", "))
+		  base.LogInfo("§A %+v\n", strings.Join(alist, ", "))
 		*/
 
 		// Then handle the new states
@@ -361,8 +360,8 @@ tickloop:
 			break tickloop
 		}
 
-		if attdata.Ticks == attdata.Parameters.TIMEOUT {
-			logger.Info("!!! TIMEOUT !!!")
+		if attdata.Ticks == TtParameters.TIMEOUT {
+			base.LogInfo("!!! TIMEOUT !!!")
 			break
 		}
 
@@ -371,7 +370,7 @@ tickloop:
 	if result.RunState != INSTANCE_ACCEPTED {
 		return // failed
 	}
-	logger.Info("... finalizing ...")
+	base.LogInfo("... finalizing ...")
 
 	hnn := 0
 	hnall := 0
@@ -423,13 +422,13 @@ tickloop:
 	}
 	infolist = append(infolist, infolist2...)
 	for _, info := range infolist {
-		logger.Info("$ %s: %d / %d", info.c, info.n, info.N)
+		base.LogInfo("$ %s: %d / %d", info.c, info.n, info.N)
 	}
 
 	report := fmt.Sprintf(
 		"::: ALL CONSTRAINTS: (hard) %d / %d  (soft) %d / %d\n",
 		hnn, hnall, snn, snall)
-	logger.Info("%s", report)
+	base.LogInfo("%s", report)
 }
 
 func (attdata *AutoTtData) start_instance(instance *TtInstance) {
