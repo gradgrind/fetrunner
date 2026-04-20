@@ -37,9 +37,10 @@ const (
 	ERROR
 	BUG
 
-	OP_START = "+++"
-	OP_END   = "---"
-	OP_QUIT  = "-*-*-"
+	OP_START   = "+++"
+	OP_END     = "---"
+	OP_LONGRUN = "***"
+	OP_QUIT    = "-*-*-"
 )
 
 var logType = map[MsgType]string{
@@ -121,9 +122,13 @@ func LogCommand(slist []string) {
 	log(fmt.Sprintf("%s %s %+v", OP_START, slist[0], slist[1:]))
 }
 
-func LogCommandEnd() {
-	logger.running = false
-	log(OP_END)
+func LogCommandEnd(real_end bool) {
+	if real_end {
+		logger.running = false
+		log(OP_END)
+	} else {
+		log(OP_LONGRUN)
+	}
 }
 
 func LogRunning() bool {

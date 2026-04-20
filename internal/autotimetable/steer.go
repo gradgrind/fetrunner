@@ -312,7 +312,7 @@ func (attdata *AutoTtData) StartGeneration() {
         }
 
         base.LogTick(-1) // signal end of process
-        base.LogCommandEnd()
+        base.LogCommandEnd(true)
         base.LogStop()
     }()
 
