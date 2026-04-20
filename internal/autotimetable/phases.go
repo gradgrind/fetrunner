@@ -4,6 +4,7 @@ import (
 	"fetrunner/internal/base"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -187,8 +188,8 @@ func (attdata *AutoTtData) tick_phase() bool {
 			attdata.new_current_instance()
 			// Don't change phase.
 		case INSTANCE_FAILED:
-			base.LogError("--UNCONSTRAINED_FAILED:\n:::+\n%s\n:::-",
-				attdata.null_instance.Message)
+			base.LogError("--UNCONSTRAINED_FAILED\n%s\n ***",
+				strings.TrimSpace(attdata.null_instance.Message))
 			attdata.enter_phase(PHASE_FINISHED)
 			return true
 		}

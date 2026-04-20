@@ -31,7 +31,7 @@ func addElement(ref NodeRef, element Element) NodeRef {
 	} else {
 		_, known := DataBase.Db.ElementMap[ref]
 		if known {
-			LogError("Element Id defined more than once:  %s", ref)
+			LogError("--ELEMENT_ID_DEFINED_MORE_THAN_ONCE %s", ref)
 			ref = NewId()
 		}
 	}
@@ -193,7 +193,7 @@ func PrepareDb() {
 			if _, ok := db.ElementMap[r].(*Room); ok {
 				rlist = append(rlist, r)
 			} else {
-				LogError("Invalid Room (%s) in RoomGroup %s", r, rg.Tag)
+				LogError("--INVALID_ROOM_IN_ROOM_GROUP Room: %s, RoomGroup: %s", r, rg.Tag)
 			}
 		}
 		rg.Rooms = rlist
@@ -204,8 +204,7 @@ func PrepareDb() {
 			if _, ok := db.ElementMap[r].(*Room); ok {
 				rlist = append(rlist, r)
 			} else {
-				LogError(
-					"Invalid Room (%s) in RoomChoiceGroup %s", r, rg.Tag)
+				LogError("--INVALID_ROOM_IN_ROOM_CHOICE_GROUP Room: %s, RoomChoiceGroup: %s", r, rg.Tag)
 			}
 		}
 		rg.Rooms = rlist
@@ -237,7 +236,7 @@ func newtags[T Element](etype string, elist []T) {
 		checktags[tag] = true
 		e.setTag(tag)
 		LogError(
-			"%s tag <%s> not unique: Element %s changed to <%s>",
+			"--ELEMENT_TAG_NOT_UNIQUE Type: %s, Tag: %s, Element %s -> %s",
 			etype, tag0, e.GetRef(), tag)
 	}
 }
@@ -247,27 +246,27 @@ func CheckDbBasics() bool {
 	// This function is provided for use by code which needs the following
 	// Elements to be provided.
 	if len(db.Days) == 0 {
-		LogError("No Days")
+		LogError("--NO_DAYS")
 		return false
 	}
 	if len(db.Hours) == 0 {
-		LogError("No Hours")
+		LogError("--NO_HOURS")
 		return false
 	}
 	if len(db.Teachers) == 0 {
-		LogError("No Teachers")
+		LogError("--NO_TEACHERS")
 		return false
 	}
 	if len(db.Subjects) == 0 {
-		LogError("No Subjects")
+		LogError("--NO_SUBJECTS")
 		return false
 	}
 	if len(db.Rooms) == 0 {
-		LogError("No Rooms")
+		LogError("--NO_ROOMS")
 		return false
 	}
 	if len(db.Classes) == 0 {
-		LogError("No Classes")
+		LogError("--NO_CLASSES")
 		return false
 	}
 	return true

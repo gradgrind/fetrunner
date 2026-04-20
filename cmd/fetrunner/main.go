@@ -162,12 +162,15 @@ func main() {
 	go termination() // catch stop signal
 
 	fetrunner.Dispatch("RUN_TT")
+	cancelled := false
 	for {
-		if stop_request {
+		if !cancelled && stop_request {
 			fetrunner.Dispatch("_STOP_TT")
+			cancelled = true // necessary because this loop is exited only later
 		}
 
-		if base.LogWaitTicker() == "-1" {
+		// Continue looping until log reader closed.
+		if base.LogWaitTicker() == "" {
 			break
 		}
 	}

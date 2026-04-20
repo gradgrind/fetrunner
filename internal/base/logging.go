@@ -9,7 +9,7 @@ import (
 )
 
 /*
-	The logger passes lines to stdout.
+    The logger passes lines to stdout.
 
 All operations cause a OP_START to be logged before doing anything else,
 and an OP_END at the end. Any results or other log entries associated
@@ -99,29 +99,21 @@ func LogToFile(logfile *os.File) {
 	go logToFile()
 }
 
-//TODO: Logging error messages ... perhaps each line should get a special prefix?
-
 func logToFile() {
-	//TODO: At present this actually breaks too soon. It would be better to continue
-	// logging until a quit request comes. See OP_QUIT and LogStop() ... which unfortunately
-	// lock up somehow at the moment ...
+	// Read from log channel until an OP_QUIT is received, writing the log lines
+	// to the output file.
 	for {
 		line := LogTake()
-		logger.file.WriteString(line + "\n")
+		logger.file.WriteString(strings.ReplaceAll(line, "||", "\n + ") + "\n")
 		if strings.HasPrefix(line, "$ .TICK=") {
 			_, t, _ := strings.Cut(line, "=")
 			logger.ticker <- t
-			if t == "-1" {
-				break
-			}
 		}
-		//if line == OP_QUIT {
-		//	break
-		//}
+		if line == OP_QUIT {
+			close(logger.ticker)
+			break
+		}
 	}
-
-	//TODO--
-	fmt.Println("LogToFile done")
 }
 
 func LogCommand(slist []string) {
@@ -139,8 +131,8 @@ func LogRunning() bool {
 }
 
 func logMessage(ltype MsgType, s string, a ...any) {
-	log(fmt.Sprintf(ltype.String()+" "+s, a...))
-	//TODO: Do I need to trim? lstring := strings.TrimSpace(fmt.Sprintf(s, a...))
+	msg := strings.TrimSpace(fmt.Sprintf(ltype.String()+" "+s, a...))
+	log(strings.ReplaceAll(msg, "\n", "||"))
 }
 
 func LogInfo(s string, a ...any) {
