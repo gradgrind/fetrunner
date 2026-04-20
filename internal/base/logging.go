@@ -98,6 +98,9 @@ func logToFile() {
 			}
 		}
 	}
+
+	//TODO--
+	fmt.Println("LogToFile done")
 }
 
 func LogCommand(slist []string) {
@@ -108,6 +111,10 @@ func LogCommand(slist []string) {
 func LogCommandEnd() {
 	logger.Running = false
 	log(OP_END)
+}
+
+func LogRunning() bool {
+	return logger.Running
 }
 
 func logMessage(ltype MsgType, s string, a ...any) {

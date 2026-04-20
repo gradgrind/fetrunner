@@ -430,11 +430,9 @@ exit:
 
 // If there is a result from the main process, there may be a
 // corresponding result from the source.
-func (data *FetTtData) FinalizeResult(
-	bdata *base.BaseData,
-	attdata *autotimetable.AutoTtData) {
+func (data *FetTtData) FinalizeResult(attdata *autotimetable.AutoTtData) {
 	// Write FET file at top level of working directory.
-	fetfile := filepath.Join(bdata.SourceDir, bdata.Name+"_Result.fet")
+	fetfile := filepath.Join(base.DataBase.SourceDir, base.DataBase.Name+"_Result.fet")
 	err := os.WriteFile(fetfile, data.fetxml, 0644)
 	if err != nil {
 		base.LogError("%s", err)
@@ -442,10 +440,7 @@ func (data *FetTtData) FinalizeResult(
 }
 
 // Gather the results of the given run.
-func (fetbuild *fet_build) Results(
-	logger *base.Logger,
-	instance *autotimetable.TtInstance,
-) []autotimetable.TtActivityPlacement {
+func (fetbuild *fet_build) Results(instance *autotimetable.TtInstance) []autotimetable.TtActivityPlacement {
 	// Get placements
 	xmlpath := instance.InstanceBackend.(*FetTtData).resultfile
 	// Open the XML file

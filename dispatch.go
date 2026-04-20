@@ -44,7 +44,7 @@ func Dispatch(cmd0 string) {
 	op := DispatchOp{Op: slist[0], Data: slist[1:]}
 	f, ok := OpHandlerMap[op.Op]
 	if ok {
-		if logger.Running {
+		if base.LogRunning() {
 			if op.Op[0] != '_' {
 				panic("!InvalidOp_Running: " + op.Op)
 			}
@@ -53,10 +53,10 @@ func Dispatch(cmd0 string) {
 			if op.Op[0] == '_' {
 				panic("!InvalidOp_NotRunning: " + op.Op)
 			}
-			logger.Command(slist)
+			base.LogCommand(slist)
 		}
 		if f(&op) {
-			logger.CommandEnd()
+			base.LogCommandEnd()
 		}
 	} else {
 		panic("!InvalidOp: " + op.Op)

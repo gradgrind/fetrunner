@@ -108,7 +108,6 @@ func (dbi *W365TopLevel) readSuperCourses() {
 }
 
 func (dbi *W365TopLevel) getCourseSubject(
-	newdb *base.BaseData,
 	srefs []NodeRef,
 	courseId NodeRef,
 ) NodeRef {
@@ -170,7 +169,6 @@ func (dbi *W365TopLevel) getCourseSubject(
 // in the "Room" field.
 // If a list of rooms recurs, the same RoomChoiceGroup is used.
 func (dbi *W365TopLevel) getCourseRoom(
-	newdb *base.BaseData,
 	rrefs []NodeRef,
 	courseId NodeRef,
 ) NodeRef {
@@ -178,7 +176,7 @@ func (dbi *W365TopLevel) getCourseRoom(
 	if len(rrefs) > 1 {
 		// Make a RoomChoiceGroup
 		var estr string
-		room, estr = dbi.makeRoomChoiceGroup(newdb, rrefs)
+		room, estr = dbi.makeRoomChoiceGroup(rrefs)
 		if estr != "" {
 			base.LogError("In Course %s:\n%s", courseId, estr)
 		}
@@ -202,7 +200,6 @@ func (dbi *W365TopLevel) getCourseRoom(
 }
 
 func (dbi *W365TopLevel) getCourseGroups(
-	logger *base.Logger,
 	grefs []NodeRef,
 	courseId NodeRef,
 ) []NodeRef {
@@ -224,7 +221,6 @@ func (dbi *W365TopLevel) getCourseGroups(
 }
 
 func (dbi *W365TopLevel) getCourseTeachers(
-	logger *base.Logger,
 	trefs []NodeRef,
 	courseId NodeRef,
 ) []NodeRef {

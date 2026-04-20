@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-func (dbi *W365TopLevel) readClasses(newdb *base.BaseData) {
+func (dbi *W365TopLevel) readClasses() {
 	// Every Class-Group must be within one – and only one – Class-Division.
 	// To handle that, the Group references are first gathered here. Then,
 	// when a Group is "used" it is flagged. At the end, any unused Groups
@@ -70,7 +70,7 @@ func (dbi *W365TopLevel) readClasses(newdb *base.BaseData) {
 		n.ClassGroup = classGroup.Id
 
 		// +++ Add constraints ...
-		ndb := newdb.Db
+		ndb := base.DataBase.Db
 
 		// MaxAfternoons = 0 has a special meaning (all blocked), so the
 		// corresponding constraint is not needed, see `handleZeroAfternoons`.

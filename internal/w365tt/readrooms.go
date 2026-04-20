@@ -63,8 +63,8 @@ func (dbi *W365TopLevel) readRoomGroups() {
 }
 
 // Call this after all room types have been "read".
-func (dbi *W365TopLevel) checkRoomGroups(newdb *base.BaseData) {
-	for _, e := range newdb.Db.RoomGroups {
+func (dbi *W365TopLevel) checkRoomGroups() {
+	for _, e := range base.DataBase.Db.RoomGroups {
 		// Collect the Ids and Tags of the component rooms.
 		taglist := []string{}
 		reflist := []NodeRef{}
@@ -107,10 +107,7 @@ func (dbi *W365TopLevel) checkRoomGroups(newdb *base.BaseData) {
 	}
 }
 
-func (dbi *W365TopLevel) makeRoomChoiceGroup(
-	newdb *base.BaseData,
-	rooms []NodeRef,
-) (NodeRef, string) {
+func (dbi *W365TopLevel) makeRoomChoiceGroup(rooms []NodeRef) (NodeRef, string) {
 	erlist := []string{} // Error messages
 	// Collect the Ids and Tags of the component rooms.
 	taglist := []string{}

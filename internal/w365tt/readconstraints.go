@@ -25,7 +25,7 @@ var ConstraintMap []DbW365Pair = []DbW365Pair{
 
 // Parameter-reading functions for the constraints
 
-func a2r(logger *base.Logger, r any) NodeRef {
+func a2r(r any) NodeRef {
 	rr, ok := r.(string)
 	if ok {
 		return NodeRef(rr)
@@ -36,7 +36,7 @@ func a2r(logger *base.Logger, r any) NodeRef {
 	return ""
 }
 
-func a2i(logger *base.Logger, i any) int {
+func a2i(i any) int {
 	ii, ok := i.(float64)
 	if !ok {
 		base.LogError("Invalid number in Constraint: %+v", i)
@@ -45,12 +45,12 @@ func a2i(logger *base.Logger, i any) int {
 	return int(ii)
 }
 
-func a2rr(logger *base.Logger, rr any) []NodeRef {
+func a2rr(rr any) []NodeRef {
 	rlist := []NodeRef{}
 	rrr, ok := rr.([]any)
 	if ok {
 		for _, r := range rrr {
-			rlist = append(rlist, a2r(logger, r))
+			rlist = append(rlist, a2r(r))
 		}
 	} else if rr != nil {
 		base.LogError("Invalid NodeRef list in Constraint: %+v", rr)
@@ -58,12 +58,12 @@ func a2rr(logger *base.Logger, rr any) []NodeRef {
 	return rlist
 }
 
-func a2ii(logger *base.Logger, ii any) []int {
+func a2ii(ii any) []int {
 	ilist := []int{}
 	iii, ok := ii.([]any)
 	if ok {
 		for _, i := range iii {
-			ilist = append(ilist, a2i(logger, i))
+			ilist = append(ilist, a2i(i))
 		}
 	} else if ii != nil {
 		base.LogError("Invalid number list in Constraint: %+v", ii)
@@ -73,9 +73,8 @@ func a2ii(logger *base.Logger, ii any) []int {
 
 // Read the constraints read from a W365 JSON file into the equivalent
 // internal constraints.
-func (db0 *W365TopLevel) readConstraints(newdb *base.BaseData) {
-	logger := newdb.Logger
-	ndb := newdb.Db
+func (db0 *W365TopLevel) readConstraints() {
+	ndb := base.DataBase.Db
 	cmap := map[string]string{}
 	for _, pair := range ConstraintMap {
 		cmap[pair.W365] = pair.Db
@@ -90,68 +89,68 @@ func (db0 *W365TopLevel) readConstraints(newdb *base.BaseData) {
 		switch cmap[cw365] {
 		case base.C_ActivitiesEndDay:
 			ndb.NewActivitiesEndDay(
-				a2r(logger, e["Id"]),
-				a2i(logger, e["Weight"]),
-				a2r(logger, e["Course"]))
+				a2r(e["Id"]),
+				a2i(e["Weight"]),
+				a2r(e["Course"]))
 		case base.C_AfterHour:
 			ndb.NewAfterHour(
-				a2r(logger, e["Id"]),
-				a2i(logger, e["Weight"]),
-				a2rr(logger, e["Courses"]),
-				a2i(logger, e["Hour"]))
+				a2r(e["Id"]),
+				a2i(e["Weight"]),
+				a2rr(e["Courses"]),
+				a2i(e["Hour"]))
 		case base.C_BeforeHour:
 			ndb.NewBeforeHour(
-				a2r(logger, e["Id"]),
-				a2i(logger, e["Weight"]),
-				a2rr(logger, e["Courses"]),
-				a2i(logger, e["Hour"]))
+				a2r(e["Id"]),
+				a2i(e["Weight"]),
+				a2rr(e["Courses"]),
+				a2i(e["Hour"]))
 		case base.C_AutomaticDifferentDays:
 			if automatic_different_days {
 				base.LogError("Multiple constraints of type %s", base.C_AutomaticDifferentDays)
 			} else {
 				automatic_different_days = true
 				ndb.NewAutomaticDifferentDays(
-					a2r(logger, e["Id"]),
-					a2i(logger, e["Weight"]),
+					a2r(e["Id"]),
+					a2i(e["Weight"]),
 					e["ConsecutiveIfSameDay"].(bool))
 			}
 		case base.C_DaysBetween:
 			ndb.NewDaysBetween(
-				a2r(logger, e["Id"]),
-				a2i(logger, e["Weight"]),
-				a2rr(logger, e["Courses"]),
-				a2i(logger, e["DaysBetween"]),
+				a2r(e["Id"]),
+				a2i(e["Weight"]),
+				a2rr(e["Courses"]),
+				a2i(e["DaysBetween"]),
 				e["ConsecutiveIfSameDay"].(bool))
 		case base.C_DaysBetweenJoin:
 			ndb.NewDaysBetweenJoin(
-				a2r(logger, e["Id"]),
-				a2i(logger, e["Weight"]),
-				a2r(logger, e["Course1"]),
-				a2r(logger, e["Course2"]),
-				a2i(logger, e["DaysBetween"]),
+				a2r(e["Id"]),
+				a2i(e["Weight"]),
+				a2r(e["Course1"]),
+				a2r(e["Course2"]),
+				a2i(e["DaysBetween"]),
 				e["ConsecutiveIfSameDay"].(bool))
 		case base.C_MinHoursFollowing:
 			ndb.NewMinHoursFollowing(
-				a2r(logger, e["Id"]),
-				a2i(logger, e["Weight"]),
-				a2r(logger, e["Course1"]),
-				a2r(logger, e["Course2"]),
-				a2i(logger, e["Hours"]))
+				a2r(e["Id"]),
+				a2i(e["Weight"]),
+				a2r(e["Course1"]),
+				a2r(e["Course2"]),
+				a2i(e["Hours"]))
 		case base.C_DoubleActivityNotOverBreaks:
 			if double_activity_not_over_breaks {
 				base.LogError("Multiple constraints of type %s", base.C_DoubleActivityNotOverBreaks)
 			} else {
 				double_activity_not_over_breaks = true
 				ndb.NewDoubleActivityNotOverBreaks(
-					a2r(logger, e["Id"]),
-					a2i(logger, e["Weight"]),
-					a2ii(logger, e["Hours"]))
+					a2r(e["Id"]),
+					a2i(e["Weight"]),
+					a2ii(e["Hours"]))
 			}
 		case base.C_ParallelCourses:
 			ndb.NewParallelCourses(
-				a2r(logger, e["Id"]),
-				a2i(logger, e["Weight"]),
-				a2rr(logger, e["Courses"]))
+				a2r(e["Id"]),
+				a2i(e["Weight"]),
+				a2rr(e["Courses"]))
 		default:
 			base.LogError(" @W365 ConstraintInvalid: %s", cw365)
 		}
