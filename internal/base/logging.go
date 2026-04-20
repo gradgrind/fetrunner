@@ -21,7 +21,7 @@ so it has no OP_END.
 
 var (
 	DataBase *BaseData
-	logger   *Logger
+	logger   *loggerBase
 )
 
 func init() {
@@ -39,6 +39,7 @@ const (
 
 	OP_START = "+++"
 	OP_END   = "---"
+	OP_QUIT  = "-*-*-"
 )
 
 var logType = map[MsgType]string{
@@ -56,47 +57,67 @@ func (ltype MsgType) String() string {
 	return s
 }
 
-type Logger struct {
-	ch      chan string
-	Running bool
-	file    *os.File // set only if logging to file
-	Ticker  chan string
+type loggerBase struct {
+	ch       chan string
+	running  bool
+	file     *os.File // set only if logging to file
+	ticker   chan string
+	stopFlag bool // used to interrupt long-running processes
 }
 
 func log(s string) {
-	fmt.Println(">>>", s)
 	logger.ch <- s
 }
 
 func LogTake() string {
-	fmt.Println("Take()")
 	return <-logger.ch
 }
 
-func LogToFile(logfile *os.File) *Logger {
-	logger = &Logger{
+func LogWaitTicker() string {
+	return <-logger.ticker
+}
+
+func SetStopFlag(on bool) {
+	logger.stopFlag = on
+}
+
+func LogStop() {
+	log(OP_QUIT)
+}
+
+func GetStopFlag() bool {
+	return logger.stopFlag
+}
+
+func LogToFile(logfile *os.File) {
+	logger = &loggerBase{
 		// The channel buffer should be large enough for the writer not to be held up.
 		ch:     make(chan string, 100),
-		Ticker: make(chan string),
+		ticker: make(chan string),
 		file:   logfile,
 	}
 	go logToFile()
-	return logger
 }
 
+//TODO: Logging error messages ... perhaps each line should get a special prefix?
+
 func logToFile() {
-	//TODO: Note that this at present will only work for a single long-running
-	// operation. When that finishes (.TICK=-1), the logger will exit.
+	//TODO: At present this actually breaks too soon. It would be better to continue
+	// logging until a quit request comes. See OP_QUIT and LogStop() ... which unfortunately
+	// lock up somehow at the moment ...
 	for {
 		line := LogTake()
 		logger.file.WriteString(line + "\n")
 		if strings.HasPrefix(line, "$ .TICK=") {
 			_, t, _ := strings.Cut(line, "=")
-			logger.Ticker <- t
+			logger.ticker <- t
 			if t == "-1" {
 				break
 			}
 		}
+		//if line == OP_QUIT {
+		//	break
+		//}
 	}
 
 	//TODO--
@@ -104,17 +125,17 @@ func logToFile() {
 }
 
 func LogCommand(slist []string) {
-	logger.Running = true
+	logger.running = true
 	log(fmt.Sprintf("%s %s %+v", OP_START, slist[0], slist[1:]))
 }
 
 func LogCommandEnd() {
-	logger.Running = false
+	logger.running = false
 	log(OP_END)
 }
 
 func LogRunning() bool {
-	return logger.Running
+	return logger.running
 }
 
 func logMessage(ltype MsgType, s string, a ...any) {
@@ -127,7 +148,7 @@ func LogInfo(s string, a ...any) {
 }
 
 func LogResult(key string, value any) {
-	log(fmt.Sprintf("$ %s=%v\n", key, value))
+	log(fmt.Sprintf("$ %s=%v", key, value))
 }
 
 func LogWarning(s string, a ...any) {

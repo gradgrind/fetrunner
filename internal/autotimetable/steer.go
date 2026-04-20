@@ -142,7 +142,7 @@ been produced by the generator back-end).
 */
 
 func (attdata *AutoTtData) StartGeneration() {
-	base.DataBase.StopFlag = false
+	base.SetStopFlag(false)
 
 	attdata.lastResult = nil
 	attdata.ConstraintErrors = map[ConstraintIndex]string{}
@@ -313,6 +313,8 @@ func (attdata *AutoTtData) StartGeneration() {
 		}
 
 		base.LogTick(-1) // signal end of process
+		base.LogCommandEnd()
+		//base.LogStop()
 	}()
 
 tickloop:
@@ -325,7 +327,7 @@ tickloop:
 
 		<-ticker.C // wait for "tick"
 
-		if base.DataBase.StopFlag {
+		if base.GetStopFlag() {
 			base.LogInfo("!!! INTERRUPTED !!!")
 			break tickloop
 		}

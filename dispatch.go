@@ -63,7 +63,7 @@ func Dispatch(cmd0 string) {
 	}
 }
 
-func opLog(logger *base.Logger, op *DispatchOp) {
+func opLog(op *DispatchOp) {
 	fmt.Printf("%s %s %+v", base.OP_START, op.Op, op.Data)
 }
 
@@ -258,7 +258,7 @@ func runtt(op *DispatchOp) bool {
 
 func stoptt(op *DispatchOp) bool {
 	if CheckArgs(op, 0) {
-		base.DataBase.StopFlag = true
+		base.SetStopFlag(true)
 	}
 	return true
 }

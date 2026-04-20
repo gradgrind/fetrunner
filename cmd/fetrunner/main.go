@@ -116,7 +116,7 @@ func main() {
 		log.Fatalln(err)
 	}
 	defer logfile.Close()
-	logger := base.LogToFile(logfile)
+	base.LogToFile(logfile)
 
 	fetrunner.Dispatch("VERSION")
 	fetrunner.Dispatch("TT_PARAMETER|TIMEOUT|" + strconv.Itoa(*timeout))
@@ -167,8 +167,7 @@ func main() {
 			fetrunner.Dispatch("_STOP_TT")
 		}
 
-		tick := <-logger.Ticker
-		if tick == "-1" {
+		if base.LogWaitTicker() == "-1" {
 			break
 		}
 	}
