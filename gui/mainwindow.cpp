@@ -425,8 +425,6 @@ void MainWindow::ticker(const QString &data)
     {
         int key;
         instance_row irow;
-        //TODO--int state;
-        //TODO--QTableWidgetItem *item;
     };
     QList<rmdata> to_remove;
     for (auto it = instance_row_map.cbegin(); it != instance_row_map.cend(); ++it) {
@@ -448,8 +446,6 @@ void MainWindow::ticker(const QString &data)
         ui->instance_table->removeRow(row);
         instance_row_map.remove(rp.key);
     }
-
-    //TODO--ui->instance_table->scrollToBottom();
 
     //TODO: if (new rows)
     ui->completed_instance_table->scrollToBottom();

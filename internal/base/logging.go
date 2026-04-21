@@ -90,6 +90,14 @@ func GetStopFlag() bool {
 	return logger.stopFlag
 }
 
+// The basic logging function, the entries must be read externally using `LogTake()`.
+func LogToBuffer() {
+	logger = &loggerBase{
+		// The channel buffer should be large enough for the writer not to be held up.
+		ch: make(chan string, 100),
+	}
+}
+
 func LogToFile(logfile *os.File) {
 	logger = &loggerBase{
 		// The channel buffer should be large enough for the writer not to be held up.
@@ -98,14 +106,6 @@ func LogToFile(logfile *os.File) {
 		file:   logfile,
 	}
 	go logToFile()
-}
-
-// The basic logging function, the entries must be read externally using `LogTake()`.
-func LogBasic() {
-	logger = &loggerBase{
-		// The channel buffer should be large enough for the writer not to be held up.
-		ch: make(chan string, 100),
-	}
 }
 
 func logToFile() {

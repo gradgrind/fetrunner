@@ -31,7 +31,7 @@ func FetRunnerReadLog() *C.char {
 }
 
 func init() {
-	base.LogBasic()
+	base.LogToBuffer()
 }
 
 func main() {}
