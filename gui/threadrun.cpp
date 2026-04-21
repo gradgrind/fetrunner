@@ -15,36 +15,37 @@ void RunThreadWorker::ttrun()
 
     bool done = false;
     while (!done) {
-        //qDebug() << "§poll" << i;
         if (stopFlag && !stopped) {
             backend->op("_STOP_TT");
             stopped = true;
         }
-        const auto kvlist = backend->op("_POLL_TT");
-        for (const auto &kv : kvlist) {
-            //qDebug() << kv.key << kv.val;
-            if (kv.key == ".TICK") {
-                if (kv.val == "-1") {
-                    done = true;
+        auto kv = backend->readlogline();
+        //qDebug() << kv.key << kv.val;
+        if (kv.key == "$") {
+            auto kvr = backend->readresult(kv.val);
+            if (kvr.key == ".TICK") {
+                if (kvr.val == "-1") {
+                    //done = true;
                     emit ticker("");
                 } else {
-                    //qDebug() << "???" << kv.val;
-                    emit ticker(kv.val);
+                    //qDebug() << "???" << kvr.val;
+                    emit ticker(kvr.val);
                 }
-            } else if (kv.key == ".NCONSTRAINTS") {
-                emit nconstraints(kv.val);
-            } else if (kv.key == ".PROGRESS") {
-                emit iprogress(kv.val);
-            } else if (kv.key == ".START") {
-                emit istart(kv.val);
-            } else if (kv.key == ".END") {
-                emit iend(kv.val);
-            } else if (kv.key == ".ACCEPT") {
-                emit iaccept(kv.val);
-            } else if (kv.key == ".ELIMINATE") {
-                emit ieliminate(kv.val);
+            } else if (kvr.key == ".NCONSTRAINTS") {
+                emit nconstraints(kvr.val);
+            } else if (kvr.key == ".PROGRESS") {
+                emit iprogress(kvr.val);
+            } else if (kvr.key == ".START") {
+                emit istart(kvr.val);
+            } else if (kvr.key == ".END") {
+                emit iend(kvr.val);
+            } else if (kvr.key == ".ACCEPT") {
+                emit iaccept(kvr.val);
+            } else if (kvr.key == ".ELIMINATE") {
+                emit ieliminate(kvr.val);
             }
-        }
+        } else if (kv.key == "---")
+            done = true;
     }
     emit runThreadWorkerDone();
 }

@@ -5,8 +5,7 @@ import (
     "strings"
 )
 
-func (dbi *W365TopLevel) readSubjects(newdb *base.BaseData) {
-    logger := newdb.Logger
+func (dbi *W365TopLevel) readSubjects() {
     dbi.SubjectMap = map[NodeRef]*base.Subject{}
     dbi.SubjectTags = map[string]NodeRef{}
     for _, e := range dbi.Subjects {
@@ -14,14 +13,13 @@ func (dbi *W365TopLevel) readSubjects(newdb *base.BaseData) {
     sloop:
         _, nok := dbi.SubjectTags[e.Tag]
         if nok {
-            logger.Error("Subject Tag (Shortcut) defined twice: %s",
-                e.Tag)
+            base.LogError("--SUBJECT_TAG_DEFINED_TWICE %s", e.Tag)
             e.Tag += "$"
             goto sloop
         }
         dbi.SubjectTags[e.Tag] = e.Id
         //Copy data to base db.
-        n := newdb.NewSubject(e.Id)
+        n := base.NewSubject(e.Id)
         n.Tag = e.Tag
         n.Name = e.Name
         dbi.SubjectMap[e.Id] = n
@@ -29,26 +27,24 @@ func (dbi *W365TopLevel) readSubjects(newdb *base.BaseData) {
 }
 
 func (dbi *W365TopLevel) makeNewSubject(
-    newdb *base.BaseData,
     tag string,
     name string,
 ) NodeRef {
-    s := newdb.NewSubject("")
+    s := base.NewSubject("")
     s.Tag = tag
     s.Name = name
     dbi.SubjectTags[tag] = s.Id
     return s.Id
 }
 
-func (dbi *W365TopLevel) readCourses(newdb *base.BaseData) {
-    logger := newdb.Logger
+func (dbi *W365TopLevel) readCourses() {
     dbi.CourseMap = map[NodeRef]struct{}{}
     for _, e := range dbi.Courses {
-        subject := dbi.getCourseSubject(newdb, e.Subjects, e.Id)
-        room := dbi.getCourseRoom(newdb, e.PreferredRooms, e.Id)
-        groups := dbi.getCourseGroups(logger, e.Groups, e.Id)
-        teachers := dbi.getCourseTeachers(logger, e.Teachers, e.Id)
-        n := newdb.NewCourse(e.Id)
+        subject := dbi.getCourseSubject(e.Subjects, e.Id)
+        room := dbi.getCourseRoom(e.PreferredRooms, e.Id)
+        groups := dbi.getCourseGroups(e.Groups, e.Id)
+        teachers := dbi.getCourseTeachers(e.Teachers, e.Id)
+        n := base.NewCourse(e.Id)
         n.Subject = subject
         n.Groups = groups
         n.Teachers = teachers
@@ -57,8 +53,7 @@ func (dbi *W365TopLevel) readCourses(newdb *base.BaseData) {
     }
 }
 
-func (dbi *W365TopLevel) readSuperCourses(newdb *base.BaseData) {
-    logger := newdb.Logger
+func (dbi *W365TopLevel) readSuperCourses() {
     // In the input from W365 the subjects for the SuperCourses must be
     // taken from the linked EpochPlan.
     // The EpochPlans are otherwise not needed.
@@ -67,7 +62,7 @@ func (dbi *W365TopLevel) readSuperCourses(newdb *base.BaseData) {
         for _, n := range dbi.EpochPlans {
             sref, ok := dbi.SubjectTags[n.Tag]
             if !ok {
-                sref = dbi.makeNewSubject(newdb, n.Tag, n.Name)
+                sref = dbi.makeNewSubject(n.Tag, n.Name)
             }
             epochPlanSubjects[n.Id] = sref
         }
@@ -82,13 +77,13 @@ func (dbi *W365TopLevel) readSuperCourses(newdb *base.BaseData) {
                 // Assume the SubCourse really is the same.
                 sbc.SuperCourses = append(sbc.SuperCourses, spc.Id)
             } else {
-                subject := dbi.getCourseSubject(newdb, e.Subjects, e.Id)
-                room := dbi.getCourseRoom(newdb, e.PreferredRooms, e.Id)
-                groups := dbi.getCourseGroups(logger, e.Groups, e.Id)
-                teachers := dbi.getCourseTeachers(logger, e.Teachers, e.Id)
+                subject := dbi.getCourseSubject(e.Subjects, e.Id)
+                room := dbi.getCourseRoom(e.PreferredRooms, e.Id)
+                groups := dbi.getCourseGroups(e.Groups, e.Id)
+                teachers := dbi.getCourseTeachers(e.Teachers, e.Id)
                 // Use a new Id for the SubCourse because it can also be
                 // the Id of a Course.
-                n := newdb.NewSubCourse("$$" + e.Id)
+                n := base.NewSubCourse("$$" + e.Id)
                 n.SuperCourses = []NodeRef{spc.Id}
                 n.Subject = subject
                 n.Groups = groups
@@ -101,22 +96,20 @@ func (dbi *W365TopLevel) readSuperCourses(newdb *base.BaseData) {
         // Now add the SuperCourse.
         subject, ok := epochPlanSubjects[spc.EpochPlan]
         if !ok {
-            logger.Error("Unknown EpochPlan in SuperCourse %s:\n  %s",
+            base.LogError("--W365_UNKNOWN_COURCE_BLOCK SuperCourse: %s, EpochPlan: %s",
                 spc.Id, spc.EpochPlan)
             continue
         }
-        n := newdb.NewSuperCourse(spc.Id)
+        n := base.NewSuperCourse(spc.Id)
         n.Subject = subject
         dbi.CourseMap[n.Id] = struct{}{}
     }
 }
 
 func (dbi *W365TopLevel) getCourseSubject(
-    newdb *base.BaseData,
     srefs []NodeRef,
     courseId NodeRef,
 ) NodeRef {
-    logger := newdb.Logger
     //
     // Deal with the Subjects field of a Course or SubCourse – W365
     // allows multiple subjects.
@@ -125,13 +118,13 @@ func (dbi *W365TopLevel) getCourseSubject(
     // to a single "composite" subject, using all the subject tags.
     // Repeated use of the same subject list will reuse the created subject.
     //
-    msg := "Course %s:\n  Not a Subject: %s\n"
+    msg := "--W365_UNKNOWN_SUBJECT Course: %s, Subject: %s"
     var subject NodeRef
     if len(srefs) == 1 {
         wsid := srefs[0]
         _, ok := dbi.SubjectMap[wsid]
         if !ok {
-            logger.Error(msg, courseId, wsid)
+            base.LogError(msg, courseId, wsid)
             return ""
         }
         subject = wsid
@@ -144,7 +137,7 @@ func (dbi *W365TopLevel) getCourseSubject(
             if ok {
                 sklist = append(sklist, s.Tag)
             } else {
-                logger.Error(msg, courseId, wsid)
+                base.LogError(msg, courseId, wsid)
                 return ""
             }
         }
@@ -155,15 +148,15 @@ func (dbi *W365TopLevel) getCourseSubject(
             subject = wsid
         } else {
             // Need a new Subject.
-            subject = dbi.makeNewSubject(newdb, sktag, "Compound Subject")
+            subject = dbi.makeNewSubject(sktag, "Compound Subject")
         }
     } else {
-        logger.Error("Course/SubCourse has no subject: %s", courseId)
+        base.LogError("--W365_COURSE_HAS_NO_SUBJECT %s", courseId)
         // Use a dummy Subject.
         var ok bool
         subject, ok = dbi.SubjectTags["?"]
         if !ok {
-            subject = dbi.makeNewSubject(newdb, "?", "No Subject")
+            subject = dbi.makeNewSubject("?", "No Subject")
         }
     }
     return subject
@@ -175,18 +168,16 @@ func (dbi *W365TopLevel) getCourseSubject(
 // in the "Room" field.
 // If a list of rooms recurs, the same RoomChoiceGroup is used.
 func (dbi *W365TopLevel) getCourseRoom(
-    newdb *base.BaseData,
     rrefs []NodeRef,
     courseId NodeRef,
 ) NodeRef {
-    logger := newdb.Logger
     room := NodeRef("")
     if len(rrefs) > 1 {
         // Make a RoomChoiceGroup
         var estr string
-        room, estr = dbi.makeRoomChoiceGroup(newdb, rrefs)
+        room, estr = dbi.makeRoomChoiceGroup(rrefs)
         if estr != "" {
-            logger.Error("In Course %s:\n%s", courseId, estr)
+            base.LogError("--W365_ROOM_ERROR Course: %s, Room: %s", courseId, estr)
         }
     } else if len(rrefs) == 1 {
         // Check that room is Room or RoomGroup.
@@ -199,7 +190,7 @@ func (dbi *W365TopLevel) getCourseRoom(
             if ok {
                 room = rref0
             } else {
-                logger.Error("Invalid room in Course/SubCourse %s:\n  %s",
+                base.LogError("--W365_INVALID_ROOM Course/SubCourse: %s, Room: %s",
                     courseId, rref0)
             }
         }
@@ -208,7 +199,6 @@ func (dbi *W365TopLevel) getCourseRoom(
 }
 
 func (dbi *W365TopLevel) getCourseGroups(
-    logger *base.Logger,
     grefs []NodeRef,
     courseId NodeRef,
 ) []NodeRef {
@@ -220,7 +210,8 @@ func (dbi *W365TopLevel) getCourseGroups(
     for _, gref := range grefs {
         ngref, ok := dbi.GroupRefMap[gref]
         if !ok {
-            logger.Error("Invalid group in Course/SubCourse %s:\n  %s",
+            base.LogError(
+                "--W365_INVALID_GROUP Course/SubCourse: %s, Room: %s",
                 courseId, gref)
             continue
         }
@@ -230,7 +221,6 @@ func (dbi *W365TopLevel) getCourseGroups(
 }
 
 func (dbi *W365TopLevel) getCourseTeachers(
-    logger *base.Logger,
     trefs []NodeRef,
     courseId NodeRef,
 ) []NodeRef {
@@ -241,7 +231,7 @@ func (dbi *W365TopLevel) getCourseTeachers(
     for _, tref := range trefs {
         _, ok := dbi.TeacherMap[tref]
         if !ok {
-            logger.Error("Unknown teacher in Course %s:\n  %s",
+            base.LogError("--W365_UNKNOWN_TEACHER Course: %s, Teacher: %s",
                 courseId, tref)
         }
         tlist = append(tlist, tref)

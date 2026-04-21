@@ -15,7 +15,6 @@ var (
 )
 
 func (bd *BaseData) SetTmpDir() {
-    logger := bd.Logger
     tbdir0 := os.TempDir()
     if TEMPORARY_BASEDIR == "" {
         if TEMPORARY_BASEDIR0 != "" {
@@ -23,7 +22,7 @@ func (bd *BaseData) SetTmpDir() {
             if err == nil && fsinfo.IsDir() {
                 TEMPORARY_BASEDIR = TEMPORARY_BASEDIR0
             } else {
-                logger.Warning("TMP_DIR_NOT_AVAILABLE: %s", TEMPORARY_BASEDIR0)
+                LogWarning("--TMP_DIR_NOT_AVAILABLE %s", TEMPORARY_BASEDIR0)
             }
         }
         if TEMPORARY_BASEDIR == "" {
@@ -36,14 +35,14 @@ func (bd *BaseData) SetTmpDir() {
         if errors.Is(err, os.ErrNotExist) {
             err = os.Mkdir(tmpdir, 0700)
             if err != nil {
-                logger.Error("CREATE_TMP_DIR_FAILED: %s", tmpdir)
+                LogError("--CREATE_TMP_DIR_FAILED %s", tmpdir)
                 goto fail
             }
         } else if !fileInfo.IsDir() {
-            logger.Error("TMP_DIR_NOT_A_DIRECTORY: %s", tmpdir)
+            LogError("--TMP_DIR_NOT_A_DIRECTORY %s", tmpdir)
             goto fail
         }
-        logger.Result("TMP_DIR", tmpdir)
+        LogResult("TMP_DIR", tmpdir)
         TEMPORARY_DIR = tmpdir
         return
 
@@ -61,11 +60,11 @@ func (bd *BaseData) SaveDb(fpath string) bool {
     // Save as JSON
     j, err := json.MarshalIndent(bd.Db, "", "  ")
     if err != nil {
-        bd.Logger.Error("%v", err)
+        LogError("--JSON_MARSHALL %v", err)
         return false
     }
     if err := os.WriteFile(fpath, j, 0644); err != nil {
-        bd.Logger.Error("%v", err)
+        LogError("--JSON_SAVE %v", err)
         return false
     }
     return true
@@ -81,7 +80,7 @@ func (bd *BaseData) LoadDb(fpath string) error {
     defer jsonFile.Close()
     // read the opened XML file as a byte array.
     byteValue, _ := io.ReadAll(jsonFile)
-    bd.Logger.Info("*+ Reading: %s", fpath)
+    LogInfo("*+ Reading: %s", fpath)
     v := NewDb()
     err = json.Unmarshal(byteValue, v)
     if err != nil {
@@ -94,12 +93,12 @@ func (bd *BaseData) LoadDb(fpath string) error {
 
 func (bd *BaseData) testElement(ref NodeRef, element Element) bool {
     if ref == "" {
-        bd.Logger.Error("Element has no Id:\n  -- %+v", element)
+        LogError("--ELEMENT_HAS_NO_ID %+v", element)
         return false
     }
     _, nok := bd.Db.ElementMap[ref]
     if nok {
-        bd.Logger.Error("Element Id defined more than once:\n  %s", ref)
+        LogError("--ELEMENT_ID_DEFINED_MORE_THAN_ONCE %s", ref)
         return false
     }
     bd.Db.ElementMap[ref] = element

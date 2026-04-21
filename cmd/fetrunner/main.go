@@ -60,13 +60,16 @@ import (
 	"errors"
 	"fetrunner"
 	"fetrunner/internal/base"
+	"fetrunner/internal/fet"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 var (
@@ -113,15 +116,16 @@ func main() {
 		log.Fatalln(err)
 	}
 	defer logfile.Close()
+	base.LogToFile(logfile)
 
-	do("VERSION")
-	do("TT_PARAMETER", "TIMEOUT", strconv.Itoa(*timeout))
-	do("TT_PARAMETER", "MAXPROCESSES", strconv.Itoa(*nprocesses))
-	do("TT_PARAMETER", "DEBUG", strconv.FormatBool(*debug))
-	do("TT_PARAMETER", "TESTING", strconv.FormatBool(*testing))
-	do("TT_PARAMETER", "SKIP_HARD", strconv.FormatBool(*skip_hard))
-	do("TT_PARAMETER", "REAL_SOFT", strconv.FormatBool(*real_soft))
-	do("TT_PARAMETER", "WRITE_FET_FILE", strconv.FormatBool(*write_fet_file))
+	fetrunner.Dispatch("VERSION")
+	fetrunner.Dispatch("TT_PARAMETER|TIMEOUT|" + strconv.Itoa(*timeout))
+	fetrunner.Dispatch("TT_PARAMETER|MAXPROCESSES|" + strconv.Itoa(*nprocesses))
+	fetrunner.Dispatch("TT_PARAMETER|DEBUG|" + strconv.FormatBool(*debug))
+	fetrunner.Dispatch("TT_PARAMETER|TESTING|" + strconv.FormatBool(*testing))
+	fetrunner.Dispatch("TT_PARAMETER|SKIP_HARD|" + strconv.FormatBool(*skip_hard))
+	fetrunner.Dispatch("TT_PARAMETER|REAL_SOFT|" + strconv.FormatBool(*real_soft))
+	fetrunner.Dispatch("TT_PARAMETER|WRITE_FET_FILE|" + strconv.FormatBool(*write_fet_file))
 
 	if *tmppath != "" {
 		// Set base directory for temporary files
@@ -133,45 +137,53 @@ func main() {
 		if errors.Is(err, os.ErrNotExist) || !fileInfo.IsDir() {
 			log.Fatalln("Not a directory:", abstmppath)
 		}
-		if !do("TMP_PATH", abstmppath) {
+		fetrunner.Dispatch("TMP_PATH|" + abstmppath)
+		if len(base.TEMPORARY_DIR) == 0 {
 			return
 		}
 	}
 
 	// Get the path to `fet-cl`, and its version number.
-	strs, ok := fetrunner.Do("GET_FET", *fetpath, "")
-	okv := false
-	for _, s := range strs {
-		logfile.WriteString(s + "\n")
-		if strings.Contains(s, "FET_VERSION=") {
-			okv = true
+	fetrunner.Dispatch("GET_FET|" + *fetpath + "|")
+	if len(fet.FETPATH) == 0 {
+		base.LogError("--NO_FET")
+		return
+	}
+	fetrunner.Dispatch("SET_FILE|" + abspath)
+	if len(base.DataBase.Name) == 0 {
+		return
+	}
+	fetrunner.Dispatch("RUN_TT_SOURCE")
+
+	fetrunner.Dispatch("TT_HARD_CONSTRAINTS")
+	fetrunner.Dispatch("TT_SOFT_CONSTRAINTS")
+	fetrunner.Dispatch("TT_ACTIVITIES")
+
+	go termination() // catch stop signal
+
+	fetrunner.Dispatch("RUN_TT")
+	cancelled := false
+	for {
+		if !cancelled && stop_request {
+			fetrunner.Dispatch("_STOP_TT")
+			cancelled = true // necessary because this loop is exited only later
+		}
+
+		// Continue looping until log reader closed.
+		if base.LogWaitTicker() == "" {
+			break
 		}
 	}
-	if !ok {
-		return
-	}
-	if !okv {
-		logfile.WriteString(base.ERROR.String() + " NO_FET\n")
-		return
-	}
-
-	if !do("SET_FILE", abspath) {
-		return
-	}
-	do("RUN_TT_SOURCE")
-
-	do("TT_HARD_CONSTRAINTS")
-	do("TT_SOFT_CONSTRAINTS")
-	do("TT_ACTIVITIES")
-
-	go fetrunner.Termination()
-	fetrunner.RunLoop(do)
 }
 
-func do(op string, data ...string) bool {
-	strs, ok := fetrunner.Do(op, data...)
-	for _, s := range strs {
-		logfile.WriteString(s + "\n")
-	}
-	return ok
+// Catch "terminate" signal (goroutine)
+var stop_request bool = false
+
+func termination() {
+	// Catch termination signal
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
+	<-sigChan // wait for signal
+	stop_request = true
 }

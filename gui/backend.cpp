@@ -3,82 +3,98 @@
 #include "../libfetrunner/libfetrunner.h"
 //#include <iostream>
 
-QMap<QString, QColor> colours{
-    // display colours for the log
-    {"*INFO*", "#009000"},
-    {"*WARNING*", "#eb8900"},
-    {"*ERROR*", "#d00000"},
-    {"+++", "#000000"},
-    {"$", "#53a0ff"},
-};
+// display colours for the log
+QMap<QString, QColor> colours{{"*INFO*", "#009000"},
+                              {"*WARNING*", "#eb8900"},
+                              {"*ERROR*", "#d00000"},
+                              {"+++", "#000000"},
+                              {"***", "#000000"},
+                              {"---", "#000000"},
+                              {"$", "#53a0ff"}};
 
 Backend::Backend()
     : QObject()
 {}
-
 Backend *backend;
 
 QList<KeyVal> Backend::op(QString cmd, QStringList data)
 {
+    if (!data.empty()) {
+        cmd += "|" + data.join("|");
+    }
+    FetRunnerCommand(cmd.toUtf8().data());
+
+    // Collect log up to "---" or "***"
     QList<KeyVal> results;
-    auto darray = QJsonArray::fromStringList(data);
-    //emit log("+++ " + cmd + " [" + data.join(", ") + "]");
-    //qDebug() << QString{"+++ "} + cmd << darray;
-    QJsonObject cmdobj{{"Op", cmd}, {"Data", darray}};
-    QJsonDocument doc(cmdobj);
-    auto cs = doc.toJson(QJsonDocument::Compact);
-    auto result = FetRunner(cs.data());
-    //std::cout << "<<<" << cs.data() << std::endl;
-    //std::cout << ">>>" << result << std::endl;
-    auto jsondoc = QJsonDocument::fromJson(result);
-    if (!jsondoc.isArray()) {
-        // This needs to be thread-safe, so use a signal.
-        emit error(QString{"BackendReturnError: "} + result);
-    } else {
-        QStringList errors;
-        for (auto &&c : jsondoc.array()) {
-            auto e = c.toObject();
-            auto key = e["Type"].toString();
-            auto val = e["Text"].toString();
-            auto t0 = key + " " + val;
-            emit logcolour(colours.value(key, QColor{0x76, 0x5e, 0xff}));
-            emit log(t0);
-            if (key == "*ERROR*") {
-                errors.append(val);
-                continue;
-            }
-            if (key == "$") {
-                // a result
-                auto n = val.indexOf('=');
-                if (n < 0) {
-                    errors.append(QString{"BUG in backend result: "} + t0);
-                } else {
-                    key = val.left(n);
-                    val = val.right(val.length() - n - 1);
-                    results.append({key, val});
-                    //qDebug() << "$$$" << key << "=" << val;
-                }
-                continue;
-            }
-            if (key == "+++") {
-                //std::cout << "+++ " << qUtf8Printable(val) << std::endl;
-                continue;
-            }
-            // else:
-            //messages.append(key + " " + val);
-            //std::cout << ">>> " << qUtf8Printable(key) << " " << qUtf8Printable(val) << std::endl;
+    QStringList errors;
+    while (true) {
+        auto key_val = readlogline();
+        auto key = key_val.key;
+        if (key == "+++")
+            continue;
+        if (key == "---" || key == "***")
+            break;
+        auto val = key_val.val;
+        if (key == "*ERROR*") {
+            errors.append(val);
+            continue;
         }
-        if (!errors.empty()) {
-            if (errors.length() > 5) {
-                auto elist = errors;
-                errors = QStringList();
-                errors << elist[0] << elist[1] << elist[2] << elist[3] << elist[4];
-                errors << "...";
+        if (key == "$") {
+            // a result
+            auto rkv = readresult(val);
+            if (rkv.key.isEmpty()) {
+                errors.append(rkv.val);
+            } else {
+                results.append(rkv);
             }
-            emit error(errors.join("\n"));
+            //continue;
         }
     }
+    if (!errors.empty()) {
+        if (errors.length() > 5) {
+            auto elist = errors;
+            errors = QStringList();
+            errors << elist[0] << elist[1] << elist[2] << elist[3] << elist[4];
+            errors << "...";
+        }
+        emit error(errors.join("\n"));
+    }
     return results;
+}
+
+KeyVal Backend::readresult(QString r)
+{
+    auto n = r.indexOf('=');
+    if (n < 0)
+        return KeyVal{"", QString{"BUG in backend result: "} + logline};
+    auto rkey = r.left(n);
+    auto rval = r.right(r.length() - n - 1);
+    return KeyVal{rkey, rval};
+}
+
+KeyVal Backend::readlogline()
+{
+    while (true) {
+        logline = QString(FetRunnerReadLog());
+        if (logline.length() != 0 && logline.at(0) != " ")
+            break;
+        emit log(logline); // write to log without change of colour
+    }
+    auto i = logline.indexOf(" ");
+    QString msgtype, msgrest;
+    if (i < 0) {
+        // there is only the type
+        msgtype = logline;
+        msgrest = "";
+    } else {
+        // split into message-type and rest
+        msgtype = logline.left(i);
+        msgrest = logline.right(logline.length() - i - 1);
+    }
+    // The type determines the display colour.
+    emit logcolour(colours.value(msgtype, QColor{0x76, 0x5e, 0xff}));
+    emit log(logline.replace("||", "\n + ")); // write to log
+    return KeyVal{msgtype, msgrest};
 }
 
 // Run an op, expect a single result whose key may be specified.

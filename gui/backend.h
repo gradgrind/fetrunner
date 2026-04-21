@@ -23,9 +23,16 @@ public:
     //~Backend();
 
     QList<KeyVal> op(QString cmd, QStringList data = {});
+    KeyVal readlogline();
+    KeyVal readresult(QString r);
+
+    //TODO-- QList<KeyVal> op(QString cmd, QStringList data = {});
     KeyVal op1(QString cmd, QStringList data = {}, QString key = {});
     QString getConfig(QString key, QString fallback = {});
     void setConfig(QString key, QString val);
+
+private:
+    QString logline;
 
 signals:
     void logcolour(QColor);

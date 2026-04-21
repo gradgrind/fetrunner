@@ -4,14 +4,13 @@ import (
     "fetrunner/internal/base"
 )
 
-func (dbi *W365TopLevel) readLessons(newdb *base.BaseData) {
-    logger := newdb.Logger
+func (dbi *W365TopLevel) readLessons() {
     for _, e := range dbi.Lessons {
         // The course must be Course or SuperCourse.
         _, ok := dbi.CourseMap[e.Course]
         if !ok {
-            logger.Error(
-                "Lesson %s:\n  Invalid course: %s",
+            base.LogError(
+                "--W365_LESSON_HAS_INVALID_COURSE Lesson: %s, Course: %s",
                 e.Id, e.Course)
             continue
         }
@@ -22,17 +21,17 @@ func (dbi *W365TopLevel) readLessons(newdb *base.BaseData) {
             if ok {
                 reflist = append(reflist, rref)
             } else {
-                logger.Error(
-                    "Invalid Room in Lesson %s:\n  %s",
+                base.LogError(
+                    "--W365_INVALID_ROOM Lesson: %s, Room: %s",
                     e.Id, rref)
             }
         }
-        n := newdb.NewActivity(e.Id)
+        n := base.NewActivity(e.Id)
         n.Course = e.Course
         n.Duration = e.Duration
 
         // +++ Add constraints ...
-        ndb := newdb.Db
+        ndb := base.DataBase.Db
 
         if e.Day >= 0 && e.Hour >= 0 {
             if e.Fixed {

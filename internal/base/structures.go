@@ -13,10 +13,6 @@
 package base
 
 type BaseData struct {
-	Id       string // empty for single-data-set usage
-	Logger   *Logger
-	StopFlag bool // used to interrupt long-running processes
-
 	SourceDir string // the directory containing the source file
 	Name      string // the name of this data set, derived from the source file name
 	Source    SourceData

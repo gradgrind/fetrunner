@@ -1,6 +1,7 @@
 package autotimetable
 
 import (
+	"fetrunner/internal/base"
 	"fmt"
 	"strconv"
 )
@@ -44,7 +45,7 @@ func (attdata *AutoTtData) update_queue() int {
 		if instance.Finished {
 			// This is the final end of this instance, it is removed from
 			// the "active" list.
-			if !attdata.Parameters.DEBUG {
+			if !TtParameters.DEBUG {
 				instance.InstanceBackend.Clear()
 			}
 		} else {
@@ -58,7 +59,7 @@ func (attdata *AutoTtData) update_queue() int {
 	attdata.active_instances = attdata.active_instances[0:insert_index]
 
 	// Try to start queued instances
-	maxprocesses := attdata.Parameters.MAXPROCESSES
+	maxprocesses := TtParameters.MAXPROCESSES
 	for running < maxprocesses {
 		// Start next pending instance.
 		if !attdata.start_queued_instance() {
@@ -128,7 +129,7 @@ func (attdata *AutoTtData) start_queued_instance() bool {
 // Split the first instance in the run queue, starting the first half.
 func (attdata *AutoTtData) split() {
 	instance := attdata.run_queue[attdata.run_queue_next]
-	attdata.BaseData.Logger.Info("(SPLIT) %d:%s (%d)",
+	base.LogInfo("(SPLIT) %d:%s (%d)",
 		instance.Index, instance.ConstraintType, instance.RunState)
 
 	//TODO: Is this really the best place to handle this case?

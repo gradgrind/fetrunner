@@ -1,8 +1,10 @@
 package autotimetable
 
 import (
+	"fetrunner/internal/base"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -83,7 +85,6 @@ is finished.
 
 // Enter new phase.
 func (attdata *AutoTtData) enter_phase(p int) {
-	bdata := attdata.BaseData
 	// Adjust the initial time-out guideline.
 	if attdata.current_instance == nil {
 		attdata.cycle_timeout = MIN_TIMEOUT
@@ -91,11 +92,11 @@ func (attdata *AutoTtData) enter_phase(p int) {
 		attdata.cycle_timeout = (max(
 			MIN_TIMEOUT,
 			attdata.cycle_timeout,
-			attdata.current_instance.Ticks) * attdata.Parameters.NEW_PHASE_TIMEOUT_FACTOR) / 10
+			attdata.current_instance.Ticks) * TtParameters.NEW_PHASE_TIMEOUT_FACTOR) / 10
 	}
 
 	attdata.phase = p
-	bdata.Logger.Result(".PHASE", strconv.Itoa(p))
+	base.LogResult(".PHASE", strconv.Itoa(p))
 
 	// Abort special instances which are no longer relevant.
 	// Note that anything halted here will not be restarted, because this
@@ -137,8 +138,6 @@ func (attdata *AutoTtData) enter_phase(p int) {
 }
 
 func (attdata *AutoTtData) tick_phase() bool {
-	bdata := attdata.BaseData
-	logger := bdata.Logger
 	p := attdata.phase
 	if p >= PHASE_FINISHED {
 		panic("Bug, tick_phase in PHASE_FINISHED+")
@@ -146,13 +145,13 @@ func (attdata *AutoTtData) tick_phase() bool {
 	if attdata.full_instance.RunState == INSTANCE_SUCCESSFUL {
 		// Set as current and prepare to wind up process.
 		attdata.current_instance = attdata.full_instance
-		logger.Result(".ALL_OK", "All constraints OK")
+		base.LogResult(".ALL_OK", "All constraints OK")
 		attdata.new_current_instance()
 		attdata.enter_phase(PHASE_FINISHED)
 		return true
 	}
 	if attdata.hard_instance.RunState == INSTANCE_SUCCESSFUL {
-		logger.Result(".HARD_OK", "All hard constraints OK")
+		base.LogResult(".HARD_OK", "All hard constraints OK")
 		if p == PHASE_SOFT {
 			// If `hard_instance` is no longer `current_instance` it should have been halted,
 			// and thus have a different run state.
@@ -173,7 +172,7 @@ func (attdata *AutoTtData) tick_phase() bool {
 		if attdata.priority_instance != nil && attdata.priority_instance.RunState == INSTANCE_SUCCESSFUL {
 			// Set as current and prepare for processing remaining hard constraints.
 			attdata.current_instance = attdata.priority_instance
-			bdata.Logger.Result(".PRIORITY_OK", "All priority constraints OK")
+			base.LogResult(".PRIORITY_OK", "All priority constraints OK")
 			attdata.new_current_instance()
 			attdata.enter_phase(PHASE_HARD)
 			return true
@@ -185,12 +184,12 @@ func (attdata *AutoTtData) tick_phase() bool {
 			if attdata.null_instance != attdata.current_instance {
 				panic("current_instance should be null_instance")
 			}
-			logger.Result(".NULL_OK", "Without constraints OK")
+			base.LogResult(".NULL_OK", "Without constraints OK")
 			attdata.new_current_instance()
 			// Don't change phase.
 		case INSTANCE_FAILED:
-			logger.Error("--UNCONSTRAINED_FAILED:\n:::+\n%s\n:::-",
-				attdata.null_instance.Message)
+			base.LogError("--UNCONSTRAINED_FAILED\n%s\n ***",
+				strings.TrimSpace(attdata.null_instance.Message))
 			attdata.enter_phase(PHASE_FINISHED)
 			return true
 		}
@@ -236,9 +235,6 @@ If there are no more instances to run, return `true`, so that the next phase
 can be entered. Otherwise return `false`.
 */
 func (attdata *AutoTtData) phase_main() bool {
-	bdata := attdata.BaseData
-	logger := bdata.Logger
-
 	var (
 		// Gather all unsuccessfully ended constraints here, whether with a single
 		// or >1 constraints, timed out or with error.
@@ -268,7 +264,7 @@ func (attdata *AutoTtData) phase_main() bool {
 				attdata.new_current_instance()
 				new_cycle = true
 				attdata.cycle_timeout = max(
-					(instance.Ticks*attdata.Parameters.NEW_BASE_TIMEOUT_FACTOR)/10,
+					(instance.Ticks*TtParameters.NEW_BASE_TIMEOUT_FACTOR)/10,
 					attdata.cycle_timeout)
 			} else {
 				// This will need restarting in the new cycle.
@@ -334,8 +330,8 @@ func (attdata *AutoTtData) phase_main() bool {
 				} else {
 					attdata.ConstraintErrors[instance.Constraints[0]] = "UnknownFailure"
 				}
-				logger.Info("InstanceFailed: %d\n:::+\n%s\n:::-", instance.Index, instance.Message)
-				logger.Result(
+				base.LogInfo("InstanceFailed: %d\n:::+\n%s\n:::-", instance.Index, instance.Message)
+				base.LogResult(
 					".ELIMINATE", fmt.Sprintf("%s.%d",
 						attdata.Backend.ConstraintName(instance),
 						instance.Constraints[0]))
@@ -344,7 +340,7 @@ func (attdata *AutoTtData) phase_main() bool {
 				attdata.timed_out_instances = append(attdata.timed_out_instances, instance)
 				//TODO: At present these are not used, but there may be circumstances
 				// under which they should be tried again?
-				logger.Result(".TIMED_OUT", fmt.Sprintf("%s.%d.%d.%d",
+				base.LogResult(".TIMED_OUT", fmt.Sprintf("%s.%d.%d.%d",
 					attdata.Backend.ConstraintName(instance),
 					instance.Constraints[0],
 					instance.Progress, instance.Ticks))

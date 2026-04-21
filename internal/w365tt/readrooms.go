@@ -7,9 +7,8 @@ import (
     "strings"
 )
 
-func (dbi *W365TopLevel) readRooms(newdb *base.BaseData) {
-    logger := newdb.Logger
-    ndb := newdb.Db
+func (dbi *W365TopLevel) readRooms() {
+    ndb := base.DataBase.Db
     dbi.RealRooms = map[NodeRef]*base.Room{}
     dbi.RoomTags = map[string]NodeRef{}
     dbi.RoomChoiceNames = map[string]NodeRef{}
@@ -18,8 +17,8 @@ func (dbi *W365TopLevel) readRooms(newdb *base.BaseData) {
     rloop:
         _, nok := dbi.RoomTags[e.Tag]
         if nok {
-            logger.Error(
-                "Room Tag (Shortcut) defined twice: %s",
+            base.LogError(
+                "--W365_ROOM_TAG_DEFINED_TWICE %s",
                 e.Tag)
             e.Tag += "$"
             goto rloop
@@ -27,7 +26,7 @@ func (dbi *W365TopLevel) readRooms(newdb *base.BaseData) {
         dbi.RoomTags[e.Tag] = e.Id
         // Copy to base db.
         tsl := dbi.handleZeroAfternoons(e.NotAvailable, 1)
-        r := newdb.NewRoom(e.Id)
+        r := base.NewRoom(e.Id)
         r.Tag = e.Tag
         r.Name = e.Name
         if len(tsl) != 0 {
@@ -39,16 +38,15 @@ func (dbi *W365TopLevel) readRooms(newdb *base.BaseData) {
 }
 
 // In the case of RoomGroups, cater for empty Tags (Shortcuts).
-func (dbi *W365TopLevel) readRoomGroups(newdb *base.BaseData) {
-    logger := newdb.Logger
+func (dbi *W365TopLevel) readRoomGroups() {
     dbi.RoomGroupMap = map[NodeRef]*base.RoomGroup{}
     for _, e := range dbi.RoomGroups {
         if e.Tag != "" {
         rloop:
             _, nok := dbi.RoomTags[e.Tag]
             if nok {
-                logger.Error(
-                    "Room Tag (Shortcut) defined twice: %s",
+                base.LogError(
+                    "--W365_ROOM_TAG_DEFINED_TWICE %s",
                     e.Tag)
                 e.Tag += "$"
                 goto rloop
@@ -56,7 +54,7 @@ func (dbi *W365TopLevel) readRoomGroups(newdb *base.BaseData) {
             dbi.RoomTags[e.Tag] = e.Id
         }
         // Copy to base db.
-        r := newdb.NewRoomGroup(e.Id)
+        r := base.NewRoomGroup(e.Id)
         r.Tag = e.Tag
         r.Name = e.Name
         r.Rooms = e.Rooms
@@ -65,9 +63,8 @@ func (dbi *W365TopLevel) readRoomGroups(newdb *base.BaseData) {
 }
 
 // Call this after all room types have been "read".
-func (dbi *W365TopLevel) checkRoomGroups(newdb *base.BaseData) {
-    logger := newdb.Logger
-    for _, e := range newdb.Db.RoomGroups {
+func (dbi *W365TopLevel) checkRoomGroups() {
+    for _, e := range base.DataBase.Db.RoomGroups {
         // Collect the Ids and Tags of the component rooms.
         taglist := []string{}
         reflist := []NodeRef{}
@@ -79,8 +76,8 @@ func (dbi *W365TopLevel) checkRoomGroups(newdb *base.BaseData) {
                 continue
 
             }
-            logger.Error(
-                "Invalid Room in RoomGroup %s:\n  %s",
+            base.LogError(
+                "--W365_INVALID_ROOM_IN_ROOM_GROUP RoomGroup: %s, Room: %s",
                 e.Tag, rref)
         }
         if e.Tag == "" {
@@ -110,10 +107,7 @@ func (dbi *W365TopLevel) checkRoomGroups(newdb *base.BaseData) {
     }
 }
 
-func (dbi *W365TopLevel) makeRoomChoiceGroup(
-    newdb *base.BaseData,
-    rooms []NodeRef,
-) (NodeRef, string) {
+func (dbi *W365TopLevel) makeRoomChoiceGroup(rooms []NodeRef) (NodeRef, string) {
     erlist := []string{} // Error messages
     // Collect the Ids and Tags of the component rooms.
     taglist := []string{}
@@ -145,7 +139,7 @@ func (dbi *W365TopLevel) makeRoomChoiceGroup(
             }
         }
         // Add new Element
-        r := newdb.NewRoomChoiceGroup("")
+        r := base.NewRoomChoiceGroup("")
         id = r.Id
         r.Tag = tag
         r.Name = name
