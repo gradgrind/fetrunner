@@ -100,6 +100,14 @@ func LogToFile(logfile *os.File) {
 	go logToFile()
 }
 
+// The basic logging function, the entries must be read externally using `LogTake()`.
+func LogBasic() {
+	logger = &loggerBase{
+		// The channel buffer should be large enough for the writer not to be held up.
+		ch: make(chan string, 100),
+	}
+}
+
 func logToFile() {
 	// Read from log channel until an OP_QUIT is received, writing the log lines
 	// to the output file.

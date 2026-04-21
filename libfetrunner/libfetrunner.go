@@ -30,4 +30,8 @@ func FetRunnerReadLog() *C.char {
 	return cmsg
 }
 
+func init() {
+	base.LogBasic()
+}
+
 func main() {}
