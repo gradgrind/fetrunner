@@ -169,11 +169,13 @@ func main() {
 			cancelled = true // necessary because this loop is exited only later
 		}
 
-		// Continue looping until log reader closed.
-		if base.LogWaitTicker() == "" {
+		// Continue looping until run finished, using the ticker to slow down the loop.
+		base.LogWaitTicker()
+		if !base.LogRunning() {
 			break
 		}
 	}
+	base.LogStop()
 }
 
 // Catch "terminate" signal (goroutine)
