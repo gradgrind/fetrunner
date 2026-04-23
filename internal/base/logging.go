@@ -84,6 +84,7 @@ func SetStopFlag(on bool) {
 
 func LogStop() {
 	log(OP_QUIT)
+	<-logger.ticker
 }
 
 func GetStopFlag() bool {
@@ -117,8 +118,7 @@ func logToFile() {
 		if strings.HasPrefix(line, "$ .TICK=") {
 			_, t, _ := strings.Cut(line, "=")
 			logger.ticker <- t
-		}
-		if line == OP_QUIT {
+		} else if line == OP_QUIT {
 			close(logger.ticker)
 			break
 		}

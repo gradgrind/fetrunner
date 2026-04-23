@@ -169,9 +169,9 @@ func main() {
 			cancelled = true // necessary because this loop is exited only later
 		}
 
-		// Continue looping until run finished.
-		if base.LogWaitTicker() == "-1" {
-			//if !base.LogRunning() {
+		// Continue looping until run finished, using the ticker to slow down the loop.
+		base.LogWaitTicker()
+		if !base.LogRunning() {
 			break
 		}
 	}
