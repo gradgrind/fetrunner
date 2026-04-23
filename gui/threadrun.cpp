@@ -13,8 +13,7 @@ void RunThreadWorker::ttrun()
 
     /* ... here is the long-running operation ... */
 
-    bool done = false;
-    while (!done) {
+    while (true) {
         if (stopFlag && !stopped) {
             backend->op("_STOP_TT");
             stopped = true;
@@ -25,7 +24,6 @@ void RunThreadWorker::ttrun()
             auto kvr = backend->readresult(kv.val);
             if (kvr.key == ".TICK") {
                 if (kvr.val == "-1") {
-                    //done = true;
                     emit ticker("");
                 } else {
                     //qDebug() << "???" << kvr.val;
@@ -45,7 +43,7 @@ void RunThreadWorker::ttrun()
                 emit ieliminate(kvr.val);
             }
         } else if (kv.key == "---")
-            done = true;
+            break;
     }
     emit runThreadWorkerDone();
 }
