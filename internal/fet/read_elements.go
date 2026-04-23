@@ -79,7 +79,7 @@ func (sourcefet *TtSourceFet) read_elements(fetroot *etree.Element) {
 				// The class is an atomic group.
 				agi := len(atomic_groups)
 				students2atomics[id] = []int{agi}
-				fmt.Printf("§ %s -> %v\n", id, students2atomics[id])
+				//fmt.Printf("§ %s -> %v\n", id, students2atomics[id])
 				atomic_groups = append(atomic_groups, id)
 				class_ags = append(class_ags, agi)
 			} else {
@@ -90,7 +90,7 @@ func (sourcefet *TtSourceFet) read_elements(fetroot *etree.Element) {
 						// The group is an atomic group.
 						agi := len(atomic_groups)
 						students2atomics[gtag] = []int{agi}
-						fmt.Printf("§ %s -> %v\n", gtag, students2atomics[gtag])
+						//fmt.Printf("§ %s -> %v\n", gtag, students2atomics[gtag])
 						class_ags = append(class_ags, agi)
 						atomic_groups = append(atomic_groups, gtag)
 					} else {
@@ -107,18 +107,18 @@ func (sourcefet *TtSourceFet) read_elements(fetroot *etree.Element) {
 								agi = agil[0]
 							} else {
 								students2atomics[sgtag] = []int{agi}
-								fmt.Printf("§ %s -> %v\n", sgtag, students2atomics[sgtag])
+								//fmt.Printf("§ %s -> %v\n", sgtag, students2atomics[sgtag])
 								atomic_groups = append(atomic_groups, sgtag)
 								class_ags = append(class_ags, agi)
 							}
 							group_ags = append(group_ags, agi)
 						}
 						students2atomics[gtag] = group_ags
-						fmt.Printf("§ %s -> %v\n", gtag, students2atomics[gtag])
+						//fmt.Printf("§ %s -> %v\n", gtag, students2atomics[gtag])
 					}
 				}
 				students2atomics[id] = class_ags
-				fmt.Printf("§ %s -> %v\n", id, students2atomics[id])
+				//fmt.Printf("§ %s -> %v\n", id, students2atomics[id])
 			}
 
 			items = append(items, &autotimetable.TtClass{

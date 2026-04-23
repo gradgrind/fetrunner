@@ -13,8 +13,7 @@ void RunThreadWorker::ttrun()
 
     /* ... here is the long-running operation ... */
 
-    bool done = false;
-    while (!done) {
+    while (true) {
         if (stopFlag && !stopped) {
             backend->op("_STOP_TT");
             stopped = true;
@@ -24,13 +23,8 @@ void RunThreadWorker::ttrun()
         if (kv.key == "$") {
             auto kvr = backend->readresult(kv.val);
             if (kvr.key == ".TICK") {
-                if (kvr.val == "-1") {
-                    //done = true;
-                    emit ticker("");
-                } else {
-                    //qDebug() << "???" << kvr.val;
-                    emit ticker(kvr.val);
-                }
+                //qDebug() << "???" << kvr.val;
+                emit ticker(kvr.val);
             } else if (kvr.key == ".NCONSTRAINTS") {
                 emit nconstraints(kvr.val);
             } else if (kvr.key == ".PROGRESS") {
@@ -44,8 +38,10 @@ void RunThreadWorker::ttrun()
             } else if (kvr.key == ".ELIMINATE") {
                 emit ieliminate(kvr.val);
             }
-        } else if (kv.key == "---")
-            done = true;
+        } else if (kv.key == "---") {
+            emit ticker("");
+            break;
+        }
     }
     emit runThreadWorkerDone();
 }
