@@ -2,6 +2,7 @@ package autotimetable
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -28,12 +29,14 @@ func (attdata *AutoTtData) GetPlacements() []string {
 		for _, g := range a.Groups {
 			glist = append(glist, g.Tag)
 		}
-		nag := len(a.AtomicGroupIndexes)
-		l := a.Duration
-
-		placements = append(placements, fmt.Sprintf("%d:%d:%d:%s:%s:%d:%s%s",
-			di, hi, l, sbj,
-			strings.Join(glist, ","), nag,
+		aglist := []string{}
+		for _, ag := range a.AtomicGroupIndexes {
+			aglist = append(aglist, strconv.Itoa(ag))
+		}
+		placements = append(placements, fmt.Sprintf("%d:%d:%d:%s:%s:%s:%s:%s",
+			di, hi, a.Duration, sbj,
+			strings.Join(glist, ","),
+			strings.Join(aglist, ","),
 			strings.Join(tlist, ","),
 			strings.Join(rlist, ",")))
 	}

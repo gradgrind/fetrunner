@@ -169,11 +169,21 @@ func main() {
 			cancelled = true // necessary because this loop is exited only later
 		}
 
-		// Continue looping until log reader closed.
-		if base.LogWaitTicker() == "" {
+		// Continue looping until run finished.
+		if base.LogWaitTicker() == "-1" {
+			//if !base.LogRunning() {
 			break
 		}
 	}
+
+	//TODO-- just testing the new functions
+	fmt.Println("Done")
+	fetrunner.Dispatch("DAYS")
+	fetrunner.Dispatch("HOURS")
+	fetrunner.Dispatch("CLASSES")
+	fetrunner.Dispatch("PLACEMENTS")
+
+	base.LogStop()
 }
 
 // Catch "terminate" signal (goroutine)
