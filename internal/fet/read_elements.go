@@ -67,13 +67,69 @@ func (sourcefet *TtSourceFet) read_elements(fetroot *etree.Element) {
 
 	{
 		items := []*autotimetable.TtClass{}
+		atomic_groups := []string{}
+		students2atomics := map[string][]int{}
 		for _, e := range fetroot.SelectElement("Students_List").SelectElements("Year") {
 			id := e.SelectElement("Name").Text()
+
+			// Read groups and subgroups, collect atomic groups
+			class_ags := []int{}
+			gel_list := e.SelectElements("Group")
+			if len(gel_list) == 0 {
+				// The class is an atomic group.
+				agi := len(atomic_groups)
+				students2atomics[id] = []int{agi}
+				fmt.Printf("§ %s -> %v\n", id, students2atomics[id])
+				atomic_groups = append(atomic_groups, id)
+				class_ags = append(class_ags, agi)
+			} else {
+				for _, g := range gel_list {
+					gtag := g.SelectElement("Name").Text()
+					sgel_list := g.SelectElements("Subgroup")
+					if len(sgel_list) == 0 {
+						// The group is an atomic group.
+						agi := len(atomic_groups)
+						students2atomics[gtag] = []int{agi}
+						fmt.Printf("§ %s -> %v\n", gtag, students2atomics[gtag])
+						class_ags = append(class_ags, agi)
+						atomic_groups = append(atomic_groups, gtag)
+					} else {
+						group_ags := []int{}
+						for _, sg := range sgel_list {
+							// These are all atomic groups, but drop repeats.
+							sgtag := sg.SelectElement("Name").Text()
+							agi := len(atomic_groups)
+							agil, ok := students2atomics[sgtag]
+							if ok {
+								if len(agil) != 1 {
+									panic("TODO: invalid year/group/subgroup structure")
+								}
+								agi = agil[0]
+							} else {
+								students2atomics[sgtag] = []int{agi}
+								fmt.Printf("§ %s -> %v\n", sgtag, students2atomics[sgtag])
+								atomic_groups = append(atomic_groups, sgtag)
+								class_ags = append(class_ags, agi)
+							}
+							group_ags = append(group_ags, agi)
+						}
+						students2atomics[gtag] = group_ags
+						fmt.Printf("§ %s -> %v\n", gtag, students2atomics[gtag])
+					}
+				}
+				students2atomics[id] = class_ags
+				fmt.Printf("§ %s -> %v\n", id, students2atomics[id])
+			}
+
 			items = append(items, &autotimetable.TtClass{
-				Id: base.NodeRef("Class:" + id), Tag: id})
-			//TODO: the other fields?: AtomicIndexes []AtomicIndex, Groups []*TtGroup
+				Id:            base.NodeRef("Class:" + id),
+				Tag:           id,
+				AtomicIndexes: class_ags})
+			//TODO: Groups []*autotimetable.TtGroup
 		}
 		sourcefet.classes = items
+		sourcefet.atomic_groups = atomic_groups
+		sourcefet.students2atomics = students2atomics
 	}
 }
 
@@ -102,9 +158,11 @@ func (sourcefet *TtSourceFet) read_activities(fetroot *etree.Element) int {
 			//a_elements = append(a_elements, a)
 			id := a.SelectElement("Id").Text()
 			glist := []element{}
+			aglist := []int{}
 			for _, g := range a.SelectElements("Students") {
 				gt := g.Text()
 				glist = append(glist, element{Id: "Group:" + NodeRef(gt), Tag: gt})
+				aglist = append(aglist, sourcefet.students2atomics[gt]...)
 			}
 			tlist := []autotimetable.TeacherIndex{}
 			for _, t := range a.SelectElements("Teacher") {
@@ -120,11 +178,11 @@ func (sourcefet *TtSourceFet) read_activities(fetroot *etree.Element) int {
 				Tag: id, // In this case, this field is set here, for the "FET" back-end.
 				// Although they are not strictly required, the remaining fields can
 				// make reading the JSON result file easier.
-				Duration: readInt(a.SelectElement("Duration").Text()),
-				Subject:  a.SelectElement("Subject").Text(),
-				Groups:   glist,
-				//AtomicGroupIndexes: []AtomicIndex,
-				Teachers: tlist,
+				Duration:           readInt(a.SelectElement("Duration").Text()),
+				Subject:            a.SelectElement("Subject").Text(),
+				Groups:             glist,
+				AtomicGroupIndexes: aglist,
+				Teachers:           tlist,
 			})
 		} else {
 			inactive++

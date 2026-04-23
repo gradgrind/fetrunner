@@ -49,12 +49,14 @@ type TtSourceFet struct {
 	hardConstraintMap map[constraintType][]constraintIndex
 	softConstraintMap map[constraintType][]constraintIndex
 
-	days     []element
-	hours    []element
-	subjects []element
-	teachers []element
-	classes  []*autotimetable.TtClass
-	rooms    []element
+	days             []element
+	hours            []element
+	subjects         []element
+	teachers         []element
+	classes          []*autotimetable.TtClass
+	atomic_groups    []string
+	rooms            []element
+	students2atomics map[string][]int
 }
 
 func (sourcefet *TtSourceFet) GetDays() []element {
@@ -85,7 +87,7 @@ func (sourcefet *TtSourceFet) GetClasses() []*autotimetable.TtClass {
 // I guess it should be possible to implement this properly (didn't I do it
 // somewhere already?), but it might not be necessary ...
 func (sourcefet *TtSourceFet) GetAtomicGroups() []string {
-	return nil
+	return sourcefet.atomic_groups
 }
 
 func (sourcefet *TtSourceFet) GetActivities() []*ttActivity {
