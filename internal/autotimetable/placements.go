@@ -8,6 +8,9 @@ import (
 
 func (attdata *AutoTtData) GetPlacements() []string {
 	placements := []string{}
+	if attdata.lastResult == nil {
+		return nil
+	}
 	activities := attdata.lastResult.Activities
 	teachers := attdata.lastResult.Teachers
 	rooms := attdata.lastResult.Rooms
