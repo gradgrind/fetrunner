@@ -23,12 +23,8 @@ void RunThreadWorker::ttrun()
         if (kv.key == "$") {
             auto kvr = backend->readresult(kv.val);
             if (kvr.key == ".TICK") {
-                if (kvr.val == "-1") {
-                    emit ticker("");
-                } else {
-                    //qDebug() << "???" << kvr.val;
-                    emit ticker(kvr.val);
-                }
+                //qDebug() << "???" << kvr.val;
+                emit ticker(kvr.val);
             } else if (kvr.key == ".NCONSTRAINTS") {
                 emit nconstraints(kvr.val);
             } else if (kvr.key == ".PROGRESS") {
@@ -42,8 +38,10 @@ void RunThreadWorker::ttrun()
             } else if (kvr.key == ".ELIMINATE") {
                 emit ieliminate(kvr.val);
             }
-        } else if (kv.key == "---")
+        } else if (kv.key == "---") {
+            emit ticker("");
             break;
+        }
     }
     emit runThreadWorkerDone();
 }
