@@ -177,11 +177,13 @@ func main() {
 	}
 
 	//TODO-- just testing the new functions
-	fmt.Println("Done")
-	fetrunner.Dispatch("DAYS")
-	fetrunner.Dispatch("HOURS")
-	fetrunner.Dispatch("CLASSES")
-	fetrunner.Dispatch("PLACEMENTS")
+	//fmt.Println("Done")
+	//fetrunner.Dispatch("DAYS")
+	//fetrunner.Dispatch("HOURS")
+	//fetrunner.Dispatch("CLASSES")
+	//fetrunner.Dispatch("CLASS_PLACEMENTS|11")
+	//fetrunner.Dispatch("TEACHER_PLACEMENTS|32")
+	//fetrunner.Dispatch("ROOM_PLACEMENTS|28")
 
 	base.LogStop()
 }

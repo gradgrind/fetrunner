@@ -2,28 +2,73 @@ package autotimetable
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 )
 
-func (attdata *AutoTtData) GetPlacements() []string {
-	placements := []string{}
-	if attdata.lastResult == nil {
-		return nil
-	}
+const (
+	PF_DAY = iota
+	PF_HOUR
+	PF_LENGTH
+	PF_SUBJECT
+	PF_GROUPS
+	PF_ATOMICS
+	PF_TEACHERS
+	PF_ROOMS
+)
+
+/*
+
+Each placement represents an activity, which will be placed in one or more
+consecutive timetable slots. For the classes the matter is complicated by the
+possible division of a class into groups, perhaps in more than one way. This
+can make the placement of the corresponding tiles within a timetable slot rather
+complicated. Depending on the size allocated to each slot, there will be a
+limit to the number of tiles that can be placed legibly within a slot.
+
+TODO ...
+
+At first I will concentrate on timetable displays for single classes, teachers
+and rooms. A timetable for a single group is probably not that helpful in many
+cases, because a group can contain students from several other groups (from other
+class divisions), so it probably wouldn't really be clearer than a view of the
+whole class.
+
+At first I should probably develop functions to select the tiles (placements)
+to appear in a single timetable. For classes with groups a further function
+would be needed to determine order and sizing of the tiles.
+
+Whether to build indexable data structures from the placements, or just search
+the list each time?
+
+*/
+
+type PlacementData struct {
+	Subject  string
+	Day      int
+	Hour     int
+	Length   int
+	Teachers []string
+	Groups   []string
+	Rooms    []string
+	Atomics  []int
+}
+
+// Select a group of placements given their indexes.
+func (attdata *AutoTtData) placements_selected(pixlist []int) []*PlacementData {
 	activities := attdata.lastResult.Activities
 	teachers := attdata.lastResult.Teachers
 	rooms := attdata.lastResult.Rooms
-	for _, p := range attdata.lastResult.Placements {
-		ai := p.Activity
-		di := p.Day
-		hi := p.Hour
+	placements := attdata.lastResult.Placements
+	pdlist := []*PlacementData{}
+	for _, pix := range pixlist {
+		p := placements[pix]
 		rlist := []string{}
 		for _, ri := range p.Rooms {
 			rlist = append(rlist, rooms[ri].Tag)
 		}
-		a := activities[ai]
-		sbj := a.Subject
+		a := activities[p.Activity]
 		tlist := []string{}
 		for _, ti := range a.Teachers {
 			tlist = append(tlist, teachers[ti].Tag)
@@ -32,17 +77,76 @@ func (attdata *AutoTtData) GetPlacements() []string {
 		for _, g := range a.Groups {
 			glist = append(glist, g.Tag)
 		}
-		aglist := []string{}
-		for _, ag := range a.AtomicGroupIndexes {
-			aglist = append(aglist, strconv.Itoa(ag))
-		}
-		placements = append(placements, fmt.Sprintf("%d:%d:%d:%s:%s:%s:%s:%s",
-			di, hi, a.Duration, sbj,
-			strings.Join(glist, ","),
-			strings.Join(aglist, ","),
-			strings.Join(tlist, ","),
-			strings.Join(rlist, ",")))
+		pdlist = append(pdlist, &PlacementData{
+			Subject:  a.Subject,
+			Day:      p.Day,
+			Hour:     p.Hour,
+			Length:   a.Duration,
+			Teachers: tlist,
+			Groups:   glist,
+			Rooms:    rlist,
+			Atomics:  a.AtomicGroupIndexes,
+		})
 	}
+	return pdlist
+}
 
-	return placements
+func SerializePlacement(p *PlacementData) string {
+	aglist := []string{}
+	for _, ag := range p.Atomics {
+		aglist = append(aglist, strconv.Itoa(ag))
+	}
+	return fmt.Sprintf("%d:%d:%d:%s:%s:%s:%s:%s",
+		p.Day, p.Hour, p.Length, p.Subject,
+		strings.Join(p.Groups, ","),
+		strings.Join(aglist, ","),
+		strings.Join(p.Teachers, ","),
+		strings.Join(p.Rooms, ","))
+}
+
+func (attdata *AutoTtData) TeacherPlacements(tix int) []*PlacementData {
+	activities := attdata.lastResult.Activities
+	pixlist := []int{}
+	for pix, p := range attdata.lastResult.Placements {
+		ai := p.Activity
+		a := activities[ai]
+		if slices.Contains(a.Teachers, tix) {
+			pixlist = append(pixlist, pix)
+		}
+	}
+	return attdata.placements_selected(pixlist)
+}
+
+func (attdata *AutoTtData) RoomPlacements(rix int) []*PlacementData {
+	pixlist := []int{}
+	for pix, p := range attdata.lastResult.Placements {
+		if slices.Contains(p.Rooms, rix) {
+			pixlist = append(pixlist, pix)
+		}
+	}
+	return attdata.placements_selected(pixlist)
+}
+
+// Whether a placement is relevant for a class can be determined by the
+// atomic groups. This is probably safer, more general, than an attempt to
+// extract the class from a group name. However, the group lists could
+// be used in a similar way ... if they were provided by all input readers
+// (currently not the case for FET).
+func (attdata *AutoTtData) ClassPlacements(cix int) []*PlacementData {
+	clist := attdata.Source.GetClasses()
+	cdata := clist[cix]
+	caglist := cdata.AtomicIndexes
+	activities := attdata.lastResult.Activities
+	pixlist := []int{}
+	for pix, p := range attdata.lastResult.Placements {
+		ai := p.Activity
+		a := activities[ai]
+		for _, agi := range a.AtomicGroupIndexes {
+			if slices.Contains(caglist, agi) {
+				pixlist = append(pixlist, pix)
+				break
+			}
+		}
+	}
+	return attdata.placements_selected(pixlist)
 }
