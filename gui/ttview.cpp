@@ -1,14 +1,15 @@
 #include "ttview.h"
-#include "canvas.h"
 #include "ui_ttview.h"
 
-TtView::TtView(
-    QWidget *parent)
+TtView::TtView(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::TtView)
 {
     ui->setupUi(this);
-    auto canvas = new Canvas(ui->canvas_view);
+    //canvas = new Canvas(ui->canvas_view);
+    grid = new TtGrid(ui->canvas_view,
+                      {"Mo", "Tu", "We", "Th", "Fr"},
+                      {"A", "B", "1", "2", "3", "4", "5", "6", "7"});
 }
 
 TtView::~TtView()

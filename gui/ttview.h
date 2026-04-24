@@ -2,6 +2,7 @@
 #define TTVIEW_H
 
 #include <QWidget>
+#include "ttgrid.h"
 
 namespace Ui {
 
@@ -19,6 +20,8 @@ public:
 
 private:
     Ui::TtView *ui;
+    //Canvas *canvas;
+    TtGrid *grid;
 };
 
 #endif // TTVIEW_H
