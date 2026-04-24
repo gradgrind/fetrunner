@@ -3,9 +3,9 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include "backend.h"
+#include "canvas.h"
 #include "fetrunner.h"
 #include "globals.h"
-//#include "ttview.h"
 #include "ui_mainwindow.h"
 
 QSettings *settings;
@@ -28,10 +28,9 @@ MainWindow::MainWindow(QWidget *parent)
     auto ttsolver = new FetRunner();
     ui->main_panel->addWidget(ttsolver);
 
-    /*
-    auto ttview = new TtView();
+    auto ttview = new QGraphicsView();
+    auto canvas = new Canvas(ttview);
     ui->main_panel->addWidget(ttview);
-    */
 
     connect( //
         ui->open_file,
@@ -43,24 +42,30 @@ MainWindow::MainWindow(QWidget *parent)
         &QRadioButton::toggled,
         this,
         [this](bool checked) {
-            if (checked)
+            if (checked) {
                 ui->main_panel->setCurrentIndex(0);
+                ui->side_panel_sub->setCurrentIndex(0);
+            }
         });
     connect( //
         ui->solve_timetable,
         &QRadioButton::toggled,
         this,
         [this](bool checked) {
-            if (checked)
+            if (checked) {
                 ui->main_panel->setCurrentIndex(1);
+                ui->side_panel_sub->setCurrentIndex(0);
+            }
         });
     connect( //
         ui->view_timetable,
         &QRadioButton::toggled,
         this,
         [this](bool checked) {
-            if (checked)
+            if (checked) {
                 ui->main_panel->setCurrentIndex(2);
+                ui->side_panel_sub->setCurrentIndex(1);
+            }
         });
     connect( //
         notifier,
