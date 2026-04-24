@@ -3,9 +3,9 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include "backend.h"
-#include "canvas.h"
 #include "fetrunner.h"
 #include "globals.h"
+#include "ttview.h"
 #include "ui_mainwindow.h"
 
 QSettings *settings;
@@ -28,8 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
     auto ttsolver = new FetRunner();
     ui->main_panel->addWidget(ttsolver);
 
-    auto ttview = new QGraphicsView();
-    auto canvas = new Canvas(ttview);
+    auto ttview = new TtView();
     ui->main_panel->addWidget(ttview);
 
     connect( //

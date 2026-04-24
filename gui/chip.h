@@ -46,7 +46,7 @@ public:
     Chip();
     Chip(qreal width, qreal height);
 
-    virtual void set_size(qreal width, qreal height);
+    void set_size(qreal width, qreal height);
     void set_background(QString colour);
     void set_border(qreal width, QString colour = "000000");
     void config_text(
