@@ -18,8 +18,6 @@ func init() {
 
 // The AutoTtData instance is available as `autotimetable.AutoTt`.
 
-//TODO: Perhaps it would be better if all the data could be derived from the last result alone.
-
 func get_days(op *DispatchOp) bool {
 	if CheckArgs(op, 0) {
 		lres := autotimetable.AutoTt.GetLastResult()
