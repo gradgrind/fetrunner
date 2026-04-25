@@ -92,19 +92,19 @@ func get_activities(op *DispatchOp) bool {
 			for _, tix := range a.Teachers {
 				tlist = append(tlist, strconv.Itoa(tix))
 			}
-			glist := []string{}
-			for _, g := range a.Groups {
-				glist = append(glist, g.Tag)
-			}
 			aglist := []string{}
 			for _, agix := range a.AtomicGroupIndexes {
 				aglist = append(aglist, strconv.Itoa(agix))
 			}
+			glist := []string{}
+			for _, g := range a.Groups {
+				glist = append(glist, g.Tag)
+			}
 			base.LogResult(op.Op, fmt.Sprintf("%d:%s:%s:%s:%s",
 				a.Duration, a.Subject,
+				strings.Join(tlist, ","),
 				strings.Join(aglist, ","),
-				strings.Join(glist, ","),
-				strings.Join(tlist, ",")))
+				strings.Join(glist, ",")))
 		}
 	}
 	return true

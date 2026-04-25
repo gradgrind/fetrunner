@@ -8,10 +8,12 @@
 
 ShowTeacher::ShowTeacher(TtGrid *grid, int teacher_id)
 {
-    auto plist = get_placements("TEACHER_PLACEMENTS", teacher_id);
-
+    auto plist = get_item_placements("TT_TEACHER_PLACEMENTS", teacher_id);
     //TODO
     for (const auto p : plist) {
+        // Needs room, teacher, etc. vectors because just the indexes are supplied.
+        auto rooms = p->rooms;
+
         Tile *t = new Tile( //
             grid,
             QJsonObject{

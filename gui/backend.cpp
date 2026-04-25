@@ -110,8 +110,37 @@ KeyVal Backend::op1(
     return {};
 }
 
-QList<Placement *> get_placements(
-    QString cmd, int item)
+void get_tt_activities()
+{
+    QList<Activity *> activity_list;
+    auto alist = backend->op("TT_ACTIVITIES");
+    for (const auto &[k, v] : std::as_const(alist)) {
+        if (k != "TT_ACTIVITIES")
+            continue;
+        auto vlist = v.split(":");
+        QList<int> tlist;
+        for (const auto &t : vlist.at(2).split(",")) {
+            tlist.append(t.toInt());
+        }
+        QList<int> aglist;
+        for (const auto &ag : vlist.at(3).split(",")) {
+            aglist.append(ag.toInt());
+        }
+        QStringList glist;
+        for (const auto &g : vlist.at(4).split(",")) {
+            glist.append(g);
+        }
+        activity_list.append(new Activity{//
+                                          .length = vlist.at(0).toInt(),
+                                          .subject = vlist.at(1),
+                                          .teachers = tlist,
+                                          .atomics = aglist,
+                                          .groups = glist});
+    }
+    tt_activities = activity_list;
+}
+
+QList<Placement *> get_item_placements(QString cmd, int item)
 {
     QList<Placement *> placements;
     auto plist = backend->op(cmd, {QString::number(item)});
@@ -119,18 +148,15 @@ QList<Placement *> get_placements(
         if (k != "PLACEMENT")
             continue;
         auto vlist = v.split(":");
-        QList<int> agroups;
-        for (const auto &a : vlist.at(PF_ATOMICS).split(","))
-            agroups.append(a.toInt());
+        QList<int> rlist;
+        for (const auto &r : vlist.at(3).split(",")) {
+            rlist.append(r.toInt());
+        }
         placements.append(new Placement{//
-                                        .day = vlist.at(PF_DAY).toInt(),
-                                        .hour = vlist.at(PF_HOUR).toInt(),
-                                        .length = vlist.at(PF_LENGTH).toInt(),
-                                        .subject = vlist.at(PF_SUBJECT),
-                                        .groups = vlist.at(PF_GROUPS).split(","),
-                                        .atomics = agroups,
-                                        .teachers = vlist.at(PF_TEACHERS).split(","),
-                                        .rooms = vlist.at(PF_ROOMS).split(",")});
+                                        .activity = vlist.at(0).toInt(),
+                                        .day = vlist.at(1).toInt(),
+                                        .hour = vlist.at(2).toInt(),
+                                        .rooms = rlist});
     }
     return placements;
 }

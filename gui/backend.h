@@ -32,7 +32,19 @@ struct Placement
     QList<int> rooms;
 };
 
-QList<Placement *> get_placements(QString cmd, int item);
+QList<Placement *> get_item_placements(QString cmd, int item);
+
+struct Activity
+{
+    int length;
+    QString subject;
+    QList<int> teachers;
+    QList<int> atomics;
+    QStringList groups;
+};
+
+void get_tt_activities();
+extern QList<Activity *> tt_activities;
 
 //TODO: When releasing a list of pointers, the objects themselves
 // must be deleted:
