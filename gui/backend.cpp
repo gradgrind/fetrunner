@@ -109,3 +109,28 @@ KeyVal Backend::op1(
     }
     return {};
 }
+
+QList<Placement *> get_placements(
+    QString cmd, int item)
+{
+    QList<Placement *> placements;
+    auto plist = backend->op(cmd, {QString::number(item)});
+    for (const auto &[k, v] : std::as_const(plist)) {
+        if (k != "PLACEMENT")
+            continue;
+        auto vlist = v.split(":");
+        QList<int> agroups;
+        for (const auto &a : vlist.at(PF_ATOMICS).split(","))
+            agroups.append(a.toInt());
+        placements.append(new Placement{//
+                                        .day = vlist.at(PF_DAY).toInt(),
+                                        .hour = vlist.at(PF_HOUR).toInt(),
+                                        .length = vlist.at(PF_LENGTH).toInt(),
+                                        .subject = vlist.at(PF_SUBJECT),
+                                        .groups = vlist.at(PF_GROUPS).split(","),
+                                        .atomics = agroups,
+                                        .teachers = vlist.at(PF_TEACHERS).split(","),
+                                        .rooms = vlist.at(PF_ROOMS).split(",")});
+    }
+    return placements;
+}
