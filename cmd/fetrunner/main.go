@@ -157,7 +157,7 @@ func main() {
 
 	fetrunner.Dispatch("TT_HARD_CONSTRAINTS")
 	fetrunner.Dispatch("TT_SOFT_CONSTRAINTS")
-	fetrunner.Dispatch("TT_ACTIVITIES")
+	fetrunner.Dispatch("TT_NACTIVITIES")
 
 	go termination() // catch stop signal
 

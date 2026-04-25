@@ -83,9 +83,6 @@ func (sourcefet *TtSourceFet) GetClasses() []*autotimetable.TtClass {
 	return sourcefet.classes
 }
 
-// TODO?
-// I guess it should be possible to implement this properly (didn't I do it
-// somewhere already?), but it might not be necessary ...
 func (sourcefet *TtSourceFet) GetAtomicGroups() []string {
 	return sourcefet.atomic_groups
 }
