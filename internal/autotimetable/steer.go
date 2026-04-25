@@ -298,7 +298,7 @@ func (attdata *AutoTtData) StartGeneration() {
 			base.LogError("--NO_RESULT")
 		} else {
 			//TODO: Where (whether?) to save the Result.json file
-			jsonbytes := attdata.GetLastResult()
+			jsonbytes := attdata.GetLastResultJSON()
 			if len(jsonbytes) != 0 {
 				fpath := filepath.Join(base.DataBase.SourceDir, base.DataBase.Name+"_Result.json")
 				err := os.WriteFile(fpath, jsonbytes, 0644)

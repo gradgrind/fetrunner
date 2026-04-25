@@ -56,11 +56,11 @@ type PlacementData struct {
 }
 
 // Select a group of placements given their indexes.
-func (attdata *AutoTtData) placements_selected(pixlist []int) []*PlacementData {
-	activities := attdata.lastResult.Activities
-	teachers := attdata.lastResult.Teachers
-	rooms := attdata.lastResult.Rooms
-	placements := attdata.lastResult.Placements
+func placements_selected(last_result *Result, pixlist []int) []*PlacementData {
+	activities := last_result.Activities
+	teachers := last_result.Teachers
+	rooms := last_result.Rooms
+	placements := last_result.Placements
 	pdlist := []*PlacementData{}
 	for _, pix := range pixlist {
 		p := placements[pix]
@@ -104,27 +104,27 @@ func SerializePlacement(p *PlacementData) string {
 		strings.Join(p.Rooms, ","))
 }
 
-func (attdata *AutoTtData) TeacherPlacements(tix int) []*PlacementData {
-	activities := attdata.lastResult.Activities
+func TeacherPlacements(last_result *Result, tix int) []*PlacementData {
+	activities := last_result.Activities
 	pixlist := []int{}
-	for pix, p := range attdata.lastResult.Placements {
+	for pix, p := range last_result.Placements {
 		ai := p.Activity
 		a := activities[ai]
 		if slices.Contains(a.Teachers, tix) {
 			pixlist = append(pixlist, pix)
 		}
 	}
-	return attdata.placements_selected(pixlist)
+	return placements_selected(last_result, pixlist)
 }
 
-func (attdata *AutoTtData) RoomPlacements(rix int) []*PlacementData {
+func RoomPlacements(last_result *Result, rix int) []*PlacementData {
 	pixlist := []int{}
-	for pix, p := range attdata.lastResult.Placements {
+	for pix, p := range last_result.Placements {
 		if slices.Contains(p.Rooms, rix) {
 			pixlist = append(pixlist, pix)
 		}
 	}
-	return attdata.placements_selected(pixlist)
+	return placements_selected(last_result, pixlist)
 }
 
 // Whether a placement is relevant for a class can be determined by the
@@ -132,13 +132,13 @@ func (attdata *AutoTtData) RoomPlacements(rix int) []*PlacementData {
 // extract the class from a group name. However, the group lists could
 // be used in a similar way ... if they were provided by all input readers
 // (currently not the case for FET).
-func (attdata *AutoTtData) ClassPlacements(cix int) []*PlacementData {
-	clist := attdata.Source.GetClasses()
+func ClassPlacements(last_result *Result, cix int) []*PlacementData {
+	clist := last_result.Classes
 	cdata := clist[cix]
 	caglist := cdata.AtomicIndexes
-	activities := attdata.lastResult.Activities
+	activities := last_result.Activities
 	pixlist := []int{}
-	for pix, p := range attdata.lastResult.Placements {
+	for pix, p := range last_result.Placements {
 		ai := p.Activity
 		a := activities[ai]
 		for _, agi := range a.AtomicGroupIndexes {
@@ -148,5 +148,5 @@ func (attdata *AutoTtData) ClassPlacements(cix int) []*PlacementData {
 			}
 		}
 	}
-	return attdata.placements_selected(pixlist)
+	return placements_selected(last_result, pixlist)
 }

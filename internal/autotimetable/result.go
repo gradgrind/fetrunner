@@ -14,7 +14,7 @@ type Result struct {
 	Days                       []base.ElementBase
 	Hours                      []base.ElementBase
 	Teachers                   []base.ElementBase
-	Classes                    []base.ElementBase
+	Classes                    []*TtClass
 	Rooms                      []base.ElementBase
 	Activities                 []*TtActivity
 	Constraints                []*TtConstraint
@@ -44,7 +44,7 @@ func (attdata *AutoTtData) new_current_instance() {
 		Days:        attdata.Source.GetDays(),
 		Hours:       attdata.Source.GetHours(),
 		Teachers:    attdata.Source.GetTeachers(),
-		Classes:     cl_list,
+		Classes:     attdata.Source.GetClasses(),
 		Rooms:       attdata.Source.GetRooms(),
 		Activities:  attdata.Source.GetActivities(),
 		Constraints: clist,
@@ -126,8 +126,13 @@ func (attdata *AutoTtData) log_nconstraints(enabled []bool) {
 	}
 }
 
+// Get the "result" of the last successful instance as a `Result` structure.
+func (attdata *AutoTtData) GetLastResult() *Result {
+	return attdata.lastResult
+}
+
 // Get the "result" of the last successful instance as JSON.
-func (attdata *AutoTtData) GetLastResult() []byte {
+func (attdata *AutoTtData) GetLastResultJSON() []byte {
 	if attdata.lastResult == nil {
 		return nil
 	}

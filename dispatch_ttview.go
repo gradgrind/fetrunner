@@ -18,9 +18,12 @@ func init() {
 
 // The AutoTtData instance is available as `autotimetable.AutoTt`.
 
+//TODO: Perhaps it would be better if all the data could be derived from the last result alone.
+
 func get_days(op *DispatchOp) bool {
 	if CheckArgs(op, 0) {
-		for _, d := range autotimetable.AutoTt.Source.GetDays() {
+		lres := autotimetable.AutoTt.GetLastResult()
+		for _, d := range lres.Days {
 			base.LogResult(op.Op, d.Tag)
 		}
 	}
@@ -29,7 +32,8 @@ func get_days(op *DispatchOp) bool {
 
 func get_hours(op *DispatchOp) bool {
 	if CheckArgs(op, 0) {
-		for _, h := range autotimetable.AutoTt.Source.GetHours() {
+		lres := autotimetable.AutoTt.GetLastResult()
+		for _, h := range lres.Hours {
 			base.LogResult(op.Op, h.Tag)
 		}
 	}
@@ -38,7 +42,8 @@ func get_hours(op *DispatchOp) bool {
 
 func get_classes(op *DispatchOp) bool {
 	if CheckArgs(op, 0) {
-		for _, cls := range autotimetable.AutoTt.Source.GetClasses() {
+		lres := autotimetable.AutoTt.GetLastResult()
+		for _, cls := range lres.Classes {
 			//TODO? If I could ensure that the atomic groups of a class are consecutive,
 			// an alternative would be to include just start and end index here.
 			ailist := []string{}
@@ -63,7 +68,8 @@ func get_class_placements(op *DispatchOp) bool {
 		if err != nil {
 			panic(err)
 		}
-		for _, p := range autotimetable.AutoTt.ClassPlacements(cix) {
+		lres := autotimetable.AutoTt.GetLastResult()
+		for _, p := range autotimetable.ClassPlacements(lres, cix) {
 			base.LogResult("PLACEMENT", autotimetable.SerializePlacement(p))
 		}
 	}
@@ -76,7 +82,8 @@ func get_teacher_placements(op *DispatchOp) bool {
 		if err != nil {
 			panic(err)
 		}
-		for _, p := range autotimetable.AutoTt.TeacherPlacements(tix) {
+		lres := autotimetable.AutoTt.GetLastResult()
+		for _, p := range autotimetable.TeacherPlacements(lres, tix) {
 			base.LogResult("PLACEMENT", autotimetable.SerializePlacement(p))
 		}
 	}
@@ -89,7 +96,8 @@ func get_room_placements(op *DispatchOp) bool {
 		if err != nil {
 			panic(err)
 		}
-		for _, p := range autotimetable.AutoTt.RoomPlacements(rix) {
+		lres := autotimetable.AutoTt.GetLastResult()
+		for _, p := range autotimetable.RoomPlacements(lres, rix) {
 			base.LogResult("PLACEMENT", autotimetable.SerializePlacement(p))
 		}
 	}

@@ -264,7 +264,7 @@ func stoptt(op *DispatchOp) bool {
 // Get the result data as a JSON string.
 func ttresult(op *DispatchOp) bool {
 	if CheckArgs(op, 0) {
-		result := autotimetable.AutoTt.GetLastResult()
+		result := autotimetable.AutoTt.GetLastResultJSON()
 		//TODO: At present the JSON result is generated automatically as a
 		// file. It might be preferable to return the data as a string result
 		// instead.
