@@ -157,7 +157,7 @@ func main() {
 
 	fetrunner.Dispatch("TT_HARD_CONSTRAINTS")
 	fetrunner.Dispatch("TT_SOFT_CONSTRAINTS")
-	fetrunner.Dispatch("TT_ACTIVITIES")
+	fetrunner.Dispatch("TT_NACTIVITIES")
 
 	go termination() // catch stop signal
 
@@ -178,12 +178,15 @@ func main() {
 
 	//TODO-- just testing the new functions
 	//fmt.Println("Done")
-	//fetrunner.Dispatch("DAYS")
-	//fetrunner.Dispatch("HOURS")
-	//fetrunner.Dispatch("CLASSES")
-	//fetrunner.Dispatch("CLASS_PLACEMENTS|11")
-	//fetrunner.Dispatch("TEACHER_PLACEMENTS|32")
-	//fetrunner.Dispatch("ROOM_PLACEMENTS|28")
+	//fetrunner.Dispatch("TT_DAYS")
+	//fetrunner.Dispatch("TT_HOURS")
+	//fetrunner.Dispatch("TT_CLASSES")
+	//fetrunner.Dispatch("TT_TEACHERS")
+	//fetrunner.Dispatch("TT_ROOMS")
+	//fetrunner.Dispatch("TT_ACTIVITIES")
+	//fetrunner.Dispatch("TT_CLASS_PLACEMENTS|11")
+	//fetrunner.Dispatch("TT_TEACHER_PLACEMENTS|32")
+	//fetrunner.Dispatch("TT_ROOM_PLACEMENTS|28")
 
 	base.LogStop()
 }

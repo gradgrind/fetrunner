@@ -7,17 +7,6 @@ import (
 	"strings"
 )
 
-const (
-	PF_DAY = iota
-	PF_HOUR
-	PF_LENGTH
-	PF_SUBJECT
-	PF_GROUPS
-	PF_ATOMICS
-	PF_TEACHERS
-	PF_ROOMS
-)
-
 /*
 
 Each placement represents an activity, which will be placed in one or more
@@ -55,76 +44,36 @@ type PlacementData struct {
 	Atomics  []int
 }
 
-// Select a group of placements given their indexes.
-func placements_selected(last_result *Result, pixlist []int) []*PlacementData {
-	activities := last_result.Activities
-	teachers := last_result.Teachers
-	rooms := last_result.Rooms
-	placements := last_result.Placements
-	pdlist := []*PlacementData{}
-	for _, pix := range pixlist {
-		p := placements[pix]
-		rlist := []string{}
-		for _, ri := range p.Rooms {
-			rlist = append(rlist, rooms[ri].Tag)
-		}
-		a := activities[p.Activity]
-		tlist := []string{}
-		for _, ti := range a.Teachers {
-			tlist = append(tlist, teachers[ti].Tag)
-		}
-		glist := []string{}
-		for _, g := range a.Groups {
-			glist = append(glist, g.Tag)
-		}
-		pdlist = append(pdlist, &PlacementData{
-			Subject:  a.Subject,
-			Day:      p.Day,
-			Hour:     p.Hour,
-			Length:   a.Duration,
-			Teachers: tlist,
-			Groups:   glist,
-			Rooms:    rlist,
-			Atomics:  a.AtomicGroupIndexes,
-		})
+func SerializePlacement(p *TtActivityPlacement) string {
+	rlist := []string{}
+	for _, r := range p.Rooms {
+		rlist = append(rlist, strconv.Itoa(r))
 	}
-	return pdlist
+	return fmt.Sprintf("%d:%d:%d:%s",
+		p.Activity, p.Day, p.Hour, strings.Join(rlist, ","))
 }
 
-func SerializePlacement(p *PlacementData) string {
-	aglist := []string{}
-	for _, ag := range p.Atomics {
-		aglist = append(aglist, strconv.Itoa(ag))
-	}
-	return fmt.Sprintf("%d:%d:%d:%s:%s:%s:%s:%s",
-		p.Day, p.Hour, p.Length, p.Subject,
-		strings.Join(p.Groups, ","),
-		strings.Join(aglist, ","),
-		strings.Join(p.Teachers, ","),
-		strings.Join(p.Rooms, ","))
-}
-
-func TeacherPlacements(last_result *Result, tix int) []*PlacementData {
+func TeacherPlacements(last_result *Result, tix int) []*TtActivityPlacement {
 	activities := last_result.Activities
-	pixlist := []int{}
-	for pix, p := range last_result.Placements {
+	plist := []*TtActivityPlacement{}
+	for _, p := range last_result.Placements {
 		ai := p.Activity
 		a := activities[ai]
 		if slices.Contains(a.Teachers, tix) {
-			pixlist = append(pixlist, pix)
+			plist = append(plist, p)
 		}
 	}
-	return placements_selected(last_result, pixlist)
+	return plist
 }
 
-func RoomPlacements(last_result *Result, rix int) []*PlacementData {
-	pixlist := []int{}
-	for pix, p := range last_result.Placements {
+func RoomPlacements(last_result *Result, rix int) []*TtActivityPlacement {
+	plist := []*TtActivityPlacement{}
+	for _, p := range last_result.Placements {
 		if slices.Contains(p.Rooms, rix) {
-			pixlist = append(pixlist, pix)
+			plist = append(plist, p)
 		}
 	}
-	return placements_selected(last_result, pixlist)
+	return plist
 }
 
 // Whether a placement is relevant for a class can be determined by the
@@ -132,21 +81,21 @@ func RoomPlacements(last_result *Result, rix int) []*PlacementData {
 // extract the class from a group name. However, the group lists could
 // be used in a similar way ... if they were provided by all input readers
 // (currently not the case for FET).
-func ClassPlacements(last_result *Result, cix int) []*PlacementData {
+func ClassPlacements(last_result *Result, cix int) []*TtActivityPlacement {
+	plist := []*TtActivityPlacement{}
 	clist := last_result.Classes
 	cdata := clist[cix]
 	caglist := cdata.AtomicIndexes
 	activities := last_result.Activities
-	pixlist := []int{}
-	for pix, p := range last_result.Placements {
+	for _, p := range last_result.Placements {
 		ai := p.Activity
 		a := activities[ai]
 		for _, agi := range a.AtomicGroupIndexes {
 			if slices.Contains(caglist, agi) {
-				pixlist = append(pixlist, pix)
+				plist = append(plist, p)
 				break
 			}
 		}
 	}
-	return placements_selected(last_result, pixlist)
+	return plist
 }

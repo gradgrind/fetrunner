@@ -12,7 +12,7 @@ type TtBackend interface {
 	RunBackend(*AutoTtData, *TtInstance)
 	Tidy()
 	ConstraintName(*TtInstance) string
-	Results(*TtInstance) []TtActivityPlacement
+	Results(*TtInstance) []*TtActivityPlacement
 }
 
 type TtInstanceBackend interface {

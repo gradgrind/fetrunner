@@ -3,17 +3,21 @@ package fetrunner
 import (
 	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
+	"fmt"
 	"strconv"
 	"strings"
 )
 
 func init() {
-	OpHandlerMap["DAYS"] = get_days
-	OpHandlerMap["HOURS"] = get_hours
-	OpHandlerMap["CLASSES"] = get_classes
-	OpHandlerMap["CLASS_PLACEMENTS"] = get_class_placements
-	OpHandlerMap["TEACHER_PLACEMENTS"] = get_teacher_placements
-	OpHandlerMap["ROOM_PLACEMENTS"] = get_room_placements
+	OpHandlerMap["TT_DAYS"] = get_days
+	OpHandlerMap["TT_HOURS"] = get_hours
+	OpHandlerMap["TT_CLASSES"] = get_classes
+	OpHandlerMap["TT_TEACHERS"] = get_teachers
+	OpHandlerMap["TT_ROOMS"] = get_rooms
+	OpHandlerMap["TT_ACTIVITIES"] = get_activities
+	OpHandlerMap["TT_CLASS_PLACEMENTS"] = get_class_placements
+	OpHandlerMap["TT_TEACHER_PLACEMENTS"] = get_teacher_placements
+	OpHandlerMap["TT_ROOM_PLACEMENTS"] = get_room_placements
 }
 
 // The AutoTtData instance is available as `autotimetable.AutoTt`.
@@ -55,6 +59,52 @@ func get_classes(op *DispatchOp) bool {
 			ais := strings.Join(ailist, ",")
 			gs := strings.Join(glist, ",")
 			base.LogResult(op.Op, cls.Tag+":"+ais+":"+gs)
+		}
+	}
+	return true
+}
+
+func get_teachers(op *DispatchOp) bool {
+	if CheckArgs(op, 0) {
+		lres := autotimetable.AutoTt.GetLastResult()
+		for _, t := range lres.Teachers {
+			base.LogResult(op.Op, t.Tag)
+		}
+	}
+	return true
+}
+
+func get_rooms(op *DispatchOp) bool {
+	if CheckArgs(op, 0) {
+		lres := autotimetable.AutoTt.GetLastResult()
+		for _, r := range lres.Rooms {
+			base.LogResult(op.Op, r.Tag)
+		}
+	}
+	return true
+}
+
+func get_activities(op *DispatchOp) bool {
+	if CheckArgs(op, 0) {
+		lres := autotimetable.AutoTt.GetLastResult()
+		for _, a := range lres.Activities {
+			tlist := []string{}
+			for _, tix := range a.Teachers {
+				tlist = append(tlist, strconv.Itoa(tix))
+			}
+			glist := []string{}
+			for _, g := range a.Groups {
+				glist = append(glist, g.Tag)
+			}
+			aglist := []string{}
+			for _, agix := range a.AtomicGroupIndexes {
+				aglist = append(aglist, strconv.Itoa(agix))
+			}
+			base.LogResult(op.Op, fmt.Sprintf("%d:%s:%s:%s:%s",
+				a.Duration, a.Subject,
+				strings.Join(aglist, ","),
+				strings.Join(glist, ","),
+				strings.Join(tlist, ",")))
 		}
 	}
 	return true

@@ -81,7 +81,7 @@ func init() {
 	OpHandlerMap["TT_PRIORITY_CONSTRAINT_TYPES"] = priortityConstraints
 	OpHandlerMap["TT_HARD_CONSTRAINTS"] = hardConstraints
 	OpHandlerMap["TT_SOFT_CONSTRAINTS"] = softConstraints
-	OpHandlerMap["TT_ACTIVITIES"] = nActivities
+	OpHandlerMap["TT_NACTIVITIES"] = nActivities
 	OpHandlerMap["RUN_TT"] = runtt
 	OpHandlerMap["_STOP_TT"] = stoptt
 	OpHandlerMap["RESULT_TT"] = ttresult

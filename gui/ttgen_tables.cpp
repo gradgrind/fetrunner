@@ -74,7 +74,7 @@ void FetRunner::setup_progress_table()
         ui->label_soft->setEnabled(true);
         ui->progress_soft->setEnabled(true);
     }
-    backend->op("TT_ACTIVITIES");
+    backend->op("TT_NACTIVITIES");
 }
 
 void FetRunner::nconstraints(const QString &data)

@@ -19,7 +19,7 @@ type Result struct {
 	Activities                 []*TtActivity
 	Constraints                []*TtConstraint
 	ConstraintErrors           map[ConstraintIndex]string
-	Placements                 []TtActivityPlacement
+	Placements                 []*TtActivityPlacement
 	UnfulfilledHardConstraints map[ConstraintType][]ConstraintIndex
 	TotalHardConstraints       int
 	UnfulfilledSoftConstraints map[ConstraintType][]ConstraintIndex
