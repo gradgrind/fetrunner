@@ -3,7 +3,7 @@
 
 TtBase::TtBase() {}
 
-void TtBase::set_tt_activities()
+void TtBase::set_activities()
 {
     clear_activities();
     auto alist = backend->op("TT_ACTIVITIES");
@@ -23,18 +23,48 @@ void TtBase::set_tt_activities()
         for (const auto &g : vlist.at(4).split(",")) {
             glist.append(g);
         }
-        tt_activities.append(new TtActivity{//
-                                            .length = vlist.at(0).toInt(),
-                                            .subject = vlist.at(1),
-                                            .teachers = tlist,
-                                            .atomics = aglist,
-                                            .groups = glist});
+        activities.append(new TtActivity{
+            .length = vlist.at(0).toInt(),
+            .subject = vlist.at(1),
+            .teachers = tlist,
+            .atomics = aglist,
+            .groups = glist});
     }
 }
 
-const QList<TtActivity *> TtBase::get_tt_activities()
+void TtBase::set_teachers()
 {
-    return tt_activities;
+    teachers.clear();
+    auto alist = backend->op("TT_TEACHERS");
+    for (const auto &[k, v] : std::as_const(alist)) {
+        if (k != "TT_TEACHERS")
+            continue;
+        auto vlist = v.split(":");
+        auto name = vlist.at(1);
+        if (name.isEmpty())
+            name = vlist.at(0);
+        teachers.append(TtName{vlist.at(0), name});
+    }
+}
+
+void TtBase::set_rooms()
+{
+    rooms.clear();
+    auto alist = backend->op("TT_ROOMS");
+    for (const auto &[k, v] : std::as_const(alist)) {
+        if (k != "TT_ROOMS")
+            continue;
+        auto vlist = v.split(":");
+        auto name = vlist.at(1);
+        if (name.isEmpty())
+            name = vlist.at(0);
+        rooms.append(TtName{vlist.at(0), name});
+    }
+}
+
+const QList<TtActivity *> TtBase::get_activities()
+{
+    return activities;
 }
 
 const TtPlacementList get_item_placements(QString cmd, int item)
@@ -56,4 +86,24 @@ const TtPlacementList get_item_placements(QString cmd, int item)
                                           .rooms = rlist});
     }
     return placements;
+}
+
+TileData *TtBase::get_tile_data(TtPlacement *p)
+{
+    auto a = activities.at(p->activity);
+    QStringList tlist;
+    for (const auto &tix : std::as_const(a->teachers)) {
+        tlist.append(teachers.at(tix).tag);
+    }
+    QStringList rlist;
+    for (const auto &rix : std::as_const(p->rooms)) {
+        rlist.append(rooms.at(rix).tag);
+    }
+    return new TileData{
+        .length = a->length,
+        .subject = a->subject,
+        .teachers = tlist,
+        .rooms = rlist,
+        .atomics = a->atomics,
+        .groups = a->groups};
 }

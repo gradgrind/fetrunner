@@ -1,8 +1,7 @@
 #ifndef TTBASE_H
 #define TTBASE_H
 
-#include <QList>
-#include <QString>
+#include <QStringList>
 
 struct TtPlacement
 {
@@ -34,21 +33,43 @@ struct TtActivity
     QStringList groups;
 };
 
+struct TtName
+{
+    QString tag;
+    QString name;
+};
+
+struct TileData
+{
+    int length;
+    QString subject;
+    QStringList teachers;
+    QStringList rooms;
+    QList<int> atomics;
+    QStringList groups;
+};
+
 class TtBase
 {
 private:
-    QList<TtActivity *> tt_activities;
+    QList<TtActivity *> activities;
     void clear_activities()
     {
-        qDeleteAll(tt_activities.begin(), tt_activities.end());
-        tt_activities.clear();
+        qDeleteAll(activities.begin(), activities.end());
+        activities.clear();
     }
+    QList<TtName> teachers;
+    QList<TtName> rooms;
 
 public:
     TtBase();
     ~TtBase() { clear_activities(); }
-    void set_tt_activities();
-    const QList<TtActivity *> get_tt_activities();
+    void set_activities();
+    const QList<TtActivity *> get_activities();
+    void set_teachers();
+    void set_rooms();
+
+    TileData *get_tile_data(TtPlacement *p);
 };
 
 //extern TtBase tt_base;
