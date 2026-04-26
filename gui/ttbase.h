@@ -62,6 +62,8 @@ private:
         qDeleteAll(activities.begin(), activities.end());
         activities.clear();
     }
+    QList<TtName> days;
+    QList<TtName> hours;
     QList<TtClass> classes;
     QList<TtName> teachers;
     QList<TtName> rooms;
@@ -75,6 +77,10 @@ public:
     const TtClass &get_class(int cix);
     void set_teachers();
     void set_rooms();
+    void set_days();
+    void set_hours();
+    const QList<TtName> get_days() { return days; }
+    const QList<TtName> get_hours() { return hours; }
 
     TileData *get_tile_data(TtPlacement *p);
 };

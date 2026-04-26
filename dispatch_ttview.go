@@ -26,7 +26,7 @@ func get_days(op *DispatchOp) bool {
 	if CheckArgs(op, 0) {
 		lres := autotimetable.AutoTt.GetLastResult()
 		for _, d := range lres.Days {
-			base.LogResult(op.Op, d.Tag)
+			base.LogResult(op.Op, d.Tag+":")
 		}
 	}
 	return true
@@ -36,7 +36,7 @@ func get_hours(op *DispatchOp) bool {
 	if CheckArgs(op, 0) {
 		lres := autotimetable.AutoTt.GetLastResult()
 		for _, h := range lres.Hours {
-			base.LogResult(op.Op, h.Tag)
+			base.LogResult(op.Op, h.Tag+":")
 		}
 	}
 	return true

@@ -1,7 +1,39 @@
 #include "ttbase.h"
 #include "backend.h"
 
-TtBase::TtBase() {}
+TtBase::TtBase() {
+
+}
+
+void TtBase::set_days()
+{
+    days.clear();
+    auto alist = backend->op("TT_DAYS");
+    for (const auto &[k, v] : std::as_const(alist)) {
+        if (k != "TT_DAYS")
+            continue;
+        auto vlist = v.split(":");
+        auto name = vlist.at(1);
+        if (name.isEmpty())
+            name = vlist.at(0);
+        days.append(TtName{vlist.at(0), name});
+    }
+}
+
+void TtBase::set_hours()
+{
+    hours.clear();
+    auto alist = backend->op("TT_HOURS");
+    for (const auto &[k, v] : std::as_const(alist)) {
+        if (k != "TT_HOURS")
+            continue;
+        auto vlist = v.split(":");
+        auto name = vlist.at(1);
+        if (name.isEmpty())
+            name = vlist.at(0);
+        hours.append(TtName{vlist.at(0), name});
+    }
+}
 
 void TtBase::set_activities()
 {
