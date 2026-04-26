@@ -14,15 +14,13 @@ struct TtPlacement
 class TtPlacementList : public QList<TtPlacement *>
 {
 public:
-    TtPlacementList();
+    TtPlacementList(QString cmd, int item);
     ~TtPlacementList()
     {
         qDeleteAll(begin(), end());
         clear();
     }
 };
-
-const TtPlacementList get_item_placements(QString cmd, int item);
 
 struct TtActivity
 {
@@ -37,6 +35,12 @@ struct TtName
 {
     QString tag;
     QString name;
+};
+
+struct TtClass : TtName
+{
+    QList<int> atomics;
+    QStringList groups;
 };
 
 struct TileData
@@ -58,6 +62,7 @@ private:
         qDeleteAll(activities.begin(), activities.end());
         activities.clear();
     }
+    QList<TtClass> classes;
     QList<TtName> teachers;
     QList<TtName> rooms;
 
@@ -66,6 +71,8 @@ public:
     ~TtBase() { clear_activities(); }
     void set_activities();
     const QList<TtActivity *> get_activities();
+    void set_classes();
+    const TtClass &get_class(int cix);
     void set_teachers();
     void set_rooms();
 

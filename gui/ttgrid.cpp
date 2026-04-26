@@ -94,7 +94,7 @@ void TtGrid::handle_hover(HoverRectItem *gitem, bool enter)
 void TtGrid::setup_grid()
 {
     cols.clear();
-    lid2tile.clear();
+    lid2tiles.clear();
 
     QList<Cell *> hheaders;
     qreal y = 0.0;
@@ -248,7 +248,7 @@ Tile::Tile(TtGrid *grid, QJsonObject data, int lesson_id)
     : Chip()
 {
     grid->scene->addItem(this);
-    grid->lid2tile[lesson_id] = this;
+    grid->lid2tiles[lesson_id].append(this);
 
     if (grid->hover_handler) {
         setHoverHandler(grid->hover_handler);

@@ -1,58 +1,76 @@
-#include "tt_showclass.h"
-#include <QJsonArray>
+#include "tt_show_resource.h"
+#include <QJsonObject>
 
-ShowClass::ShowClass(TtGrid *grid, TimetableData *tt_data, int class_id)
+struct tile_data {
+    QString subject;
+    QString teachers;
+    QString groups;
+    QString rooms;
+    int natomics;
+    int index;
+    int activity;
+};
+
+//TODO: A better Tile placement scheme!
+void ShowClass(TtGrid *grid, TtBase * ttbase, int cix)
 {
-    DBData *db_data = tt_data->db_data;
-    for (int course_id : tt_data->class_courses[class_id]) {
-        const auto course = db_data->Nodes.value(course_id);
-        QStringList teachers;
-        const auto tlist = course.value("TEACHERS").toArray();
-        for (const auto & t : tlist) {
-            teachers.append(db_data->get_tag(t.toInt()));
+    auto total = ttbase->get_class(cix).atomics.length();
+    // Build an array for the week (days x hours), each slot
+    // containing a list of tile_data items.
+    auto ndays = grid->daylist.length();
+    auto nhours = grid->hourlist.length();
+    QList<QList<QList<tile_data>>> week(ndays);
+    for (int i = 0; i < ndays; ++i) {
+        week[i].resize(nhours);
+    }
+    // Place single-cell activity Tiles in this week
+    const TtPlacementList plist("TT_CLASS_PLACEMENTS", cix);
+    for (const auto p : plist) {
+        const auto tiledata = ttbase->get_tile_data(p);
+        int fraction = tiledata->atomics.length();
+        auto groups = tiledata->groups.join(",");
+        auto teachers = tiledata->teachers.join(",");
+        auto rooms = tiledata->rooms.join(",");
+        //TODO: if fractions too small, simplify the data.
+        for (int i = 0; i < tiledata->length; ++i) {
+            auto data = tile_data{
+                .subject = tiledata->subject,
+                .teachers = teachers,
+                .groups = groups,
+                .rooms = rooms,
+                .natomics = fraction,
+                .index = i,
+                .activity = p->activity
+            };
+            week[p->day][p->hour + i].append(data);
         }
-        QString teacher = teachers.join(",");
-        QString subject = db_data->get_tag(course.value("SUBJECT").toInt());
-        QStringList rooms;
-        const auto rlist = course.value("FIXED_ROOMS").toArray();
-        for (const auto & r : rlist) {
-            rooms.append(db_data->get_tag(r.toInt()));
-        }
-        const auto tile_info = tt_data->course_tileinfo[course_id];
-        const auto tiles = tile_info.value(class_id);
-        for (int lid : db_data->course_lessons.value(course_id)) {
-            const auto ldata = db_data->Nodes.value(lid);
-            int len = ldata.value("LENGTH").toInt();
-            // Add possible chosen room
-            QStringList roomlist(rooms);
-            auto fr{ldata.value("FLEXIBLE_ROOM")};
-            if (fr.isUndefined()) {
-                if (course.contains("ROOM_CHOICE"))
-                    roomlist.append("?");
-            } else
-                roomlist.append(db_data->get_tag(fr.toInt()));
-            int d0 = ldata.value("DAY").toInt();
-            if (d0 == 0) {
-//TODO: Collect unplaced lessons
-
-            } else {
-                int d = db_data->days.value(d0);
-                int h = db_data->hours.value(ldata.value("HOUR").toInt());
-                for (const auto &tf : tiles) {
-                    Tile *t = new Tile(grid,
-                                       QJsonObject{
-                                           {"TEXT", subject},
-                                           {"TL", teacher},
-                                           {"TR", tf.groups.join(",")},
-                                           {"BR", roomlist.join(",")},
-                                           {"LENGTH", len},
-                                           {"DIV0", tf.offset},
-                                           {"DIVS", tf.fraction},
-                                           {"NDIVS", tf.total},
-                                       },
-                                       lid);
-                    grid->place_tile(t, d, h);
-                }
+    }
+    for (int d = 0; d < ndays; ++d) {
+        for (int h = 0; h < nhours; ++h) {
+            auto olist = week.at(d).at(h);
+            if (olist.length() > 1) {
+                // Sort on groups.
+                std::sort(olist.begin(), olist.end(), [](const tile_data& o1, const tile_data& o2) {
+                    return (o1.groups < o2.groups);
+                });
+            }
+            int offset = 0;
+            for (const auto &o : olist) {
+                auto n = o.natomics;
+                Tile *t = new Tile(grid,
+                    QJsonObject{
+                        {"TEXT", o.subject},
+                        {"TL", o.teachers},
+                        {"TR", o.groups},
+                        {"BR", o.rooms},
+                        //{"LENGTH", }, // default = 1
+                        {"DIV0", offset},
+                        {"DIVS", n},
+                        {"NDIVS", total},
+                    },
+                    o.activity);
+                offset += n;
+                grid->place_tile(t, d, h);
             }
         }
     }

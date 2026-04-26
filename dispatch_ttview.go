@@ -58,27 +58,29 @@ func get_classes(op *DispatchOp) bool {
 			}
 			ais := strings.Join(ailist, ",")
 			gs := strings.Join(glist, ",")
-			base.LogResult(op.Op, cls.Tag+":"+ais+":"+gs)
+			base.LogResult(op.Op, cls.Tag+"::"+ais+":"+gs)
 		}
 	}
 	return true
 }
 
+// TODO: (long) names
 func get_teachers(op *DispatchOp) bool {
 	if CheckArgs(op, 0) {
 		lres := autotimetable.AutoTt.GetLastResult()
 		for _, t := range lres.Teachers {
-			base.LogResult(op.Op, t.Tag)
+			base.LogResult(op.Op, t.Tag+":")
 		}
 	}
 	return true
 }
 
+// TODO: (long) names
 func get_rooms(op *DispatchOp) bool {
 	if CheckArgs(op, 0) {
 		lres := autotimetable.AutoTt.GetLastResult()
 		for _, r := range lres.Rooms {
-			base.LogResult(op.Op, r.Tag)
+			base.LogResult(op.Op, r.Tag+":")
 		}
 	}
 	return true

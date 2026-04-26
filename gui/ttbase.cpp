@@ -32,6 +32,30 @@ void TtBase::set_activities()
     }
 }
 
+void TtBase::set_classes()
+{
+    classes.clear();
+    auto alist = backend->op("TT_CLASSES");
+    for (const auto &[k, v] : std::as_const(alist)) {
+        if (k != "TT_CLASSES")
+            continue;
+        auto vlist = v.split(":");
+        auto name = vlist.at(1);
+        if (name.isEmpty())
+            name = vlist.at(0);
+        QList<int> aglist;
+        for (const auto &i : vlist.at(2).split(",")) {
+            aglist.append(i.toInt());
+        }
+        classes.append(TtClass{vlist.at(0), name, aglist, vlist.at(3).split(",")});
+    }
+}
+
+const TtClass & TtBase::get_class(int cix)
+{
+    return classes[cix];
+}
+
 void TtBase::set_teachers()
 {
     teachers.clear();
@@ -67,9 +91,8 @@ const QList<TtActivity *> TtBase::get_activities()
     return activities;
 }
 
-const TtPlacementList get_item_placements(QString cmd, int item)
+TtPlacementList::TtPlacementList (QString cmd, int item) : QList<TtPlacement *>()
 {
-    TtPlacementList placements;
     auto plist = backend->op(cmd, {QString::number(item)});
     for (const auto &[k, v] : std::as_const(plist)) {
         if (k != "PLACEMENT")
@@ -79,13 +102,12 @@ const TtPlacementList get_item_placements(QString cmd, int item)
         for (const auto &r : vlist.at(3).split(",")) {
             rlist.append(r.toInt());
         }
-        placements.append(new TtPlacement{//
-                                          .activity = vlist.at(0).toInt(),
-                                          .day = vlist.at(1).toInt(),
-                                          .hour = vlist.at(2).toInt(),
-                                          .rooms = rlist});
+        append(new TtPlacement{
+            .activity = vlist.at(0).toInt(),
+            .day = vlist.at(1).toInt(),
+            .hour = vlist.at(2).toInt(),
+            .rooms = rlist});
     }
-    return placements;
 }
 
 TileData *TtBase::get_tile_data(TtPlacement *p)

@@ -1,12 +1,11 @@
-#include "ttbase.h"
-#include "ttgrid.h"
+#include "tt_show_resource.h"
 #include <QJsonObject>
 
-void ShowTeacher(TtGrid *grid, TtBase * ttbase, int teacher_id)
+void ShowTeacher(TtGrid *grid, TtBase * ttbase, int tix)
 {
-    auto plist = get_item_placements("TT_TEACHER_PLACEMENTS", teacher_id);
+    const TtPlacementList plist("TT_TEACHER_PLACEMENTS", tix);
     for (const auto p : plist) {
-        auto tiledata = ttbase->get_tile_data(p);
+        const auto tiledata = ttbase->get_tile_data(p);
         Tile *t = new Tile(
             grid,
             QJsonObject{
