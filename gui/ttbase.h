@@ -67,18 +67,18 @@ private:
     QList<TtClass> classes;
     QList<TtName> teachers;
     QList<TtName> rooms;
-
-public:
-    TtBase();
-    ~TtBase() { clear_activities(); }
     void set_activities();
-    const QList<TtActivity *> get_activities();
     void set_classes();
-    const TtClass &get_class(int cix);
     void set_teachers();
     void set_rooms();
     void set_days();
     void set_hours();
+
+public:
+    TtBase();
+    ~TtBase() { clear_activities(); }
+    const QList<TtActivity *> get_activities();
+    const TtClass &get_class(int cix);
     const QList<TtName> get_days() { return days; }
     const QList<TtName> get_hours() { return hours; }
 

@@ -100,6 +100,12 @@ MainWindow::MainWindow(QWidget *parent)
         this,
         &MainWindow::handle_finished);
     connect( //
+        notifier,
+        &Notifier::new_tt_data,
+        ttview,
+        &TtView::new_tt_data);
+
+    connect( //
         backend,
         &Backend::error,
         this,

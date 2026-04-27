@@ -21,6 +21,7 @@ signals:
     void closeRequest();
     void quit_register_wait(QString module);
     void finished(QString module);
+    void new_tt_data();
 };
 
 extern Notifier *notifier;

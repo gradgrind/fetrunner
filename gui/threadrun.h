@@ -47,7 +47,7 @@ public slots:
     void stopThread();
 
 signals:
-    void startTtRun(const QString &);
+    void startTtRun();
     void runThreadWorkerDone();
     void ticker(const QString &);
     void nconstraints(const QString &result);

@@ -28,6 +28,8 @@ private:
     TtBase *ttbase{nullptr};
 
 public slots:
+    void new_tt_data();
+
     void select_teacher_view();
 };
 

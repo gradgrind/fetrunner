@@ -1,5 +1,6 @@
 #include "backend.h"
 #include <QMap>
+//#include <qdebug.h>
 #include "../libfetrunner/libfetrunner.h"
 //#include <iostream>
 
@@ -22,6 +23,7 @@ QList<KeyVal> Backend::op(QString cmd, QStringList data)
     if (!data.empty()) {
         cmd += "|" + data.join("|");
     }
+    //qDebug() << "?" << cmd;
     FetRunnerCommand(cmd.toUtf8().data());
 
     // Collect log up to "---" or "***"
@@ -76,6 +78,7 @@ KeyVal Backend::readlogline()
 {
     while (true) {
         logline = QString(FetRunnerReadLog());
+        //qDebug() << "=" << logline;
         if (logline.length() != 0 && logline.at(0) != " ")
             break;
         emit log(logline); // write to log without change of colour

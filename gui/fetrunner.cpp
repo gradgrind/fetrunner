@@ -359,7 +359,12 @@ void FetRunner::threadRunActivated(bool active)
 
     //TODO: If !active I could test whether there is a result
     // and set up the timetable viewer.
-    // If active, the timetable viewer should be disabled.
+    //TODO: If active, the timetable viewer should be disabled.
+    if (active) {
+
+    } else {
+        notifier->emit new_tt_data();
+    }
 }
 
 void FetRunner::ticker(const QString &data)

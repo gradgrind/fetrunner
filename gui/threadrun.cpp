@@ -1,13 +1,8 @@
 #include "threadrun.h"
-#include <QTimer>
 #include "backend.h"
 
 void RunThreadWorker::ttrun()
 {
-    //QTimer *timer = new QTimer(this);
-    //connect(timer, &QTimer::timeout, this, &TtRunWorker::tick);
-    //timer->start(1000);
-
     stopFlag = false;
     bool stopped = false; // set this to stop (further) stop commands
 
@@ -48,7 +43,7 @@ void RunThreadWorker::ttrun()
 
 void RunThreadController::runTtThread()
 {
-    auto kv = backend->op("RUN_TT");
+    backend->op("RUN_TT");
     // The back-end should now be running the timetable generation.
     if (!runThreadWorker) {
         runThreadWorker = new RunThreadWorker;
@@ -105,7 +100,7 @@ void RunThreadController::runTtThread()
             &RunThreadController::ieliminate);
         runThread.start();
     }
-    emit startTtRun("GO");
+    emit startTtRun();
 }
 
 void RunThreadController::stopThread()

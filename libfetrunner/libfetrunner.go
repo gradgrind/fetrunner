@@ -23,8 +23,10 @@ func FetRunnerCommand(cString *C.char) {
 
 //export FetRunnerReadLog
 func FetRunnerReadLog() *C.char {
+	//fmt.Println("FetRunnerReadLog()")
 	// Blocks until there is a line to read.
 	line := base.LogTake()
+	//fmt.Printf("+ %s\n", line)
 	C.free(unsafe.Pointer(cmsg)) // cmsg == `nil` is OK
 	cmsg = C.CString(line)
 	return cmsg

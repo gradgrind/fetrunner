@@ -43,6 +43,7 @@ qt_add_executable(fetrunner-gui
     tt_showclass.cpp tt_showclass.h tt_showroom.cpp tt_showroom.h tt_showteacher.cpp
     ttbase.h ttbase.cpp
     tt_show_resource.h
+    readlog_thread.cpp readlog_thread.h
 )
 
 qt_add_translations(fetrunner-gui MERGE_QT_TRANSLATIONS
