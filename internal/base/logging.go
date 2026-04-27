@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 )
 
 /*
@@ -60,10 +61,15 @@ func (ltype MsgType) String() string {
 
 type loggerBase struct {
 	ch       chan string
+	buffer   *LogBuffer
 	running  bool
 	file     *os.File // set only if logging to file
 	ticker   chan string
 	stopFlag bool // used to interrupt long-running processes
+}
+
+func LogFromBuffer(buf *LogBuffer) {
+	logger.buffer = buf
 }
 
 func log(s string) {
@@ -71,6 +77,15 @@ func log(s string) {
 }
 
 func LogTake() string {
+	// Read from a LogBuffer if there is one, until OP_END, then remove it.
+	if logger.buffer != nil {
+		line := logger.buffer.Take()
+		if line == OP_END {
+			// buffer finished, remove it
+			logger.buffer = nil
+		}
+		return line
+	}
 	return <-logger.ch
 }
 
@@ -84,7 +99,7 @@ func SetStopFlag(on bool) {
 
 func LogStop() {
 	log(OP_QUIT)
-	<-logger.ticker
+	<-logger.ticker // only LogToFile uses this channel
 }
 
 func GetStopFlag() bool {
@@ -153,7 +168,11 @@ func LogInfo(s string, a ...any) {
 }
 
 func LogResult(key string, value any) {
-	log(fmt.Sprintf("$ %s=%v", key, value))
+	log(formatLogResult(key, value))
+}
+
+func formatLogResult(key string, value any) string {
+	return fmt.Sprintf("$ %s=%v", key, value)
 }
 
 func LogWarning(s string, a ...any) {
@@ -180,3 +199,43 @@ func LogBug(s string, a ...any) {
 func LogTick(n int) {
 	LogResult(".TICK", n)
 }
+
+//+++ Could this make the channel buffer unnecessary, or is a circular buffer better there?
+
+// Note that there is no space reclamation here, so don't use this for very
+// large data lists.
+type LogBuffer struct {
+	mu    sync.Mutex
+	lines []string
+	index int
+}
+
+func GetLogBuffer() *LogBuffer {
+	buf := &LogBuffer{}
+	buf.mu.Lock()
+	return buf
+}
+
+func (buf *LogBuffer) Add(line string) {
+	buf.mu.TryLock() // ensure locked
+	buf.lines = append(buf.lines, line)
+	buf.mu.Unlock()
+}
+
+func (buf *LogBuffer) AddResult(key string, value any) {
+	buf.mu.TryLock() // ensure locked
+	buf.lines = append(buf.lines, formatLogResult(key, value))
+	buf.mu.Unlock()
+}
+
+func (buf *LogBuffer) Take() string {
+	buf.mu.Lock()
+	l := buf.lines[buf.index]
+	buf.index++
+	if buf.index < len(buf.lines) {
+		buf.mu.Unlock() // more items are available
+	}
+	return l
+}
+
+//---

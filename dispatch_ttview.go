@@ -88,6 +88,7 @@ func get_rooms(op *DispatchOp) bool {
 
 func get_activities(op *DispatchOp) bool {
 	if CheckArgs(op, 0) {
+		buf := base.GetLogBuffer()
 		lres := autotimetable.AutoTt.GetLastResult()
 		for _, a := range lres.Activities {
 			tlist := []string{}
@@ -102,14 +103,17 @@ func get_activities(op *DispatchOp) bool {
 			for _, g := range a.Groups {
 				glist = append(glist, g.Tag)
 			}
-			base.LogResult(op.Op, fmt.Sprintf("%d:%s:%s:%s:%s",
+			buf.AddResult(op.Op, fmt.Sprintf("%d:%s:%s:%s:%s",
 				a.Duration, a.Subject,
 				strings.Join(tlist, ","),
 				strings.Join(aglist, ","),
 				strings.Join(glist, ",")))
 		}
+		buf.Add(base.OP_END)
+		// The result lines need to be read from the buffer.
+		base.LogFromBuffer(buf)
 	}
-	return true
+	return false
 }
 
 func get_class_placements(op *DispatchOp) bool {

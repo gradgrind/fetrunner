@@ -1,5 +1,8 @@
 #include "readlog_thread.h"
 #include "backend.h"
+#include <qdebug.h>
+
+//TODO-- deprecated, not using these threads any more ...
 
 void ReadLogWorker::readLogRun()
 {
@@ -7,12 +10,14 @@ void ReadLogWorker::readLogRun()
 
     while (true) {
        auto kv = backend->readlogline();
+       qDebug() << "+" << kv.key << kv.val;
         if (kv.key == "$") {
             emit resultLine(backend->readresult(kv.val));
         } else if (kv.key == "---") {
             break;
         }
     }
+    qDebug() << "readLogWorkerDone";
     emit readLogWorkerDone();
 }
 
@@ -49,6 +54,7 @@ void ReadLogThreadController::runReadLogThread(QString cmd)
         readLogThread.start();
     }
     emit startReadLogThread();
+    readLogThread.wait();
 }
 
 void ReadLogThreadController::addResult(KeyVal kv)

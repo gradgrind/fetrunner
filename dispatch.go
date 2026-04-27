@@ -55,7 +55,9 @@ func Dispatch(cmd0 string) {
 			}
 			base.LogCommand(slist)
 		}
-		base.LogCommandEnd(f(&op))
+		if f(&op) {
+			base.LogCommandEnd(true)
+		}
 	} else {
 		panic("!InvalidOp: " + op.Op)
 	}
@@ -249,6 +251,7 @@ func runtt(op *DispatchOp) bool {
 
 		// Need an extra goroutine so that this can return immediately.
 		go autotimetable.AutoTt.StartGeneration()
+		base.LogCommandEnd(false)
 		return false
 	}
 	return true

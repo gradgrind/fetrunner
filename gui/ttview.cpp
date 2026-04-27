@@ -32,7 +32,7 @@ void TtView::new_tt_data()
 {
     qDebug() << "new_tt_data";
     //TODO: Skip this if a quit has been requested.
-    return;
+    //return;
     delete ttbase;
     ttbase = new TtBase();
 }

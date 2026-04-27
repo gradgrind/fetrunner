@@ -4,6 +4,9 @@
 #include "backend.h"
 #include <QObject>
 #include <QThread>
+#include <qdebug.h>
+
+//TODO-- deprecated, not using these threads any more ...
 
 // Use a thread to read the output of a command with many logged lines,
 // to avoid filling, and thus blocking, the back-end buffer.
@@ -43,10 +46,11 @@ public:
 
 public slots:
     void addResult(KeyVal);
+    void readLogWorkerDone() { qDebug() << "SLOT readLogWorkerDone"; }
 
 signals:
     void startReadLogThread();
-    void readLogWorkerDone();
+    //void readLogWorkerDone();
 };
 
 #endif // READLOG_THREAD_H

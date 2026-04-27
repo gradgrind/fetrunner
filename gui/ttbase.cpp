@@ -1,13 +1,20 @@
 #include "ttbase.h"
 #include "backend.h"
+#include "readlog_thread.h"
+#include <qdebug.h>
 
 TtBase::TtBase() {
     set_days();
     set_hours();
+    qDebug() << "set_classes()";
     set_classes();
+    qDebug() << "set_teachers()";
     set_teachers();
+    qDebug() << "set_rooms()";
     set_rooms();
+    qDebug() << "set_activities()";
     set_activities();
+    qDebug() << "end TtBase()";
 }
 
 void TtBase::set_days()
