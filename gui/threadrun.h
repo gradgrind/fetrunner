@@ -32,6 +32,8 @@ class RunThreadController : public QObject
 
     QThread runThread;
     RunThreadWorker *runThreadWorker{nullptr};
+    // Destruction of `runThreadWorker` should be done by the
+    // Q_OBJECT mechanisms.
 
 public:
     //RunThreadController();

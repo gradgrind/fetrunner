@@ -26,6 +26,8 @@ class ReadLogThreadController : public QObject
 
     QThread readLogThread;
     ReadLogWorker *readLogWorker{nullptr};
+    // Destruction of `readLogWorker` should be done by the
+    // Q_OBJECT mechanisms.
 
 public:
     //ReadLogThreadController();
@@ -33,7 +35,6 @@ public:
     {
         readLogThread.quit();
         readLogThread.wait();
-        delete readLogWorker;
     }
 
     void runReadLogThread(QString op);
