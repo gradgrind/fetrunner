@@ -330,7 +330,7 @@ void FetRunner::select_default_fet_path()
 
 void FetRunner::runThreadWorkerDone()
 {
-    //qDebug() << "threadRunFinished";
+    //qDebug() << "threadRunFinished" << "FetRunner";
     threadRunActivated(false);
     closingMessageBox.hide();
     notifier->emit finished("FetRunner");
@@ -338,6 +338,7 @@ void FetRunner::runThreadWorkerDone()
 
 void FetRunner::close_request()
 {
+    //qDebug() << "close_request()" << thread_running;
     if (thread_running) {
         notifier->emit quit_register_wait("FetRunner");
         push_stop();
@@ -355,6 +356,10 @@ void FetRunner::threadRunActivated(bool active)
     notifier->emit setBusy(active);
 
     ui->frame_parameters->setDisabled(active);
+
+    //TODO: If !active I could test whether there is a result
+    // and set up the timetable viewer.
+    // If active, the timetable viewer should be disabled.
 }
 
 void FetRunner::ticker(const QString &data)

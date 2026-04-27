@@ -19,12 +19,13 @@ public:
     explicit TtView(QWidget *parent = nullptr);
     ~TtView();
 
-    void set_teacher(TtBase *ttbase, int tix);
+    void set_teacher(int tix);
 
 private:
     Ui::TtView *ui;
     //Canvas *canvas;
-    TtGrid *grid;
+    TtGrid *grid{nullptr};
+    TtBase *ttbase{nullptr};
 
 public slots:
     void select_teacher_view();

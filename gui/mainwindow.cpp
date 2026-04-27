@@ -52,7 +52,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect( //
         ui->help,
         &QRadioButton::toggled,
-        this,
+        //this,
         [this](bool checked) {
             if (checked) {
                 ui->main_panel->setCurrentIndex(0);
@@ -62,7 +62,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect( //
         ui->solve_timetable,
         &QRadioButton::toggled,
-        this,
+        //this,
         [this](bool checked) {
             if (checked) {
                 ui->main_panel->setCurrentIndex(1);
@@ -72,7 +72,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect( //
         ui->view_timetable,
         &QRadioButton::toggled,
-        this,
+        //this,
         [this](bool checked) {
             if (checked) {
                 ui->main_panel->setCurrentIndex(2);
@@ -89,6 +89,16 @@ MainWindow::MainWindow(QWidget *parent)
         &Notifier::errorPopup,
         this,
         &MainWindow::error_popup);
+    connect( //
+        notifier,
+        &Notifier::quit_register_wait,
+        this,
+        &MainWindow::quit_register_wait);
+    connect( //
+        notifier,
+        &Notifier::finished,
+        this,
+        &MainWindow::handle_finished);
     connect( //
         backend,
         &Backend::error,
@@ -111,6 +121,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::closeEvent(QCloseEvent *e)
 {
+    //qDebug() << "closeEvent()" << quit_confirmed << quit_requested << waiting_on.length();
     if (quit_confirmed) {
         QWidget::closeEvent(e);
         return;
@@ -130,6 +141,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
 
 void MainWindow::quit_register_wait(QString module)
 {
+    //qDebug() << "quit_register_wait()" << module;
     if (!waiting_on.contains(module)) {
         waiting_on.append(module);
     }
@@ -137,6 +149,7 @@ void MainWindow::quit_register_wait(QString module)
 
 void MainWindow::handle_finished(QString module)
 {
+    //qDebug() << "handle_finished()" << quit_requested;
     if (quit_requested) {
         waiting_on.removeOne(module);
         if (waiting_on.length() == 0) {

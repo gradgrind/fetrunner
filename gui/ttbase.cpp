@@ -2,7 +2,12 @@
 #include "backend.h"
 
 TtBase::TtBase() {
-
+    set_days();
+    set_hours();
+    set_classes();
+    set_teachers();
+    set_rooms();
+    set_activities();
 }
 
 void TtBase::set_days()

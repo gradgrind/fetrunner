@@ -19,8 +19,9 @@ TtView::~TtView()
     delete ui;
 }
 
-void TtView::set_teacher(TtBase *ttbase, int tix)
+void TtView::set_teacher(int tix)
 {
+    if (ttbase == nullptr) return;
     delete grid;
     auto days = ttbase->get_days();
     auto hours = ttbase->get_hours();
@@ -41,5 +42,6 @@ void TtView::set_teacher(TtBase *ttbase, int tix)
 //TODO: There will need to be a list of teachers to select from.
 void TtView::select_teacher_view()
 {
-    qDebug() << "Hi!";
+    qDebug() << "Hi, testing teacher view!";
+    set_teacher(15);
 }
