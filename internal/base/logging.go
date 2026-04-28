@@ -29,6 +29,7 @@ func init() {
 	DataBase = &BaseData{}
 	logger = &logBuffer{}
 	logger.mu.Lock()
+	logger.logch = make(chan string, 100)
 }
 
 type MsgType int
@@ -54,18 +55,21 @@ var logType = map[MsgType]string{
 
 type logBuffer struct {
 	mu       sync.Mutex
+	logch    chan string
 	lines    []string
 	index    int
-	file     *os.File    // set only if logging to file
-	ticker   chan string // set only if logging to file
+	file     *os.File // set only if logging to file
 	running  bool
-	stopFlag bool // used to interrupt long-running processes
+	stopFlag bool      // used to interrupt long-running processes
+	done     chan bool // set only if logging to file
 }
 
 func log(line string) {
-	logger.mu.TryLock() // ensure locked
-	logger.lines = append(logger.lines, line)
-	logger.mu.Unlock()
+	logger.logch <- line
+}
+
+func LogTake() string {
+	return <-logger.logch
 }
 
 func LogResult(key string, value any) {
@@ -80,27 +84,7 @@ func LogCommand(slist []string) {
 func LogCommandEnd() {
 	log(OP_END)
 	logger.running = false
-}
-
-func LogTake() string {
-	logger.mu.Lock()
-	l := logger.lines[logger.index]
-	logger.index++
-	if l == OP_END {
-		// End of operation, reset buffer
-		logger.lines = logger.lines[:0]
-		logger.index = 0
-	} else {
-		if logger.index >= 100 {
-			// Reclaim unused space
-			logger.lines = logger.lines[logger.index:]
-			logger.index = 0
-		}
-		if logger.index < len(logger.lines) {
-			logger.mu.Unlock() // more items are available
-		}
-	}
-	return l
+	<-logger.done // wait for the log to catch up
 }
 
 func (ltype MsgType) String() string {
@@ -125,7 +109,7 @@ func GetStopFlag() bool {
 
 func LogToFile(logfile *os.File) {
 	logger.file = logfile
-	logger.ticker = make(chan string)
+	logger.done = make(chan bool)
 	go logToFile()
 }
 
@@ -135,18 +119,12 @@ func logToFile() {
 	for {
 		line := LogTake()
 		logger.file.WriteString(strings.ReplaceAll(line, "||", "\n + ") + "\n")
-		if strings.HasPrefix(line, "$ .TICK=") {
-			_, t, _ := strings.Cut(line, "=")
-			logger.ticker <- t
+		if line == OP_END {
+			logger.done <- true
 		} else if line == OP_QUIT {
-			close(logger.ticker)
 			break
 		}
 	}
-}
-
-func LogWaitTicker() {
-	<-logger.ticker
 }
 
 func LogRunning() bool {

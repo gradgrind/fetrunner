@@ -31,32 +31,30 @@ type DispatchOp struct {
 	Data []string
 }
 
-var OpHandlerMap map[string]func(*DispatchOp) bool = map[string]func(*DispatchOp) bool{}
+var OpHandlerMap map[string]func(*DispatchOp) = map[string]func(*DispatchOp){}
 
 // A command is supplied as a string with separator "|". The first item is the
 // command name, which is looked up in `OpHandlerMap`. This provides the actual
 // function to call. Normally a command will only be accepted when no other is
 // running, but to handle long-running commands there is also the possibility of
-// using a command beginning with "_", which will only be accepted when another
+// using a command beginning with "_", which will be accepted when another
 // command is running.
 func Dispatch(cmd0 string) {
 	slist := strings.Split(cmd0, "|")
 	op := DispatchOp{Op: slist[0], Data: slist[1:]}
 	f, ok := OpHandlerMap[op.Op]
 	if ok {
-		if base.LogRunning() {
-			if op.Op[0] != '_' {
+		if op.Op[0] == '_' {
+			// Don't log this command.
+			f(&op)
+		} else {
+			if base.LogRunning() {
+				// Don't log this command.
 				panic("!InvalidOp_Running: " + op.Op)
 			}
-			// Don't log this command.
-		} else {
-			if op.Op[0] == '_' {
-				panic("!InvalidOp_NotRunning: " + op.Op)
-			}
 			base.LogCommand(slist)
-		}
-		if f(&op) {
-			base.LogCommandEnd(true)
+			f(&op)
+			base.LogCommandEnd()
 		}
 	} else {
 		panic("!InvalidOp: " + op.Op)
@@ -93,19 +91,17 @@ func init() {
 	OpHandlerMap["N_PROCESSES"] = nprocesses
 }
 
-func fetrunner_version(op *DispatchOp) bool {
+func fetrunner_version(op *DispatchOp) {
 	if CheckArgs(op, 0) {
 		base.LogResult("FETRUNNER_VERSION", VERSION)
 	}
-	return true
 }
 
-func set_tmp(op *DispatchOp) bool {
+func set_tmp(op *DispatchOp) {
 	if CheckArgs(op, 1) {
 		base.TEMPORARY_BASEDIR = op.Data[0]
 		base.DataBase.SetTmpDir()
 	}
-	return true
 }
 
 func check_fet(fetpath string) bool {
@@ -127,7 +123,7 @@ func check_fet(fetpath string) bool {
 }
 
 // Check path to FET command-line executable and get FET version.
-func get_fet(op *DispatchOp) bool {
+func get_fet(op *DispatchOp) {
 	if CheckArgs(op, 2) {
 		fetpath := op.Data[0]
 		if fetpath == "" {
@@ -148,7 +144,7 @@ func get_fet(op *DispatchOp) bool {
 					fetpath0 := filepath.Join(filepath.Dir(p), fetpath)
 					if check_fet(fetpath0) {
 						fet.FETPATH = fetpath0
-						return true
+						return
 					}
 				}
 			}
@@ -158,14 +154,13 @@ func get_fet(op *DispatchOp) bool {
 			fet.FETPATH = fetpath
 		}
 	}
-	return true
 }
 
 // Handle (currently) ".fet" and "_w365.json" input files.
-func file_loader(op *DispatchOp) bool {
+func file_loader(op *DispatchOp) {
 	bd := base.DataBase
 	if !CheckArgs(op, 1) {
-		return true
+		return
 	}
 	fpath := op.Data[0]
 
@@ -179,7 +174,7 @@ func file_loader(op *DispatchOp) bool {
 			base.LogResult(op.Op, fpath)
 			base.LogResult("DATA_TYPE", "FET")
 			bd.Db = nil
-			return true
+			return
 		}
 	} else if strings.HasSuffix(strings.ToLower(fpath), "_w365.json") {
 		db0 := bd.Db // save old Db in case loading of new data fails
@@ -192,19 +187,18 @@ func file_loader(op *DispatchOp) bool {
 			base.PrepareDb()
 			base.LogResult(op.Op, fpath)
 			base.LogResult("DATA_TYPE", "DB")
-			return true
+			return
 		}
 		bd.Db = db0
 	} else {
 		base.LogError("--LOAD_FILE_INVALID_SUFFIX %s", fpath)
-		return true
+		return
 	}
 	base.LogError("--LOAD_FILE_INVALID_CONTENT %s", fpath)
-	return true
 }
 
 // `runtt_source` must be run before `runtt` to ensure that there is source data.
-func runtt_source(op *DispatchOp) bool {
+func runtt_source(op *DispatchOp) {
 	if CheckArgs(op, 0) {
 		bdata := base.DataBase
 		//if logger.Running {
@@ -213,7 +207,7 @@ func runtt_source(op *DispatchOp) bool {
 		if bdata.Source == nil {
 			base.LogError("--NO_SOURCE")
 			base.LogResult("OK", "false")
-			return true
+			return
 		}
 		var ttsource autotimetable.TtSource
 		switch stype := bdata.Source.SourceType(); stype {
@@ -237,10 +231,9 @@ func runtt_source(op *DispatchOp) bool {
 		autotimetable.AutoTt = attdata
 		base.LogResult("OK", "true")
 	}
-	return true
 }
 
-func runtt(op *DispatchOp) bool {
+func runtt(op *DispatchOp) {
 	if CheckArgs(op, 0) {
 		switch autotimetable.TtParameters.BACKEND {
 		case "", "FET":
@@ -249,23 +242,24 @@ func runtt(op *DispatchOp) bool {
 			panic("Unsupported timetable-generation back-end: " + autotimetable.TtParameters.BACKEND)
 		}
 
+		autotimetable.AutoTt.StartGeneration()
+
 		// Need an extra goroutine so that this can return immediately.
-		go autotimetable.AutoTt.StartGeneration()
-		base.LogCommandEnd(false)
-		return false
+		//go autotimetable.AutoTt.StartGeneration()
+		//base.LogCommandEnd(false)
+		//return false
 	}
-	return true
+	//return true
 }
 
-func stoptt(op *DispatchOp) bool {
+func stoptt(op *DispatchOp) {
 	if CheckArgs(op, 0) {
 		base.SetStopFlag(true)
 	}
-	return true
 }
 
 // Get the result data as a JSON string.
-func ttresult(op *DispatchOp) bool {
+func ttresult(op *DispatchOp) {
 	if CheckArgs(op, 0) {
 		result := autotimetable.AutoTt.GetLastResultJSON()
 		//TODO: At present the JSON result is generated automatically as a
@@ -273,11 +267,10 @@ func ttresult(op *DispatchOp) bool {
 		// instead.
 		_ = result
 	}
-	return true
 }
 
 // Set a parameter for autotimetable.
-func ttparameter(op *DispatchOp) bool {
+func ttparameter(op *DispatchOp) {
 	key := op.Data[0]
 	val := op.Data[1]
 	switch key {
@@ -286,7 +279,7 @@ func ttparameter(op *DispatchOp) bool {
 		n, err := strconv.Atoi(val)
 		if err != nil {
 			base.LogError("--BAD_NUMBER %s=%s", key, val)
-			return true
+			return
 		} else {
 			autotimetable.TtParameters.TIMEOUT = n
 		}
@@ -295,7 +288,7 @@ func ttparameter(op *DispatchOp) bool {
 		n, err := strconv.Atoi(val)
 		if err != nil {
 			base.LogError("--BAD_NUMBER %s=%s", key, val)
-			return true
+			return
 		} else {
 			autotimetable.TtParameters.MAXPROCESSES = autotimetable.MaxProcesses(n)
 			val = strconv.Itoa(autotimetable.TtParameters.MAXPROCESSES)
@@ -318,21 +311,19 @@ func ttparameter(op *DispatchOp) bool {
 
 	default:
 		base.LogError("--UNKNOWN_PARAMETER %s", key)
-		return true
+		return
 	}
 
 	base.LogResult(key, val)
-	return true
 }
 
-func nprocesses(op *DispatchOp) bool {
+func nprocesses(op *DispatchOp) {
 	nmin, np, nopt := autotimetable.MinNpOptProcesses()
 	base.LogResult(op.Op, fmt.Sprintf("%d.%d.%d", nmin, np, nopt))
-	return true
 }
 
 // Return the high priority processes handled in autotimetable's phase 0
-func priortityConstraints(op *DispatchOp) bool {
+func priortityConstraints(op *DispatchOp) {
 	if CheckArgs(op, 0) {
 		ctlist := []string{}
 		for _, ct := range autotimetable.AutoTt.Source.GetPhase0ConstraintTypes() {
@@ -340,11 +331,10 @@ func priortityConstraints(op *DispatchOp) bool {
 		}
 		base.LogResult("PRIORITY_CONSTRAINTS", strings.Join(ctlist, ":"))
 	}
-	return true
 }
 
 // Return the hard constraints sorted according to priority.
-func hardConstraints(op *DispatchOp) bool {
+func hardConstraints(op *DispatchOp) {
 	if CheckArgs(op, 0) {
 		for _, c := range autotimetable.AutoTt.Constraint_Types {
 			ilist, ok := autotimetable.AutoTt.HardConstraintMap[c]
@@ -355,11 +345,10 @@ func hardConstraints(op *DispatchOp) bool {
 			}
 		}
 	}
-	return true
 }
 
 // Return the soft constraints sort according to weight.
-func softConstraints(op *DispatchOp) bool {
+func softConstraints(op *DispatchOp) {
 	if CheckArgs(op, 0) {
 		clist := slices.SortedFunc(maps.Keys(autotimetable.AutoTt.SoftConstraintMap),
 			func(a, b string) int { return strings.Compare(b, a) })
@@ -369,10 +358,9 @@ func softConstraints(op *DispatchOp) bool {
 				strconv.Itoa(len(autotimetable.AutoTt.SoftConstraintMap[c])))
 		}
 	}
-	return true
 }
 
-func nActivities(op *DispatchOp) bool {
+func nActivities(op *DispatchOp) {
 	if CheckArgs(op, 0) {
 		n := autotimetable.AutoTt.NActivities
 		if n == 0 {
@@ -380,5 +368,4 @@ func nActivities(op *DispatchOp) bool {
 		}
 		base.LogResult("N_ACTIVITIES", strconv.Itoa(n))
 	}
-	return true
 }

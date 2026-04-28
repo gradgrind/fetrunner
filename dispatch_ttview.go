@@ -22,27 +22,25 @@ func init() {
 
 // The AutoTtData instance is available as `autotimetable.AutoTt`.
 
-func get_days(op *DispatchOp) bool {
+func get_days(op *DispatchOp) {
 	if CheckArgs(op, 0) {
 		lres := autotimetable.AutoTt.GetLastResult()
 		for _, d := range lres.Days {
 			base.LogResult(op.Op, d.Tag+":")
 		}
 	}
-	return true
 }
 
-func get_hours(op *DispatchOp) bool {
+func get_hours(op *DispatchOp) {
 	if CheckArgs(op, 0) {
 		lres := autotimetable.AutoTt.GetLastResult()
 		for _, h := range lres.Hours {
 			base.LogResult(op.Op, h.Tag+":")
 		}
 	}
-	return true
 }
 
-func get_classes(op *DispatchOp) bool {
+func get_classes(op *DispatchOp) {
 	if CheckArgs(op, 0) {
 		lres := autotimetable.AutoTt.GetLastResult()
 		for _, cls := range lres.Classes {
@@ -61,34 +59,30 @@ func get_classes(op *DispatchOp) bool {
 			base.LogResult(op.Op, cls.Tag+"::"+ais+":"+gs)
 		}
 	}
-	return true
 }
 
 // TODO: (long) names
-func get_teachers(op *DispatchOp) bool {
+func get_teachers(op *DispatchOp) {
 	if CheckArgs(op, 0) {
 		lres := autotimetable.AutoTt.GetLastResult()
 		for _, t := range lres.Teachers {
 			base.LogResult(op.Op, t.Tag+":")
 		}
 	}
-	return true
 }
 
 // TODO: (long) names
-func get_rooms(op *DispatchOp) bool {
+func get_rooms(op *DispatchOp) {
 	if CheckArgs(op, 0) {
 		lres := autotimetable.AutoTt.GetLastResult()
 		for _, r := range lres.Rooms {
 			base.LogResult(op.Op, r.Tag+":")
 		}
 	}
-	return true
 }
 
-func get_activities(op *DispatchOp) bool {
+func get_activities(op *DispatchOp) {
 	if CheckArgs(op, 0) {
-		buf := base.GetLogBuffer()
 		lres := autotimetable.AutoTt.GetLastResult()
 		for _, a := range lres.Activities {
 			tlist := []string{}
@@ -103,20 +97,16 @@ func get_activities(op *DispatchOp) bool {
 			for _, g := range a.Groups {
 				glist = append(glist, g.Tag)
 			}
-			buf.AddResult(op.Op, fmt.Sprintf("%d:%s:%s:%s:%s",
+			base.LogResult(op.Op, fmt.Sprintf("%d:%s:%s:%s:%s",
 				a.Duration, a.Subject,
 				strings.Join(tlist, ","),
 				strings.Join(aglist, ","),
 				strings.Join(glist, ",")))
 		}
-		buf.End()
-		// The result lines need to be read from the buffer.
-		base.LogFromBuffer(buf)
 	}
-	return false
 }
 
-func get_class_placements(op *DispatchOp) bool {
+func get_class_placements(op *DispatchOp) {
 	if CheckArgs(op, 1) {
 		cix, err := strconv.Atoi(op.Data[0])
 		if err != nil {
@@ -127,10 +117,9 @@ func get_class_placements(op *DispatchOp) bool {
 			base.LogResult("PLACEMENT", autotimetable.SerializePlacement(p))
 		}
 	}
-	return true
 }
 
-func get_teacher_placements(op *DispatchOp) bool {
+func get_teacher_placements(op *DispatchOp) {
 	if CheckArgs(op, 1) {
 		tix, err := strconv.Atoi(op.Data[0])
 		if err != nil {
@@ -141,10 +130,9 @@ func get_teacher_placements(op *DispatchOp) bool {
 			base.LogResult("PLACEMENT", autotimetable.SerializePlacement(p))
 		}
 	}
-	return true
 }
 
-func get_room_placements(op *DispatchOp) bool {
+func get_room_placements(op *DispatchOp) {
 	if CheckArgs(op, 1) {
 		rix, err := strconv.Atoi(op.Data[0])
 		if err != nil {
@@ -155,7 +143,6 @@ func get_room_placements(op *DispatchOp) bool {
 			base.LogResult("PLACEMENT", autotimetable.SerializePlacement(p))
 		}
 	}
-	return true
 }
 
 //TODO: Consider extending BaseElement to include a "long name". Alternatively,

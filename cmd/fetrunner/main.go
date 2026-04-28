@@ -162,19 +162,6 @@ func main() {
 	go termination() // catch stop signal
 
 	fetrunner.Dispatch("RUN_TT")
-	cancelled := false
-	for {
-		if !cancelled && stop_request {
-			fetrunner.Dispatch("_STOP_TT")
-			cancelled = true // necessary because this loop is exited only later
-		}
-
-		// Continue looping until run finished, using the ticker to slow down the loop.
-		base.LogWaitTicker()
-		if !base.LogRunning() {
-			break
-		}
-	}
 
 	//TODO-- just testing the new functions
 	//fmt.Println("Done")
@@ -191,14 +178,11 @@ func main() {
 	base.LogStop()
 }
 
-// Catch "terminate" signal (goroutine)
-var stop_request bool = false
-
 func termination() {
 	// Catch termination signal
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
 	<-sigChan // wait for signal
-	stop_request = true
+	fetrunner.Dispatch("_STOP_TT")
 }

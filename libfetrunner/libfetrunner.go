@@ -32,8 +32,4 @@ func FetRunnerReadLog() *C.char {
 	return cmsg
 }
 
-func init() {
-	base.LogToBuffer()
-}
-
 func main() {}
