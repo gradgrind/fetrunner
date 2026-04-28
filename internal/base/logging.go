@@ -10,9 +10,9 @@ import (
 )
 
 /*
-    The logger passes lines to stdout.
+    The logger uses a buffer to store incoming log lines until they are read using `LogTake()`.
 
-All operations cause a OP_START to be logged before doing anything else,
+All operations cause an OP_START to be logged before doing anything else,
 and an OP_END at the end. Any results or other log entries associated
 with an operation will be between these two entries.
 
@@ -22,11 +22,13 @@ so it has no OP_END.
 
 var (
 	DataBase *BaseData
-	logger   *loggerBase
+	logger   *logBuffer
 )
 
 func init() {
 	DataBase = &BaseData{}
+	logger = &logBuffer{}
+	logger.mu.Lock()
 }
 
 type MsgType int
@@ -38,10 +40,9 @@ const (
 	ERROR
 	BUG
 
-	OP_START   = "+++"
-	OP_END     = "---"
-	OP_LONGRUN = "***"
-	OP_QUIT    = "-*-*-"
+	OP_START = "+++"
+	OP_END   = "---"
+	OP_QUIT  = "-*-*-"
 )
 
 var logType = map[MsgType]string{
@@ -49,6 +50,57 @@ var logType = map[MsgType]string{
 	WARNING: "*WARNING*",
 	ERROR:   "*ERROR*",
 	BUG:     "*BUG*",
+}
+
+type logBuffer struct {
+	mu       sync.Mutex
+	lines    []string
+	index    int
+	file     *os.File    // set only if logging to file
+	ticker   chan string // set only if logging to file
+	running  bool
+	stopFlag bool // used to interrupt long-running processes
+}
+
+func log(line string) {
+	logger.mu.TryLock() // ensure locked
+	logger.lines = append(logger.lines, line)
+	logger.mu.Unlock()
+}
+
+func LogResult(key string, value any) {
+	log(fmt.Sprintf("$ %s=%v", key, value))
+}
+
+func LogCommand(slist []string) {
+	logger.running = true
+	log(fmt.Sprintf("%s %s %+v", OP_START, slist[0], slist[1:]))
+}
+
+func LogCommandEnd() {
+	log(OP_END)
+	logger.running = false
+}
+
+func LogTake() string {
+	logger.mu.Lock()
+	l := logger.lines[logger.index]
+	logger.index++
+	if l == OP_END {
+		// End of operation, reset buffer
+		logger.lines = logger.lines[:0]
+		logger.index = 0
+	} else {
+		if logger.index >= 100 {
+			// Reclaim unused space
+			logger.lines = logger.lines[logger.index:]
+			logger.index = 0
+		}
+		if logger.index < len(logger.lines) {
+			logger.mu.Unlock() // more items are available
+		}
+	}
+	return l
 }
 
 func (ltype MsgType) String() string {
@@ -59,68 +111,21 @@ func (ltype MsgType) String() string {
 	return s
 }
 
-type loggerBase struct {
-	ch       chan string
-	buffer   *LogBuffer
-	running  bool
-	file     *os.File // set only if logging to file
-	ticker   chan string
-	stopFlag bool // used to interrupt long-running processes
-}
-
-func LogFromBuffer(buf *LogBuffer) {
-	logger.buffer = buf
-}
-
-func log(s string) {
-	logger.ch <- s
-}
-
-func LogTake() string {
-	// Read from a LogBuffer if there is one, until OP_END, then remove it.
-	if logger.buffer != nil {
-		line := logger.buffer.Take()
-		if line == OP_END {
-			// buffer finished, remove it
-			logger.buffer = nil
-		}
-		return line
-	}
-	return <-logger.ch
-}
-
-func LogWaitTicker() string {
-	return <-logger.ticker
-}
-
 func SetStopFlag(on bool) {
 	logger.stopFlag = on
 }
 
 func LogStop() {
 	log(OP_QUIT)
-	<-logger.ticker // only LogToFile uses this channel
 }
 
 func GetStopFlag() bool {
 	return logger.stopFlag
 }
 
-// The basic logging function, the entries must be read externally using `LogTake()`.
-func LogToBuffer() {
-	logger = &loggerBase{
-		// The channel buffer should be large enough for the writer not to be held up.
-		ch: make(chan string, 100),
-	}
-}
-
 func LogToFile(logfile *os.File) {
-	logger = &loggerBase{
-		// The channel buffer should be large enough for the writer not to be held up.
-		ch:     make(chan string, 100),
-		ticker: make(chan string),
-		file:   logfile,
-	}
+	logger.file = logfile
+	logger.ticker = make(chan string)
 	go logToFile()
 }
 
@@ -140,18 +145,8 @@ func logToFile() {
 	}
 }
 
-func LogCommand(slist []string) {
-	logger.running = true
-	log(fmt.Sprintf("%s %s %+v", OP_START, slist[0], slist[1:]))
-}
-
-func LogCommandEnd(real_end bool) {
-	if real_end {
-		logger.running = false
-		log(OP_END)
-	} else {
-		log(OP_LONGRUN)
-	}
+func LogWaitTicker() {
+	<-logger.ticker
 }
 
 func LogRunning() bool {
@@ -165,14 +160,6 @@ func logMessage(ltype MsgType, s string, a ...any) {
 
 func LogInfo(s string, a ...any) {
 	logMessage(INFO, s, a...)
-}
-
-func LogResult(key string, value any) {
-	log(formatLogResult(key, value))
-}
-
-func formatLogResult(key string, value any) string {
-	return fmt.Sprintf("$ %s=%v", key, value)
 }
 
 func LogWarning(s string, a ...any) {
@@ -199,48 +186,3 @@ func LogBug(s string, a ...any) {
 func LogTick(n int) {
 	LogResult(".TICK", n)
 }
-
-//+++ Could this make the channel buffer unnecessary, or is a circular buffer better there?
-
-// Note that there is no space reclamation here, so don't use this for very
-// large data lists.
-type LogBuffer struct {
-	mu    sync.Mutex
-	lines []string
-	index int
-}
-
-func GetLogBuffer() *LogBuffer {
-	buf := &LogBuffer{}
-	buf.mu.Lock()
-	return buf
-}
-
-func (buf *LogBuffer) Add(line string) {
-	buf.mu.TryLock() // ensure locked
-	buf.lines = append(buf.lines, line)
-	buf.mu.Unlock()
-}
-
-func (buf *LogBuffer) AddResult(key string, value any) {
-	buf.mu.TryLock() // ensure locked
-	buf.lines = append(buf.lines, formatLogResult(key, value))
-	buf.mu.Unlock()
-}
-
-func (buf *LogBuffer) End() {
-	buf.Add(OP_END)
-	logger.running = false
-}
-
-func (buf *LogBuffer) Take() string {
-	buf.mu.Lock()
-	l := buf.lines[buf.index]
-	buf.index++
-	if buf.index < len(buf.lines) {
-		buf.mu.Unlock() // more items are available
-	}
-	return l
-}
-
-//---
