@@ -228,6 +228,11 @@ func (buf *LogBuffer) AddResult(key string, value any) {
 	buf.mu.Unlock()
 }
 
+func (buf *LogBuffer) End() {
+	buf.Add(OP_END)
+	logger.running = false
+}
+
 func (buf *LogBuffer) Take() string {
 	buf.mu.Lock()
 	l := buf.lines[buf.index]

@@ -109,7 +109,7 @@ func get_activities(op *DispatchOp) bool {
 				strings.Join(aglist, ","),
 				strings.Join(glist, ",")))
 		}
-		buf.Add(base.OP_END)
+		buf.End()
 		// The result lines need to be read from the buffer.
 		base.LogFromBuffer(buf)
 	}
