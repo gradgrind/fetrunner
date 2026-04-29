@@ -54,7 +54,7 @@ class ReadLogWorker : public QObject
 
     }
 public slots:
-    void readLog() {
+    void readLog(QList<KeyVal> &results) {
         readLogs();
         emit opDone();
     }
@@ -78,27 +78,51 @@ public:
         connect(this, &ReadLogController::readLog, worker, &ReadLogWorker::readLog);
         connect(this, &ReadLogController::cancelRun, worker, &ReadLogWorker::cancelRun);
         connect(worker, &ReadLogWorker::opDone, this, &ReadLogController::handleDone);
+        connect(worker, &ReadLogWorker::result, this, &ReadLogController::handleResult);
         workerThread.start();
     }
     ~ReadLogController() {
         workerThread.quit();
         workerThread.wait();
     }
-public slots:
+    QList<KeyVal> results;
+private slots:
     void handleDone();
+    void handleResult(KeyVal kv);
 signals:
-    void readLog();
+    void readLog(QList<KeyVal> &results);
     void cancelRun();
 };
 
-ReadLogController readLogController;
-
-void startReadLog()
-{
-    emit readLogController.readLog();
-}
+static ReadLogController readLogController;
 
 void stopRun()
 {
     emit readLogController.cancelRun();
 }
+
+QList<KeyVal> command()
+{
+    //TODO ...???
+    QList<KeyVal> results;
+    emit readLogController.readLog(results);
+
+    //TODO: call the actual function
+
+    return readLogController.results
+}
+/*
+A back-end call can (should?) run synchronously if it is short,
+allowing results to be returned directly. To allow the reading of
+the logs while they are being generated (to avoid buffer blocking),
+the log reader must be started first:
+
+    startReadLog();
+    doCommand();
+    waitForEndOfReadLog(); // Maybe not ... it's not easy
+    return results;
+
+The fetrunner command, however, takes a long time to run, but must
+return immediately so as not to block the GUI. Everything else is
+managed via its signals. So no explicit waiting is called for here.
+*/
