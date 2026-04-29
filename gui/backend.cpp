@@ -9,7 +9,6 @@ QMap<QString, QColor> colours{{"*INFO*", "#009000"},
                               {"*WARNING*", "#eb8900"},
                               {"*ERROR*", "#d00000"},
                               {"+++", "#000000"},
-                              {"***", "#000000"},
                               {"---", "#000000"},
                               {"$", "#53a0ff"}};
 
@@ -26,7 +25,7 @@ QList<KeyVal> Backend::op(QString cmd, QStringList data)
     //qDebug() << "?" << cmd;
     FetRunnerCommand(cmd.toUtf8().data());
 
-    // Collect log up to "---" or "***"
+    // Collect log up to "---"
     QList<KeyVal> results;
     QStringList errors;
     while (true) {
@@ -34,7 +33,7 @@ QList<KeyVal> Backend::op(QString cmd, QStringList data)
         auto key = key_val.key;
         if (key == "+++")
             continue;
-        if (key == "---" || key == "***")
+        if (key == "---")
             break;
         auto val = key_val.val;
         if (key == "*ERROR*") {

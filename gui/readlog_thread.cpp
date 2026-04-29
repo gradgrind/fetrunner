@@ -2,15 +2,13 @@
 #include "backend.h"
 #include <qdebug.h>
 
-//TODO-- deprecated, not using these threads any more ...
-
 void ReadLogWorker::readLogRun()
 {
     /* ... here is the operation producing a lot of result lines ... */
 
     while (true) {
        auto kv = backend->readlogline();
-       qDebug() << "+" << kv.key << kv.val;
+       //qDebug() << "+" << kv.key << kv.val;
         if (kv.key == "$") {
             emit resultLine(backend->readresult(kv.val));
         } else if (kv.key == "---") {

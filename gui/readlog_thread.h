@@ -6,10 +6,7 @@
 #include <QThread>
 #include <qdebug.h>
 
-//TODO-- deprecated, not using these threads any more ...
-
-// Use a thread to read the output of a command with many logged lines,
-// to avoid filling, and thus blocking, the back-end buffer.
+// Use a thread to read logged lines.
 
 class ReadLogWorker : public QObject
 {
