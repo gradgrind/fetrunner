@@ -29,6 +29,7 @@ import (
 type DispatchOp struct {
 	Op   string
 	Data []string
+	OK   bool // can be set by called function
 }
 
 var OpHandlerMap map[string]func(*DispatchOp) = map[string]func(*DispatchOp){}
@@ -39,7 +40,7 @@ var OpHandlerMap map[string]func(*DispatchOp) = map[string]func(*DispatchOp){}
 // running, but to handle long-running commands there is also the possibility of
 // using a command beginning with "_", which will be accepted when another
 // command is running.
-func Dispatch(cmd0 string) {
+func Dispatch(cmd0 string) bool {
 	slist := strings.Split(cmd0, "|")
 	op := DispatchOp{Op: slist[0], Data: slist[1:]}
 	f, ok := OpHandlerMap[op.Op]
@@ -52,13 +53,14 @@ func Dispatch(cmd0 string) {
 				// Don't log this command.
 				panic("!InvalidOp_Running: " + op.Op)
 			}
-			base.LogCommand(slist)
+			base.LogCommand(cmd0)
 			f(&op)
 			base.LogCommandEnd()
 		}
 	} else {
 		panic("!InvalidOp: " + op.Op)
 	}
+	return op.OK
 }
 
 func opLog(op *DispatchOp) {
@@ -201,12 +203,9 @@ func file_loader(op *DispatchOp) {
 func runtt_source(op *DispatchOp) {
 	if CheckArgs(op, 0) {
 		bdata := base.DataBase
-		//if logger.Running {
-		//  panic("Attempt to start generation when already running")
-		//}
 		if bdata.Source == nil {
 			base.LogError("--NO_SOURCE")
-			base.LogResult("OK", "false")
+			//op.OK = false
 			return
 		}
 		var ttsource autotimetable.TtSource
@@ -229,7 +228,7 @@ func runtt_source(op *DispatchOp) {
 			SoftConstraintMap: scmap,
 		}
 		autotimetable.AutoTt = attdata
-		base.LogResult("OK", "true")
+		op.OK = true
 	}
 }
 
@@ -313,8 +312,6 @@ func ttparameter(op *DispatchOp) {
 		base.LogError("--UNKNOWN_PARAMETER %s", key)
 		return
 	}
-
-	base.LogResult(key, val)
 }
 
 func nprocesses(op *DispatchOp) {

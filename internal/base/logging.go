@@ -76,9 +76,9 @@ func LogResult(key string, value any) {
 	log(fmt.Sprintf("$ %s=%v", key, value))
 }
 
-func LogCommand(slist []string) {
+func LogCommand(cmd string) {
 	logger.running = true
-	log(fmt.Sprintf("%s %s %+v", OP_START, slist[0], slist[1:]))
+	log(OP_START + " " + cmd)
 }
 
 func LogCommandEnd() {
@@ -101,6 +101,7 @@ func SetStopFlag(on bool) {
 
 func LogStop() {
 	log(OP_QUIT)
+	close(logger.logch) // any subsequent `log` calls will panic
 }
 
 func GetStopFlag() bool {
@@ -116,6 +117,7 @@ func LogToFile(logfile *os.File) {
 func logToFile() {
 	// Read from log channel until an OP_QUIT is received, writing the log lines
 	// to the output file.
+	defer close(logger.done)
 	for {
 		line := LogTake()
 		logger.file.WriteString(strings.ReplaceAll(line, "||", "\n + ") + "\n")
