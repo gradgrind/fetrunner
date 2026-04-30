@@ -16,9 +16,13 @@ import "C"
 var cmsg *C.char
 
 //export FetRunnerCommand
-func FetRunnerCommand(cString *C.char) {
+func FetRunnerCommand(cString *C.char) C.int {
 	gString := C.GoString(cString)
-	fetrunner.Dispatch(gString)
+	if fetrunner.Dispatch(gString) {
+		return 1
+	} else {
+		return 0
+	}
 }
 
 //export FetRunnerReadLog
