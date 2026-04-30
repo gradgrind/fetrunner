@@ -102,7 +102,7 @@ func fetrunner_version(op *DispatchOp) {
 func set_tmp(op *DispatchOp) {
 	if CheckArgs(op, 1) {
 		base.TEMPORARY_BASEDIR = op.Data[0]
-		base.DataBase.SetTmpDir()
+		op.OK = base.SetTmpDir()
 	}
 }
 

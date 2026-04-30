@@ -128,7 +128,9 @@ func main() {
 	fetrunner.Dispatch("TT_PARAMETER|REAL_SOFT|" + strconv.FormatBool(*real_soft))
 	fetrunner.Dispatch("TT_PARAMETER|WRITE_FET_FILE|" + strconv.FormatBool(*write_fet_file))
 
-	if *tmppath != "" {
+	if *tmppath == "" {
+		base.SetTmpDir()
+	} else {
 		// Set base directory for temporary files
 		abstmppath, _ := filepath.Abs(*tmppath)
 		if abstmppath != *tmppath {
@@ -138,8 +140,7 @@ func main() {
 		if errors.Is(err, os.ErrNotExist) || !fileInfo.IsDir() {
 			log.Fatalln("Not a directory:", abstmppath)
 		}
-		fetrunner.Dispatch("TMP_PATH|" + abstmppath)
-		if len(base.TEMPORARY_DIR) == 0 {
+		if !fetrunner.Dispatch("TMP_PATH|" + abstmppath) {
 			return
 		}
 	}
