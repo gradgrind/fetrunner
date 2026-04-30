@@ -1,5 +1,11 @@
 #include "backend.h"
 #include <QThread>
+#include <QHash>
+
+class LogReader
+{
+
+};
 
 class ReadLogWorker : public QObject
 {
@@ -54,7 +60,7 @@ class ReadLogWorker : public QObject
 
     }
 public slots:
-    void readLog(QList<KeyVal> &results) {
+    void readLog(LogReader *logReader) {
         readLogs();
         emit opDone();
     }
@@ -103,13 +109,13 @@ void stopRun()
 
 QList<KeyVal> command()
 {
-    //TODO ...???
+    //TODO ...??? Pass a LogReader object to readLog?
     QList<KeyVal> results;
     emit readLogController.readLog(results);
 
     //TODO: call the actual function
 
-    return readLogController.results
+    return readLogController.results;
 }
 /*
 A back-end call can (should?) run synchronously if it is short,
@@ -126,3 +132,22 @@ The fetrunner command, however, takes a long time to run, but must
 return immediately so as not to block the GUI. Everything else is
 managed via its signals. So no explicit waiting is called for here.
 */
+
+void testfun(QString val)
+{
+    // TODO
+}
+
+QHash<QString, std::function<void(QString)>> resultHandlerMap{
+    {"Test", testfun}
+};
+
+void ReadLogController::handleResult(KeyVal kv)
+{
+    //TODO: perhaps a default which just accumulates the kv?
+    // But then there is still the question of how/when to read this ...
+
+    // Perhaps the possibility of placing the results in a container?
+    // Presumable a QList to maintain the order?
+    resultHandlerMap[kv.key](kv.val);
+}

@@ -25,6 +25,8 @@ QList<KeyVal> Backend::op(QString cmd, QStringList data)
     //qDebug() << "?" << cmd;
     FetRunnerCommand(cmd.toUtf8().data());
 
+    //TODO: This won't work any more ...
+
     // Collect log up to "---"
     QList<KeyVal> results;
     QStringList errors;
@@ -100,6 +102,7 @@ KeyVal Backend::readlogline()
 }
 
 // Run an op, expect a single result whose key may be specified.
+//TODO: This won't work in this form any longer ...
 KeyVal Backend::op1(
     QString cmd, QStringList data, QString key)
 {

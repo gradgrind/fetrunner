@@ -208,9 +208,7 @@ void FetRunner::push_go()
     backend->op("TT_PARAMETER", {"WRITE_FET_FILE", wff ? "true" : "false"});
 
     for (const auto &kv : backend->op("RUN_TT_SOURCE")) {
-        if (kv.key == "TMP_DIR") {
-            set_tmp_dir(kv.val);
-        } else if (kv.key == "OK" && kv.val == "true") {
+        if (kv.key == "OK" && kv.val == "true") {
             setup_progress_table();
             threadRunActivated(true);
             threadrunner.runTtThread();

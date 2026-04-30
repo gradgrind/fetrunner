@@ -54,11 +54,11 @@ void FetRunner::setup_progress_table()
         // index, satisfied constraints, number of constraints
     };
 
-    auto kv = backend->op1("TT_PRIORITY_CONSTRAINT_TYPES", {}, "PRIORITY_CONSTRAINTS");
-    if (kv.key != "") {
-        priority_constraints = kv.val.split(":");
-        //qDebug() << "priority_constraints:" << priority_constraints;
-    }
+    // The priority constraints are a subset of the hard constraints,
+    // so no action is required, but they should be logged. They should
+    // be at the head of the hard constraint lists thanks to the
+    // `ConstraintPriority` lists (back-end).
+    backend->op1("TT_PRIORITY_CONSTRAINT_TYPES", {}, "PRIORITY_CONSTRAINTS");
     for (const auto &kv : backend->op("TT_HARD_CONSTRAINTS")) {
         add_table_line(kv.key, kv.val);
     }
