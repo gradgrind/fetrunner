@@ -131,6 +131,15 @@ the log reader must be started first:
 The fetrunner command, however, takes a long time to run, but must
 return immediately so as not to block the GUI. Everything else is
 managed via its signals. So no explicit waiting is called for here.
+
+The dispatcher (backend::op) can run in the main thread, so it can
+call GUI functions directly. Signals from the logger can be caught
+by the Controller, which is also in the main thread. The one special
+case so far is the "RUN_TT" command, which is lengthy. Perhaps this
+can be done by a special command ("!RUN_TT") , or argument, which
+makes it run in a separate goroutine? This would be a further category
+for Dispatch, as it should log the start, but not the end, before
+starting the goroutine for the actual action and returning immediately.
 */
 
 void testfun(QString val)

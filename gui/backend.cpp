@@ -17,13 +17,13 @@ Backend::Backend()
 {}
 Backend *backend;
 
-QList<KeyVal> Backend::op(QString cmd, QStringList data)
+int Backend::op(QString cmd, QStringList data)
 {
     if (!data.empty()) {
         cmd += "|" + data.join("|");
     }
     //qDebug() << "?" << cmd;
-    FetRunnerCommand(cmd.toUtf8().data());
+    return FetRunnerCommand(cmd.toUtf8().data());
 
     //TODO: This won't work any more ...
 

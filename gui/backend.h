@@ -19,7 +19,7 @@ public:
     Backend();
     //~Backend();
 
-    QList<KeyVal> op(QString cmd, QStringList data = {});
+    int op(QString cmd, QStringList data = {});
     KeyVal readlogline();
     KeyVal readresult(QString r);
 

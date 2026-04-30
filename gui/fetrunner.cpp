@@ -207,12 +207,10 @@ void FetRunner::push_go()
     auto wff = ui->write_fet_file->isChecked();
     backend->op("TT_PARAMETER", {"WRITE_FET_FILE", wff ? "true" : "false"});
 
-    for (const auto &kv : backend->op("RUN_TT_SOURCE")) {
-        if (kv.key == "OK" && kv.val == "true") {
-            setup_progress_table();
-            threadRunActivated(true);
-            threadrunner.runTtThread();
-        }
+    if (backend->op("RUN_TT_SOURCE")) {
+        setup_progress_table();
+        threadRunActivated(true);
+        threadrunner.runTtThread();
     }
 }
 
@@ -295,24 +293,24 @@ void FetRunner::select_tmp_dir()
         "/",
         QFileDialog::ShowDirsOnly);
     if (!dirpath.isEmpty()) {
-        auto kv = backend->op1("TMP_PATH", {dirpath}, "TMP_DIR");
-        if (kv.key == "") {
+        if (!backend->op("TMP_PATH|" + dirpath)) {
             ui->tmp_dir->clear();
             ui->tmp_dir_name->setText("-");
         } else {
-            set_tmp_dir(kv.val);
+            //TODO: The path will be in the log as "$ TMP_DIR=path"
+            //set_tmp_dir(path);
         }
     }
 }
 
 void FetRunner::select_default_tmp_dir()
 {
-    auto kv = backend->op1("TMP_PATH", {""}, "TMP_DIR");
-    if (kv.key == "") {
+    if (!backend->op("TMP_PATH|-")) {
         ui->tmp_dir->clear();
         ui->tmp_dir_name->setText("-");
     } else {
-        set_tmp_dir(kv.val);
+        //TODO: The path will be in the log as "$ TMP_DIR=path"
+        //set_tmp_dir(path);
     }
 }
 
