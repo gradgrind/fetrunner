@@ -92,6 +92,7 @@ func init() {
 	OpHandlerMap["TT_SOFT_CONSTRAINTS"] = softConstraints
 	OpHandlerMap["TT_NACTIVITIES"] = nActivities
 	OpHandlerMap["RUN_TT"] = runtt
+	OpHandlerMap["!RUN_TT"] = runtt
 	OpHandlerMap["_STOP_TT"] = stoptt
 	OpHandlerMap["RESULT_TT"] = ttresult
 
