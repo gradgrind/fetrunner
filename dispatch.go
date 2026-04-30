@@ -54,8 +54,15 @@ func Dispatch(cmd0 string) bool {
 				panic("!InvalidOp_Running: " + op.Op)
 			}
 			base.LogCommand(cmd0)
-			f(&op)
-			base.LogCommandEnd()
+			if op.Op[0] == '!' {
+				go func() {
+					f(&op)
+					base.LogCommandEnd()
+				}()
+			} else {
+				f(&op)
+				base.LogCommandEnd()
+			}
 		}
 	} else {
 		panic("!InvalidOp: " + op.Op)
@@ -240,15 +247,8 @@ func runtt(op *DispatchOp) {
 		default:
 			panic("Unsupported timetable-generation back-end: " + autotimetable.TtParameters.BACKEND)
 		}
-
 		autotimetable.AutoTt.StartGeneration()
-
-		// Need an extra goroutine so that this can return immediately.
-		//go autotimetable.AutoTt.StartGeneration()
-		//base.LogCommandEnd(false)
-		//return false
 	}
-	//return true
 }
 
 func stoptt(op *DispatchOp) {
