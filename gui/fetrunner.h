@@ -4,7 +4,6 @@
 #include <QMessageBox>
 #include <QTableWidgetItem>
 #include <QWidget>
-#include "threadrun.h"
 
 #ifdef Q_OS_WIN
 const QString FET_CL = "fet-clw.exe";
@@ -71,7 +70,6 @@ private:
         QString count,
         QString number,
         QString ctype);
-    void set_tmp_dir(QString tdir);
     bool set_fet_path(QString fetpath);
 
     bool thread_running{false};
@@ -81,7 +79,6 @@ private:
     QMessageBox closingMessageBox;
     void threadRunActivated(bool active);
 
-    RunThreadController threadrunner;
     QString timeTicks{};
     QHash<int, instance_row> instance_row_map;
     int instance_table_fixed_width;
@@ -93,6 +90,19 @@ private:
     //QList<int> instance_rows_changed;
     QList<progress_changed> progress_rows_changed;
 
+    void do_MAXPROCESSES(const QString &val);
+    void do_FET_PATH(const QString &val);
+    void do_FET_VERSION(const QString &val);
+    void do_N_PROCESSES(const QString &val);
+    void do_TT_NCONSTRAINTS(const QString &val);
+    void do_TT_TICK(const QString &val);
+    void do_TT_PROGRESS(const QString &val);
+    void do_TT_START(const QString &val);
+    void do_TT_END(const QString &val);
+    void do_TT_ACCEPT(const QString &val);
+    void do_TT_ELIMINATE(const QString &val);
+    void do_TMP_DIR(const QString &val);
+
 private slots:
     void reset_display();
     void nprocesses(int n);
@@ -102,13 +112,6 @@ private slots:
     void select_default_tmp_dir();
     void select_fet_path();
     void select_default_fet_path();
-    void ticker(const QString &data);
-    void nconstraints(const QString &data);
-    void iprogress(const QString &data);
-    void istart(const QString &data);
-    void iend(const QString &data);
-    void iaccept(const QString &data);
-    void ieliminate(const QString &data);
     void runThreadWorkerDone();
     void close_request();
 };

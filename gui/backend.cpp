@@ -2,6 +2,7 @@
 #include <QMap>
 //#include <qdebug.h>
 #include "../libfetrunner/libfetrunner.h"
+#include "globals.h"
 //#include <iostream>
 
 // display colours for the log
@@ -12,60 +13,72 @@ QMap<QString, QColor> colours{{"*INFO*", "#009000"},
                               {"---", "#000000"},
                               {"$", "#53a0ff"}};
 
-Backend::Backend()
-    : QObject()
-{}
-Backend *backend;
-
-int Backend::op(QString cmd, QStringList data)
+class ReadLogWorker : public QObject
 {
-    if (!data.empty()) {
-        cmd += "|" + data.join("|");
+    Q_OBJECT
+
+    QString logline;
+    KeyVal readlogline();
+    KeyVal readresult(QString r);
+
+public slots:
+    void readLog()
+    {
+        while (true) {
+           auto kv = readlogline();
+           //qDebug() << "+" << kv.key << kv.val;
+            if (kv.key == "$") {
+                emit result(readresult(kv.val));
+                continue;
+            }
+            if (kv.key == "---") {
+                emit opDone();
+                continue;
+            }
+            if (kv.key == "*ERROR*") {
+                notifier->emit errorPopup(kv.val);
+                continue;
+            }
+            if (kv.key == "-*-*-") {
+                break;
+            }
+        }
+        //TODO: Emit a signal?
+    }
+signals:
+    void result(KeyVal logresult);
+    void opDone();
+    void logcolour(QColor);
+    void log(QString);
+    //void error(QString);
+};
+
+Backend::Backend() : QObject() {
+    ReadLogWorker *worker = new ReadLogWorker;
+    worker->moveToThread(&loggerThread);
+    connect(&loggerThread, &QThread::finished, worker, &QObject::deleteLater);
+    connect(this, &Backend::readLog, worker, &ReadLogWorker::readLog);
+    //connect(worker, &ReadLogWorker::opDone, this, &ReadLogController::handleDone);
+    connect(worker, &ReadLogWorker::result, this, &Backend::handleResult);
+    connect(worker, &ReadLogWorker::logcolour, this, &Backend::logcolour);
+    connect(worker, &ReadLogWorker::log, this, &Backend::log);
+    //connect(worker, &ReadLogWorker::error, this, &Backend::error);
+    loggerThread.start();
+}
+Backend backend;
+void logcolour(QColor);
+void log(QString);
+
+int Backend::op(QString cmd, QString arg)
+{
+    if (arg.isEmpty()) {
+        cmd += " " + arg;
     }
     //qDebug() << "?" << cmd;
     return FetRunnerCommand(cmd.toUtf8().data());
-
-    //TODO: This won't work any more ...
-
-    // Collect log up to "---"
-    QList<KeyVal> results;
-    QStringList errors;
-    while (true) {
-        auto key_val = readlogline();
-        auto key = key_val.key;
-        if (key == "+++")
-            continue;
-        if (key == "---")
-            break;
-        auto val = key_val.val;
-        if (key == "*ERROR*") {
-            errors.append(val);
-            continue;
-        }
-        if (key == "$") {
-            // a result
-            auto rkv = readresult(val);
-            if (rkv.key.isEmpty()) {
-                errors.append(rkv.val);
-            } else {
-                results.append(rkv);
-            }
-            //continue;
-        }
-    }
-    if (!errors.empty()) {
-        if (errors.length() > 5) {
-            auto elist = errors;
-            errors = QStringList();
-            errors << elist[0] << elist[1] << elist[2] << elist[3] << elist[4];
-            errors << "...";
-        }
-        emit error(errors.join("\n"));
-    }
-    return results;
 }
 
-KeyVal Backend::readresult(QString r)
+KeyVal ReadLogWorker::readresult(QString r)
 {
     auto n = r.indexOf('=');
     if (n < 0)
@@ -75,7 +88,7 @@ KeyVal Backend::readresult(QString r)
     return KeyVal{rkey, rval};
 }
 
-KeyVal Backend::readlogline()
+KeyVal ReadLogWorker::readlogline()
 {
     while (true) {
         logline = QString(FetRunnerReadLog());
@@ -99,18 +112,4 @@ KeyVal Backend::readlogline()
     emit logcolour(colours.value(msgtype, QColor{0x76, 0x5e, 0xff}));
     emit log(logline.replace("||", "\n + ")); // write to log
     return KeyVal{msgtype, msgrest};
-}
-
-// Run an op, expect a single result whose key may be specified.
-//TODO: This won't work in this form any longer ...
-KeyVal Backend::op1(
-    QString cmd, QStringList data, QString key)
-{
-    auto results = op(cmd, data);
-    if (results.length() == 1) {
-        auto kv = results[0];
-        if (key.isEmpty() || key == kv.key)
-            return kv;
-    }
-    return {};
 }

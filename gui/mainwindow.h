@@ -24,6 +24,9 @@ private:
 
     void open_file();
     void set_busy(bool on);
+    void do_FETRUNNER_VERSION(const QString &val);
+    void do_SET_FILE(const QString &val);
+    void do_DATA_TYPE(const QString &val);
 
     bool quit_requested{false};
     bool quit_confirmed{false};

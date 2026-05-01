@@ -74,10 +74,10 @@ void FetRunner::setup_progress_table()
         ui->label_soft->setEnabled(true);
         ui->progress_soft->setEnabled(true);
     }
-    backend->op("TT_NACTIVITIES");
+    backend.op("TT_NACTIVITIES");
 }
 
-void FetRunner::nconstraints(const QString &data)
+void FetRunner::do_TT_NCONSTRAINTS(const QString &data)
 {
     auto slist = data.split(u'.');
     auto h = slist[0];

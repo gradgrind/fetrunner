@@ -19,11 +19,11 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    backend = new Backend();
     notifier = new Notifier();
 
     ui->help_view->setSource(QUrl("qrc:/help/using_fetrunner.md"));
-    ui->fetrunner_version->setText(backend->op1("VERSION", {}, "FETRUNNER_VERSION").val);
+    backend.registerResultHandler("FETRUNNER_VERSION", [this](QString arg) {do_FETRUNNER_VERSION(arg);});
+    backend.op("VERSION");
 
     auto ttsolver = new FetRunner();
     ui->main_panel->addWidget(ttsolver);
@@ -106,7 +106,7 @@ MainWindow::MainWindow(QWidget *parent)
         &TtView::new_tt_data);
 
     connect( //
-        backend,
+        &backend,
         &Backend::error,
         this,
         &MainWindow::error_popup);
@@ -122,7 +122,6 @@ MainWindow::~MainWindow()
     delete ui;
     settings->setValue("gui/FetRunnerSize", size());
     delete settings;
-    delete backend;
 }
 
 void MainWindow::closeEvent(QCloseEvent *e)
@@ -186,26 +185,32 @@ void MainWindow::open_file()
 
     if (!filepath.isEmpty()) {
         notifier->emit fileChanged();
-        for (const auto &kv : backend->op("SET_FILE", {filepath})) {
-            if (kv.key == "SET_FILE") {
-                QDir dir{kv.val};
-                file_name = dir.dirName();
-                dir.cdUp();
-                fdir = dir.absolutePath();
-                ui->file_dir->setText(fdir);
-                ui->file_name->setText(file_name);
-                if (fdir != file_dir) {
-                    file_dir = fdir;
-                    settings->setValue("gui/SourceDir", fdir);
-                }
-            } else if (kv.key == "DATA_TYPE") {
-                file_datatype = kv.val;
-            }
-        }
+        backend.op("SET_FILE", {filepath});
     }
 }
 
 void MainWindow::set_busy(bool on)
 {
     ui->control_panel->setDisabled(on);
+}
+
+void MainWindow::do_FETRUNNER_VERSION(const QString &val) {
+    ui->fetrunner_version->setText(val);
+}
+
+void MainWindow::do_SET_FILE(const QString &val) {
+    QDir dir{val};
+    file_name = dir.dirName();
+    dir.cdUp();
+    auto fdir = dir.absolutePath();
+    ui->file_dir->setText(fdir);
+    ui->file_name->setText(file_name);
+    if (fdir != file_dir) {
+        file_dir = fdir;
+        settings->setValue("gui/SourceDir", fdir);
+    }
+}
+
+void MainWindow::do_DATA_TYPE(const QString &val) {
+    file_datatype = val;
 }

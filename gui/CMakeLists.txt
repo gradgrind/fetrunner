@@ -35,7 +35,7 @@ qt_add_executable(fetrunner-gui
     fetrunner.ui
     fetrunner.cpp
     fetrunner.h
-    threadrun.cpp threadrun.h ttgen_tables.cpp
+    ttgen_tables.cpp
     canvas.cpp canvas.h
     chip.cpp chip.h
     ttview.h ttview.cpp ttview.ui
@@ -43,7 +43,7 @@ qt_add_executable(fetrunner-gui
     tt_showclass.cpp tt_showclass.h tt_showroom.cpp tt_showroom.h tt_showteacher.cpp
     ttbase.h ttbase.cpp
     tt_show_resource.h
-    logreader.cpp
+
 
 )
 

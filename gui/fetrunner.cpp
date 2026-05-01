@@ -13,19 +13,20 @@ FetRunner::FetRunner(QWidget *parent)
     ui->setupUi(this);
     init_ttgen_tables();
 
+    backend.registerResultHandler("N_PROCESSES", [this](QString arg) {do_N_PROCESSES(arg);});
+    backend.registerResultHandler(".TICK", [this](QString arg) {do_TT_TICK(arg);});
+    backend.registerResultHandler(".NCONSTRAINTS", [this](QString arg) {do_TT_NCONSTRAINTS(arg);});
+    backend.registerResultHandler(".PROGRESS", [this](QString arg) {do_TT_PROGRESS(arg);});
+    backend.registerResultHandler(".START", [this](QString arg) {do_TT_START(arg);});
+    backend.registerResultHandler(".END", [this](QString arg) {do_TT_END(arg);});
+    backend.registerResultHandler(".ACCEPT", [this](QString arg) {do_TT_ACCEPT(arg);});
+    backend.registerResultHandler(".ELIMINATE", [this](QString arg) {do_TT_ELIMINATE(arg);});
+    backend.registerResultHandler("TMP_DIR", [this](QString arg) {do_TMP_DIR(arg);});
+
     // Get range for number of processes.
     // Do this before connecting the "valueChanged" signal, to
     // avoid triggering this before any actual change.
-    auto nps = backend->op1("N_PROCESSES", {}, "N_PROCESSES").val;
-    auto nn = nps.split(".");
-    auto n0 = nn[0].toInt();
-    auto n1 = nn[1].toInt();
-    if (n1 < n0)
-        n1 = n0;
-    auto n = nn[2].toInt();
-    ui->tt_processes->setMinimum(n0);
-    ui->tt_processes->setMaximum(n1);
-    ui->tt_processes->setValue(n);
+    backend.op("N_PROCESSES");
 
     connect( //
         notifier,
@@ -38,12 +39,12 @@ FetRunner::FetRunner(QWidget *parent)
         this,
         &FetRunner::reset_display);
     connect( //
-        backend,
+        &backend,
         &Backend::logcolour,
         ui->logview,
         &QTextEdit::setTextColor);
     connect( //
-        backend,
+        &backend,
         &Backend::log,
         ui->logview,
         &QTextEdit::append);
@@ -82,45 +83,6 @@ FetRunner::FetRunner(QWidget *parent)
         &QPushButton::clicked,
         this,
         &FetRunner::select_default_fet_path);
-    connect( //
-        &threadrunner,
-        &RunThreadController::ticker,
-        this,
-        &FetRunner::ticker);
-    connect( //
-        &threadrunner,
-        &RunThreadController::nconstraints,
-        this,
-        &FetRunner::nconstraints);
-    connect( //
-        &threadrunner,
-        &RunThreadController::iprogress,
-        this,
-        &FetRunner::iprogress);
-    connect( //
-        &threadrunner,
-        &RunThreadController::istart,
-        this,
-        &FetRunner::istart);
-    connect( //
-        &threadrunner,
-        &RunThreadController::iend,
-        this,
-        &FetRunner::iend);
-    connect( //
-        &threadrunner,
-        &RunThreadController::iaccept,
-        this,
-        &FetRunner::iaccept);
-    connect( //
-        &threadrunner,
-        &RunThreadController::ieliminate,
-        this,
-        &FetRunner::ieliminate);
-    connect(&threadrunner,
-            &RunThreadController::runThreadWorkerDone,
-            this,
-            &FetRunner::runThreadWorkerDone);
 
     QValidator *validator1 = new QIntValidator(0, 99999, this);
     ui->tt_timeout->setValidator(validator1);
@@ -153,10 +115,11 @@ FetRunner::~FetRunner()
 void FetRunner::nprocesses(int n)
 {
     auto nn = QString::number(n);
-    auto mp = backend->op1("TT_PARAMETER", {"MAXPROCESSES", nn}, "MAXPROCESSES");
-    if (mp.val != nn)
-        notifier->emit errorPopup("BUG: invalid number of processes: " + nn);
-    ui->tt_processes->setValue(mp.val.toInt());
+    backend.op("TT_PARAMETER", "MAXPROCESSES=" + nn);
+}
+
+void FetRunner::do_MAXPROCESSES(const QString &val) {
+    ui->tt_processes->setValue(val.toInt());
 }
 
 void FetRunner::reset_display()
@@ -199,30 +162,19 @@ void FetRunner::push_go()
 
     // Set parameters
     auto t = ui->tt_timeout->text();
-    backend->op("TT_PARAMETER", {"TIMEOUT", t});
+    backend.op("TT_PARAMETER", "TIMEOUT=" + t);
     auto sh = ui->tt_skip_hard->isChecked();
-    backend->op("TT_PARAMETER", {"SKIP_HARD", sh ? "true" : "false"});
+    backend.op("TT_PARAMETER", sh ? "SKIP_HARD=true" : "SKIP_HARD=false");
     auto rs = ui->tt_real_soft->isChecked();
-    backend->op("TT_PARAMETER", {"REAL_SOFT", rs ? "true" : "false"});
+    backend.op("TT_PARAMETER", rs ? "REAL_SOFT=true" : "REAL_SOFT=false");
     auto wff = ui->write_fet_file->isChecked();
-    backend->op("TT_PARAMETER", {"WRITE_FET_FILE", wff ? "true" : "false"});
+    backend.op("TT_PARAMETER", wff ? "WRITE_FET_FILE=true" : "WRITE_FET_FILE=false");
 
-    if (backend->op("RUN_TT_SOURCE")) {
+    if (backend.op("RUN_TT_SOURCE")) {
         setup_progress_table();
         threadRunActivated(true);
-        threadrunner.runTtThread();
+        backend.op("!RUN_TT");
     }
-}
-
-void FetRunner::set_tmp_dir(QString tdir)
-{
-    QDir qtdir{tdir};
-    QString d{qtdir.dirName()};
-    d.prepend(QDir::separator());
-    qtdir.cdUp();
-    QString val{QDir::toNativeSeparators(qtdir.absolutePath())};
-    ui->tmp_dir->setText(val);
-    ui->tmp_dir_name->setText(d);
 }
 
 bool FetRunner::set_fet_path(QString fetpath0)
@@ -243,28 +195,10 @@ bool FetRunner::set_fet_path(QString fetpath0)
         } else if (fetpath == "") {
             fetpath = FET_CL;
         }
-        //TODO: as continuation ...
-        for (const auto &kv : backend->op("GET_FET", fetpath)) {
-            if (kv.key == "FET_PATH")
-                fetp = kv.val;
-            else if (kv.key == "FET_VERSION")
-                fetv = kv.val;
-        }
-        if (!fetp.isEmpty()) {
-            settings->setValue("fet/FetPath", fetpath);
-            // Set GUI
-            ui->fet_path->setText(fetp);
-            ui->fet_version->setText(fetv);
+        if (backend.op("GET_FET", fetpath))
             break;
-        }
 
         // Handle FET executable not found.
-
-        if (!fetpath.isEmpty()) {
-            // Try the default.
-            fetpath.clear();
-            continue;
-        }
 
         // Show log tab in case the warnings are useful.
         ui->tabWidget->setCurrentWidget(ui->tab_log);
@@ -278,10 +212,21 @@ bool FetRunner::set_fet_path(QString fetpath0)
     return true;
 }
 
+void FetRunner::do_FET_PATH(const QString &val)
+{
+    settings->setValue("fet/FetPath", val);
+    ui->fet_path->setText(val);
+}
+
+void FetRunner::do_FET_VERSION(const QString &val)
+{
+    ui->fet_version->setText(val);
+}
+
 void FetRunner::push_stop()
 {
     ui->pb_stop->setEnabled(false);
-    threadrunner.stopThread();
+    backend.op("_STOP_TT");
     closingMessageBox.setText(tr("Finishing ..."));
     closingMessageBox.setIcon(QMessageBox::Information);
     closingMessageBox.setStandardButtons(QMessageBox::NoButton);
@@ -296,25 +241,31 @@ void FetRunner::select_tmp_dir()
         "/",
         QFileDialog::ShowDirsOnly);
     if (!dirpath.isEmpty()) {
-        if (!backend->op("TMP_PATH " + dirpath)) {
+        if (!backend.op("TMP_PATH " + dirpath)) {
             ui->tmp_dir->clear();
             ui->tmp_dir_name->setText("-");
-        } else {
-            //TODO: The path will be in the log as "$ TMP_DIR=path"
-            //set_tmp_dir(path);
         }
+        // else the path will be in the log as "$ TMP_DIR=path"
     }
 }
 
 void FetRunner::select_default_tmp_dir()
 {
-    if (!backend->op("TMP_PATH")) {
+    if (!backend.op("TMP_PATH")) {
         ui->tmp_dir->clear();
         ui->tmp_dir_name->setText("-");
-    } else {
-        //TODO: The path will be in the log as "$ TMP_DIR=path"
-        //set_tmp_dir(path);
     }
+    // else the path will be in the log as "$ TMP_DIR=path".
+}
+
+void FetRunner::do_TMP_DIR(const QString &val) {
+    QDir qtdir{val};
+    QString d{qtdir.dirName()};
+    d.prepend(QDir::separator());
+    qtdir.cdUp();
+    QString val2{QDir::toNativeSeparators(qtdir.absolutePath())};
+    ui->tmp_dir->setText(val2);
+    ui->tmp_dir_name->setText(d);
 }
 
 void FetRunner::select_fet_path()
@@ -366,13 +317,27 @@ void FetRunner::threadRunActivated(bool active)
     }
 }
 
-void FetRunner::ticker(const QString &data)
+void FetRunner::do_N_PROCESSES(const QString &val) {
+    auto nn = val.split(".");
+    auto n0 = nn[0].toInt();
+    auto n1 = nn[1].toInt();
+    if (n1 < n0)
+        n1 = n0;
+    auto n = nn[2].toInt();
+    ui->tt_processes->setMinimum(n0);
+    ui->tt_processes->setMaximum(n1);
+    ui->tt_processes->setValue(n);
+}
+
+void FetRunner::do_TT_TICK(const QString &val)
 {
-    // The last call here has an empty string, so that things
-    // can be tidied up a bit.
-    if (!data.isEmpty()) {
-        ui->elapsed_time->setText(data);
-        timeTicks = data;
+    // The last call here has "-1", so that things can be tidied up
+    // a bit. The time display should not be changed in this case.
+    if (val.at(0) == '-') {
+        runThreadWorkerDone();
+    } else {
+        ui->elapsed_time->setText(val);
+        timeTicks = val;
     }
 
     // Go through instance rows, removing "ended" ones.
@@ -442,10 +407,10 @@ void FetRunner::add_completed_instance(
     ui->completed_instance_table->setItem(nrow, 2, item0);
 }
 
-void FetRunner::iprogress(const QString &data)
+void FetRunner::do_TT_PROGRESS(const QString &val)
 {
     //qDebug() << "iprogress:" << data;
-    QStringList slist = data.split(u'.');
+    QStringList slist = val.split(u'.');
     // slist: instance index, percent complete, instance run time
     auto key = slist[0].toInt();
     switch (key) {
@@ -465,10 +430,10 @@ void FetRunner::iprogress(const QString &data)
     }
 }
 
-void FetRunner::istart(const QString &data)
+void FetRunner::do_TT_START(const QString &val)
 {
     //qDebug() << "istart:" << data;
-    auto slist = data.split(u'.');
+    auto slist = val.split(u'.');
     // slist: instance index, constraint type,
     // number of individual constraints, time-out
     auto key = slist[0].toInt();
@@ -477,9 +442,9 @@ void FetRunner::istart(const QString &data)
     instance_row_map[key] = {slist, nullptr, 0};
 }
 
-void FetRunner::iend(const QString &data)
+void FetRunner::do_TT_END(const QString &val)
 {
-    auto slist = data.split(u'.');
+    auto slist = val.split(u'.');
     auto key = slist[0].toInt();
     switch (key) {
     case INSTANCE_COMPLETE:
@@ -501,10 +466,10 @@ void FetRunner::iend(const QString &data)
     }
 }
 
-void FetRunner::iaccept(const QString &data)
+void FetRunner::do_TT_ACCEPT(const QString &val)
 {
-    //qDebug() << "iaccept:" << data;
-    auto slist = data.split(u'.');
+    //qDebug() << "iaccept:" << val;
+    auto slist = val.split(u'.');
     auto key = slist[0].toInt();
     switch (key) {
     case INSTANCE_COMPLETE: // "full" completed
@@ -527,9 +492,9 @@ void FetRunner::iaccept(const QString &data)
     }
 }
 
-void FetRunner::ieliminate(const QString &data)
+void FetRunner::do_TT_ELIMINATE(const QString &val)
 {
-    auto slist = data.split(u'.');
+    auto slist = val.split(u'.');
     auto ctype = slist[0];
     add_completed_instance( //
         QString{"--- [%1]"}.arg(slist[1]),

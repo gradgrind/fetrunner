@@ -134,6 +134,7 @@ func get_fet(op *DispatchOp) {
 				fetpath0 := filepath.Join(filepath.Dir(p), fetpath)
 				if check_fet(fetpath0) {
 					fet.FETPATH = fetpath0
+					op.OK = true
 					return
 				}
 			}
@@ -144,6 +145,7 @@ func get_fet(op *DispatchOp) {
 	}
 	if check_fet(fetpath) {
 		fet.FETPATH = fetpath
+		op.OK = true
 	}
 }
 
@@ -262,7 +264,7 @@ func ttparameter(op *DispatchOp) {
 			return
 		} else {
 			autotimetable.TtParameters.MAXPROCESSES = autotimetable.MaxProcesses(n)
-			val = strconv.Itoa(autotimetable.TtParameters.MAXPROCESSES)
+			base.LogResult("MAXPROCESSES", autotimetable.TtParameters.MAXPROCESSES)
 		}
 
 	case "WRITE_FET_FILE":
