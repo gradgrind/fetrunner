@@ -3,41 +3,36 @@
 #include <qdebug.h>
 
 TtBase::TtBase() {
-    set_days();
-    set_hours();
-    qDebug() << "set_classes()";
-    set_classes();
-    qDebug() << "set_teachers()";
-    set_teachers();
-    qDebug() << "set_rooms()";
-    set_rooms();
-    qDebug() << "set_activities()";
-    set_activities();
-    qDebug() << "end TtBase()";
-}
+    backend.registerResultHandler("TT_DAYS",
+        [this](QString arg) {set_day(arg);});
+    backend.registerResultHandler("TT_HOURS",
+        [this](QString arg) {set_hour(arg);});
 
-void TtBase::set_days()
-{
     days.clear();
-    auto alist = backend->op("TT_DAYS");
-    for (const auto &[k, v] : std::as_const(alist)) {
-        if (k != "TT_DAYS")
-            continue;
-        auto vlist = v.split(":");
-        auto name = vlist.at(1);
-        if (name.isEmpty())
-            name = vlist.at(0);
-        days.append(TtName{vlist.at(0), name});
-    }
+    backend.op("TT_DAYS");
+    hours.clear();
+    backend.op("TT_HOURS");
+
+    //qDebug() << "set_classes()";
+    set_classes();
+    //qDebug() << "set_teachers()";
+    set_teachers();
+    //qDebug() << "set_rooms()";
+    set_rooms();
+    //qDebug() << "set_activities()";
+    set_activities();
+    //qDebug() << "end TtBase()";
 }
 
-void TtBase::set_hours()
-{
-    hours.clear();
-    auto alist = backend->op("TT_HOURS");
-    for (const auto &[k, v] : std::as_const(alist)) {
-        if (k != "TT_HOURS")
-            continue;
+void TtBase::set_day(const QString &val) {
+    auto vlist = val.split(':');
+    auto name = vlist.at(1);
+    if (name.isEmpty())
+        name = vlist.at(0);
+    days.append(TtName{vlist.at(0), name});
+}
+
+void TtBase::set_hour(const QString &val) {
         auto vlist = v.split(":");
         auto name = vlist.at(1);
         if (name.isEmpty())

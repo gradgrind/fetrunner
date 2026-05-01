@@ -92,6 +92,7 @@ func init() {
 	OpHandlerMap["TT_PARAMETER"] = ttparameter
 	OpHandlerMap["TMP_PATH"] = set_tmp
 	OpHandlerMap["N_PROCESSES"] = nprocesses
+	OpHandlerMap["TT_ConstraintsCheck"] = constraintsCheck
 }
 
 func fetrunner_version(op *DispatchOp) {
@@ -308,7 +309,7 @@ func hardConstraints(op *DispatchOp) {
 		ilist, ok := autotimetable.AutoTt.HardConstraintMap[c]
 		if ok {
 			base.LogResult(
-				"HARD_CONSTRAINT",
+				op.Op,
 				fmt.Sprintf("%s*%d", strings.TrimPrefix(c, "Constraint"), len(ilist)))
 		}
 	}
@@ -320,10 +321,18 @@ func softConstraints(op *DispatchOp) {
 		func(a, b string) int { return strings.Compare(b, a) })
 	for _, c := range clist {
 		base.LogResult(
-			"SOFT_CONSTRAINT",
+			op.Op,
 			fmt.Sprintf("%s*%d", strings.Replace(c, ":Constraint", ":", 1),
 				len(autotimetable.AutoTt.SoftConstraintMap[c])))
 	}
+}
+
+func constraintsCheck(op *DispatchOp) {
+	base.LogResult(
+		op.Op,
+		fmt.Sprintf("%d:%d",
+			len(autotimetable.AutoTt.HardConstraintMap),
+			len(autotimetable.AutoTt.SoftConstraintMap)))
 }
 
 func nActivities(op *DispatchOp) {
@@ -331,5 +340,5 @@ func nActivities(op *DispatchOp) {
 	if n == 0 {
 		base.LogError("--NO_ACTIVITIES")
 	}
-	base.LogResult("N_ACTIVITIES", strconv.Itoa(n))
+	base.LogResult(op.Op, strconv.Itoa(n))
 }

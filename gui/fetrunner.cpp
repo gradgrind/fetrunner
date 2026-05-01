@@ -13,15 +13,33 @@ FetRunner::FetRunner(QWidget *parent)
     ui->setupUi(this);
     init_ttgen_tables();
 
-    backend.registerResultHandler("N_PROCESSES", [this](QString arg) {do_N_PROCESSES(arg);});
-    backend.registerResultHandler(".TICK", [this](QString arg) {do_TT_TICK(arg);});
-    backend.registerResultHandler(".NCONSTRAINTS", [this](QString arg) {do_TT_NCONSTRAINTS(arg);});
-    backend.registerResultHandler(".PROGRESS", [this](QString arg) {do_TT_PROGRESS(arg);});
-    backend.registerResultHandler(".START", [this](QString arg) {do_TT_START(arg);});
-    backend.registerResultHandler(".END", [this](QString arg) {do_TT_END(arg);});
-    backend.registerResultHandler(".ACCEPT", [this](QString arg) {do_TT_ACCEPT(arg);});
-    backend.registerResultHandler(".ELIMINATE", [this](QString arg) {do_TT_ELIMINATE(arg);});
-    backend.registerResultHandler("TMP_DIR", [this](QString arg) {do_TMP_DIR(arg);});
+    backend.registerResultHandler("N_PROCESSES",
+        [this](QString arg) {do_N_PROCESSES(arg);});
+    backend.registerResultHandler(".TICK",
+        [this](QString arg) {do_TT_TICK(arg);});
+    backend.registerResultHandler(".NCONSTRAINTS",
+        [this](QString arg) {do_TT_NCONSTRAINTS(arg);});
+    backend.registerResultHandler(".PROGRESS",
+        [this](QString arg) {do_TT_PROGRESS(arg);});
+    backend.registerResultHandler(".START",
+        [this](QString arg) {do_TT_START(arg);});
+    backend.registerResultHandler(".END",
+        [this](QString arg) {do_TT_END(arg);});
+    backend.registerResultHandler(".ACCEPT",
+        [this](QString arg) {do_TT_ACCEPT(arg);});
+    backend.registerResultHandler(".ELIMINATE",
+        [this](QString arg) {do_TT_ELIMINATE(arg);});
+    backend.registerResultHandler("TMP_DIR",
+        [this](QString arg) {do_TMP_DIR(arg);});
+
+    backend.registerResultHandler("TT_HARD_CONSTRAINTS",
+        [this](QString arg) {do_CONSTRAINT(arg);});
+    backend.registerResultHandler("TT_SOFT_CONSTRAINTS",
+        [this](QString arg) {do_CONSTRAINT(arg);});
+    backend.registerResultHandler("TT_ConstraintsCheck",
+        [this](QString arg) {do_ConstraintsCheck(arg);});
+    //backend.registerResultHandler("TT_NACTIVITIES",
+    //    [this](QString arg) {do_NACTIVITIES(arg);});
 
     // Get range for number of processes.
     // Do this before connecting the "valueChanged" signal, to

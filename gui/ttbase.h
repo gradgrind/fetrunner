@@ -67,12 +67,12 @@ private:
     QList<TtClass> classes;
     QList<TtName> teachers;
     QList<TtName> rooms;
-    void set_activities();
-    void set_classes();
-    void set_teachers();
-    void set_rooms();
-    void set_days();
-    void set_hours();
+    void set_activity(const QString &val);
+    void set_class(const QString &val);
+    void set_teacher(const QString &val);
+    void set_room(const QString &val);
+    void set_day(const QString &val);
+    void set_hour(const QString &val);
 
 public:
     TtBase();
