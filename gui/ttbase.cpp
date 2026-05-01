@@ -1,6 +1,5 @@
 #include "ttbase.h"
 #include "backend.h"
-#include "readlog_thread.h"
 #include <qdebug.h>
 
 TtBase::TtBase() {

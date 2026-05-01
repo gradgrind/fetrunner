@@ -102,6 +102,9 @@ private:
     void do_TT_ACCEPT(const QString &val);
     void do_TT_ELIMINATE(const QString &val);
     void do_TMP_DIR(const QString &val);
+    void do_HARD_CONSTRAINT(const QString &val);
+    void do_SOFT_CONSTRAINT(const QString &val);
+    void add_table_line(QString cname, QString val);
 
 private slots:
     void reset_display();

@@ -36,40 +36,39 @@ void FetRunner::init_ttgen_tables()
     */
 }
 
+void FetRunner::add_table_line(QString cname, QString val) {
+    auto row = ui->progress_table->rowCount();
+    auto item0 = new QTableWidgetItem(cname);      // constraint type
+    auto item1 = new QTableWidgetItem("/ " + val); // number of constraints
+    auto item2 = new QTableWidgetItem("0");        // accepted constraints
+    auto item3 = new QTableWidgetItem("@ 0");      // number of constraints
+    ui->progress_table->insertRow(row);
+    ui->progress_table->setItem(row, 0, item2);
+    ui->progress_table->setItem(row, 1, item1);
+    ui->progress_table->setItem(row, 2, item3);
+    ui->progress_table->setItem(row, 3, item0);
+    constraint_map[cname] = {row++, 0, val.toInt()};
+    // index, satisfied constraints, number of constraints
+}
+
 void FetRunner::setup_progress_table()
 {
     constraint_map.clear();
-    auto row = ui->progress_table->rowCount();
-    auto add_table_line = [&row, this](QString cname, QString val) {
-        auto item0 = new QTableWidgetItem(cname);      // constraint type
-        auto item1 = new QTableWidgetItem("/ " + val); // number of constraints
-        auto item2 = new QTableWidgetItem("0");        // accepted constraints
-        auto item3 = new QTableWidgetItem("@ 0");      // number of constraints
-        ui->progress_table->insertRow(row);
-        ui->progress_table->setItem(row, 0, item2);
-        ui->progress_table->setItem(row, 1, item1);
-        ui->progress_table->setItem(row, 2, item3);
-        ui->progress_table->setItem(row, 3, item0);
-        constraint_map[cname] = {row++, 0, val.toInt()};
-        // index, satisfied constraints, number of constraints
-    };
 
     // The priority constraints are a subset of the hard constraints,
     // so no action is required, but they should be logged. They should
     // be at the head of the hard constraint lists thanks to the
     // `ConstraintPriority` lists (back-end).
-    backend->op1("TT_PRIORITY_CONSTRAINT_TYPES", {}, "PRIORITY_CONSTRAINTS");
-    for (const auto &kv : backend->op("TT_HARD_CONSTRAINTS")) {
-        add_table_line(kv.key, kv.val);
-    }
+    backend.op("TT_PRIORITY_CONSTRAINT_TYPES");
+    backend.op("TT_HARD_CONSTRAINTS");
+    //TODO: Map possibly not be complete (asynchronous)
     auto hcmapsize = constraint_map.size();
     if (hcmapsize != 0) {
         ui->label_hard->setEnabled(true);
         ui->progress_hard->setEnabled(true);
     }
-    for (const auto &kv : backend->op("TT_SOFT_CONSTRAINTS")) {
-        add_table_line(kv.key, kv.val);
-    }
+    backend.op("TT_SOFT_CONSTRAINTS");
+    //TODO: Map possibly not be complete (asynchronous)
     if (constraint_map.size() != hcmapsize) {
         ui->label_soft->setEnabled(true);
         ui->progress_soft->setEnabled(true);
@@ -77,8 +76,12 @@ void FetRunner::setup_progress_table()
     backend.op("TT_NACTIVITIES");
 }
 
-void FetRunner::do_TT_NCONSTRAINTS(const QString &data)
-{
+void FetRunner::do_HARD_CONSTRAINT(const QString &val) {
+    auto kv = val.split("*");
+    add_table_line(kv[0], kv[1]);
+}
+
+void FetRunner::do_TT_NCONSTRAINTS(const QString &data) {
     auto slist = data.split(u'.');
     auto h = slist[0];
     auto hn = slist[1];

@@ -13,45 +13,28 @@ QMap<QString, QColor> colours{{"*INFO*", "#009000"},
                               {"---", "#000000"},
                               {"$", "#53a0ff"}};
 
-class ReadLogWorker : public QObject
-{
-    Q_OBJECT
-
-    QString logline;
-    KeyVal readlogline();
-    KeyVal readresult(QString r);
-
-public slots:
-    void readLog()
-    {
-        while (true) {
-           auto kv = readlogline();
-           //qDebug() << "+" << kv.key << kv.val;
-            if (kv.key == "$") {
-                emit result(readresult(kv.val));
-                continue;
-            }
-            if (kv.key == "---") {
-                emit opDone();
-                continue;
-            }
-            if (kv.key == "*ERROR*") {
-                notifier->emit errorPopup(kv.val);
-                continue;
-            }
-            if (kv.key == "-*-*-") {
-                break;
-            }
+void ReadLogWorker::readLog() {
+    while (true) {
+       auto kv = readlogline();
+       //qDebug() << "+" << kv.key << kv.val;
+        if (kv.key == "$") {
+            emit result(readresult(kv.val));
+            continue;
         }
-        //TODO: Emit a signal?
+        if (kv.key == "---") {
+            emit opDone();
+            continue;
+        }
+        if (kv.key == "*ERROR*") {
+            notifier->emit errorPopup(kv.val);
+            continue;
+        }
+        if (kv.key == "-*-*-") {
+            break;
+        }
     }
-signals:
-    void result(KeyVal logresult);
-    void opDone();
-    void logcolour(QColor);
-    void log(QString);
-    //void error(QString);
-};
+    //TODO: Emit a signal?
+}
 
 Backend::Backend() : QObject() {
     ReadLogWorker *worker = new ReadLogWorker;

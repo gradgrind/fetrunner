@@ -40,11 +40,11 @@ qt_add_executable(fetrunner-gui
     chip.cpp chip.h
     ttview.h ttview.cpp ttview.ui
     ttgrid.cpp ttgrid.h
-    tt_showclass.cpp tt_showclass.h tt_showroom.cpp tt_showroom.h tt_showteacher.cpp
+    tt_showclass.cpp
+    tt_showroom.cpp
+    tt_showteacher.cpp
     ttbase.h ttbase.cpp
     tt_show_resource.h
-
-
 )
 
 qt_add_translations(fetrunner-gui MERGE_QT_TRANSLATIONS

@@ -65,4 +65,22 @@ signals:
 
 extern Backend backend;
 
+class ReadLogWorker : public QObject
+{
+    Q_OBJECT
+
+    QString logline;
+    KeyVal readlogline();
+    KeyVal readresult(QString r);
+
+public slots:
+    void readLog();
+signals:
+    void result(KeyVal logresult);
+    void opDone();
+    void logcolour(QColor);
+    void log(QString);
+    //void error(QString);
+};
+
 #endif // BACKEND_H
