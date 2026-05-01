@@ -240,8 +240,11 @@ bool FetRunner::set_fet_path(QString fetpath0)
             if (fetpath.isEmpty()) {
                 return false;
             }
+        } else if (fetpath == "") {
+            fetpath = FET_CL;
         }
-        for (const auto &kv : backend->op("GET_FET", {fetpath, "W"})) {
+        //TODO: as continuation ...
+        for (const auto &kv : backend->op("GET_FET", fetpath)) {
             if (kv.key == "FET_PATH")
                 fetp = kv.val;
             else if (kv.key == "FET_VERSION")

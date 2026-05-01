@@ -17,12 +17,7 @@ import (
 	"github.com/beevik/etree"
 )
 
-var (
-	FETPATH string
-	FET_CL  string = "fet-cl" // "default" value for `FETPATH`, command-line version
-	FET_CLW string = "fet-cl" // "default" value for `FETPATH`, GUI version
-	// FET_CLW and FET_CL are the same except on Windows: see fet/platform_windows.go.
-)
+var FETPATH string
 
 func InitBackend(attdata *autotimetable.AutoTtData) {
 	bdata := base.DataBase

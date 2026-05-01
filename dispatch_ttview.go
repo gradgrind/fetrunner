@@ -23,125 +23,107 @@ func init() {
 // The AutoTtData instance is available as `autotimetable.AutoTt`.
 
 func get_days(op *DispatchOp) {
-	if CheckArgs(op, 0) {
-		lres := autotimetable.AutoTt.GetLastResult()
-		for _, d := range lres.Days {
-			base.LogResult(op.Op, d.Tag+":")
-		}
+	lres := autotimetable.AutoTt.GetLastResult()
+	for _, d := range lres.Days {
+		base.LogResult(op.Op, d.Tag+":")
 	}
 }
 
 func get_hours(op *DispatchOp) {
-	if CheckArgs(op, 0) {
-		lres := autotimetable.AutoTt.GetLastResult()
-		for _, h := range lres.Hours {
-			base.LogResult(op.Op, h.Tag+":")
-		}
+	lres := autotimetable.AutoTt.GetLastResult()
+	for _, h := range lres.Hours {
+		base.LogResult(op.Op, h.Tag+":")
 	}
 }
 
 func get_classes(op *DispatchOp) {
-	if CheckArgs(op, 0) {
-		lres := autotimetable.AutoTt.GetLastResult()
-		for _, cls := range lres.Classes {
-			//TODO? If I could ensure that the atomic groups of a class are consecutive,
-			// an alternative would be to include just start and end index here.
-			ailist := []string{}
-			for _, ai := range cls.AtomicIndexes {
-				ailist = append(ailist, strconv.Itoa(ai))
-			}
-			glist := []string{}
-			for _, g := range cls.Groups {
-				glist = append(glist, g.Tag)
-			}
-			ais := strings.Join(ailist, ",")
-			gs := strings.Join(glist, ",")
-			base.LogResult(op.Op, cls.Tag+"::"+ais+":"+gs)
+	lres := autotimetable.AutoTt.GetLastResult()
+	for _, cls := range lres.Classes {
+		//TODO? If I could ensure that the atomic groups of a class are consecutive,
+		// an alternative would be to include just start and end index here.
+		ailist := []string{}
+		for _, ai := range cls.AtomicIndexes {
+			ailist = append(ailist, strconv.Itoa(ai))
 		}
+		glist := []string{}
+		for _, g := range cls.Groups {
+			glist = append(glist, g.Tag)
+		}
+		ais := strings.Join(ailist, ",")
+		gs := strings.Join(glist, ",")
+		base.LogResult(op.Op, cls.Tag+"::"+ais+":"+gs)
 	}
 }
 
 // TODO: (long) names
 func get_teachers(op *DispatchOp) {
-	if CheckArgs(op, 0) {
-		lres := autotimetable.AutoTt.GetLastResult()
-		for _, t := range lres.Teachers {
-			base.LogResult(op.Op, t.Tag+":")
-		}
+	lres := autotimetable.AutoTt.GetLastResult()
+	for _, t := range lres.Teachers {
+		base.LogResult(op.Op, t.Tag+":")
 	}
 }
 
 // TODO: (long) names
 func get_rooms(op *DispatchOp) {
-	if CheckArgs(op, 0) {
-		lres := autotimetable.AutoTt.GetLastResult()
-		for _, r := range lres.Rooms {
-			base.LogResult(op.Op, r.Tag+":")
-		}
+	lres := autotimetable.AutoTt.GetLastResult()
+	for _, r := range lres.Rooms {
+		base.LogResult(op.Op, r.Tag+":")
 	}
 }
 
 func get_activities(op *DispatchOp) {
-	if CheckArgs(op, 0) {
-		lres := autotimetable.AutoTt.GetLastResult()
-		for _, a := range lres.Activities {
-			tlist := []string{}
-			for _, tix := range a.Teachers {
-				tlist = append(tlist, strconv.Itoa(tix))
-			}
-			aglist := []string{}
-			for _, agix := range a.AtomicGroupIndexes {
-				aglist = append(aglist, strconv.Itoa(agix))
-			}
-			glist := []string{}
-			for _, g := range a.Groups {
-				glist = append(glist, g.Tag)
-			}
-			base.LogResult(op.Op, fmt.Sprintf("%d:%s:%s:%s:%s",
-				a.Duration, a.Subject,
-				strings.Join(tlist, ","),
-				strings.Join(aglist, ","),
-				strings.Join(glist, ",")))
+	lres := autotimetable.AutoTt.GetLastResult()
+	for _, a := range lres.Activities {
+		tlist := []string{}
+		for _, tix := range a.Teachers {
+			tlist = append(tlist, strconv.Itoa(tix))
 		}
+		aglist := []string{}
+		for _, agix := range a.AtomicGroupIndexes {
+			aglist = append(aglist, strconv.Itoa(agix))
+		}
+		glist := []string{}
+		for _, g := range a.Groups {
+			glist = append(glist, g.Tag)
+		}
+		base.LogResult(op.Op, fmt.Sprintf("%d:%s:%s:%s:%s",
+			a.Duration, a.Subject,
+			strings.Join(tlist, ","),
+			strings.Join(aglist, ","),
+			strings.Join(glist, ",")))
 	}
 }
 
 func get_class_placements(op *DispatchOp) {
-	if CheckArgs(op, 1) {
-		cix, err := strconv.Atoi(op.Data[0])
-		if err != nil {
-			panic(err)
-		}
-		lres := autotimetable.AutoTt.GetLastResult()
-		for _, p := range autotimetable.ClassPlacements(lres, cix) {
-			base.LogResult("PLACEMENT", autotimetable.SerializePlacement(p))
-		}
+	cix, err := strconv.Atoi(op.Arg)
+	if err != nil {
+		panic(err)
+	}
+	lres := autotimetable.AutoTt.GetLastResult()
+	for _, p := range autotimetable.ClassPlacements(lres, cix) {
+		base.LogResult("PLACEMENT", autotimetable.SerializePlacement(p))
 	}
 }
 
 func get_teacher_placements(op *DispatchOp) {
-	if CheckArgs(op, 1) {
-		tix, err := strconv.Atoi(op.Data[0])
-		if err != nil {
-			panic(err)
-		}
-		lres := autotimetable.AutoTt.GetLastResult()
-		for _, p := range autotimetable.TeacherPlacements(lres, tix) {
-			base.LogResult("PLACEMENT", autotimetable.SerializePlacement(p))
-		}
+	tix, err := strconv.Atoi(op.Arg)
+	if err != nil {
+		panic(err)
+	}
+	lres := autotimetable.AutoTt.GetLastResult()
+	for _, p := range autotimetable.TeacherPlacements(lres, tix) {
+		base.LogResult("PLACEMENT", autotimetable.SerializePlacement(p))
 	}
 }
 
 func get_room_placements(op *DispatchOp) {
-	if CheckArgs(op, 1) {
-		rix, err := strconv.Atoi(op.Data[0])
-		if err != nil {
-			panic(err)
-		}
-		lres := autotimetable.AutoTt.GetLastResult()
-		for _, p := range autotimetable.RoomPlacements(lres, rix) {
-			base.LogResult("PLACEMENT", autotimetable.SerializePlacement(p))
-		}
+	rix, err := strconv.Atoi(op.Arg)
+	if err != nil {
+		panic(err)
+	}
+	lres := autotimetable.AutoTt.GetLastResult()
+	for _, p := range autotimetable.RoomPlacements(lres, rix) {
+		base.LogResult("PLACEMENT", autotimetable.SerializePlacement(p))
 	}
 }
 

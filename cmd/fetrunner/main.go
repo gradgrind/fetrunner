@@ -67,6 +67,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -82,7 +83,11 @@ func main() {
 	real_soft := flag.Bool("s", false, "the weights of soft constraints are retained")
 	timeout := flag.Int("t", 300, "set timeout, s")
 	nprocesses := flag.Int("p", 0, "max. parallel processes")
-	fetpath := flag.String("fet", "", "FET executable: /path/to/fet-cl")
+	FET_CL := "fet-cl"
+	if runtime.GOOS == "windows" {
+		FET_CL = "fet-cl.exe"
+	}
+	fetpath := flag.String("fet", FET_CL, "FET executable: /path/to/fet-cl")
 	tmppath := flag.String("tmp", "", "Folder for temporary files (FET): /path/to/tmp")
 	write_fet_file := flag.Bool("xf", false, "write fully-constrained FET file")
 	testing := flag.Bool("xt", false, "run in testing mode")
@@ -120,13 +125,13 @@ func main() {
 	defer base.LogStop()
 
 	fetrunner.Dispatch("VERSION")
-	fetrunner.Dispatch("TT_PARAMETER|TIMEOUT|" + strconv.Itoa(*timeout))
-	fetrunner.Dispatch("TT_PARAMETER|MAXPROCESSES|" + strconv.Itoa(*nprocesses))
-	fetrunner.Dispatch("TT_PARAMETER|DEBUG|" + strconv.FormatBool(*debug))
-	fetrunner.Dispatch("TT_PARAMETER|TESTING|" + strconv.FormatBool(*testing))
-	fetrunner.Dispatch("TT_PARAMETER|SKIP_HARD|" + strconv.FormatBool(*skip_hard))
-	fetrunner.Dispatch("TT_PARAMETER|REAL_SOFT|" + strconv.FormatBool(*real_soft))
-	fetrunner.Dispatch("TT_PARAMETER|WRITE_FET_FILE|" + strconv.FormatBool(*write_fet_file))
+	fetrunner.Dispatch("TT_PARAMETER TIMEOUT=" + strconv.Itoa(*timeout))
+	fetrunner.Dispatch("TT_PARAMETER MAXPROCESSES=" + strconv.Itoa(*nprocesses))
+	fetrunner.Dispatch("TT_PARAMETER DEBUG=" + strconv.FormatBool(*debug))
+	fetrunner.Dispatch("TT_PARAMETER TESTING=" + strconv.FormatBool(*testing))
+	fetrunner.Dispatch("TT_PARAMETER SKIP_HARD=" + strconv.FormatBool(*skip_hard))
+	fetrunner.Dispatch("TT_PARAMETER REAL_SOFT=" + strconv.FormatBool(*real_soft))
+	fetrunner.Dispatch("TT_PARAMETER WRITE_FET_FILE=" + strconv.FormatBool(*write_fet_file))
 
 	if *tmppath == "" {
 		base.SetTmpDir()
@@ -140,18 +145,18 @@ func main() {
 		if errors.Is(err, os.ErrNotExist) || !fileInfo.IsDir() {
 			log.Fatalln("Not a directory:", abstmppath)
 		}
-		if !fetrunner.Dispatch("TMP_PATH|" + abstmppath) {
+		if !fetrunner.Dispatch("TMP_PATH " + abstmppath) {
 			return
 		}
 	}
 
 	// Get the path to `fet-cl`, and its version number.
-	fetrunner.Dispatch("GET_FET|" + *fetpath + "|")
-	if len(fet.FETPATH) == 0 {
+	fetrunner.Dispatch("GET_FET " + *fetpath)
+	if fet.FETPATH == "" {
 		base.LogError("--NO_FET")
 		return
 	}
-	fetrunner.Dispatch("SET_FILE|" + abspath)
+	fetrunner.Dispatch("SET_FILE " + abspath)
 	if len(base.DataBase.Name) == 0 {
 		return
 	}
@@ -173,9 +178,9 @@ func main() {
 		//fetrunner.Dispatch("TT_TEACHERS")
 		//fetrunner.Dispatch("TT_ROOMS")
 		//fetrunner.Dispatch("TT_ACTIVITIES")
-		//fetrunner.Dispatch("TT_CLASS_PLACEMENTS|11")
-		//fetrunner.Dispatch("TT_TEACHER_PLACEMENTS|32")
-		//fetrunner.Dispatch("TT_ROOM_PLACEMENTS|28")
+		//fetrunner.Dispatch("TT_CLASS_PLACEMENTS 11")
+		//fetrunner.Dispatch("TT_TEACHER_PLACEMENTS 32")
+		//fetrunner.Dispatch("TT_ROOM_PLACEMENTS 28")
 	}
 }
 
