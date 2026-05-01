@@ -296,7 +296,7 @@ void FetRunner::select_tmp_dir()
         "/",
         QFileDialog::ShowDirsOnly);
     if (!dirpath.isEmpty()) {
-        if (!backend->op("TMP_PATH|" + dirpath)) {
+        if (!backend->op("TMP_PATH " + dirpath)) {
             ui->tmp_dir->clear();
             ui->tmp_dir_name->setText("-");
         } else {
@@ -308,7 +308,7 @@ void FetRunner::select_tmp_dir()
 
 void FetRunner::select_default_tmp_dir()
 {
-    if (!backend->op("TMP_PATH|-")) {
+    if (!backend->op("TMP_PATH")) {
         ui->tmp_dir->clear();
         ui->tmp_dir_name->setText("-");
     } else {

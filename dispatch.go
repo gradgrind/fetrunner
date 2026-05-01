@@ -306,8 +306,8 @@ func hardConstraints(op *DispatchOp) {
 		ilist, ok := autotimetable.AutoTt.HardConstraintMap[c]
 		if ok {
 			base.LogResult(
-				strings.TrimPrefix(c, "Constraint"),
-				strconv.Itoa(len(ilist)))
+				"HARD_CONSTRAINT",
+				fmt.Sprintf("%s*%d", strings.TrimPrefix(c, "Constraint"), len(ilist)))
 		}
 	}
 }
@@ -318,8 +318,9 @@ func softConstraints(op *DispatchOp) {
 		func(a, b string) int { return strings.Compare(b, a) })
 	for _, c := range clist {
 		base.LogResult(
-			strings.Replace(c, ":Constraint", ":", 1),
-			strconv.Itoa(len(autotimetable.AutoTt.SoftConstraintMap[c])))
+			"SOFT_CONSTRAINT",
+			fmt.Sprintf("%s*%d", strings.Replace(c, ":Constraint", ":", 1),
+				len(autotimetable.AutoTt.SoftConstraintMap[c])))
 	}
 }
 
