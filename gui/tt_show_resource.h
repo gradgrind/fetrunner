@@ -4,8 +4,8 @@
 #include "ttbase.h"
 #include "ttgrid.h"
 
-void ShowClass(TtGrid *grid, TtBase * ttbase, int cix);
-void ShowRoom(TtGrid *grid, TtBase * ttbase, int rix);
-void ShowTeacher(TtGrid *grid, TtBase * ttbase, int tix);
+void showClass(TtGrid *grid, TtBase * ttbase, int cix);
+void showRoom(TtGrid *grid, TtBase * ttbase, int rix);
+void showTeacher(TtGrid *grid, TtBase * ttbase, int tix);
 
 #endif // TT_SHOW_RESOURCE_H

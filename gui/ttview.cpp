@@ -1,4 +1,5 @@
 #include "ttview.h"
+#include "backend.h"
 #include "ui_ttview.h"
 #include "tt_show_resource.h"
 
@@ -15,6 +16,14 @@ TtView::TtView(QWidget *parent)
     , ui(new Ui::TtView)
 {
     ui->setupUi(this);
+
+    backend.registerResultHandler("TT_TEACHER_PLACEMENTS",
+        [this](QString arg) {do_TEACHER_PLACEMENTS(arg);});
+    backend.registerResultHandler("TT_ROOM_PLACEMENTS",
+        [this](QString arg) {do_ROOM_PLACEMENTS(arg);});
+    backend.registerResultHandler("TT_CLASS_PLACEMENTS",
+        [this](QString arg) {do_CLASS_PLACEMENTS(arg);});
+
     //canvas = new Canvas(ui->canvas_view);
     // Generate an example grid:
     grid = new TtGrid(ui->canvas_view,

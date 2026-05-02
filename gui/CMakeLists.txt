@@ -26,25 +26,20 @@ set_target_properties(libfetrunner PROPERTIES
 qt_add_executable(fetrunner-gui
     WIN32 MACOSX_BUNDLE
     main.cpp
-    mainwindow.cpp
-    mainwindow.h
-    mainwindow.ui
-    backend.h backend.cpp
+    mainwindow.cpp mainwindow.h mainwindow.ui
+    backend.cpp backend.h
     fetrunner_help.qrc
     globals.h
-    fetrunner.ui
-    fetrunner.cpp
-    fetrunner.h
+    fetrunner.cpp fetrunner.h fetrunner.ui
     ttgen_tables.cpp
     canvas.cpp canvas.h
     chip.cpp chip.h
-    ttview.h ttview.cpp ttview.ui
+    ttview.cpp ttview.h ttview.ui
     ttgrid.cpp ttgrid.h
-    tt_showclass.cpp
-    tt_showroom.cpp
-    tt_showteacher.cpp
-    ttbase.h ttbase.cpp
-    tt_show_resource.h
+
+
+    tt_show_resource.h tt_show_resource.cpp
+    ttbase.cpp ttbase.h
 )
 
 qt_add_translations(fetrunner-gui MERGE_QT_TRANSLATIONS

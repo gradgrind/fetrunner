@@ -36,7 +36,11 @@ public:
         QStringList days,
         QStringList hours,
         QList<int> breaks = {});
-    ~TtGrid();
+    ~TtGrid() {
+        delete canvas;
+        // TODO: more?
+    }
+
 
     void setup_grid();
     void place_tile(Tile *tile, int col, int row);
@@ -96,11 +100,11 @@ public:
         return Type;
     }
 
-    Tile(TtGrid *grid, QJsonObject data, int lesson_id);
+    Tile(TtGrid *grid, int activity);
 
     void place(qreal x, qreal y, qreal w, qreal h);
 
-    int lid;
+    int activityIndex;
     QString ref;
     int length;
     int divs;

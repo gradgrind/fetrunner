@@ -73,7 +73,7 @@ void TtGrid::handle_context_menu(QList<QGraphicsItem *> items)
 
     QString tiledata;
     if (tile) {
-        tiledata = QString("[%1|%2]").arg(tile->ref).arg(tile->lid);
+        tiledata = QString("[%1|%2]").arg(tile->ref).arg(tile->activityIndex);
     }
     qDebug() << "CONTEXT MENU:" << cellx << celly
              << tiledata;
@@ -85,9 +85,9 @@ void TtGrid::handle_hover(HoverRectItem *gitem, bool enter)
     Tile *tile = qgraphicsitem_cast<Tile *>(gitem);
 
     if (enter) {
-        qDebug() << "ENTER" << tile->lid;
+        qDebug() << "ENTER" << tile->activityIndex;
     } else {
-        qDebug() << "EXIT" << tile->lid;
+        qDebug() << "EXIT" << tile->activityIndex;
     }
 }
 
@@ -180,12 +180,6 @@ void TtGrid::setup_grid()
     selection_rect->hide();
 }
 
-TtGrid::~TtGrid()
-{
-    delete canvas;
-    // TODO: more?
-}
-
 void TtGrid::place_tile(Tile *tile, int col, int row)
 {
     Cell *cell = cols[col + 1][row + 1];
@@ -244,31 +238,19 @@ void TtGrid::clearHighlights()
     }
 }
 
-Tile::Tile(TtGrid *grid, QJsonObject data, int lesson_id)
+Tile::Tile(TtGrid *grid, int activity)
     : Chip()
 {
     grid->scene->addItem(this);
-    grid->lid2tiles[lesson_id].append(this);
+    grid->lid2tiles[activity].append(this);
 
     if (grid->hover_handler) {
         setHoverHandler(grid->hover_handler);
             //void (* handler)(QGraphicsRectItem*, bool))
     }
 
-    lid = lesson_id;
-    ref = data.value("REF").toString();
-    length = data.value("LENGTH").toInt(1);
-    divs = data.value("DIVS").toInt(1);
-    div0 = data.value("DIV0").toInt(0);
-    ndivs = data.value("NDIVS").toInt(1);
-    middle = data.value("TEXT").toString();
-    tl = data.value("TL").toString();
-    tr = data.value("TR").toString();
-    bl = data.value("BL").toString();
-    br = data.value("BR").toString();
-
-    QString bg = data.value("BACKGROUND").toString("FFFFFF");
-    set_background(bg);
+    activityIndex = activity;
+    set_background("FFFFFF"); // opaque white
     QJsonObject settings = grid->settings;
     set_border(settings.value("TILE_BORDER_WIDTH").toDouble(TILE_BORDER_WIDTH),
                settings.value("TILE_BORDER_COLOUR").toString(TILE_BORDER_COLOUR));

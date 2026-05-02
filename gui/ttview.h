@@ -27,6 +27,10 @@ private:
     TtGrid *grid{nullptr};
     TtBase *ttbase{nullptr};
 
+    void do_TEACHER_PLACEMENTS(const QString &val);
+    void do_ROOM_PLACEMENTS(const QString &val);
+    void do_CLASS_PLACEMENTS(const QString &val);
+
 public slots:
     void new_tt_data();
 

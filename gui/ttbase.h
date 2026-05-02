@@ -3,6 +3,7 @@
 
 #include <QStringList>
 
+/*
 struct TtPlacement
 {
     int activity;
@@ -21,14 +22,18 @@ public:
         clear();
     }
 };
+*/
 
 struct TtActivity
 {
     int length;
+    int day;
+    int hour;
     QString subject;
     QList<int> teachers;
     QList<int> atomics;
     QStringList groups;
+    QList<int> rooms;
 };
 
 struct TtName
@@ -55,18 +60,14 @@ struct TileData
 
 class TtBase
 {
+    //TODO: I might want to have the class-group separator
+    // (currently only ".") available here.
 private:
-    QList<TtActivity *> activities;
     void clear_activities()
     {
         qDeleteAll(activities.begin(), activities.end());
         activities.clear();
     }
-    QList<TtName> days;
-    QList<TtName> hours;
-    QList<TtClass> classes;
-    QList<TtName> teachers;
-    QList<TtName> rooms;
     void set_activity(const QString &val);
     void set_class(const QString &val);
     void set_teacher(const QString &val);
@@ -82,7 +83,16 @@ public:
     const QList<TtName> get_days() { return days; }
     const QList<TtName> get_hours() { return hours; }
 
-    TileData *get_tile_data(TtPlacement *p);
+    int place_activity(const QString &val);
+
+    //TileData *get_tile_data(TtPlacement *p);
+
+    QList<TtActivity *> activities;
+    QList<TtName> days;
+    QList<TtName> hours;
+    QList<TtClass> classes;
+    QList<TtName> teachers;
+    QList<TtName> rooms;
 };
 
 //extern TtBase tt_base;
