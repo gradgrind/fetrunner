@@ -36,9 +36,7 @@ qt_add_executable(fetrunner-gui
     chip.cpp chip.h
     ttview.cpp ttview.h ttview.ui
     ttgrid.cpp ttgrid.h
-
-
-    tt_show_resource.h tt_show_resource.cpp
+    tt_show_resource.cpp
     ttbase.cpp ttbase.h
 )
 

@@ -13,38 +13,33 @@ FetRunner::FetRunner(QWidget *parent)
     ui->setupUi(this);
     init_ttgen_tables();
 
-    backend.registerResultHandler("N_PROCESSES",
+    backend->registerResultHandler("N_PROCESSES",
         [this](QString arg) {do_N_PROCESSES(arg);});
-    backend.registerResultHandler(".TICK",
+    backend->registerResultHandler(".TICK",
         [this](QString arg) {do_TT_TICK(arg);});
-    backend.registerResultHandler(".NCONSTRAINTS",
+    backend->registerResultHandler(".NCONSTRAINTS",
         [this](QString arg) {do_TT_NCONSTRAINTS(arg);});
-    backend.registerResultHandler(".PROGRESS",
+    backend->registerResultHandler(".PROGRESS",
         [this](QString arg) {do_TT_PROGRESS(arg);});
-    backend.registerResultHandler(".START",
+    backend->registerResultHandler(".START",
         [this](QString arg) {do_TT_START(arg);});
-    backend.registerResultHandler(".END",
+    backend->registerResultHandler(".END",
         [this](QString arg) {do_TT_END(arg);});
-    backend.registerResultHandler(".ACCEPT",
+    backend->registerResultHandler(".ACCEPT",
         [this](QString arg) {do_TT_ACCEPT(arg);});
-    backend.registerResultHandler(".ELIMINATE",
+    backend->registerResultHandler(".ELIMINATE",
         [this](QString arg) {do_TT_ELIMINATE(arg);});
-    backend.registerResultHandler("TMP_DIR",
+    backend->registerResultHandler("TMP_DIR",
         [this](QString arg) {do_TMP_DIR(arg);});
 
-    backend.registerResultHandler("TT_HARD_CONSTRAINTS",
+    backend->registerResultHandler("TT_HARD_CONSTRAINTS",
         [this](QString arg) {do_CONSTRAINT(arg);});
-    backend.registerResultHandler("TT_SOFT_CONSTRAINTS",
+    backend->registerResultHandler("TT_SOFT_CONSTRAINTS",
         [this](QString arg) {do_CONSTRAINT(arg);});
-    backend.registerResultHandler("TT_ConstraintsCheck",
+    backend->registerResultHandler("TT_ConstraintsCheck",
         [this](QString arg) {do_ConstraintsCheck(arg);});
-    //backend.registerResultHandler("TT_NACTIVITIES",
+    //backend->registerResultHandler("TT_NACTIVITIES",
     //    [this](QString arg) {do_NACTIVITIES(arg);});
-
-    // Get range for number of processes.
-    // Do this before connecting the "valueChanged" signal, to
-    // avoid triggering this before any actual change.
-    backend.op("N_PROCESSES");
 
     connect( //
         notifier,
@@ -57,15 +52,29 @@ FetRunner::FetRunner(QWidget *parent)
         this,
         &FetRunner::reset_display);
     connect( //
-        &backend,
+        backend,
         &Backend::logcolour,
         ui->logview,
         &QTextEdit::setTextColor);
     connect( //
-        &backend,
+        backend,
         &Backend::log,
         ui->logview,
         &QTextEdit::append);
+
+    QTimer::singleShot(0, this, &FetRunner::init2);
+}
+
+void FetRunner::init2()
+{
+    // This is run immediately after starting the event loop.
+
+    backend->op("VERSION");
+    // Get range for number of processes.
+    // Do this before connecting the "valueChanged" signal, to
+    // avoid triggering this before any actual change.
+    backend->op("N_PROCESSES");
+
     connect( //
         ui->tt_processes,
         QOverload<int>::of(&QSpinBox::valueChanged),
@@ -105,12 +114,6 @@ FetRunner::FetRunner(QWidget *parent)
     QValidator *validator1 = new QIntValidator(0, 99999, this);
     ui->tt_timeout->setValidator(validator1);
 
-    QTimer::singleShot(0, this, &FetRunner::init2);
-}
-
-void FetRunner::init2()
-{
-    // This is run immediately after starting the event loop.
     ui->progress_table->resizeColumnsToContents();
     ui->instance_table->resizeColumnsToContents();
     reset_display();
@@ -133,7 +136,7 @@ FetRunner::~FetRunner()
 void FetRunner::nprocesses(int n)
 {
     auto nn = QString::number(n);
-    backend.op("TT_PARAMETER", "MAXPROCESSES=" + nn);
+    backend->op("TT_PARAMETER", "MAXPROCESSES=" + nn);
 }
 
 void FetRunner::do_MAXPROCESSES(const QString &val) {
@@ -180,18 +183,18 @@ void FetRunner::push_go()
 
     // Set parameters
     auto t = ui->tt_timeout->text();
-    backend.op("TT_PARAMETER", "TIMEOUT=" + t);
+    backend->op("TT_PARAMETER", "TIMEOUT=" + t);
     auto sh = ui->tt_skip_hard->isChecked();
-    backend.op("TT_PARAMETER", sh ? "SKIP_HARD=true" : "SKIP_HARD=false");
+    backend->op("TT_PARAMETER", sh ? "SKIP_HARD=true" : "SKIP_HARD=false");
     auto rs = ui->tt_real_soft->isChecked();
-    backend.op("TT_PARAMETER", rs ? "REAL_SOFT=true" : "REAL_SOFT=false");
+    backend->op("TT_PARAMETER", rs ? "REAL_SOFT=true" : "REAL_SOFT=false");
     auto wff = ui->write_fet_file->isChecked();
-    backend.op("TT_PARAMETER", wff ? "WRITE_FET_FILE=true" : "WRITE_FET_FILE=false");
+    backend->op("TT_PARAMETER", wff ? "WRITE_FET_FILE=true" : "WRITE_FET_FILE=false");
 
-    if (backend.op("RUN_TT_SOURCE")) {
+    if (backend->op("RUN_TT_SOURCE")) {
         setup_progress_table();
         threadRunActivated(true);
-        backend.op("!RUN_TT");
+        backend->op("!RUN_TT");
     }
 }
 
@@ -213,7 +216,7 @@ bool FetRunner::set_fet_path(QString fetpath0)
         } else if (fetpath == "") {
             fetpath = FET_CL;
         }
-        if (backend.op("GET_FET", fetpath))
+        if (backend->op("GET_FET", fetpath))
             break;
 
         // Handle FET executable not found.
@@ -244,7 +247,7 @@ void FetRunner::do_FET_VERSION(const QString &val)
 void FetRunner::push_stop()
 {
     ui->pb_stop->setEnabled(false);
-    backend.op("_STOP_TT");
+    backend->op("_STOP_TT");
     closingMessageBox.setText(tr("Finishing ..."));
     closingMessageBox.setIcon(QMessageBox::Information);
     closingMessageBox.setStandardButtons(QMessageBox::NoButton);
@@ -259,7 +262,7 @@ void FetRunner::select_tmp_dir()
         "/",
         QFileDialog::ShowDirsOnly);
     if (!dirpath.isEmpty()) {
-        if (!backend.op("TMP_PATH " + dirpath)) {
+        if (!backend->op("TMP_PATH " + dirpath)) {
             ui->tmp_dir->clear();
             ui->tmp_dir_name->setText("-");
         }
@@ -269,7 +272,7 @@ void FetRunner::select_tmp_dir()
 
 void FetRunner::select_default_tmp_dir()
 {
-    if (!backend.op("TMP_PATH")) {
+    if (!backend->op("TMP_PATH")) {
         ui->tmp_dir->clear();
         ui->tmp_dir_name->setText("-");
     }

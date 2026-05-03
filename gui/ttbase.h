@@ -32,6 +32,7 @@ struct TtActivity
     QString subject;
     QList<int> teachers;
     QList<int> atomics;
+    QList<int> selected_atomics; // used in class view
     QStringList groups;
     QList<int> rooms;
 };

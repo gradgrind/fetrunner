@@ -22,8 +22,8 @@ MainWindow::MainWindow(QWidget *parent)
     notifier = new Notifier();
 
     ui->help_view->setSource(QUrl("qrc:/help/using_fetrunner.md"));
-    backend.registerResultHandler("FETRUNNER_VERSION", [this](QString arg) {do_FETRUNNER_VERSION(arg);});
-    backend.op("VERSION");
+
+    backend->registerResultHandler("FETRUNNER_VERSION", [this](QString arg) {do_FETRUNNER_VERSION(arg);});
 
     auto ttsolver = new FetRunner();
     ui->main_panel->addWidget(ttsolver);
@@ -106,7 +106,7 @@ MainWindow::MainWindow(QWidget *parent)
         &TtView::new_tt_data);
 
     connect( //
-        &backend,
+        backend,
         &Backend::error,
         this,
         &MainWindow::error_popup);
@@ -185,7 +185,7 @@ void MainWindow::open_file()
 
     if (!filepath.isEmpty()) {
         notifier->emit fileChanged();
-        backend.op("SET_FILE", {filepath});
+        backend->op("SET_FILE", {filepath});
     }
 }
 

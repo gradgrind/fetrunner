@@ -58,11 +58,11 @@ void FetRunner::setup_progress_table()
     // so no action is required, but they should be logged. They should
     // be at the head of the hard constraint lists thanks to the
     // `ConstraintPriority` lists (back-end).
-    backend.op("TT_PRIORITY_CONSTRAINT_TYPES");
-    backend.op("TT_HARD_CONSTRAINTS");
-    backend.op("TT_SOFT_CONSTRAINTS");
-    backend.op("TT_ConstraintsCheck");
-    backend.op("TT_NACTIVITIES");
+    backend->op("TT_PRIORITY_CONSTRAINT_TYPES");
+    backend->op("TT_HARD_CONSTRAINTS");
+    backend->op("TT_SOFT_CONSTRAINTS");
+    backend->op("TT_ConstraintsCheck");
+    backend->op("TT_NACTIVITIES");
 }
 
 void FetRunner::do_CONSTRAINT(const QString &val) {

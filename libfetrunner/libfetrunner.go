@@ -18,6 +18,11 @@ var cmsg *C.char
 //export FetRunnerCommand
 func FetRunnerCommand(cString *C.char) C.int {
 	gString := C.GoString(cString)
+
+	//TODO--
+	//fmt.Println("§", gString)
+	//return 2
+
 	if fetrunner.Dispatch(gString) {
 		return 1
 	} else {

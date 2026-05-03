@@ -5,6 +5,8 @@
 #include "globals.h"
 //#include <iostream>
 
+Backend *backend;
+
 // display colours for the log
 QMap<QString, QColor> colours{{"*INFO*", "#009000"},
                               {"*WARNING*", "#eb8900"},
@@ -14,9 +16,10 @@ QMap<QString, QColor> colours{{"*INFO*", "#009000"},
                               {"$", "#53a0ff"}};
 
 void ReadLogWorker::readLog() {
+    qDebug() << "ReadLogWorker::readLog()" << QThread::currentThreadId();
     while (true) {
        auto kv = readlogline();
-       //qDebug() << "+" << kv.key << kv.val;
+       qDebug() << "+" << kv.key << kv.val;
         if (kv.key == "$") {
             emit result(readresult(kv.val));
             continue;
@@ -36,11 +39,15 @@ void ReadLogWorker::readLog() {
     //TODO: Emit a signal?
 }
 
+//ReadLogWorker::ReadLogWorker(QObject *parent) : QObject(parent) {}
+
 Backend::Backend() : QObject() {
+    qDebug() << "Backend::Backend()" << QThread::currentThreadId();
+
     ReadLogWorker *worker = new ReadLogWorker;
     worker->moveToThread(&loggerThread);
+    connect(&loggerThread, &QThread::started, worker, &ReadLogWorker::readLog);
     connect(&loggerThread, &QThread::finished, worker, &QObject::deleteLater);
-    connect(this, &Backend::readLog, worker, &ReadLogWorker::readLog);
     //connect(worker, &ReadLogWorker::opDone, this, &ReadLogController::handleDone);
     connect(worker, &ReadLogWorker::result, this, &Backend::handleResult);
     connect(worker, &ReadLogWorker::logcolour, this, &Backend::logcolour);
@@ -48,17 +55,17 @@ Backend::Backend() : QObject() {
     //connect(worker, &ReadLogWorker::error, this, &Backend::error);
     loggerThread.start();
 }
-Backend backend;
-void logcolour(QColor);
-void log(QString);
 
 int Backend::op(QString cmd, QString arg)
 {
-    if (arg.isEmpty()) {
+    if (!arg.isEmpty()) {
         cmd += " " + arg;
     }
-    //qDebug() << "?" << cmd;
-    return FetRunnerCommand(cmd.toUtf8().data());
+    qDebug() << "?" << cmd << QThread::currentThreadId();
+
+    auto res = FetRunnerCommand(cmd.toUtf8().data());
+    qDebug() << "?DONE";
+    return res;
 }
 
 KeyVal ReadLogWorker::readresult(QString r)

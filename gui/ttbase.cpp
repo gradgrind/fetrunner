@@ -3,35 +3,35 @@
 #include <qdebug.h>
 
 TtBase::TtBase() {
-    backend.registerResultHandler("TT_DAYS",
+    backend->registerResultHandler("TT_DAYS",
         [this](QString arg) {set_day(arg);});
-    backend.registerResultHandler("TT_HOURS",
+    backend->registerResultHandler("TT_HOURS",
         [this](QString arg) {set_hour(arg);});
-    backend.registerResultHandler("TT_CLASSES",
+    backend->registerResultHandler("TT_CLASSES",
         [this](QString arg) {set_class(arg);});
-    backend.registerResultHandler("TT_TEACHERS",
+    backend->registerResultHandler("TT_TEACHERS",
         [this](QString arg) {set_teacher(arg);});
-    backend.registerResultHandler("TT_ROOMS",
+    backend->registerResultHandler("TT_ROOMS",
         [this](QString arg) {set_room(arg);});
-    backend.registerResultHandler("TT_ACTIVITIES",
+    backend->registerResultHandler("TT_ACTIVITIES",
         [this](QString arg) {set_activity(arg);});
 
     days.clear();
-    backend.op("TT_DAYS");
+    backend->op("TT_DAYS");
     hours.clear();
-    backend.op("TT_HOURS");
+    backend->op("TT_HOURS");
     //qDebug() << "set_classes()";
     classes.clear();
-    backend.op("TT_CLASSES");
+    backend->op("TT_CLASSES");
     //qDebug() << "set_teachers()";
     teachers.clear();
-    backend.op("TT_TEACHERS");
+    backend->op("TT_TEACHERS");
     //qDebug() << "set_rooms()";
     rooms.clear();
-    backend.op("TT_ROOMS");
+    backend->op("TT_ROOMS");
     //qDebug() << "set_activities()";
     clear_activities();
-    backend.op("TT_ACTIVITIES");
+    backend->op("TT_ACTIVITIES");
     //qDebug() << "end TtBase()";
 }
 
@@ -120,7 +120,7 @@ const QList<TtActivity *> TtBase::get_activities()
 /*
 TtPlacementList::TtPlacementList(QString cmd, int item) : QList<TtPlacement *>()
 {
-    auto plist = backend.op(cmd, {QString::number(item)});
+    auto plist = backend->op(cmd, {QString::number(item)});
     for (const auto &[k, v] : std::as_const(plist)) {
         if (k != "PLACEMENT")
             continue;

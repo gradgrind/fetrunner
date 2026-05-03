@@ -63,7 +63,7 @@ signals:
     void error(QString);
 };
 
-extern Backend backend;
+extern Backend *backend;
 
 class ReadLogWorker : public QObject
 {
@@ -72,6 +72,9 @@ class ReadLogWorker : public QObject
     QString logline;
     KeyVal readlogline();
     KeyVal readresult(QString r);
+
+//public:
+//    explicit ReadLogWorker(QObject *parent = nullptr);
 
 public slots:
     void readLog();
