@@ -3,6 +3,7 @@ package main
 import (
 	"fetrunner"
 	"fetrunner/internal/base"
+	"fmt"
 	"unsafe"
 )
 
@@ -15,17 +16,27 @@ import "C"
 // until the next call to FetRunnerReadLog.
 var cmsg *C.char
 
+func init() {
+	base.LogToBuffer()
+}
+
 //export FetRunnerCommand
 func FetRunnerCommand(cString *C.char) C.int {
 	gString := C.GoString(cString)
 
 	//TODO--
-	//fmt.Println("§", gString)
+	fmt.Println("§", gString)
 	//return 2
 
 	if fetrunner.Dispatch(gString) {
+		//TODO--
+		fmt.Println("§§1")
+
 		return 1
 	} else {
+		//TODO--
+		fmt.Println("§§2")
+
 		return 0
 	}
 }
@@ -34,7 +45,7 @@ func FetRunnerCommand(cString *C.char) C.int {
 func FetRunnerReadLog() *C.char {
 	//fmt.Println("FetRunnerReadLog()")
 	// Blocks until there is a line to read.
-	line := base.LogTake()
+	line := base.ReadLogBufferLine()
 	//fmt.Printf("+ %s\n", line)
 	C.free(unsafe.Pointer(cmsg)) // cmsg == `nil` is OK
 	cmsg = C.CString(line)

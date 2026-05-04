@@ -10,7 +10,7 @@ import (
 )
 
 /*
-    The logger uses a buffer to store incoming log lines until they are read using `LogTake()`.
+    The logger uses a buffer to store incoming log lines until they are read using `logTake()`.
 
 All operations cause an OP_START to be logged before doing anything else,
 and an OP_END at the end. Any results or other log entries associated
@@ -27,9 +27,10 @@ var (
 
 func init() {
 	DataBase = &BaseData{}
-	logger = &logBuffer{}
-	logger.mu.Lock()
-	logger.logch = make(chan string, 100)
+	logger = &logBuffer{
+		logch: make(chan string, 100),
+		done:  make(chan bool),
+	}
 }
 
 type MsgType int
@@ -54,21 +55,23 @@ var logType = map[MsgType]string{
 }
 
 type logBuffer struct {
-	mu       sync.Mutex
-	logch    chan string
-	lines    []string
-	index    int
-	file     *os.File // set only if logging to file
-	running  bool
-	stopFlag bool      // used to interrupt long-running processes
-	done     chan bool // set only if logging to file
+	logch        chan string
+	file         *os.File   // set only if logging to file
+	buffer       []string   // used only if logging to buffer
+	bufReadIndex int        // used only if logging to buffer
+	bufmu        sync.Mutex // used only if logging to buffer
+	bufmuread    sync.Mutex // used only if logging to buffer
+	bufreadready int        // used only if logging to buffer
+	running      bool
+	stopFlag     bool      // used to interrupt long-running processes
+	done         chan bool // set only if logging to file
 }
 
 func log(line string) {
 	logger.logch <- line
 }
 
-func LogTake() string {
+func logTake() string {
 	return <-logger.logch
 }
 
@@ -110,16 +113,14 @@ func GetStopFlag() bool {
 
 func LogToFile(logfile *os.File) {
 	logger.file = logfile
-	logger.done = make(chan bool)
 	go logToFile()
 }
 
 func logToFile() {
 	// Read from log channel until an OP_QUIT is received, writing the log lines
 	// to the output file.
-	defer close(logger.done)
 	for {
-		line := LogTake()
+		line := logTake()
 		logger.file.WriteString(strings.ReplaceAll(line, "||", "\n + ") + "\n")
 		if line == OP_END {
 			logger.done <- true
@@ -127,6 +128,66 @@ func logToFile() {
 			break
 		}
 	}
+}
+
+func LogToBuffer() {
+	logger.bufmuread.Lock()
+	logger.bufreadready = 0
+	go logToBuffer()
+}
+
+func logToBuffer() {
+	// Read from log channel until an OP_QUIT is received, writing the log lines
+	// to the buffer.
+	logger.buffer = nil //TODO?
+	logger.bufReadIndex = 0
+	for {
+		line := logTake()
+		logger.bufmu.Lock()
+		logger.buffer = append(logger.buffer, line)
+		logger.bufreadready++
+		if logger.bufreadready == 1 {
+			logger.bufmuread.Unlock()
+		}
+		logger.bufmu.Unlock()
+
+		//*
+		if line == OP_END {
+			logger.done <- true
+		} else if line == OP_QUIT {
+			break
+		}
+		//*/
+	}
+}
+
+//TODO: It might well be a good idea to reset the buffer sometimes ...
+
+func ReadLogBufferLine() string {
+	logger.bufmuread.Lock()
+
+	//TODO: What if logToBuffer happens here?
+	// Surely it can only unlock the mutex if bufreadready == 0, which should be
+	// impossible, because then bufmuread wouldn't have been unlocked.
+
+	logger.bufmu.Lock()
+	line := logger.buffer[logger.bufReadIndex]
+	logger.bufReadIndex++
+	logger.bufreadready--
+	if logger.bufreadready != 0 {
+		logger.bufmuread.Unlock()
+	}
+	logger.bufmu.Unlock()
+
+	/* Placing this here seemed more logical (?), but it blocks somehow
+	if line == OP_END {
+		logger.done <- true
+	} else if line == OP_QUIT {
+
+	}
+	*/
+
+	return line
 }
 
 func LogRunning() bool {

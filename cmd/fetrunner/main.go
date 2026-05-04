@@ -59,6 +59,7 @@ package main
 import (
 	"errors"
 	"fetrunner"
+	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
 	"fetrunner/internal/fet"
 	"flag"
@@ -170,17 +171,20 @@ func main() {
 
 		fetrunner.Dispatch("RUN_TT")
 
-		//TODO-- just testing the new functions
-		//fmt.Println("Done")
-		//fetrunner.Dispatch("TT_DAYS")
-		//fetrunner.Dispatch("TT_HOURS")
-		//fetrunner.Dispatch("TT_CLASSES")
-		//fetrunner.Dispatch("TT_TEACHERS")
-		//fetrunner.Dispatch("TT_ROOMS")
-		//fetrunner.Dispatch("TT_ACTIVITIES")
-		//fetrunner.Dispatch("TT_CLASS_PLACEMENTS 11")
-		//fetrunner.Dispatch("TT_TEACHER_PLACEMENTS 32")
-		//fetrunner.Dispatch("TT_ROOM_PLACEMENTS 28")
+		//* TODO-- just testing the new functions
+		fmt.Println("Done")
+		fetrunner.Dispatch("TT_DAYS")
+		fetrunner.Dispatch("TT_HOURS")
+		fetrunner.Dispatch("TT_CLASSES")
+		fetrunner.Dispatch("TT_TEACHERS")
+		fetrunner.Dispatch("TT_ROOMS")
+		fetrunner.Dispatch("TT_ACTIVITIES")
+
+		lres := autotimetable.AutoTt.GetLastResult()
+		fetrunner.Dispatch("TT_CLASS_PLACEMENTS " + strconv.Itoa(len(lres.Classes)/2))
+		fetrunner.Dispatch("TT_TEACHER_PLACEMENTS " + strconv.Itoa(len(lres.Teachers)/2))
+		fetrunner.Dispatch("TT_ROOM_PLACEMENTS " + strconv.Itoa(len(lres.Rooms)/2))
+		// */
 	}
 }
 

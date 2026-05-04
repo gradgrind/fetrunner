@@ -6,6 +6,7 @@
 #include <QString>
 #include <QThread>
 #include <QHash>
+#include <qdebug.h>
 
 /*
 The dispatcher (Backend::op) runs in the main thread, so it blocks
@@ -54,7 +55,12 @@ signals:
 private slots:
     //void handleDone();
     void handleResult(KeyVal kv) {
-        resultHandlerMap[kv.key](kv.val);
+        //qDebug() << "handleResult" << kv.key;
+        auto f = resultHandlerMap.value(kv.key, nullptr);
+        if (f == nullptr)
+            emit log("*NO_HANDLER* " + kv.key);
+        else
+            f(kv.val);
     }
 signals:
     void readLog(QPrivateSignal);

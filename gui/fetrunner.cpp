@@ -13,6 +13,12 @@ FetRunner::FetRunner(QWidget *parent)
     ui->setupUi(this);
     init_ttgen_tables();
 
+    backend->registerResultHandler("FET_PATH",
+        [this](QString arg) {do_FET_PATH(arg);});
+    backend->registerResultHandler("FET_VERSION",
+        [this](QString arg) {do_FET_VERSION(arg);});
+    backend->registerResultHandler("MAXPROCESSES",
+        [this](QString arg) {do_MAXPROCESSES(arg);});
     backend->registerResultHandler("N_PROCESSES",
         [this](QString arg) {do_N_PROCESSES(arg);});
     backend->registerResultHandler(".TICK",
@@ -131,6 +137,22 @@ void FetRunner::init2()
 FetRunner::~FetRunner()
 {
     delete ui;
+}
+
+void FetRunner::do_N_PROCESSES(const QString &val) {
+    auto nn = val.split(".");
+    auto n0 = nn[0].toInt();
+    auto n1 = nn[1].toInt();
+    if (n1 < n0)
+        n1 = n0;
+    auto n = nn[2].toInt();
+    {
+        const QSignalBlocker blocker(ui->tt_processes);
+        // no signals here
+        ui->tt_processes->setMinimum(n0);
+        ui->tt_processes->setMaximum(n1);
+    }
+    ui->tt_processes->setValue(n);
 }
 
 void FetRunner::nprocesses(int n)
@@ -336,18 +358,6 @@ void FetRunner::threadRunActivated(bool active)
     } else {
         notifier->emit new_tt_data();
     }
-}
-
-void FetRunner::do_N_PROCESSES(const QString &val) {
-    auto nn = val.split(".");
-    auto n0 = nn[0].toInt();
-    auto n1 = nn[1].toInt();
-    if (n1 < n0)
-        n1 = n0;
-    auto n = nn[2].toInt();
-    ui->tt_processes->setMinimum(n0);
-    ui->tt_processes->setMaximum(n1);
-    ui->tt_processes->setValue(n);
 }
 
 void FetRunner::do_TT_TICK(const QString &val)

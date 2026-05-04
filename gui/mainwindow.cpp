@@ -23,7 +23,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->help_view->setSource(QUrl("qrc:/help/using_fetrunner.md"));
 
-    backend->registerResultHandler("FETRUNNER_VERSION", [this](QString arg) {do_FETRUNNER_VERSION(arg);});
+    backend->registerResultHandler("FETRUNNER_VERSION",
+        [this](QString arg) {do_FETRUNNER_VERSION(arg);});
+    backend->registerResultHandler("SET_FILE",
+        [this](QString arg) {do_SET_FILE(arg);});
+    backend->registerResultHandler("DATA_TYPE",
+        [this](QString arg) {do_DATA_TYPE(arg);});
 
     auto ttsolver = new FetRunner();
     ui->main_panel->addWidget(ttsolver);

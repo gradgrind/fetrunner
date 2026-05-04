@@ -19,12 +19,14 @@ void ReadLogWorker::readLog() {
     qDebug() << "ReadLogWorker::readLog()" << QThread::currentThreadId();
     while (true) {
        auto kv = readlogline();
-       qDebug() << "+" << kv.key << kv.val;
+       qDebug() << "&" << kv.key << kv.val;
         if (kv.key == "$") {
             emit result(readresult(kv.val));
             continue;
         }
         if (kv.key == "---") {
+            break;
+
             emit opDone();
             continue;
         }
@@ -46,7 +48,8 @@ Backend::Backend() : QObject() {
 
     ReadLogWorker *worker = new ReadLogWorker;
     worker->moveToThread(&loggerThread);
-    connect(&loggerThread, &QThread::started, worker, &ReadLogWorker::readLog);
+    //connect(&loggerThread, &QThread::started, worker, &ReadLogWorker::readLog);
+    connect(this, &Backend::readLog, worker, &ReadLogWorker::readLog);
     connect(&loggerThread, &QThread::finished, worker, &QObject::deleteLater);
     //connect(worker, &ReadLogWorker::opDone, this, &ReadLogController::handleDone);
     connect(worker, &ReadLogWorker::result, this, &Backend::handleResult);
@@ -65,6 +68,8 @@ int Backend::op(QString cmd, QString arg)
 
     auto res = FetRunnerCommand(cmd.toUtf8().data());
     qDebug() << "?DONE";
+
+    emit readLog(QPrivateSignal());
     return res;
 }
 

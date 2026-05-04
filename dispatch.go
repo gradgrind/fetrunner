@@ -58,23 +58,11 @@ func Dispatch(cmd0 string) bool {
 				// Don't log this command.
 				panic("!InvalidOp_Running: " + op.Op)
 			}
-
-			//TODO--
-			fmt.Println("§", cmd0)
-
 			base.LogCommand(cmd0)
 			if op.Op[0] == '!' {
 				go func() {
 					f(&op)
-
-					//TODO--
-					fmt.Println("§--1")
-
 					base.LogCommandEnd()
-
-					//TODO--
-					fmt.Println("§--2")
-
 				}()
 			} else {
 				f(&op)
@@ -84,10 +72,6 @@ func Dispatch(cmd0 string) bool {
 	} else {
 		panic("!InvalidOp: " + op.Op)
 	}
-
-	//TODO--
-	fmt.Println("§--")
-
 	return op.OK
 }
 
@@ -316,7 +300,7 @@ func priortityConstraints(op *DispatchOp) {
 	for _, ct := range autotimetable.AutoTt.Source.GetPhase0ConstraintTypes() {
 		ctlist = append(ctlist, strings.TrimPrefix(ct, "Constraint"))
 	}
-	base.LogResult("PRIORITY_CONSTRAINTS", strings.Join(ctlist, ":"))
+	base.LogResult(op.Op, strings.Join(ctlist, ":"))
 }
 
 // Return the hard constraints sorted according to priority.
