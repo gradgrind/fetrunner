@@ -48,22 +48,19 @@ public:
 
 private:
     QHash<QString, resultHandler> resultHandlerMap;
+    void readLog();
+    void handleLogLine(QString line);
 
 signals:
     //TODO: void error(QString);
 
 private slots:
     //void handleDone();
-    void handleResult(KeyVal kv) {
-        //qDebug() << "handleResult" << kv.key;
-        auto f = resultHandlerMap.value(kv.key, nullptr);
-        if (f == nullptr)
-            emit log("*NO_HANDLER* " + kv.key);
-        else
-            f(kv.val);
-    }
+    //void handleResult(KeyVal kv);
+
 signals:
-    void readLog(QPrivateSignal);
+    //void result(KeyVal logresult);
+    void readLogInThread(QPrivateSignal);
     void logcolour(QColor);
     void log(QString);
     void error(QString);
@@ -75,21 +72,13 @@ class ReadLogWorker : public QObject
 {
     Q_OBJECT
 
-    QString logline;
-    KeyVal readlogline();
-    KeyVal readresult(QString r);
-
 //public:
 //    explicit ReadLogWorker(QObject *parent = nullptr);
 
 public slots:
     void readLog();
 signals:
-    void result(KeyVal logresult);
-    void opDone();
-    void logcolour(QColor);
-    void log(QString);
-    //void error(QString);
+    void newLogLine(QString line);
 };
 
 #endif // BACKEND_H
