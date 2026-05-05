@@ -146,7 +146,7 @@ func main() {
 		if errors.Is(err, os.ErrNotExist) || !fileInfo.IsDir() {
 			log.Fatalln("Not a directory:", abstmppath)
 		}
-		if !fetrunner.Dispatch("TMP_PATH " + abstmppath) {
+		if fetrunner.Dispatch("TMP_PATH "+abstmppath) == 0 {
 			return
 		}
 	}
@@ -161,7 +161,7 @@ func main() {
 	if len(base.DataBase.Name) == 0 {
 		return
 	}
-	if fetrunner.Dispatch("RUN_TT_SOURCE") {
+	if fetrunner.Dispatch("RUN_TT_SOURCE") != 0 {
 		fetrunner.Dispatch("TT_PRIORITY_CONSTRAINT_TYPES")
 		fetrunner.Dispatch("TT_HARD_CONSTRAINTS")
 		fetrunner.Dispatch("TT_SOFT_CONSTRAINTS")

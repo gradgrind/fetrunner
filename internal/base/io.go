@@ -14,7 +14,7 @@ var (
 	TEMPORARY_DIR      string
 )
 
-func SetTmpDir() bool {
+func SetTmpDir() int {
 	tbdir0 := os.TempDir()
 	if TEMPORARY_BASEDIR == "" {
 		if TEMPORARY_BASEDIR0 != "" {
@@ -48,13 +48,13 @@ func SetTmpDir() bool {
 		if TEMPORARY_BASEDIR == tbdir0 {
 			TEMPORARY_BASEDIR = ""
 			TEMPORARY_DIR = ""
-			return false
+			return 0
 		}
 		TEMPORARY_BASEDIR = tbdir0
 	}
 	LogResult("TMP_DIR", tmpdir)
 	TEMPORARY_DIR = tmpdir
-	return true
+	return 1
 }
 
 func (bd *BaseData) SaveDb(fpath string) bool {

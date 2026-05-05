@@ -9,6 +9,7 @@ import (
 )
 
 func init() {
+	OpHandlerMap["_TT_HAS_RESULT"] = has_result // no log entry
 	OpHandlerMap["TT_DAYS"] = get_days
 	OpHandlerMap["TT_HOURS"] = get_hours
 	OpHandlerMap["TT_CLASSES"] = get_classes
@@ -21,6 +22,12 @@ func init() {
 }
 
 // The AutoTtData instance is available as `autotimetable.AutoTt`.
+
+func has_result(op *DispatchOp) {
+	if autotimetable.AutoTt.GetLastResult() != nil {
+		op.CC = 1
+	}
+}
 
 func get_days(op *DispatchOp) {
 	lres := autotimetable.AutoTt.GetLastResult()

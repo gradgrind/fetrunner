@@ -17,19 +17,16 @@ import (
 	"strings"
 )
 
-//TODO: Note that at present the commands actually used have a very simple structure.
+// The commands have a very simple structure consisting of a operation key (`Op`)
+// and a string argument (`Arg`). Commands which take no argument leave it empty.
+// Somewhat more complex data can be passed as argument by representing it as a
+// single string. An operation returns a "completion code" (`CC`), by default 0.
 // They have 0, 1 or two arguments, which consist of fairly short strings. No complex
-// data is passed in. So a simple text line should be quite enough. I can split this
-// to build a DispatchOp structure.
-// If this is now such that Dispatch returns only when the command is completed, it
-// should probably return a boolean indicating whether the command completed
-// successfully, whatever than means. Perhaps with no errors logged? That seems to
-// be the case with the old version, returning `true` if no errors.
 
 type DispatchOp struct {
 	Op  string
 	Arg string
-	OK  bool // can be set by called function
+	CC  int // default = 0, can be set by called function
 }
 
 var OpHandlerMap map[string]func(*DispatchOp) = map[string]func(*DispatchOp){}
@@ -45,7 +42,7 @@ var OpHandlerMap map[string]func(*DispatchOp) = map[string]func(*DispatchOp){}
 // It may be desirable for long running commands to return quickly – in particular
 // for starting from a GUI, so as not to block the GUI. These commands should begin
 // with a "!", which will cause the process to be run in a separate goroutine.
-func Dispatch(cmd0 string) bool {
+func Dispatch(cmd0 string) int {
 	cmd, arg, _ := strings.Cut(cmd0, " ")
 	op := DispatchOp{Op: cmd, Arg: arg}
 	f, ok := OpHandlerMap[op.Op]
@@ -72,7 +69,7 @@ func Dispatch(cmd0 string) bool {
 	} else {
 		panic("!InvalidOp: " + op.Op)
 	}
-	return op.OK
+	return op.CC
 }
 
 func init() {
@@ -101,7 +98,7 @@ func fetrunner_version(op *DispatchOp) {
 
 func set_tmp(op *DispatchOp) {
 	base.TEMPORARY_BASEDIR = op.Arg
-	op.OK = base.SetTmpDir()
+	op.CC = base.SetTmpDir()
 }
 
 func check_fet(fetpath string) bool {
@@ -135,7 +132,7 @@ func get_fet(op *DispatchOp) {
 				fetpath0 := filepath.Join(filepath.Dir(p), fetpath)
 				if check_fet(fetpath0) {
 					fet.FETPATH = fetpath0
-					op.OK = true
+					op.CC = 1
 					return
 				}
 			}
@@ -146,7 +143,7 @@ func get_fet(op *DispatchOp) {
 	}
 	if check_fet(fetpath) {
 		fet.FETPATH = fetpath
-		op.OK = true
+		op.CC = 1
 	}
 }
 
@@ -215,7 +212,7 @@ func runtt_source(op *DispatchOp) {
 		SoftConstraintMap: scmap,
 	}
 	autotimetable.AutoTt = attdata
-	op.OK = true
+	op.CC = 1
 }
 
 func runtt(op *DispatchOp) {

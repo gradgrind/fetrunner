@@ -371,7 +371,10 @@ void FetRunner::threadRunActivated(bool active)
     if (active) {
 
     } else {
-        notifier->emit new_tt_data();
+        if (backend->op("_TT_HAS_RESULT")) {
+
+            notifier->emit new_tt_data();
+        }
     }
 }
 

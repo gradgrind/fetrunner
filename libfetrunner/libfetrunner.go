@@ -27,17 +27,7 @@ func FetRunnerCommand(cString *C.char) C.int {
 	//fmt.Println("§", gString)
 	//return 2
 
-	if fetrunner.Dispatch(gString) {
-		//TODO--
-		//fmt.Println("§§1")
-
-		return 1
-	} else {
-		//TODO--
-		//fmt.Println("§§2")
-
-		return 0
-	}
+	return C.int(fetrunner.Dispatch(gString))
 }
 
 //export FetRunnerReadLog
