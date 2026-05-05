@@ -36,11 +36,14 @@ TtView::~TtView() {
 }
 
 void TtView::new_tt_data() {
-    qDebug() << "new_tt_data";
-    //TODO: Skip this if a quit has been requested.
-    //return;
     delete ttbase;
-    ttbase = new TtBase();
+    ttbase = nullptr;
+}
+
+//TODO
+void TtView::enter_view() {
+    if (ttbase == nullptr)
+        ttbase = new TtBase();
 }
 
 void TtView::new_grid() {

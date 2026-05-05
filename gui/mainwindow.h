@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QWidget>
+#include "fetrunner.h"
+#include "ttview.h"
 
 namespace Ui {
 
@@ -31,10 +33,15 @@ private:
     bool quit_requested{false};
     bool quit_confirmed{false};
     QStringList waiting_on;
+    FetRunner *ttsolver{nullptr};
+    TtView *ttview{nullptr};
 
 public slots:
     void error_popup(const QString msg);
     void handle_finished(QString module);
+    void new_file();
+    void new_tt_data();
+    void no_tt_data();
 };
 
 #endif // MAINWINDOW_H

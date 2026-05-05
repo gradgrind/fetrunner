@@ -3,9 +3,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include "backend.h"
-#include "fetrunner.h"
 #include "globals.h"
-#include "ttview.h"
 #include "ui_mainwindow.h"
 
 QSettings *settings;
@@ -30,19 +28,16 @@ MainWindow::MainWindow(QWidget *parent)
     backend->registerResultHandler("DATA_TYPE",
         [this](QString arg) {do_DATA_TYPE(arg);});
 
-    auto ttsolver = new FetRunner();
+    ttsolver = new FetRunner();
     ui->main_panel->addWidget(ttsolver);
 
-    auto ttview = new TtView();
+    ttview = new TtView();
     ui->main_panel->addWidget(ttview);
     connect( //
         ui->rb_view_teacher,
         &QRadioButton::toggled,
-        //ttview,
-        //&TtView::select_teacher_view);
-
-        //this,
-        [ttview](bool checked) {
+        this,
+        [this](bool checked) {
             if (checked) {
                 ttview->select_teacher_view();
             }
@@ -57,7 +52,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect( //
         ui->help,
         &QRadioButton::toggled,
-        //this,
+        this,
         [this](bool checked) {
             if (checked) {
                 ui->main_panel->setCurrentIndex(0);
@@ -67,7 +62,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect( //
         ui->solve_timetable,
         &QRadioButton::toggled,
-        //this,
+        this,
         [this](bool checked) {
             if (checked) {
                 ui->main_panel->setCurrentIndex(1);
@@ -77,11 +72,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect( //
         ui->view_timetable,
         &QRadioButton::toggled,
-        //this,
+        this,
         [this](bool checked) {
             if (checked) {
                 ui->main_panel->setCurrentIndex(2);
                 ui->side_panel_sub->setCurrentIndex(1);
+                ttview->enter_view();
             }
         });
     connect( //
@@ -107,8 +103,23 @@ MainWindow::MainWindow(QWidget *parent)
     connect( //
         notifier,
         &Notifier::new_tt_data,
+        this,
+        &MainWindow::new_tt_data);
+    connect( //
+        notifier,
+        &Notifier::new_tt_data,
         ttview,
         &TtView::new_tt_data);
+    connect( //
+        notifier,
+        &Notifier::no_tt_data,
+        this,
+        &MainWindow::no_tt_data);
+    connect( //
+        notifier,
+        &Notifier::fileChanged,
+        this,
+        &MainWindow::new_file);
 
     connect( //
         backend,
@@ -189,9 +200,16 @@ void MainWindow::open_file()
         tr("FET / W365 Files (*.fet *_w365.json)"));
 
     if (!filepath.isEmpty()) {
-        notifier->emit fileChanged();
-        backend->op("SET_FILE", {filepath});
+        if (backend->op("SET_FILE", {filepath}))
+            notifier->emit fileChanged();
     }
+}
+
+void MainWindow::new_file() {
+    // Select fetrunner view, disable timetable view.
+    no_tt_data();
+    ui->solve_timetable->setEnabled(true);
+    ui->solve_timetable->click();
 }
 
 void MainWindow::set_busy(bool on)
@@ -218,4 +236,13 @@ void MainWindow::do_SET_FILE(const QString &val) {
 
 void MainWindow::do_DATA_TYPE(const QString &val) {
     file_datatype = val;
+}
+
+void MainWindow::new_tt_data() {
+    if (quit_requested) return;
+    ui->view_timetable->setEnabled(true);
+}
+
+void MainWindow::no_tt_data() {
+    ui->view_timetable->setEnabled(false);
 }

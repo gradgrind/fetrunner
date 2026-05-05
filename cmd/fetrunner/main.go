@@ -157,8 +157,7 @@ func main() {
 		base.LogError("--NO_FET")
 		return
 	}
-	fetrunner.Dispatch("SET_FILE " + abspath)
-	if len(base.DataBase.Name) == 0 {
+	if fetrunner.Dispatch("SET_FILE "+abspath) == 0 {
 		return
 	}
 	if fetrunner.Dispatch("RUN_TT_SOURCE") != 0 {

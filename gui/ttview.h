@@ -43,6 +43,7 @@ private:
 
 public slots:
     void new_tt_data();
+    void enter_view();
 
     void select_teacher_view();
 };

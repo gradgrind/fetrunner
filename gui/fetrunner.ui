@@ -1019,12 +1019,12 @@
        <item row="3" column="0">
         <widget class="QLabel" name="label_12">
          <property name="text">
-          <string>FET version</string>
+          <string>FET command</string>
          </property>
         </widget>
        </item>
        <item row="2" column="1" colspan="3">
-        <widget class="QLineEdit" name="fet_path">
+        <widget class="QLineEdit" name="fet_version">
          <property name="readOnly">
           <bool>true</bool>
          </property>
@@ -1079,7 +1079,7 @@
        <item row="2" column="0">
         <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>FET command</string>
+          <string>FET version</string>
          </property>
         </widget>
        </item>
@@ -1121,7 +1121,7 @@
         </widget>
        </item>
        <item row="3" column="1" colspan="5">
-        <widget class="QLineEdit" name="fet_version">
+        <widget class="QLineEdit" name="fet_path">
          <property name="readOnly">
           <bool>true</bool>
          </property>

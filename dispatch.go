@@ -161,6 +161,7 @@ func file_loader(op *DispatchOp) {
 			base.LogResult(op.Op, fpath)
 			base.LogResult("DATA_TYPE", "FET")
 			bd.Db = nil
+			op.CC = 1
 			return
 		}
 	} else if strings.HasSuffix(strings.ToLower(fpath), "_w365.json") {
@@ -174,6 +175,7 @@ func file_loader(op *DispatchOp) {
 			base.PrepareDb()
 			base.LogResult(op.Op, fpath)
 			base.LogResult("DATA_TYPE", "DB")
+			op.CC = 1
 			return
 		}
 		bd.Db = db0

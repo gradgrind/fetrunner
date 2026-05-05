@@ -369,7 +369,7 @@ void FetRunner::threadRunActivated(bool active)
     // and set up the timetable viewer.
     //TODO: If active, the timetable viewer should be disabled.
     if (active) {
-
+        notifier->emit no_tt_data(); // signal "result invalid"
     } else {
         if (backend->op("_TT_HAS_RESULT")) {
 
