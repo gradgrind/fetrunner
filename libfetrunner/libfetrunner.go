@@ -3,7 +3,6 @@ package main
 import (
 	"fetrunner"
 	"fetrunner/internal/base"
-	"fmt"
 	"unsafe"
 )
 
@@ -25,17 +24,17 @@ func FetRunnerCommand(cString *C.char) C.int {
 	gString := C.GoString(cString)
 
 	//TODO--
-	fmt.Println("§", gString)
+	//fmt.Println("§", gString)
 	//return 2
 
 	if fetrunner.Dispatch(gString) {
 		//TODO--
-		fmt.Println("§§1")
+		//fmt.Println("§§1")
 
 		return 1
 	} else {
 		//TODO--
-		fmt.Println("§§2")
+		//fmt.Println("§§2")
 
 		return 0
 	}

@@ -16,7 +16,7 @@ QMap<QString, QColor> colours{{"*INFO*", "#009000"},
                               {"$", "#53a0ff"}};
 
 void ReadLogWorker::readLog() {
-    qDebug() << "ReadLogWorker::readLog()" << QThread::currentThreadId();
+    //qDebug() << "ReadLogWorker::readLog()" << QThread::currentThreadId();
     while (true) {
        auto ll = QString(FetRunnerReadLog());
        emit newLogLine(ll);
@@ -28,7 +28,7 @@ void ReadLogWorker::readLog() {
 //ReadLogWorker::ReadLogWorker(QObject *parent) : QObject(parent) {}
 
 Backend::Backend() : QObject() {
-    qDebug() << "Backend::Backend()" << QThread::currentThreadId();
+    //qDebug() << "Backend::Backend()" << QThread::currentThreadId();
 
     ReadLogWorker *worker = new ReadLogWorker;
     worker->moveToThread(&loggerThread);
@@ -51,10 +51,10 @@ int Backend::op(QString cmd, QString arg)
     if (!arg.isEmpty()) {
         cmd += " " + arg;
     }
-    qDebug() << "?" << cmd << QThread::currentThreadId();
+    //qDebug() << "?" << cmd << QThread::currentThreadId();
 
     auto res = FetRunnerCommand(cmd.toUtf8().data());
-    qDebug() << "?DONE";
+    //qDebug() << "?DONE";
 
     if (cmd[0] != '_') {
         if (cmd[0] == '!')
@@ -66,7 +66,7 @@ int Backend::op(QString cmd, QString arg)
 }
 
 void Backend::readLog() {
-    qDebug() << "Backend::readLog()" << QThread::currentThreadId();
+    //qDebug() << "Backend::readLog()" << QThread::currentThreadId();
     while (true) {
         auto ll = QString(FetRunnerReadLog());
         handleLogLine(ll);
@@ -95,7 +95,7 @@ void Backend::handleLogLine(QString logline) {
     emit logcolour(colours.value(msgtype, QColor{0x76, 0x5e, 0xff}));
     emit log(logline.replace("||", "\n + ")); // write to log
 
-    qDebug() << "&" << msgtype << msgrest;
+    //qDebug() << "&" << msgtype << msgrest;
     if (msgtype == "$") {
         auto n = msgrest.indexOf('=');
         if (n < 0) {

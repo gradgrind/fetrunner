@@ -27,6 +27,8 @@ FetRunner::FetRunner(QWidget *parent)
         [this](QString arg) {do_TT_NCONSTRAINTS(arg);});
     backend->registerResultHandler(".PROGRESS",
         [this](QString arg) {do_TT_PROGRESS(arg);});
+    backend->registerResultHandler(".NOPROGRESS",
+        [this](QString arg) {do_NOTHING(arg);});
     backend->registerResultHandler(".START",
         [this](QString arg) {do_TT_START(arg);});
     backend->registerResultHandler(".END",
@@ -38,14 +40,25 @@ FetRunner::FetRunner(QWidget *parent)
     backend->registerResultHandler("TMP_DIR",
         [this](QString arg) {do_TMP_DIR(arg);});
 
+    backend->registerResultHandler("TT_PRIORITY_CONSTRAINT_TYPES",
+        [this](QString arg) {do_PRIORITY_CONSTRAINT_TYPES(arg);});
     backend->registerResultHandler("TT_HARD_CONSTRAINTS",
         [this](QString arg) {do_CONSTRAINT(arg);});
     backend->registerResultHandler("TT_SOFT_CONSTRAINTS",
         [this](QString arg) {do_CONSTRAINT(arg);});
     backend->registerResultHandler("TT_ConstraintsCheck",
         [this](QString arg) {do_ConstraintsCheck(arg);});
-    //backend->registerResultHandler("TT_NACTIVITIES",
-    //    [this](QString arg) {do_NACTIVITIES(arg);});
+
+    backend->registerResultHandler("TT_NACTIVITIES",
+        [this](QString arg) {do_NOTHING(arg);});
+    backend->registerResultHandler(".PHASE",
+        [this](QString arg) {do_NOTHING(arg);});
+    backend->registerResultHandler(".PRIORITY_OK",
+        [this](QString arg) {do_NOTHING(arg);});
+    backend->registerResultHandler(".HARD_OK",
+        [this](QString arg) {do_NOTHING(arg);});
+    backend->registerResultHandler(".ALL_OK",
+        [this](QString arg) {do_NOTHING(arg);});
 
     connect( //
         notifier,
@@ -254,6 +267,8 @@ bool FetRunner::set_fet_path(QString fetpath0)
     }
     return true;
 }
+
+void FetRunner::do_NOTHING(const QString &val) {}
 
 void FetRunner::do_FET_PATH(const QString &val)
 {

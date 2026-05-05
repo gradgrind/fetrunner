@@ -151,17 +151,13 @@ func logToBuffer() {
 		}
 		logger.bufmu.Unlock()
 
-		//*
 		if line == OP_END {
 			logger.done <- true
 		} else if line == OP_QUIT {
 			break
 		}
-		//*/
 	}
 }
-
-//TODO: It might well be a good idea to reset the buffer sometimes ...
 
 func ReadLogBufferLine() string {
 	logger.bufmuread.Lock()
@@ -175,18 +171,17 @@ func ReadLogBufferLine() string {
 	logger.bufReadIndex++
 	logger.bufreadready--
 	if logger.bufreadready != 0 {
-		logger.bufmuread.Unlock()
+		if line == OP_END {
+			panic("OP_END, but buffer not empty!")
+		}
+		logger.bufmuread.Unlock() // more lines to read in buffer
+	}
+	if line == OP_END {
+		// Reset the buffer
+		logger.bufReadIndex = 0
+		logger.buffer = nil
 	}
 	logger.bufmu.Unlock()
-
-	/* Placing this here seemed more logical (?), but it blocks somehow
-	if line == OP_END {
-		logger.done <- true
-	} else if line == OP_QUIT {
-
-	}
-	*/
-
 	return line
 }
 

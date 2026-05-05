@@ -73,8 +73,6 @@ private:
     bool set_fet_path(QString fetpath);
 
     bool thread_running{false};
-    //QString filename{};
-    //QString filedir{};
     QString datatype{};
     QMessageBox closingMessageBox;
     void threadRunActivated(bool active);
@@ -87,9 +85,9 @@ private:
     QString soft_count;
     QStringList priority_constraints;
     QHash<QString, progress_line> constraint_map;
-    //QList<int> instance_rows_changed;
     QList<progress_changed> progress_rows_changed;
 
+    void do_NOTHING(const QString &val);
     void do_MAXPROCESSES(const QString &val);
     void do_FET_PATH(const QString &val);
     void do_FET_VERSION(const QString &val);
@@ -102,9 +100,9 @@ private:
     void do_TT_ACCEPT(const QString &val);
     void do_TT_ELIMINATE(const QString &val);
     void do_TMP_DIR(const QString &val);
+    void do_PRIORITY_CONSTRAINT_TYPES(const QString &val);
     void do_CONSTRAINT(const QString &val);
     void do_ConstraintsCheck(const QString &val);
-    void do_NACTIVITIES(const QString &data);
     void add_table_line(QString cname, QString val);
 
 private slots:
