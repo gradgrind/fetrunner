@@ -70,16 +70,6 @@ FetRunner::FetRunner(QWidget *parent)
         &Notifier::fileChanged,
         this,
         &FetRunner::reset_display);
-    connect( //
-        backend,
-        &Backend::logcolour,
-        ui->logview,
-        &QTextEdit::setTextColor);
-    connect( //
-        backend,
-        &Backend::log,
-        ui->logview,
-        &QTextEdit::append);
 
     QTimer::singleShot(0, this, &FetRunner::init2);
 }
@@ -215,6 +205,7 @@ void FetRunner::push_go()
     instance_row_map.clear();
     progress_rows_changed.clear();
     reset_display();
+    notifier->emit switch_logger(">>> --SOLVER", ui->logview);
 
     // Set parameters
     auto t = ui->tt_timeout->text();
@@ -230,6 +221,8 @@ void FetRunner::push_go()
         setup_progress_table();
         threadRunActivated(true);
         backend->op("!RUN_TT");
+    } else {
+        notifier->emit switch_logger("", nullptr);
     }
 }
 

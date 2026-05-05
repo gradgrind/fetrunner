@@ -28,6 +28,18 @@ MainWindow::MainWindow(QWidget *parent)
     backend->registerResultHandler("DATA_TYPE",
         [this](QString arg) {do_DATA_TYPE(arg);});
 
+    log_view = ui->base_log_view;
+    connect( //
+        backend,
+        &Backend::logcolour,
+        this,
+        &MainWindow::setLogColour);
+    connect( //
+        backend,
+        &Backend::log,
+        this,
+        &MainWindow::logLine);
+
     ttsolver = new FetRunner();
     ui->main_panel->addWidget(ttsolver);
 
@@ -60,7 +72,7 @@ MainWindow::MainWindow(QWidget *parent)
             }
         });
     connect( //
-        ui->solve_timetable,
+        ui->general_log,
         &QRadioButton::toggled,
         this,
         [this](bool checked) {
@@ -70,16 +82,31 @@ MainWindow::MainWindow(QWidget *parent)
             }
         });
     connect( //
-        ui->view_timetable,
+        ui->solve_timetable,
         &QRadioButton::toggled,
         this,
         [this](bool checked) {
             if (checked) {
                 ui->main_panel->setCurrentIndex(2);
+                ui->side_panel_sub->setCurrentIndex(0);
+            }
+        });
+    connect( //
+        ui->view_timetable,
+        &QRadioButton::toggled,
+        this,
+        [this](bool checked) {
+            if (checked) {
+                ui->main_panel->setCurrentIndex(3);
                 ui->side_panel_sub->setCurrentIndex(1);
                 ttview->enter_view();
             }
         });
+    connect( //
+        notifier,
+        &Notifier::switch_logger,
+        this,
+        &MainWindow::switch_logger);
     connect( //
         notifier,
         &Notifier::setBusy,
@@ -160,6 +187,15 @@ void MainWindow::closeEvent(QCloseEvent *e)
     e->ignore();
 }
 
+void MainWindow::logLine(QString line) {
+    log_view->append(line);
+}
+
+void MainWindow::setLogColour(QColor colour) {
+    log_view->setTextColor(colour);
+}
+
+
 void MainWindow::quit_register_wait(QString module)
 {
     //qDebug() << "quit_register_wait()" << module;
@@ -177,6 +213,8 @@ void MainWindow::handle_finished(QString module)
             quit_confirmed = true;
             close();
         }
+    } else {
+        log_view = ui->base_log_view; // revert to base log view
     }
 }
 
@@ -212,9 +250,17 @@ void MainWindow::new_file() {
     ui->solve_timetable->click();
 }
 
-void MainWindow::set_busy(bool on)
-{
+void MainWindow::set_busy(bool on) {
     ui->control_panel->setDisabled(on);
+}
+
+void MainWindow::switch_logger(QString msg, QTextEdit *log_view_widget) {
+    if (log_view == nullptr)
+        log_view = ui->base_log_view;
+    else {
+        log_view->append(msg);
+        log_view = log_view_widget;
+    }
 }
 
 void MainWindow::do_FETRUNNER_VERSION(const QString &val) {
@@ -225,9 +271,8 @@ void MainWindow::do_SET_FILE(const QString &val) {
     QDir dir{val};
     file_name = dir.dirName();
     dir.cdUp();
+    ui->file_path->setText(dir.absoluteFilePath(file_name));
     auto fdir = dir.absolutePath();
-    ui->file_dir->setText(fdir);
-    ui->file_name->setText(file_name);
     if (fdir != file_dir) {
         file_dir = fdir;
         settings->setValue("gui/SourceDir", fdir);

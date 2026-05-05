@@ -191,7 +191,6 @@ func runtt_source(op *DispatchOp) {
 	bdata := base.DataBase
 	if bdata.Source == nil {
 		base.LogError("--NO_SOURCE")
-		//op.OK = false
 		return
 	}
 	var ttsource autotimetable.TtSource

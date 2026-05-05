@@ -3,6 +3,7 @@
 
 #include <QSettings>
 #include <QString>
+#include <QTextEdit>
 
 extern QString file_dir;
 extern QString file_name;
@@ -17,6 +18,7 @@ class Notifier : public QObject
 signals:
     void fileChanged();
     void setBusy(bool on);
+    void switch_logger(QString msg, QTextEdit *log_view_widget);
     void errorPopup(QString msg);
     void closeRequest();
     void quit_register_wait(QString module);

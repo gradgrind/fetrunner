@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QWidget>
+#include <QTextEdit>
 #include "fetrunner.h"
 #include "ttview.h"
 
@@ -26,15 +27,19 @@ private:
 
     void open_file();
     void set_busy(bool on);
+    void switch_logger(QString msg, QTextEdit *log_view_widget);
     void do_FETRUNNER_VERSION(const QString &val);
     void do_SET_FILE(const QString &val);
     void do_DATA_TYPE(const QString &val);
+    void logLine(QString line);
+    void setLogColour(QColor colour);
 
     bool quit_requested{false};
     bool quit_confirmed{false};
     QStringList waiting_on;
     FetRunner *ttsolver{nullptr};
     TtView *ttview{nullptr};
+    QTextEdit *log_view{nullptr};
 
 public slots:
     void error_popup(const QString msg);
