@@ -124,30 +124,9 @@ void FetRunner::do_TT_NCONSTRAINTS(const QString &data) {
     }
 }
 
-bool FetRunner::dump_log(QString fname)
-{
-    QDir fdir{file_dir};
-    auto log = ui->logview->toPlainText();
-    QFile file(fdir.filePath(fname));
-    // Open the file in WriteOnly mode; Truncate to overwrite existing content; Text for line endings
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-        qDebug() << "Failed to open file for writing:" << file.errorString();
-        return false; // Indicate failure
-    }
-    // Use QTextStream to write content to the file
-    QTextStream out(&file);
-    out << log; // Write the input content
-    // Optional: Explicitly flush the stream (ensures data is written immediately)
-    out.flush();
-    // File is automatically closed when 'file' goes out of scope (RAII), but closing explicitly is safe
-    file.close();
-    return true;
-}
-
 void FetRunner::fail(QString msg)
 {
-    dump_log(file_name + ".logdump");
-
+    emit notifier->dump_log(1);
     close();
     QMessageBox::critical(this, "", msg);
     qApp->quit();
@@ -166,13 +145,11 @@ void FetRunner::tableProgress(progress_changed update)
     if (cdata.progress == cdata.total) {
         ui->progress_table->item(cdata.index, 0)->setText("+++");
     } else if (cdata.progress > cdata.total) {
-        ui->logview->append(QString{"\n***DUMP*** %1 %2 %3 %4\n"}
-                                .arg(constraint)
-                                .arg(cdata.progress)
-                                .arg(delta)
-                                .arg(cdata.total));
-
-        fail("*BUG* cdata.progress > cdata.total " + constraint);
+        fail(QString{"*BUG* cdata.progress > cdata.total\n %1 %2 %3 %4"}
+            .arg(constraint)
+            .arg(cdata.progress)
+            .arg(delta)
+            .arg(cdata.total));
         return;
     } else {
         ui->progress_table->item(cdata.index, 0)->setText(QString::number(cdata.progress));

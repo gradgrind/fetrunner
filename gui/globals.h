@@ -18,7 +18,10 @@ class Notifier : public QObject
 signals:
     void fileChanged();
     void setBusy(bool on);
-    void switch_logger(QString msg, QTextEdit *log_view_widget);
+    void switch_logger(QString msg, int log_viewer);
+    void clear_log(int logger);
+    void show_logger(int logger);
+    void dump_log(int logger);
     void errorPopup(QString msg);
     void closeRequest();
     void quit_register_wait(QString module);

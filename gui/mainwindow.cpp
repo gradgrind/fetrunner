@@ -30,6 +30,17 @@ MainWindow::MainWindow(QWidget *parent)
 
     log_view = ui->base_log_view;
     connect( //
+        notifier,
+        &Notifier::clear_log,
+        this,
+        &MainWindow::clearLog);
+    connect( //
+        notifier,
+        &Notifier::dump_log,
+        this,
+        &MainWindow::dumpLog);
+
+    connect( //
         backend,
         &Backend::logcolour,
         this,
@@ -107,6 +118,11 @@ MainWindow::MainWindow(QWidget *parent)
         &Notifier::switch_logger,
         this,
         &MainWindow::switch_logger);
+    connect( //
+        notifier,
+        &Notifier::show_logger,
+        this,
+        &MainWindow::showLogger);
     connect( //
         notifier,
         &Notifier::setBusy,
@@ -187,6 +203,48 @@ void MainWindow::closeEvent(QCloseEvent *e)
     e->ignore();
 }
 
+QTextEdit *MainWindow::selectLogger(int logger) {
+    switch (logger) {
+    case 0:
+        return ui->base_log_view;
+    case 1:
+       return  ui->solver_log_view;
+    case 2:
+       return  ui->base_log_view;
+    }
+    ui->base_log_view->append(QString{"*BUG* Invalid logger index: %1"}.arg(logger));
+    emit notifier->show_logger(0);
+    return nullptr;
+}
+
+void MainWindow::clearLog(int logger) {
+    auto lg = selectLogger(logger);
+    if (lg != nullptr)
+        lg->clear();
+}
+
+void MainWindow::dumpLog(int logger) {
+    auto lg = selectLogger(logger);
+    if (lg == nullptr)
+        lg = selectLogger(0);
+    QString fname{file_name + ".logdump"};
+    QDir fdir{file_dir};
+    auto log = lg->toPlainText();
+    QFile file(fdir.filePath(fname));
+    // Open the file in WriteOnly mode; Truncate to overwrite existing content; Text for line endings
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+        QMessageBox::critical(this, "", file.errorString());
+        return;
+    }
+    // Use QTextStream to write content to the file
+    QTextStream out(&file);
+    out << log; // Write the input content
+    // Optional: Explicitly flush the stream (ensures data is written immediately)
+    out.flush();
+    // File is automatically closed when 'file' goes out of scope (RAII), but closing explicitly is safe
+    file.close();
+}
+
 void MainWindow::logLine(QString line) {
     log_view->append(line);
 }
@@ -194,7 +252,6 @@ void MainWindow::logLine(QString line) {
 void MainWindow::setLogColour(QColor colour) {
     log_view->setTextColor(colour);
 }
-
 
 void MainWindow::quit_register_wait(QString module)
 {
@@ -214,7 +271,7 @@ void MainWindow::handle_finished(QString module)
             close();
         }
     } else {
-        log_view = ui->base_log_view; // revert to base log view
+        switch_logger("", 0); // revert to base log view
     }
 }
 
@@ -254,13 +311,30 @@ void MainWindow::set_busy(bool on) {
     ui->control_panel->setDisabled(on);
 }
 
-void MainWindow::switch_logger(QString msg, QTextEdit *log_view_widget) {
-    if (log_view == nullptr)
-        log_view = ui->base_log_view;
-    else {
+void MainWindow::showLogger(int logger) {
+    ui->log_tabs->setCurrentIndex(logger);
+    ui->general_log->click();
+}
+
+void MainWindow::switch_logger(QString msg, int log_viewer) {
+    switch (log_viewer) {
+    if (!msg.isEmpty())
         log_view->append(msg);
-        log_view = log_view_widget;
+    case 0:
+        log_view = ui->base_log_view;
+        break;
+    case 1:
+        log_view = ui->solver_log_view;
+        break;
+    case 2:
+        log_view = ui->timetable_log_view;
+        break;
+    default:
+        log_view = ui->base_log_view;
+        log_view->append("*BUG* Invalid log viewer: " + QString::number(log_viewer));
+        log_viewer = 0;
     }
+    ui->log_tabs->setCurrentIndex(log_viewer);
 }
 
 void MainWindow::do_FETRUNNER_VERSION(const QString &val) {

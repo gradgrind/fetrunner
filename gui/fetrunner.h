@@ -54,8 +54,6 @@ public:
     FetRunner(QWidget *parent = nullptr);
     ~FetRunner();
 
-    bool dump_log(QString fname);
-
 private:
     Ui::FetRunner *ui;
     void fail(QString msg);

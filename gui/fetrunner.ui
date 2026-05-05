@@ -978,29 +978,6 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_log">
-      <attribute name="title">
-       <string>Log</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QTextEdit" name="logview">
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(248, 228, 92);</string>
-         </property>
-         <property name="undoRedoEnabled">
-          <bool>false</bool>
-         </property>
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-         <property name="acceptRichText">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
      <widget class="QWidget" name="tab_settings">
       <attribute name="title">
        <string>Settings</string>

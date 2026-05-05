@@ -27,12 +27,16 @@ private:
 
     void open_file();
     void set_busy(bool on);
-    void switch_logger(QString msg, QTextEdit *log_view_widget);
+    void switch_logger(QString msg, int log_viewer);
     void do_FETRUNNER_VERSION(const QString &val);
     void do_SET_FILE(const QString &val);
     void do_DATA_TYPE(const QString &val);
     void logLine(QString line);
     void setLogColour(QColor colour);
+    void clearLog(int logger);
+    void dumpLog(int logger);
+    void showLogger(int logger);
+    QTextEdit *selectLogger(int logger);
 
     bool quit_requested{false};
     bool quit_confirmed{false};

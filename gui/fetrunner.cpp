@@ -170,7 +170,7 @@ void FetRunner::do_MAXPROCESSES(const QString &val) {
 
 void FetRunner::reset_display()
 {
-    ui->logview->clear();
+    notifier->clear_log(1);
 
     ui->progress_table->setRowCount(0);
     ui->hard_naccepted->clear();
@@ -205,7 +205,7 @@ void FetRunner::push_go()
     instance_row_map.clear();
     progress_rows_changed.clear();
     reset_display();
-    notifier->emit switch_logger(">>> --SOLVER", ui->logview);
+    notifier->emit switch_logger(">>> --SOLVER", 1);
 
     // Set parameters
     auto t = ui->tt_timeout->text();
@@ -222,7 +222,7 @@ void FetRunner::push_go()
         threadRunActivated(true);
         backend->op("!RUN_TT");
     } else {
-        notifier->emit switch_logger("", nullptr);
+        notifier->emit switch_logger("", 0);
     }
 }
 
@@ -250,7 +250,7 @@ bool FetRunner::set_fet_path(QString fetpath0)
         // Handle FET executable not found.
 
         // Show log tab in case the warnings are useful.
-        ui->tabWidget->setCurrentWidget(ui->tab_log);
+        emit notifier->show_logger(0);
 
         QMessageBox::warning( //
             this,
