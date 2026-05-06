@@ -49,21 +49,16 @@ public:
 private:
     QHash<QString, resultHandler> resultHandlerMap;
     void readLog();
+
+private slots:
     void handleLogLine(QString line);
 
 signals:
-    //TODO: void error(QString);
-
-private slots:
-    //void handleDone();
-    //void handleResult(KeyVal kv);
-
-signals:
-    //void result(KeyVal logresult);
     void readLogInThread(QPrivateSignal);
     void logcolour(QColor);
     void log(QString);
     void error(QString);
+    void op_end();
 };
 
 extern Backend *backend;
@@ -79,6 +74,7 @@ public slots:
     void readLog();
 signals:
     void newLogLine(QString line);
+    void op_end();
 };
 
 #endif // BACKEND_H

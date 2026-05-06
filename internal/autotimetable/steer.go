@@ -311,9 +311,8 @@ func (attdata *AutoTtData) StartGeneration() {
 			attdata.current_instance.InstanceBackend.FinalizeResult(attdata)
 		}
 
-		// Signal end of process
-		//base.LogCommandEnd()
-		base.LogTick(-1)
+		// Eend of process
+		//base.LogTick(-1)
 	}()
 
 tickloop:

@@ -308,7 +308,8 @@ void MainWindow::new_file() {
 }
 
 void MainWindow::set_busy(bool on) {
-    ui->control_panel->setDisabled(on);
+    ui->open_file->setDisabled(on);
+    //ui->control_panel->setDisabled(on);
 }
 
 void MainWindow::showLogger(int logger) {

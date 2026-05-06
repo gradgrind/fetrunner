@@ -60,16 +60,12 @@ FetRunner::FetRunner(QWidget *parent)
     backend->registerResultHandler(".ALL_OK",
         [this](QString arg) {do_NOTHING(arg);});
 
-    connect( //
-        notifier,
-        &Notifier::closeRequest,
-        this,
-        &FetRunner::close_request);
-    connect( //
-        notifier,
-        &Notifier::fileChanged,
-        this,
-        &FetRunner::reset_display);
+    connect(notifier, &Notifier::closeRequest,
+        this, &FetRunner::close_request);
+    connect(notifier, &Notifier::fileChanged,
+        this, &FetRunner::reset_display);
+    connect(backend, &Backend::op_end,
+        this, &FetRunner::done);
 
     QTimer::singleShot(0, this, &FetRunner::init2);
 }
@@ -371,6 +367,13 @@ void FetRunner::threadRunActivated(bool active)
     }
 }
 
+void FetRunner::done() {
+    if (thread_running) {
+        runThreadWorkerDone();
+        tidyTables();
+    }
+}
+
 void FetRunner::do_TT_TICK(const QString &val)
 {
     // The last call here has "-1", so that things can be tidied up
@@ -381,7 +384,10 @@ void FetRunner::do_TT_TICK(const QString &val)
         ui->elapsed_time->setText(val);
         timeTicks = val;
     }
+    tidyTables();
+}
 
+void FetRunner::tidyTables() {
     // Go through instance rows, removing "ended" ones.
     // If accepted (state = 1), add it to the "completed" table.
     struct rmdata
@@ -393,9 +399,9 @@ void FetRunner::do_TT_TICK(const QString &val)
     };
     QList<rmdata> to_remove;
     for (auto it = instance_row_map.cbegin(); it != instance_row_map.cend(); ++it) {
-        auto val = it.value();
-        if (val.state != 0 && val.item != nullptr)
-            to_remove.append({it.key(), val});
+        auto tickval = it.value();
+        if (tickval.state != 0 && tickval.item != nullptr)
+            to_remove.append({it.key(), tickval});
     }
     for (const auto &rp : to_remove) {
         //qDebug() << "?removeRow" << row << rp.key;

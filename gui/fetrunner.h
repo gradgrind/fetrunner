@@ -102,12 +102,14 @@ private:
     void do_CONSTRAINT(const QString &val);
     void do_ConstraintsCheck(const QString &val);
     void add_table_line(QString cname, QString val);
+    void tidyTables();
 
 private slots:
     void reset_display();
     void nprocesses(int n);
     void push_go();
     void push_stop();
+    void done();
     void select_tmp_dir();
     void select_default_tmp_dir();
     void select_fet_path();

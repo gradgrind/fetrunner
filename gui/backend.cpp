@@ -22,7 +22,7 @@ void ReadLogWorker::readLog() {
        emit newLogLine(ll);
        if (ll == "---") break;
     }
-    //TODO: Emit a signal?
+    emit op_end();
 }
 
 //ReadLogWorker::ReadLogWorker(QObject *parent) : QObject(parent) {}
@@ -33,16 +33,14 @@ Backend::Backend() : QObject() {
     ReadLogWorker *worker = new ReadLogWorker;
     worker->moveToThread(&loggerThread);
 
-    connect(&loggerThread, &QThread::finished, worker, &QObject::deleteLater);
-    connect(worker, &ReadLogWorker::newLogLine, this, &Backend::handleLogLine);
-    connect(this, &Backend::readLogInThread, worker, &ReadLogWorker::readLog);
-
-    //connect(&loggerThread, &QThread::started, worker, &ReadLogWorker::readLog);
-    //connect(worker, &ReadLogWorker::opDone, this, &ReadLogController::handleDone);
-    //connect(worker, &ReadLogWorker::result, this, &Backend::handleResult);
-    //connect(worker, &ReadLogWorker::logcolour, this, &Backend::logcolour);
-    //connect(worker, &ReadLogWorker::log, this, &Backend::log);
-    //connect(worker, &ReadLogWorker::error, this, &Backend::error);
+    connect(&loggerThread, &QThread::finished,
+        worker, &QObject::deleteLater);
+    connect(worker, &ReadLogWorker::newLogLine,
+        this, &Backend::handleLogLine);
+    connect(worker, &ReadLogWorker::op_end,
+        this, &Backend::op_end);
+    connect(this, &Backend::readLogInThread,
+        worker, &ReadLogWorker::readLog);
     loggerThread.start();
 }
 
@@ -112,17 +110,10 @@ void Backend::handleLogLine(QString logline) {
             f(rval);
         return;
     }
-    if (msgtype == "---") {
-        //TODO
-        //emit opDone();
-        return;
-    }
+    //if (msgtype == "---")
     if (msgtype == "*ERROR*") {
         notifier->emit errorPopup(msgrest);
         return;
     }
-    if (msgtype == "-*-*-") {
-        //TODO
-        return;
-    }
+    //if (msgtype == "-*-*-")
 }
