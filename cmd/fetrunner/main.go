@@ -59,7 +59,6 @@ package main
 import (
 	"errors"
 	"fetrunner"
-	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
 	"fetrunner/internal/fet"
 	"flag"
@@ -170,7 +169,7 @@ func main() {
 
 		fetrunner.Dispatch("RUN_TT")
 
-		//* TODO-- just testing the new functions
+		/* TODO-- just testing the new functions
 		fmt.Println("Done")
 		fetrunner.Dispatch("TT_DAYS")
 		fetrunner.Dispatch("TT_HOURS")
@@ -183,7 +182,7 @@ func main() {
 		fetrunner.Dispatch("TT_CLASS_PLACEMENTS " + strconv.Itoa(len(lres.Classes)/2))
 		fetrunner.Dispatch("TT_TEACHER_PLACEMENTS " + strconv.Itoa(len(lres.Teachers)/2))
 		fetrunner.Dispatch("TT_ROOM_PLACEMENTS " + strconv.Itoa(len(lres.Rooms)/2))
-		// */
+		*/
 	}
 }
 

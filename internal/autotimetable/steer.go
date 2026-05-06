@@ -28,8 +28,6 @@ func DefaultParameters() *Parameters {
 		TIMEOUT:                  300, // seconds
 		NEW_BASE_TIMEOUT_FACTOR:  12,  // => 1.2
 		NEW_PHASE_TIMEOUT_FACTOR: 15,  // => 1.5
-		LAST_TIME_0:              5,
-		LAST_TIME_1:              50,
 		DEBUG:                    false,
 	}
 }

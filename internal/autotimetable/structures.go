@@ -58,11 +58,6 @@ type Parameters struct {
 	// If true, write fully constrained FET-file with "_" prefix to source
 	// directory:
 	WRITE_FET_FILE bool
-
-	// Tick count limits for testing whether an instance with no timeout
-	// has got stuck. See `(*RunQueue).update_instances()` method.
-	LAST_TIME_0 int
-	LAST_TIME_1 int
 }
 
 // The `AutoTtData` structure is set up once for the handling of a set of

@@ -379,7 +379,7 @@ exit:
 		//TODO: Experiment to catch FET getting stuck soon after start.
 		// It may need tweaking.
 		if instance.LastTime < 2 &&
-			instance.Ticks-instance.LastTime > 10 {
+			instance.Ticks > 10 {
 			base.LogInfo("FET_Stuck_0 %d:%s @ %d, p: %d%% n: %d",
 				instance.Index,
 				instance.ConstraintType,
@@ -393,8 +393,7 @@ exit:
 		t := instance.Timeout
 		if t == 0 {
 			// Check for lack of progress for instances with no timeout
-			if instance.LastTime < autotimetable.TtParameters.LAST_TIME_0 &&
-				instance.Ticks >= autotimetable.TtParameters.LAST_TIME_1 {
+			if instance.Ticks >= instance.LastTime*10 { //TODO: scale factor? min ticks?
 				// Stop instance
 				base.LogInfo(
 					"FET_Slow_0 %d:%s @ %d, p: %d n: %d",
