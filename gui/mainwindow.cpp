@@ -318,9 +318,9 @@ void MainWindow::showLogger(int logger) {
 }
 
 void MainWindow::switch_logger(QString msg, int log_viewer) {
-    switch (log_viewer) {
     if (!msg.isEmpty())
-        log_view->append(msg);
+        ui->base_log_view->append(msg);
+    switch (log_viewer) {
     case 0:
         log_view = ui->base_log_view;
         break;

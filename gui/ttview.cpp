@@ -1,5 +1,6 @@
 #include "ttview.h"
 #include "backend.h"
+#include "globals.h"
 #include "ui_ttview.h"
 
 //TODO: It might be useful to be able to reload old timetables
@@ -43,7 +44,9 @@ void TtView::new_tt_data() {
 //TODO
 void TtView::enter_view() {
     if (ttbase == nullptr)
+        emit notifier->switch_logger(">>> --TIMETABLE", 2);
         ttbase = new TtBase();
+        emit notifier->switch_logger("", 0);
 }
 
 void TtView::new_grid() {

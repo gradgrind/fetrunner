@@ -20,7 +20,7 @@ runtest () {
     go run ../cmd/fetrunner -t $timeout "$f"
     sub_pid=$!
     tac "${f%.*}.log" | grep -m1 ".NCONSTRAINTS="
-    tac "${f%.*}.log" | grep -m2 ".TICK=" | grep -v "=-1"
+    tac "${f%.*}.log" | grep -m1 ".TICK="
 }
 
 tdir1="$PWD/tests_fet"

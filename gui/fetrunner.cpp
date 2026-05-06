@@ -201,7 +201,9 @@ void FetRunner::push_go()
     instance_row_map.clear();
     progress_rows_changed.clear();
     reset_display();
-    notifier->emit switch_logger(">>> --SOLVER", 1);
+
+    //TODO??? The message is not appearing ...
+    emit notifier->switch_logger(">>> --SOLVER", 1);
 
     // Set parameters
     auto t = ui->tt_timeout->text();
