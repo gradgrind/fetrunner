@@ -42,9 +42,11 @@ class Canvas : QObject
 
 public:
     Canvas(QGraphicsView *gview);
-    virtual ~Canvas () = default;
+    virtual ~Canvas () {
+        delete scene;
+    }
 
-    QGraphicsView *view;
+    QGraphicsView *view; // convenience copy, not owned here
     int ldpi, pdpi;
 
     int pt2px(int pt);

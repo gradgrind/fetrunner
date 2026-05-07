@@ -47,6 +47,7 @@ void TtView::enter_view() {
         emit notifier->switch_logger(">>> --TIMETABLE", 2);
         ttbase = new TtBase();
         emit notifier->switch_logger("", 0);
+        new_grid();
 }
 
 void TtView::new_grid() {
@@ -62,7 +63,7 @@ void TtView::new_grid() {
     }
     QStringList hlist;
     for (const auto &h : hours) {
-        dlist.append(h.tag);
+        hlist.append(h.tag);
     }
     grid = new TtGrid(ui->canvas_view, dlist, hlist, breaks);
 }

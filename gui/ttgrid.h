@@ -39,6 +39,8 @@ public:
     ~TtGrid() {
         delete canvas;
         // TODO: more?
+        // Can I assume that the lid2tiles and ok_cells get cleaned up fully?
+        // Perhaps if the items are owned by the scene?
     }
 
 
@@ -50,7 +52,7 @@ public:
     void setHighlight(int day, int hour, HighlightColour colour);
 
     Canvas *canvas;
-    Scene *scene;
+    Scene *scene; // convenience copy from canvas (owned by canvas)
     QStringList daylist;
     QStringList hourlist;
     QList<int> breaklist;
