@@ -56,16 +56,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     ttview = new TtView();
     ui->main_panel->addWidget(ttview);
-    connect( //
-        ui->rb_view_teacher,
-        &QRadioButton::toggled,
-        this,
-        [this](bool checked) {
-            if (checked) {
-                ttview->select_teacher_view();
-            }
-        }
-    );
+
+    ttviewselector = new TtViewSelector(ttview);
+    ui->side_panel_sub->addWidget(ttviewselector);
 
     connect( //
         ui->open_file,

@@ -108,7 +108,7 @@ func get_class_placements(op *DispatchOp) {
 	}
 	lres := autotimetable.AutoTt.GetLastResult()
 	for _, p := range autotimetable.ClassPlacements(lres, cix) {
-		base.LogResult("PLACEMENT", autotimetable.SerializePlacement(p))
+		base.LogResult("CLASS_PLACEMENT", autotimetable.SerializePlacement(p))
 	}
 }
 
@@ -119,7 +119,7 @@ func get_teacher_placements(op *DispatchOp) {
 	}
 	lres := autotimetable.AutoTt.GetLastResult()
 	for _, p := range autotimetable.TeacherPlacements(lres, tix) {
-		base.LogResult("PLACEMENT", autotimetable.SerializePlacement(p))
+		base.LogResult("TEACHER_PLACEMENT", autotimetable.SerializePlacement(p))
 	}
 }
 
@@ -130,7 +130,7 @@ func get_room_placements(op *DispatchOp) {
 	}
 	lres := autotimetable.AutoTt.GetLastResult()
 	for _, p := range autotimetable.RoomPlacements(lres, rix) {
-		base.LogResult("PLACEMENT", autotimetable.SerializePlacement(p))
+		base.LogResult("ROOM_PLACEMENT", autotimetable.SerializePlacement(p))
 	}
 }
 

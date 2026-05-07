@@ -38,6 +38,7 @@ qt_add_executable(fetrunner-gui
     ttgrid.cpp ttgrid.h
     tt_show_resource.cpp
     ttbase.cpp ttbase.h
+    ttviewselector.h ttviewselector.cpp ttviewselector.ui
 )
 
 qt_add_translations(fetrunner-gui MERGE_QT_TRANSLATIONS

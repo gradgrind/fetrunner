@@ -17,11 +17,11 @@ TtView::TtView(QWidget *parent)
 {
     ui->setupUi(this);
 
-    backend->registerResultHandler("TT_TEACHER_PLACEMENTS",
+    backend->registerResultHandler("TEACHER_PLACEMENT",
         [this](QString arg) {do_TEACHER_PLACEMENT(arg);});
-    backend->registerResultHandler("TT_ROOM_PLACEMENTS",
+    backend->registerResultHandler("ROOM_PLACEMENT",
         [this](QString arg) {do_ROOM_PLACEMENT(arg);});
-    backend->registerResultHandler("TT_CLASS_PLACEMENTS",
+    backend->registerResultHandler("CLASS_PLACEMENT",
         [this](QString arg) {do_CLASS_PLACEMENT(arg);});
 
     //canvas = new Canvas(ui->canvas_view);
@@ -47,7 +47,7 @@ void TtView::enter_view() {
         emit notifier->switch_logger(">>> --TIMETABLE", 2);
         ttbase = new TtBase();
         emit notifier->switch_logger("", 0);
-        new_grid();
+        new_grid(); // show a new empty grid
 }
 
 void TtView::new_grid() {
@@ -66,12 +66,6 @@ void TtView::new_grid() {
         hlist.append(h.tag);
     }
     grid = new TtGrid(ui->canvas_view, dlist, hlist, breaks);
-}
 
-
-//TODO: There will need to be a list of teachers to select from.
-void TtView::select_teacher_view()
-{
-    qDebug() << "Hi, testing teacher view!";
-    set_teacher(15);
+    //TODO: select class/room/teacher list and then resource
 }

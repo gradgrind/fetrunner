@@ -5,6 +5,7 @@
 #include <QTextEdit>
 #include "fetrunner.h"
 #include "ttview.h"
+#include "ttviewselector.h"
 
 namespace Ui {
 
@@ -43,6 +44,7 @@ private:
     QStringList waiting_on;
     FetRunner *ttsolver{nullptr};
     TtView *ttview{nullptr};
+    TtViewSelector *ttviewselector{nullptr};
     QTextEdit *log_view{nullptr};
 
 public slots:

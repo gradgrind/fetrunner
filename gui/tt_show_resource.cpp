@@ -95,7 +95,7 @@ void TtView::do_CLASS_PLACEMENT(const QString &val) {
     auto a = ttbase->activities.at(aix);
     // Extract activity atomics for this class
     a->selected_atomics.clear();
-    for (int agix : a->atomics) {
+    for (int agix : std::as_const(a->atomics)) {
         if (classAtomics.contains(agix))
             a->selected_atomics.append(agix);
     }
