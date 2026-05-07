@@ -201,10 +201,7 @@ void FetRunner::push_go()
     instance_row_map.clear();
     progress_rows_changed.clear();
     reset_display();
-
-    //TODO??? The message is not appearing ...
     emit notifier->switch_logger(">>> --SOLVER", 1);
-
     // Set parameters
     auto t = ui->tt_timeout->text();
     backend->op("TT_PARAMETER", "TIMEOUT=" + t);
@@ -214,7 +211,7 @@ void FetRunner::push_go()
     backend->op("TT_PARAMETER", rs ? "REAL_SOFT=true" : "REAL_SOFT=false");
     auto wff = ui->write_fet_file->isChecked();
     backend->op("TT_PARAMETER", wff ? "WRITE_FET_FILE=true" : "WRITE_FET_FILE=false");
-
+    // Prepare and run solver
     if (backend->op("RUN_TT_SOURCE")) {
         setup_progress_table();
         threadRunActivated(true);
@@ -351,19 +348,15 @@ void FetRunner::threadRunActivated(bool active)
     thread_running = active;
     ui->pb_go->setDisabled(active);
     ui->pb_stop->setEnabled(active);
-
     notifier->emit setBusy(active);
-
     ui->frame_parameters->setDisabled(active);
-
-    //TODO: If !active I could test whether there is a result
-    // and set up the timetable viewer.
-    //TODO: If active, the timetable viewer should be disabled.
     if (active) {
+        // Disable (selection of) the timetable viewer
         notifier->emit no_tt_data(); // signal "result invalid"
     } else {
         if (backend->op("_TT_HAS_RESULT")) {
-
+            // If there is a result, clear timetable data and
+            // enable (selection of) the timetable viewer
             notifier->emit new_tt_data();
         }
     }
@@ -396,8 +389,6 @@ void FetRunner::tidyTables() {
     {
         int key;
         instance_row irow;
-        //TODO--int state;
-        //TODO--QTableWidgetItem *item;
     };
     QList<rmdata> to_remove;
     for (auto it = instance_row_map.cbegin(); it != instance_row_map.cend(); ++it) {
@@ -405,6 +396,7 @@ void FetRunner::tidyTables() {
         if (tickval.state != 0 && tickval.item != nullptr)
             to_remove.append({it.key(), tickval});
     }
+    bool has_new_rows = false;
     for (const auto &rp : to_remove) {
         //qDebug() << "?removeRow" << row << rp.key;
         auto irow = rp.irow;
@@ -414,17 +406,14 @@ void FetRunner::tidyTables() {
                 irow.data[2],          // number of constraints
                 QString{"/ %1"}.arg(constraint_map[ctype].total),
                 ctype);
+            has_new_rows = true;
         }
         auto row = irow.item->row();
         ui->instance_table->removeRow(row);
         instance_row_map.remove(rp.key);
     }
-
-    //TODO--ui->instance_table->scrollToBottom();
-
-    //TODO: if (new rows)
-    ui->completed_instance_table->scrollToBottom();
-
+    if (has_new_rows)
+        ui->completed_instance_table->scrollToBottom();
     // Changes to progress table
     for (const auto &update : std::as_const(progress_rows_changed)) {
         tableProgress(update);

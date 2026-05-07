@@ -108,7 +108,7 @@ void TtView::do_CLASS_PLACEMENT(const QString &val) {
 //TODO: A better Tile placement scheme ...
 // Assume the atomics are sorted (increasing).
 void TtView::do_SetupClassView(const QString &val) {
-    auto cix = val.toInt();
+    //auto cix = val.toInt();
     auto ndays = grid->daylist.length();
     auto nhours = grid->hourlist.length();
     for (int d = 0; d < ndays; ++d) {
