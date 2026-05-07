@@ -42,10 +42,6 @@ public:
         resultHandlerMap[key] = handler;
     }
 
-//TODO???
-    QString getConfig(QString key, QString fallback = {});
-    void setConfig(QString key, QString val);
-
 private:
     QHash<QString, resultHandler> resultHandlerMap;
     void readLog();

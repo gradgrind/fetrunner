@@ -171,7 +171,7 @@ MainWindow::MainWindow(QWidget *parent)
         &MainWindow::error_popup);
 
     settings = new QSettings("gradgrind", "fetrunner");
-    const auto geometry = settings->value("gui/FetRunnerSize").value<QSize>();
+    const auto geometry = settings->value("gui/MainWindowSize").value<QSize>();
     if (!geometry.isEmpty())
         resize(geometry);
 }
@@ -179,7 +179,7 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete ui;
-    settings->setValue("gui/FetRunnerSize", size());
+    settings->setValue("gui/MainWindowSize", size());
     delete settings;
 }
 
