@@ -18,6 +18,16 @@ TtViewSelector::TtViewSelector(TtView *ttview_in, QWidget *parent) :
             }
         }
     );
+    connect(
+        ui->rb_view_room,
+        &QRadioButton::toggled,
+        this,
+        [this](bool checked) {
+            if (checked) {
+                this->select_room_view();
+            }
+        }
+    );
 
     connect(
         ui->view_choice_list,
@@ -41,6 +51,23 @@ void TtViewSelector::select_teacher_view()
             choice.append(" " + t.name);
         ui->view_choice_list->addItem(choice);
     }
+    set_view = [this](int i) {
+        this->ttview->set_teacher(i);
+    };
+}
+
+void TtViewSelector::select_room_view()
+{
+    ui->view_choice_list->clear();
+    for (const auto &r : std::as_const(ttview->ttbase->rooms)) {
+        QString choice{r.tag};
+        if (!r.name.isEmpty() && r.name != r.tag)
+            choice.append(" " + r.name);
+        ui->view_choice_list->addItem(choice);
+    }
+    set_view = [this](int i) {
+        this->ttview->set_room(i);
+    };
 }
 
 void TtViewSelector::chosen(int i) {
@@ -49,8 +76,6 @@ void TtViewSelector::chosen(int i) {
         ttview->new_grid();
     } else {
         //qDebug() << "chosen" << i << ttview->ttbase->teachers.at(i).tag;
-
-        //TODO: teacher, room or class?
-        ttview->set_teacher(i);
+        set_view(i); // for class, room or teacher
     }
 }

@@ -19,9 +19,11 @@ public:
 private:
     Ui::TtViewSelector *ui;
     TtView *ttview; // convenience copy, not owned here
+    std::function<void(int)> set_view;
 
 private slots:
     void select_teacher_view();
+    void select_room_view();
     void chosen(int i);
 };
 
