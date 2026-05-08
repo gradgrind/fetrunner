@@ -36,7 +36,7 @@ TtView::~TtView() {
     delete ui;
 }
 
-void TtView::new_tt_data() {
+void TtView::do_new_tt_data() {
     delete ttbase;
     ttbase = nullptr;
 }

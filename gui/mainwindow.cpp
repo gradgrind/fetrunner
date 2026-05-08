@@ -140,17 +140,12 @@ MainWindow::MainWindow(QWidget *parent)
         notifier,
         &Notifier::new_tt_data,
         this,
-        &MainWindow::new_tt_data);
-    connect( //
-        notifier,
-        &Notifier::new_tt_data,
-        ttview,
-        &TtView::new_tt_data);
+        &MainWindow::do_new_tt_data);
     connect( //
         notifier,
         &Notifier::no_tt_data,
         this,
-        &MainWindow::no_tt_data);
+        &MainWindow::do_no_tt_data);
     connect( //
         notifier,
         &Notifier::fileChanged,
@@ -295,7 +290,7 @@ void MainWindow::open_file()
 
 void MainWindow::new_file() {
     // Select fetrunner view, disable timetable view.
-    no_tt_data();
+    do_no_tt_data();
     ui->solve_timetable->setEnabled(true);
     ui->solve_timetable->click();
 }
@@ -351,11 +346,13 @@ void MainWindow::do_DATA_TYPE(const QString &val) {
     file_datatype = val;
 }
 
-void MainWindow::new_tt_data() {
+void MainWindow::do_new_tt_data() {
     if (quit_requested) return;
     ui->view_timetable->setEnabled(true);
+    ui->timetable_log_view->clear();
+    ttviewselector->do_new_tt_data();
 }
 
-void MainWindow::no_tt_data() {
+void MainWindow::do_no_tt_data() {
     ui->view_timetable->setEnabled(false);
 }

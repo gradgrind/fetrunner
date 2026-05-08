@@ -88,6 +88,7 @@ void TtView::set_class(int cix) {
     }
     classAtomics = ttbase->get_class(cix).atomics;
     backend->op("TT_CLASS_PLACEMENTS", QString::number(cix));
+    setupClassView();
 }
 
 void TtView::do_CLASS_PLACEMENT(const QString &val) {
@@ -107,8 +108,7 @@ void TtView::do_CLASS_PLACEMENT(const QString &val) {
 
 //TODO: A better Tile placement scheme ...
 // Assume the atomics are sorted (increasing).
-void TtView::do_SetupClassView(const QString &val) {
-    //auto cix = val.toInt();
+void TtView::setupClassView() {
     auto ndays = grid->daylist.length();
     auto nhours = grid->hourlist.length();
     for (int d = 0; d < ndays; ++d) {

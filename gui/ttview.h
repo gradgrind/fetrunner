@@ -40,10 +40,10 @@ private:
     void do_TEACHER_PLACEMENT(const QString &val);
     void do_ROOM_PLACEMENT(const QString &val);
     void do_CLASS_PLACEMENT(const QString &val);
-    void do_SetupClassView(const QString &val);
+    void setupClassView();
 
 public slots:
-    void new_tt_data();
+    void do_new_tt_data();
     void enter_view();
 };
 
