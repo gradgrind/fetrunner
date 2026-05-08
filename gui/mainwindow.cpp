@@ -19,7 +19,19 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     notifier = new Notifier();
 
-    ui->help_view->setSource(QUrl("qrc:/help/using_fetrunner.md"));
+    connect(
+        ui->nav_fetrunner,
+        &QPushButton::clicked,
+        this,
+        [this]() {ui->help_view->setSource(QUrl("qrc:/help/using_fetrunner.md"));}
+    );
+    connect(
+        ui->nav_gui,
+        &QPushButton::clicked,
+        this,
+        [this]() {ui->help_view->setSource(QUrl("qrc:/help/using_the_gui.md"));}
+    );
+    ui->nav_fetrunner->click();
 
     backend->registerResultHandler("FETRUNNER_VERSION",
         [this](QString arg) {do_FETRUNNER_VERSION(arg);});
@@ -72,7 +84,7 @@ MainWindow::MainWindow(QWidget *parent)
         [this](bool checked) {
             if (checked) {
                 ui->main_panel->setCurrentIndex(0);
-                ui->side_panel_sub->setCurrentIndex(0);
+                ui->side_panel_sub->setCurrentIndex(1);
             }
         });
     connect( //
@@ -102,7 +114,7 @@ MainWindow::MainWindow(QWidget *parent)
         [this](bool checked) {
             if (checked) {
                 ui->main_panel->setCurrentIndex(3);
-                ui->side_panel_sub->setCurrentIndex(1);
+                ui->side_panel_sub->setCurrentIndex(2);
                 ttview->enter_view();
             }
         });
