@@ -41,13 +41,13 @@ void TtView::do_new_tt_data() {
     ttbase = nullptr;
 }
 
-//TODO
 void TtView::enter_view() {
-    if (ttbase == nullptr)
+    if (ttbase == nullptr) {
         emit notifier->switch_logger(">>> --TIMETABLE", 2);
         ttbase = new TtBase();
         emit notifier->switch_logger("", 0);
         new_grid(); // show a new empty grid
+    }
 }
 
 void TtView::new_grid() {

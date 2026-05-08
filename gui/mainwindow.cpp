@@ -198,11 +198,13 @@ QTextEdit *MainWindow::selectLogger(int logger) {
     case 1:
        return  ui->solver_log_view;
     case 2:
-       return  ui->base_log_view;
+       return ui->timetable_log_view;
+    case 3:
+       return ui->timetable_log_singleview;
     }
     ui->base_log_view->append(QString{"*BUG* Invalid logger index: %1"}.arg(logger));
     emit notifier->show_logger(0);
-    return nullptr;
+    return ui->base_log_view;
 }
 
 void MainWindow::clearLog(int logger) {
@@ -308,21 +310,7 @@ void MainWindow::showLogger(int logger) {
 void MainWindow::switch_logger(QString msg, int log_viewer) {
     if (!msg.isEmpty())
         ui->base_log_view->append(msg);
-    switch (log_viewer) {
-    case 0:
-        log_view = ui->base_log_view;
-        break;
-    case 1:
-        log_view = ui->solver_log_view;
-        break;
-    case 2:
-        log_view = ui->timetable_log_view;
-        break;
-    default:
-        log_view = ui->base_log_view;
-        log_view->append("*BUG* Invalid log viewer: " + QString::number(log_viewer));
-        log_viewer = 0;
-    }
+    log_view = selectLogger(log_viewer);
     ui->log_tabs->setCurrentIndex(log_viewer);
 }
 

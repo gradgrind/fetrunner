@@ -1,4 +1,5 @@
 #include "backend.h"
+#include "globals.h"
 #include "ttview.h"
 
 int TtBase::place_activity(const QString &val) {
@@ -18,7 +19,10 @@ int TtBase::place_activity(const QString &val) {
 void TtView::set_teacher(int tix)
 {
     new_grid();
+    emit notifier->switch_logger(">>> --TIMETABLE_TEACHER", 3);
+    emit notifier->clear_log(3);
     backend->op("TT_TEACHER_PLACEMENTS", QString::number(tix));
+    emit notifier->switch_logger("", 0);
 }
 
 void TtView::do_TEACHER_PLACEMENT(const QString &val) {
@@ -47,7 +51,10 @@ void TtView::do_TEACHER_PLACEMENT(const QString &val) {
 
 void TtView::set_room(int rix) {
     new_grid();
+    emit notifier->switch_logger(">>> --TIMETABLE_ROOM", 3);
+    emit notifier->clear_log(3);
     backend->op("TT_ROOM_PLACEMENTS", QString::number(rix));
+    emit notifier->switch_logger("", 0);
 }
 
 void TtView::do_ROOM_PLACEMENT(const QString &val) {
@@ -76,6 +83,8 @@ void TtView::do_ROOM_PLACEMENT(const QString &val) {
 
 void TtView::set_class(int cix) {
     new_grid();
+    emit notifier->switch_logger(">>> --TIMETABLE_CLASS", 3);
+    emit notifier->clear_log(3);
 
     // Build an array for the week (days x hours), each slot
     // containing a list of tile_data items.
@@ -89,6 +98,7 @@ void TtView::set_class(int cix) {
     classAtomics = ttbase->get_class(cix).atomics;
     backend->op("TT_CLASS_PLACEMENTS", QString::number(cix));
     setupClassView();
+    emit notifier->switch_logger("", 0);
 }
 
 void TtView::do_CLASS_PLACEMENT(const QString &val) {
