@@ -1,0 +1,9 @@
+# Changes in v.0.20.0
+
+The notions of front-end and back-end were rather hazy and confusing. So quite a lot of the Go code has been reorganised in the hope of making the program a bit easier to understand.
+
+The supported input structures (currently "DB" and `FET`) are accessed via the `TtSource` interface and the output structures (currently only `FET`) via the `TtBackend` interface, both defined in "autotimetable/interface.go". This should work in a way independent of the actual implementations of these interfaces. Because of the special handling of `FET` file input (the back-end uses the structures of the source rather than building new `FET` structures), the independence is not fully achieved, but the situation should be a lot better than in previous versions. For other input sources, it should be possible to build the back-end structures using the `TtSource` interface, without needing further access to the internal source structures.
+
+A further change is that it is now possible to have a source constraint map to multiple back-end constraints. This possibility is not used at present, though. A many-to-one constraint mapping is likely to be rather unmanageable, so I probably won't consider it.
+
+Slight changes have been made to the result output (JSON). The most significant is probably the additional information provided in the Activities list. This should make reading the file a bit easier.
