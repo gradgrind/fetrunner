@@ -21,34 +21,11 @@ MainWindow::MainWindow(QWidget *parent)
     notifier = new Notifier();
 
     connect(
-        ui->nav_fetrunner,
+        ui->help,
         &QPushButton::clicked,
         this,
-        [this]() {ui->help_view->setSource(QUrl("qrc:/docs/using_fetrunner.md"));}
+        [this]() {QDesktopServices::openUrl(QUrl("../../help/index.html"));}
     );
-    connect(
-        ui->nav_gui,
-        &QPushButton::clicked,
-        this,
-        //[this]() {ui->help_view->setSource(QUrl("qrc:/docs/using_the_gui.md"));}
-//TODO: Doesn't (necessarily) open in browser! And the browser doesn't
-// do html rendering anyway ...
-                [this]() {QDesktopServices::openUrl(QUrl("../../docs/using_the_gui.md"));}
-    );
-    /*
-    connect(
-        ui->help_view,
-        &QTextBrowser::anchorClicked,
-        this,
-        //[this](QUrl url) {QMessageBox::information(nullptr, "URL", url.path());});
-    [this](QUrl url) {
-        QMessageBox msgBox(this);
-        msgBox.setTextFormat(Qt::PlainText);
-        msgBox.setText(ui->help_view->document()->toHtml());
-        msgBox.exec();
-        });
-    */
-    ui->nav_fetrunner->click();
 
     backend->registerResultHandler("FETRUNNER_VERSION",
         [this](QString arg) {do_FETRUNNER_VERSION(arg);});
@@ -95,13 +72,13 @@ MainWindow::MainWindow(QWidget *parent)
         this,
         &MainWindow::open_file);
     connect( //
-        ui->help,
+        ui->info_page,
         &QRadioButton::toggled,
         this,
         [this](bool checked) {
             if (checked) {
                 ui->main_panel->setCurrentIndex(0);
-                ui->side_panel_sub->setCurrentIndex(1);
+                ui->side_panel_sub->setCurrentIndex(0);
             }
         });
     connect( //
@@ -131,7 +108,7 @@ MainWindow::MainWindow(QWidget *parent)
         [this](bool checked) {
             if (checked) {
                 ui->main_panel->setCurrentIndex(3);
-                ui->side_panel_sub->setCurrentIndex(2);
+                ui->side_panel_sub->setCurrentIndex(1);
                 ttview->enter_view();
             }
         });
