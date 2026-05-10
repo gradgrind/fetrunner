@@ -43,13 +43,14 @@ int main(
     QDir xdir{app.applicationDirPath()};
     // Use the png icon rather than the svg one because the FET binary
     // package does not include support for SVG.
-    QString iconpath{"../../icons/fetrunner-256.png"};
-    if (!xdir.exists(iconpath)) {
-        iconpath = "icons/fetrunner-256.png";
-        if (!xdir.exists(iconpath))
-            goto noicon;
-    }
-    w.setWindowIcon(QIcon(xdir.filePath(iconpath)));
+    //QString iconpath{"../../icons/fetrunner-256.png"};
+    //if (!xdir.exists(iconpath)) {
+    //    iconpath = "icons/fetrunner-256.png";
+    //    if (!xdir.exists(iconpath))
+    //        goto noicon;
+    //}
+    //w.setWindowIcon(QIcon(xdir.filePath(iconpath)));
+    w.setWindowIcon(QIcon(":gui/icons/fetrunner-256.png"));
 noicon:
 
     w.show();
