@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>docs/using_fetrunner.md</file>
+        <file>docs/using_the_gui.md</file>
+        <file>docs/images/Screenshot_01.png</file>
+        <file>docs/images/Screenshot_02.png</file>
+        <file>docs/images/Screenshot_03.png</file>
+        <file>docs/images/Screenshot_03a.png</file>
+        <file>docs/images/Screenshot_04.png</file>
+        <file>docs/images/Screenshot_05.png</file>
+    </qresource>
+</RCC>

@@ -1,6 +1,6 @@
 # Using `fetrunner`
 
-The GUI ([Using the GUI](./using_the_gui.md)) allows selection of `FET` files and processing parameters in a fairly straightforward way. It also shows the progress of a run dynamically. In some cases, however, the command-line tool may be more convenient. To use this, see [Running the command-line tool](#running-the-command-line-tool).
+The GUI ([Using the GUI](./using_the_gui.md)) allows selection of `FET` files and processing parameters in a fairly straightforward way. It also shows the progress of a run dynamically. In some cases, however, the command-line tool may be more convenient. To use this, see [Running the command-line tool](#runcli).
 
 ## How to understand the results of a `fetrunner` run
 
@@ -18,7 +18,7 @@ Looking at a timetable generated (in `FET`) from the "xxx_Result.fet" file (whic
 
 Actually, there is a generated timetable (from "xxx_Result.fet") in "xxx_Result.json", but I haven't written the software to display this (yet).
 
-## Running the command-line tool
+## <a id="runcli"></a>Running the command-line tool
 
 Important: By default the `FET` command-line executable is expected to be in the same directory as the `fetrunner` executable, or else runnable by calling `fet-cl` (on Windows the executable is `fet-cl.exe`), i.e. in the user's `PATH`. There is, however, a command line option ("-fet") to specify a different location – the value must be a full, absolute path.
 
@@ -48,22 +48,22 @@ There are a few command-line options:
 fetrunner -help
  ->
   -fet string
-    	FET executable: /path/to/fet-cl
-  -h	skip hard constraint testing phase
+        FET executable: /path/to/fet-cl
+  -h    skip hard constraint testing phase
   -p int
-    	max. parallel processes
-  -s	the weights of soft constraints are retained
+        max. parallel processes
+  -s    the weights of soft constraints are retained
   -t int
-    	set timeout, s (default 300)
+        set timeout, s (default 300)
   -tmp string
-    	Folder for temporary files (FET): /path/to/tmp
-  -v	print version and exit
+        Folder for temporary files (FET): /path/to/tmp
+  -v    print version and exit
   -xd
-    	run in debug mode
+        run in debug mode
   -xf
-    	write fully-constrained FET file
+        write fully-constrained FET file
   -xt
-    	run in testing mode
+        run in testing mode
 ```
 
 If it is known that the hard constraints are all satisfiable, the "-h" option can be used to always include the hard constraints (the unconstrained instance is not run) and test the sequential addition of just the soft constraints.

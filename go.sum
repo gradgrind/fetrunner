@@ -2,3 +2,7 @@ github.com/beevik/etree v1.6.0 h1:u8Kwy8pp9D9XeITj2Z0XtA5qqZEmtJtuXZRQi+j03eE=
 github.com/beevik/etree v1.6.0/go.mod h1:bh4zJxiIr62SOf9pRzN7UUYaEDa9HEKafK25+sLc0Gc=
 github.com/gofrs/uuid/v5 v5.4.0 h1:EfbpCTjqMuGyq5ZJwxqzn3Cbr2d0rUZU7v5ycAk/e/0=
 github.com/gofrs/uuid/v5 v5.4.0/go.mod h1:CDOjlDMVAtN56jqyRUZh58JT31Tiw7/oQyEXZV+9bD8=
+github.com/gomarkdown/markdown v0.0.0-20260417124207-7d523f7318df h1:Mwihr/o+v4L5h56rwHLOE20+hh7Okhwno5BHz3zDuao=
+github.com/gomarkdown/markdown v0.0.0-20260417124207-7d523f7318df/go.mod h1:JDGcbDT52eL4fju3sZ4TeHGsQwhG9nbDV21aMyhwPoA=
+github.com/gomarkdown/mdtohtml v0.0.0-20240124153210-d773061d1585 h1:gfB9CukKWjBI83xByTJwpOkSwFD+Ev+2m3U332KZCLo=
+github.com/gomarkdown/mdtohtml v0.0.0-20240124153210-d773061d1585/go.mod h1:6grYm5/uY15CwgBBqwA3+o/cAzaxssckznJ0B35ouBY=

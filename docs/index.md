@@ -1,4 +1,22 @@
-# Using `fetrunner`
+# Introducing `fetrunner`
+
+This is primarily a tool for testing `FET` files. It runs multiple instances of `FET` (the command-line version) on a supplied `FET` file with various subsets of the constraints enabled. The aim is to assist in finding difficult (or impossible) constraints. In order to function as intended it needs to be able to run several processes in parallel – it should work with four processor cores, but better results are likely with at least six.
+
+![fetrunner-gui](./images/Screenshot_00.png)
+
+## `FET`
+
+[`FET`](https://lalescu.ro/liviu/fet/) is a free timetable generator program for educational establishments. It is widely used and very good at what it does. However, in the case of timetable data which "doesn't work" (because of conflicting constraints), it can sometimes be difficult to find where the problem lies. Also, with some data (lessons/activities and constraints) the calculation of a "solution" (a conflict-free timetable) can take a very long time. Whilst working on a timetable, it can be useful to know which constraints may be difficult to fulfil, without waiting a long time for `fet` to complete (or not ...).
+
+`fetrunner` aims to produce a "solution" within a specified time, if necessary by deactivating some of the constraints. The result is a "known working" `FET` file (possibly including deactivated constraints). There is also a log file, which is updated continually during the process, showing some details of the progress, and a JSON file containing the activity placements from the "successful" `FET` run together with information about the "failed" constraints. In the GUI version of `fetrunner`, the log is not output as a file, but is used to update the interface (and is also available to view, if desired).
+
+## Using `fetrunner`
+
+**Not running on Linux?**
+
+`fetrunner` produces many temporary files, which might cause excessive wear on an SSD. See [Temporary files](./temporary_files.md) for ways to avoid this.
+
+## GUI or command-line
 
 The GUI ([Using the GUI](./using_the_gui.md)) allows selection of `FET` files and processing parameters in a fairly straightforward way. It also shows the progress of a run dynamically. In some cases, however, the command-line tool may be more convenient. To use this, see [Running the command-line tool](#running-the-command-line-tool).
 
@@ -48,22 +66,22 @@ There are a few command-line options:
 fetrunner -help
  ->
   -fet string
-    	FET executable: /path/to/fet-cl
-  -h	skip hard constraint testing phase
+        FET executable: /path/to/fet-cl
+  -h    skip hard constraint testing phase
   -p int
-    	max. parallel processes
-  -s	the weights of soft constraints are retained
+        max. parallel processes
+  -s    the weights of soft constraints are retained
   -t int
-    	set timeout, s (default 300)
+        set timeout, s (default 300)
   -tmp string
-    	Folder for temporary files (FET): /path/to/tmp
-  -v	print version and exit
+        Folder for temporary files (FET): /path/to/tmp
+  -v    print version and exit
   -xd
-    	run in debug mode
+        run in debug mode
   -xf
-    	write fully-constrained FET file
+        write fully-constrained FET file
   -xt
-    	run in testing mode
+        run in testing mode
 ```
 
 If it is known that the hard constraints are all satisfiable, the "-h" option can be used to always include the hard constraints (the unconstrained instance is not run) and test the sequential addition of just the soft constraints.

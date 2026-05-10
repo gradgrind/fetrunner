@@ -1,0 +1,10 @@
+# Temporary files
+
+`fetrunner` starts many `FET` (`fet-cl`) instances, each of which produces a number of output files. Only a fraction of these are needed by `fetrunner`, and none of them are retained. To reduce wear on SSD storage, these should probably be stored in an in-memory file system (RAM-disk, etc.). Linux has such a file-system "built-in" (at `/dev/shm`), and `fetrunner` uses it for these temporary files. On other operating systems it may be possible to provide something like this, but perhaps only with third-party software.
+
+There are a number of utilities for Windows which can generate RAM-disks. Two free ones which seem to work are [AIMtk](https://sourceforge.net/projects/aim-toolkit) and [OSFMount](https://www.osforensics.com/tools/mount-disk-images.html). Of these OSFMount seems a bit easier to use, but AIMtk can produce a dynamic RAM-disk which only occupies as much memory as is needed – OSFMount allocates a fixed-size block of RAM. However, `fetrunner` would normally need relatively little space, and a few hundred megabytes should be more than enough. When `fetrunner` starts it looks for a drive mounted at "R:", so if possible a RAM-disk should be mounted here.
+
+If no such file-system is available and detected, the standard temporary directory for the operating system will be used. With the command-line version of `fetrunner`, it is possible to specify the path to the directory to be used for temporary files using the "-tmp" option. If a Windows system has a RAM-disk mounted at "M:", the option would then be `-tmp M:\`. In the GUI version of `fetrunner` the path is shown and can be changed on the "Settings" tab.
+
+Within this temporary folder, each run of `fet-cl` gets its own sub-directory for its files. The name of this sub-directory is derived from the source file by removing the extension. If multiple instances of `fetrunner` are to be run simultaneously – which is generally inadvisable because of the limited processor cores – each must have a unique source file name.
+

@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include <QDesktopServices>
 #include <QDir>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -23,14 +24,30 @@ MainWindow::MainWindow(QWidget *parent)
         ui->nav_fetrunner,
         &QPushButton::clicked,
         this,
-        [this]() {ui->help_view->setSource(QUrl("qrc:/help/using_fetrunner.md"));}
+        [this]() {ui->help_view->setSource(QUrl("qrc:/docs/using_fetrunner.md"));}
     );
     connect(
         ui->nav_gui,
         &QPushButton::clicked,
         this,
-        [this]() {ui->help_view->setSource(QUrl("qrc:/help/using_the_gui.md"));}
+        //[this]() {ui->help_view->setSource(QUrl("qrc:/docs/using_the_gui.md"));}
+//TODO: Doesn't (necessarily) open in browser! And the browser doesn't
+// do html rendering anyway ...
+                [this]() {QDesktopServices::openUrl(QUrl("../../docs/using_the_gui.md"));}
     );
+    /*
+    connect(
+        ui->help_view,
+        &QTextBrowser::anchorClicked,
+        this,
+        //[this](QUrl url) {QMessageBox::information(nullptr, "URL", url.path());});
+    [this](QUrl url) {
+        QMessageBox msgBox(this);
+        msgBox.setTextFormat(Qt::PlainText);
+        msgBox.setText(ui->help_view->document()->toHtml());
+        msgBox.exec();
+        });
+    */
     ui->nav_fetrunner->click();
 
     backend->registerResultHandler("FETRUNNER_VERSION",

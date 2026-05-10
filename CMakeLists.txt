@@ -19,26 +19,26 @@ set(CMAKE_AUTORCC ON)
 
 add_library(libfetrunner STATIC IMPORTED) # STATIC or SHARED
 set_target_properties(libfetrunner PROPERTIES
-  IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/../libfetrunner/libfetrunner.a"
-  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/../libfetrunner"
+  IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/libfetrunner/libfetrunner.a"
+  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/libfetrunner"
 )
 
 qt_add_executable(fetrunner-gui
     WIN32 MACOSX_BUNDLE
-    main.cpp
-    mainwindow.cpp mainwindow.h mainwindow.ui
-    backend.cpp backend.h
+    gui/main.cpp
+    gui/mainwindow.cpp gui/mainwindow.h gui/mainwindow.ui
+    gui/backend.cpp gui/backend.h
     fetrunner_help.qrc
-    globals.h
-    fetrunner.cpp fetrunner.h fetrunner.ui
-    ttgen_tables.cpp
-    canvas.cpp canvas.h
-    chip.cpp chip.h
-    ttview.cpp ttview.h ttview.ui
-    ttgrid.cpp ttgrid.h
-    tt_show_resource.cpp
-    ttbase.cpp ttbase.h
-    ttviewselector.h ttviewselector.cpp ttviewselector.ui
+    gui/globals.h
+    gui/fetrunner.cpp gui/fetrunner.h gui/fetrunner.ui
+    gui/ttgen_tables.cpp
+    gui/canvas.cpp gui/canvas.h
+    gui/chip.cpp gui/chip.h
+    gui/ttview.cpp gui/ttview.h gui/ttview.ui
+    gui/ttgrid.cpp gui/ttgrid.h
+    gui/tt_show_resource.cpp
+    gui/ttbase.cpp gui/ttbase.h
+    gui/ttviewselector.h gui/ttviewselector.cpp gui/ttviewselector.ui
 )
 
 qt_add_translations(fetrunner-gui MERGE_QT_TRANSLATIONS
