@@ -14,9 +14,7 @@ The "xxx_Result.json" file may contain some information about why a constraint w
 
 The fact that `fetrunner` has deactivated a constraint doesn't mean that the constraint is necessarily impossible, though it may be (at least, in combination with other constraints). Another run, perhaps with a different timeout, might give a different result. The results show constraints whose removal makes it easier for `FET` to generate a timetable. If these constraints are important, it may be necessary to change other constraints which somehow interact with the shown ones – finding these may not be easy ...
 
-Looking at a timetable generated (in `FET`) from the "xxx_Result.fet" file (which is now known to be possible!) and at the deactivated constraints will – I hope – help you to discover how you might need to modify your data (activities and constraints) in order to get an acceptable result.
-
-Actually, there is a generated timetable (from "xxx_Result.fet") in "xxx_Result.json", but I haven't written the software to display this (yet).
+Looking at a timetable generated (in `FET`) from the "xxx_Result.fet" file (which is now known to be possible!) and at the deactivated constraints will – I hope – help you to discover how you might need to modify your data (activities and constraints) in order to get an acceptable result. Indeed, "xxx_Result.json" contains all the placements from the last result. If running the GUI version, these can be seen in the timetable view.
 
 ## <a id="runcli"></a>Running the command-line tool
 
