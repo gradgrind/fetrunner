@@ -16,6 +16,11 @@ class TtView : public QWidget
 {
     Q_OBJECT
 
+    struct SplitActivity {
+        int activity;
+        int index;
+    };
+
 public:
     explicit TtView(QWidget *parent = nullptr);
     ~TtView();
@@ -34,7 +39,7 @@ private:
 
     // An array (days * hours) of activity index lists is used
     // for arranging the Tiles in a time slot for class views.
-    QList<QList<QList<int>>> weekBuffer;
+    QList<QList<QList<SplitActivity>>> weekBuffer;
     QList<int> classAtomics; // list of atomics for viewed class
 
     void do_TEACHER_PLACEMENT(const QString &val);

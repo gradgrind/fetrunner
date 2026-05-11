@@ -94,7 +94,7 @@ void TtGrid::handle_hover(HoverRectItem *gitem, bool enter)
 void TtGrid::setup_grid()
 {
     cols.clear();
-    lid2tiles.clear();
+    aix2tiles.clear();
 
     QList<Cell *> hheaders;
     qreal y = 0.0;
@@ -238,11 +238,12 @@ void TtGrid::clearHighlights()
     }
 }
 
-Tile::Tile(TtGrid *grid, int activity)
+Tile::Tile(TtGrid *grid, int activity, int activity_part)
     : Chip()
 {
     grid->scene->addItem(this);
-    grid->lid2tiles[activity].append(this);
+    grid->aix2tiles[activity].append(this);
+    qDebug() << "Tile" << activity << grid->aix2tiles[activity].length();
 
     if (grid->hover_handler) {
         setHoverHandler(grid->hover_handler);
@@ -250,6 +251,7 @@ Tile::Tile(TtGrid *grid, int activity)
     }
 
     activityIndex = activity;
+    activityPart = activity_part;
     set_background("FFFFFF"); // opaque white
     QJsonObject settings = grid->settings;
     set_border(settings.value("TILE_BORDER_WIDTH").toDouble(TILE_BORDER_WIDTH),
@@ -264,6 +266,7 @@ Tile::Tile(TtGrid *grid, int activity)
 
 void Tile::place(qreal x, qreal y, qreal w, qreal h)
 {
+    qDebug() << "Place" << activityIndex << x << y;
     /* The QGraphicsItem method "setPos" takes "float" coordinates,
      * either as setPos(x, y) or as setPos(QPointF). It sets the position
      * of the item in parent coordinates. For items with no parent, scene

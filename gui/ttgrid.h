@@ -75,7 +75,7 @@ public:
 
     std::function<void (HoverRectItem*, bool)> hover_handler;
 
-    QHash<int, QList<Tile *>> lid2tiles;
+    QHash<int, QList<Tile *>> aix2tiles;
 
 private:
     void handle_click(QList<QGraphicsItem *> items, int keymod);
@@ -102,11 +102,12 @@ public:
         return Type;
     }
 
-    Tile(TtGrid *grid, int activity);
+    Tile(TtGrid *grid, int activity, int activity_part = 0);
 
     void place(qreal x, qreal y, qreal w, qreal h);
 
     int activityIndex;
+    int activityPart;
     QString ref;
     int length;
     int divs;
