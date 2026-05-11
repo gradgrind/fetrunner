@@ -55,8 +55,11 @@ void TtBase::set_activity(const QString &val)
 {
     auto vlist = val.split(":");
     QList<int> tlist;
-    for (const auto &t : vlist.at(2).split(",")) {
-        tlist.append(t.toInt());
+    auto tt = vlist.at(2);
+    if (!tt.isEmpty()) {
+        for (const auto &t : tt.split(",")) {
+            tlist.append(t.toInt());
+        }
     }
     QList<int> aglist;
     for (const auto &ag : vlist.at(3).split(",")) {

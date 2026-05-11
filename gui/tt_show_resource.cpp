@@ -5,8 +5,11 @@
 int TtBase::place_activity(const QString &val) {
     auto vlist = val.split(":");
     QList<int> rlist;
-    for (const auto &r : vlist.at(3).split(",")) {
-        rlist.append(r.toInt());
+    auto rt = vlist.at(3);
+    if (!rt.isEmpty()) {
+        for (const auto &r : rt.split(",")) {
+            rlist.append(r.toInt());
+        }
     }
     auto aix = vlist.at(0).toInt();
     auto a = activities[aix];
