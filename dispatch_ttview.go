@@ -45,7 +45,7 @@ func get_hours(op *DispatchOp) {
 
 func get_classes(op *DispatchOp) {
 	lres := autotimetable.AutoTt.GetLastResult()
-	for _, cls := range lres.Classes {
+	for cix, cls := range lres.Classes {
 		//TODO? If I could ensure that the atomic groups of a class are consecutive,
 		// an alternative would be to include just start and end index here.
 		ailist := []string{}
@@ -58,7 +58,13 @@ func get_classes(op *DispatchOp) {
 		}
 		ais := strings.Join(ailist, ",")
 		gs := strings.Join(glist, ",")
-		base.LogResult(op.Op, cls.Tag+"::"+ais+":"+gs)
+		divs := autotimetable.ClassDivisions(lres, cix)
+		dfmt := []string{}
+		for _, div := range divs {
+			dfmt = append(dfmt, strings.Join(div, ","))
+		}
+		alldivs := strings.Join(dfmt, ";")
+		base.LogResult(op.Op, cls.Tag+"::"+ais+":"+gs+":"+alldivs)
 	}
 }
 

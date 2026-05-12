@@ -183,6 +183,7 @@ func main() {
 		fetrunner.Dispatch("TT_TEACHER_PLACEMENTS " + strconv.Itoa(len(lres.Teachers)/2))
 		fetrunner.Dispatch("TT_ROOM_PLACEMENTS " + strconv.Itoa(len(lres.Rooms)/2))
 		*/
+		//fetrunner.Dispatch("TT_CLASSES")
 	}
 }
 

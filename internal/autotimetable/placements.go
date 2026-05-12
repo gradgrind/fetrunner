@@ -1,6 +1,7 @@
 package autotimetable
 
 import (
+	"cmp"
 	"fmt"
 	"slices"
 	"strconv"
@@ -32,17 +33,6 @@ Whether to build indexable data structures from the placements, or just search
 the list each time?
 
 */
-
-type PlacementData struct {
-	Subject  string
-	Day      int
-	Hour     int
-	Length   int
-	Teachers []string
-	Groups   []string
-	Rooms    []string
-	Atomics  []int
-}
 
 func SerializePlacement(p *TtActivityPlacement) string {
 	rlist := []string{}
@@ -98,4 +88,115 @@ func ClassPlacements(last_result *Result, cix int) []*TtActivityPlacement {
 		}
 	}
 	return plist
+}
+
+//TODO: Buffer the class view placements, so that fractional tiles can be
+// constructed and placed. It would be useful to have ordered lists of
+// divisions, if it is possible to derive these from the atomic groups of
+// each student group.
+
+func ClassDivisions(last_result *Result, cix int) [][]string {
+	clist := last_result.Classes
+	cdata := clist[cix]
+	//caglist := cdata.AtomicIndexes
+	cgrestlist := cdata.Groups
+
+	dglist := []string{}
+	daglist := []AtomicIndex{}
+	glists := build_divisions(cgrestlist, daglist, dglist)
+	// This list can contain elements which are subsets of other elements These
+	// should be removed.
+	// Sort the group lists alphabetically.
+	for _, gl := range glists {
+		slices.Sort(gl)
+	}
+	// Sort the divisions according to list length.
+	slices.SortFunc(glists, func(a, b []string) int {
+		return cmp.Compare(len(a), len(b))
+	})
+	// Eliminate divisions which are subsets.
+	divs := [][]string{}
+loop1:
+	for i, gsl := range glists {
+		for _, gsl2 := range glists[i+1:] {
+			if len(gsl) < len(gsl2) {
+				if subset(gsl2, gsl) {
+					continue loop1
+				}
+			}
+		}
+		divs = append(divs, gsl)
+	}
+	return divs
+}
+
+func build_divisions(
+	cgrestlist []*TtGroup,
+	daglist []AtomicIndex,
+	dglist []string,
+) [][]string {
+	dglists := [][]string{}
+	cgr := []string{}
+	for _, g := range cgrestlist {
+		cgr = append(cgr, g.Tag)
+	}
+	for i, g := range cgrestlist {
+		if no_intersection(g.AtomicIndexes, daglist) {
+			daglist2 := append(slices.Clone(daglist), g.AtomicIndexes...)
+			slices.Sort(daglist2)
+			dglist2 := append(slices.Clone(dglist), g.Tag)
+			new_glist := build_divisions(cgrestlist[i+1:], daglist2, dglist2)
+			dglists = append(dglists, new_glist...)
+		}
+	}
+	if len(dglists) == 0 && len(dglist) != 0 {
+		dglists = append(dglists, dglist)
+	}
+	return dglists
+}
+
+// Both lists must be sorted (ascending)
+func no_intersection(a []int, b []int) bool {
+	blen := len(b)
+	bix := 0
+	for _, ag := range a {
+		for {
+			if bix == blen {
+				return true
+			}
+			bg := b[bix]
+			if bg > ag {
+				break
+			}
+			if bg == ag {
+				return false
+			}
+			bix++
+		}
+	}
+	return true
+}
+
+// Both lists must be sorted (ascending)
+func subset(super []string, sub []string) bool {
+	sublen := len(sub)
+	subix := 0
+	for _, g := range super {
+		for {
+			if subix == sublen {
+				// All `bg` found
+				return true
+			}
+			bg := sub[subix]
+			if bg < g {
+				return false
+			}
+			if bg != g {
+				break // get next `g`
+			}
+			// match, get next `bg`
+			subix++
+		}
+	}
+	return false
 }
