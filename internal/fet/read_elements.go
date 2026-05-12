@@ -100,6 +100,7 @@ func (sourcefet *TtSourceFet) read_elements(fetroot *etree.Element) {
 							ClassIndex:    cix,
 							AtomicIndexes: agis,
 						}
+						fmt.Printf("§§1 %s %s\n", gtag, cg.Tag)
 						class_groups = append(class_groups, cg)
 						atomic_groups = append(atomic_groups, gtag)
 					} else {
@@ -114,27 +115,30 @@ func (sourcefet *TtSourceFet) read_elements(fetroot *etree.Element) {
 									panic("TODO: invalid year/group/subgroup structure")
 								}
 								agi = agil[0]
+								fmt.Printf("§§2a %s %d\n", sgtag, agi)
 							} else {
 								agis := []int{agi}
 								students2atomics[sgtag] = agis
 								//fmt.Printf("§ %s -> %v\n", sgtag, students2atomics[sgtag])
 								atomic_groups = append(atomic_groups, sgtag)
 								class_ags = append(class_ags, agi)
-								class_groups = append(class_groups,
-									&autotimetable.TtGroup{
-										Tag:           groupStripClass(sgtag), //TODO?
-										ClassIndex:    cix,
-										AtomicIndexes: agis,
-									})
+								cg := &autotimetable.TtGroup{
+									Tag:           groupStripClass(sgtag), //TODO?
+									ClassIndex:    cix,
+									AtomicIndexes: agis,
+								}
+								class_groups = append(class_groups, cg)
+								fmt.Printf("§§2b %s %d %s\n", sgtag, agi, cg.Tag)
 							}
 							group_ags = append(group_ags, agi)
-							class_groups = append(class_groups,
-								&autotimetable.TtGroup{
-									Tag:           groupStripClass(gtag),
-									ClassIndex:    cix,
-									AtomicIndexes: group_ags,
-								})
 						}
+						class_groups = append(class_groups,
+							&autotimetable.TtGroup{
+								Tag:           groupStripClass(gtag),
+								ClassIndex:    cix,
+								AtomicIndexes: group_ags,
+							})
+						fmt.Printf("§§3 %s %+v\n", gtag, group_ags)
 						students2atomics[gtag] = group_ags
 						//fmt.Printf("§ %s -> %v\n", gtag, students2atomics[gtag])
 					}

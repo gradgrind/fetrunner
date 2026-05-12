@@ -187,7 +187,7 @@ func main() {
 		//fetrunner.Dispatch("TT_CLASSES")
 		lres := autotimetable.AutoTt.GetLastResult()
 		for _, c := range lres.Classes {
-			fmt.Printf("Class %s %+v %+v:\n", c.Tag, c.AtomicIndexes, c.Groups)
+			fmt.Printf("Class %s %+v:\n", c.Tag, c.AtomicIndexes)
 
 			autotimetable.Build_divisions2(c.Groups, c.AtomicIndexes)
 		}

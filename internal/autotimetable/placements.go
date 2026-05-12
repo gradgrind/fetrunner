@@ -168,22 +168,25 @@ func build_divisions(
 	return dglists
 }
 
-// TODO: remove duplicates
+// TODO: Not quite working ... try it on _examples2/tt1a.fet
+// It's not necessarily building divisions, rather sets of "somewhat" compatible groups.
 func Build_divisions2(glist []*TtGroup, ags []ActivityIndex) [][]string {
-	dglists := [][]string{}
-
 	// Map each atomic group to the groups including it
 	agmap := map[ActivityIndex][]int{}
 	// Make a vector of all groups for each group, marking "blocked" ones,
 	// i.e. those sharing an atomic group
 	gblock := make([][]bool, len(glist))
+	gtags := make([]string, len(glist))
 	for gix, g := range glist {
+		gtags[gix] = g.Tag
 		for _, ag := range g.AtomicIndexes {
 			agmap[ag] = append(agmap[ag], gix)
 		}
 		gblock[gix] = make([]bool, len(glist))
 	}
-	for _, gixlist := range agmap {
+	fmt.Printf(" -- groups: %+v\n", gtags)
+	for ag, gixlist := range agmap {
+		fmt.Printf("  * ag: %d %+v\n", ag, gixlist)
 		for _, gix := range gixlist {
 			gb := gblock[gix]
 			for _, gix2 := range gixlist {
@@ -194,6 +197,7 @@ func Build_divisions2(glist []*TtGroup, ags []ActivityIndex) [][]string {
 		}
 	}
 	dgilist := [][]int{}
+next_d:
 	for _, gixlist := range gblock {
 		d := []int{}
 		for gix, blocked := range gixlist {
@@ -203,12 +207,18 @@ func Build_divisions2(glist []*TtGroup, ags []ActivityIndex) [][]string {
 		}
 
 		if len(d) != 0 {
-			//TODO No duplicates ...
+			// Ignore duplicates
+			for _, dgx := range dgilist {
+				if slices.Equal(d, dgx) {
+					continue next_d
+				}
+			}
 			dgilist = append(dgilist, d)
 			//fmt.Printf("§+ %+v\n", d)
 		}
 	}
 
+	dglists := [][]string{}
 	for _, gixl := range dgilist {
 		gl := []string{}
 		for _, gix := range gixl {
@@ -217,7 +227,6 @@ func Build_divisions2(glist []*TtGroup, ags []ActivityIndex) [][]string {
 		dglists = append(dglists, gl)
 		fmt.Printf("§+ %+v\n", gl)
 	}
-
 	return dglists
 }
 
