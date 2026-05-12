@@ -59,6 +59,7 @@ package main
 import (
 	"errors"
 	"fetrunner"
+	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
 	"fetrunner/internal/fet"
 	"flag"
@@ -184,6 +185,12 @@ func main() {
 		fetrunner.Dispatch("TT_ROOM_PLACEMENTS " + strconv.Itoa(len(lres.Rooms)/2))
 		*/
 		//fetrunner.Dispatch("TT_CLASSES")
+		lres := autotimetable.AutoTt.GetLastResult()
+		for _, c := range lres.Classes {
+			fmt.Printf("Class %s %+v %+v:\n", c.Tag, c.AtomicIndexes, c.Groups)
+
+			autotimetable.Build_divisions2(c.Groups, c.AtomicIndexes)
+		}
 	}
 }
 

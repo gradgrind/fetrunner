@@ -100,6 +100,7 @@ func ClassDivisions(last_result *Result, cix int) [][]string {
 	cdata := clist[cix]
 	//caglist := cdata.AtomicIndexes
 	cgrestlist := cdata.Groups
+	fmt.Printf("§A\n")
 
 	dglist := []string{}
 	daglist := []AtomicIndex{}
@@ -130,6 +131,8 @@ loop1:
 	return divs
 }
 
+var bdcount int = 0
+
 func build_divisions(
 	cgrestlist []*TtGroup,
 	daglist []AtomicIndex,
@@ -140,6 +143,16 @@ func build_divisions(
 	for _, g := range cgrestlist {
 		cgr = append(cgr, g.Tag)
 	}
+
+	//TODO: The problem with this algorithm is that it explodes when fed a lot of
+	// combinable groups.
+
+	bdcount++
+	fmt.Printf("§B %d %d %#v\n", bdcount, len(cgrestlist), cgr)
+	if bdcount == 100 {
+		panic("X")
+	}
+
 	for i, g := range cgrestlist {
 		if no_intersection(g.AtomicIndexes, daglist) {
 			daglist2 := append(slices.Clone(daglist), g.AtomicIndexes...)
@@ -152,6 +165,59 @@ func build_divisions(
 	if len(dglists) == 0 && len(dglist) != 0 {
 		dglists = append(dglists, dglist)
 	}
+	return dglists
+}
+
+// TODO: remove duplicates
+func Build_divisions2(glist []*TtGroup, ags []ActivityIndex) [][]string {
+	dglists := [][]string{}
+
+	// Map each atomic group to the groups including it
+	agmap := map[ActivityIndex][]int{}
+	// Make a vector of all groups for each group, marking "blocked" ones,
+	// i.e. those sharing an atomic group
+	gblock := make([][]bool, len(glist))
+	for gix, g := range glist {
+		for _, ag := range g.AtomicIndexes {
+			agmap[ag] = append(agmap[ag], gix)
+		}
+		gblock[gix] = make([]bool, len(glist))
+	}
+	for _, gixlist := range agmap {
+		for _, gix := range gixlist {
+			gb := gblock[gix]
+			for _, gix2 := range gixlist {
+				if gix2 != gix {
+					gb[gix2] = true
+				}
+			}
+		}
+	}
+	dgilist := [][]int{}
+	for _, gixlist := range gblock {
+		d := []int{}
+		for gix, blocked := range gixlist {
+			if !blocked {
+				d = append(d, gix)
+			}
+		}
+
+		if len(d) != 0 {
+			//TODO No duplicates ...
+			dgilist = append(dgilist, d)
+			//fmt.Printf("§+ %+v\n", d)
+		}
+	}
+
+	for _, gixl := range dgilist {
+		gl := []string{}
+		for _, gix := range gixl {
+			gl = append(gl, glist[gix].Tag)
+		}
+		dglists = append(dglists, gl)
+		fmt.Printf("§+ %+v\n", gl)
+	}
+
 	return dglists
 }
 
