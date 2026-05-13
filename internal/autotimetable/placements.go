@@ -168,64 +168,87 @@ func build_divisions(
 	return dglists
 }
 
-// TODO: Not quite working ... try it on _examples2/tt1a.fet
-// It's not necessarily building divisions, rather sets of "somewhat" compatible groups.
-func Build_divisions2(glist []*TtGroup, ags []ActivityIndex) [][]string {
-	// Map each atomic group to the groups including it
-	agmap := map[ActivityIndex][]int{}
-	// Make a vector of all groups for each group, marking "blocked" ones,
-	// i.e. those sharing an atomic group
-	gblock := make([][]bool, len(glist))
-	gtags := make([]string, len(glist))
-	for gix, g := range glist {
-		gtags[gix] = g.Tag
+// TODO: For DB input (e.g. w365), it is possible that not all atomic groups
+// have corresponding class groups...
+// TODO: Check that the fet reader is handling the groups correctly in _examples/test03.
+func Build_divisions2(glist []*TtGroup, ags []AtomicIndex) [][]string {
+	if len(glist) == 0 {
+		return nil
+	}
+	// Convert atomic groups to indexes
+	ag2agix := map[AtomicIndex]int{}
+	for i, ag := range ags {
+		ag2agix[ag] = i
+	}
+
+	// Collect single-ag groups and multi-ag groups
+	// Build first division, containing all single-ag groups
+	agix2g := make([]string, len(ags))
+	gmulti := []*TtGroup{}
+	dglist := []string{}
+	for _, g := range glist {
+		agl := g.AtomicIndexes
+		if len(agl) == 1 {
+			agix2g[ag2agix[agl[0]]] = g.Tag
+			dglist = append(dglist, g.Tag)
+		} else {
+			gmulti = append(gmulti, g)
+		}
+	}
+	if len(dglist) != len(ags) {
+		// This should not be possible ...
+		panic("Not all atomic indexes have corresponding groups")
+	}
+	dglists := [][]string{dglist}
+
+	// Substitute multi-ag groups where possible to build further divisions
+
+	// The div structure contains the blocked agixs and the list of multi-ag groups
+	type div struct {
+		blocked []bool
+		glist   []string
+	}
+
+	div0 := &div{blocked: make([]bool, len(ags))}
+	dlists := []*div{div0}
+	for _, g := range gmulti {
+		gagixs := []int{}
 		for _, ag := range g.AtomicIndexes {
-			agmap[ag] = append(agmap[ag], gix)
+			gagixs = append(gagixs, ag2agix[ag])
 		}
-		gblock[gix] = make([]bool, len(glist))
-	}
-	fmt.Printf(" -- groups: %+v\n", gtags)
-	for ag, gixlist := range agmap {
-		fmt.Printf("  * ag: %d %+v\n", ag, gixlist)
-		for _, gix := range gixlist {
-			gb := gblock[gix]
-			for _, gix2 := range gixlist {
-				if gix2 != gix {
-					gb[gix2] = true
+		newdivs := []*div{}
+	next_div:
+		for _, divx := range dlists {
+			// Check compatibility, if OK add a new division
+			for _, agix := range gagixs {
+				if divx.blocked[agix] {
+					continue next_div
 				}
 			}
-		}
-	}
-	dgilist := [][]int{}
-next_d:
-	for _, gixlist := range gblock {
-		d := []int{}
-		for gix, blocked := range gixlist {
-			if !blocked {
-				d = append(d, gix)
+			newdiv := &div{
+				blocked: slices.Clone(divx.blocked),
+				glist:   slices.Clone(divx.glist)}
+			for _, agix := range gagixs {
+				newdiv.blocked[agix] = true
 			}
-		}
+			newdiv.glist = append(newdiv.glist, g.Tag)
+			newdivs = append(newdivs, newdiv)
 
-		if len(d) != 0 {
-			// Ignore duplicates
-			for _, dgx := range dgilist {
-				if slices.Equal(d, dgx) {
-					continue next_d
+			// Build group list
+			glist := []string{}
+			for agix, blk := range newdiv.blocked {
+				if !blk {
+					glist = append(glist, agix2g[agix])
 				}
 			}
-			dgilist = append(dgilist, d)
-			//fmt.Printf("§+ %+v\n", d)
+			glist = append(glist, newdiv.glist...)
+			dglists = append(dglists, glist)
 		}
+		dlists = append(dlists, newdivs...)
 	}
-
-	dglists := [][]string{}
-	for _, gixl := range dgilist {
-		gl := []string{}
-		for _, gix := range gixl {
-			gl = append(gl, glist[gix].Tag)
-		}
-		dglists = append(dglists, gl)
-		fmt.Printf("§+ %+v\n", gl)
+	//TODO
+	for _, glist := range dglists {
+		fmt.Printf(" --> %+v\n", glist)
 	}
 	return dglists
 }
