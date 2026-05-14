@@ -90,100 +90,87 @@ func ClassPlacements(last_result *Result, cix int) []*TtActivityPlacement {
 	return plist
 }
 
-//TODO: Buffer the class view placements, so that fractional tiles can be
+// TODO: Buffer the class view placements, so that fractional tiles can be
 // constructed and placed. It would be useful to have ordered lists of
 // divisions, if it is possible to derive these from the atomic groups of
 // each student group.
-
-func ClassDivisions(last_result *Result, cix int) [][]string {
-	clist := last_result.Classes
-	cdata := clist[cix]
-	//caglist := cdata.AtomicIndexes
-	cgrestlist := cdata.Groups
-	fmt.Printf("§A\n")
-
-	dglist := []string{}
-	daglist := []AtomicIndex{}
-	glists := build_divisions(cgrestlist, daglist, dglist)
-	// This list can contain elements which are subsets of other elements These
-	// should be removed.
-	// Sort the group lists alphabetically.
-	for _, gl := range glists {
-		slices.Sort(gl)
+func weekbuffer(last_result *Result) {
+	ndays := len(last_result.Days)
+	nhours := len(last_result.Hours)
+	type ap struct {
+		p *TtActivityPlacement
+		n int // index, for length > 1 (first part has n == 0)
 	}
-	// Sort the divisions according to list length.
-	slices.SortFunc(glists, func(a, b []string) int {
-		return cmp.Compare(len(a), len(b))
-	})
-	// Eliminate divisions which are subsets.
-	divs := [][]string{}
-loop1:
-	for i, gsl := range glists {
-		for _, gsl2 := range glists[i+1:] {
-			if len(gsl) < len(gsl2) {
-				if subset(gsl2, gsl) {
-					continue loop1
-				}
+	//TODO: Maybe make space for the division lists in the array slots?
+	type period struct {
+		divs [][]string
+		aps  []ap
+	}
+	week := make([][]period, ndays)
+	for d := range ndays {
+		week[d] = make([]period, nhours)
+	}
+
+	activities := last_result.Activities
+	plist := []*TtActivityPlacement{}
+	for _, p := range plist {
+		a := activities[p.Activity]
+		for i := range a.Duration {
+			week[p.Day][p.Hour].aps = append(week[p.Day][p.Hour+i].aps, ap{p, i})
+		}
+	}
+
+	//TODO: Discover division and allocate the activities to it?
+	// Deal with long activities.
+	for _, dvec := range week {
+		h := 0
+
+		//TODO: I need to handle length > 1!
+		glist := []string{}
+		for _, apx := range dvec[h] {
+			a := activities[apx.p.Activity]
+			aglist := []string{}
+			for _, g := range a.Groups {
+				//TODO: Special handling for full class?
+				//TODO: Filter for just the present class ...
+
+				aglist = append(aglist, g.Tag)
+			}
+			glist = append(glist, aglist...)
+		}
+		//TODO: Seek matching division
+		divs := [][]string{}
+		thisdiv := [][]string{}
+		for _, div := range divs {
+			if slices.Equal(glist, div) {
+				thisdiv = append(thisdiv, div)
+			} else if subset(glist, div) {
+				thisdiv = append(thisdiv, div)
 			}
 		}
-		divs = append(divs, gsl)
-	}
-	return divs
-}
-
-var bdcount int = 0
-
-func build_divisions(
-	cgrestlist []*TtGroup,
-	daglist []AtomicIndex,
-	dglist []string,
-) [][]string {
-	dglists := [][]string{}
-	cgr := []string{}
-	for _, g := range cgrestlist {
-		cgr = append(cgr, g.Tag)
-	}
-
-	//TODO: The problem with this algorithm is that it explodes when fed a lot of
-	// combinable groups.
-
-	bdcount++
-	fmt.Printf("§B %d %d %#v\n", bdcount, len(cgrestlist), cgr)
-	if bdcount == 100 {
-		panic("X")
-	}
-
-	for i, g := range cgrestlist {
-		if no_intersection(g.AtomicIndexes, daglist) {
-			daglist2 := append(slices.Clone(daglist), g.AtomicIndexes...)
-			slices.Sort(daglist2)
-			dglist2 := append(slices.Clone(dglist), g.Tag)
-			new_glist := build_divisions(cgrestlist[i+1:], daglist2, dglist2)
-			dglists = append(dglists, new_glist...)
+		if len(thisdiv) == 0 {
+			panic("Found no division")
 		}
+		//TODO ...
 	}
-	if len(dglists) == 0 && len(dglist) != 0 {
-		dglists = append(dglists, dglist)
-	}
-	return dglists
 }
 
-// TODO: For DB input (e.g. w365), it is possible that not all atomic groups
-// have corresponding class groups...
-// TODO: Check that the fet reader is handling the groups correctly in _examples/test03.
-func Build_divisions2(glist []*TtGroup, ags []AtomicIndex) [][]string {
+func ClassDivisions(last_result *Result, cix int) [][]string {
+	c := last_result.Classes[cix]
+	glist := c.Groups
 	if len(glist) == 0 {
 		return nil
 	}
 	// Convert atomic groups to indexes
+	ags := c.AtomicIndexes
 	ag2agix := map[AtomicIndex]int{}
 	for i, ag := range ags {
 		ag2agix[ag] = i
 	}
 
+	agix2g := make([]string, len(ags)) // map ag indexes to single-ag groups
 	// Collect single-ag groups and multi-ag groups
-	// Build first division, containing all single-ag groups
-	agix2g := make([]string, len(ags))
+	// Build first (potentially incomplete) division, containing all single-ag groups
 	gmulti := []*TtGroup{}
 	dglist := []string{}
 	for _, g := range glist {
@@ -194,10 +181,6 @@ func Build_divisions2(glist []*TtGroup, ags []AtomicIndex) [][]string {
 		} else {
 			gmulti = append(gmulti, g)
 		}
-	}
-	if len(dglist) != len(ags) {
-		// This should not be possible ...
-		panic("Not all atomic indexes have corresponding groups")
 	}
 	dglists := [][]string{dglist}
 
@@ -238,7 +221,12 @@ func Build_divisions2(glist []*TtGroup, ags []AtomicIndex) [][]string {
 			glist := []string{}
 			for agix, blk := range newdiv.blocked {
 				if !blk {
-					glist = append(glist, agix2g[agix])
+					gg := agix2g[agix]
+					if gg != "" {
+						//TODO: flag this division as incomplete? (It might be
+						// desirable to show this in a timetable display.)
+						glist = append(glist, gg)
+					}
 				}
 			}
 			glist = append(glist, newdiv.glist...)
@@ -246,13 +234,34 @@ func Build_divisions2(glist []*TtGroup, ags []AtomicIndex) [][]string {
 		}
 		dlists = append(dlists, newdivs...)
 	}
-	//TODO
-	for _, glist := range dglists {
-		fmt.Printf(" --> %+v\n", glist)
+
+	// `dglists` list can contain elements which are subsets of other elements These
+	// should be removed.
+	// Sort the group lists alphabetically.
+	for _, gl := range dglists {
+		slices.Sort(gl)
 	}
-	return dglists
+	// Sort the divisions according to list length.
+	slices.SortFunc(dglists, func(a, b []string) int {
+		return cmp.Compare(len(a), len(b))
+	})
+	// Eliminate divisions which are subsets.
+	divs := [][]string{}
+loop1:
+	for i, gsl := range dglists {
+		for _, gsl2 := range dglists[i+1:] {
+			if len(gsl) < len(gsl2) {
+				if subset(gsl2, gsl) {
+					continue loop1
+				}
+			}
+		}
+		divs = append(divs, gsl)
+	}
+	return divs
 }
 
+/* TODO--?
 // Both lists must be sorted (ascending)
 func no_intersection(a []int, b []int) bool {
 	blen := len(b)
@@ -274,6 +283,7 @@ func no_intersection(a []int, b []int) bool {
 	}
 	return true
 }
+*/
 
 // Both lists must be sorted (ascending)
 func subset(super []string, sub []string) bool {

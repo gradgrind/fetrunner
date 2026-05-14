@@ -100,7 +100,6 @@ func (sourcefet *TtSourceFet) read_elements(fetroot *etree.Element) {
 							ClassIndex:    cix,
 							AtomicIndexes: agis,
 						}
-						fmt.Printf("§§1 %s %s\n", gtag, cg.Tag)
 						class_groups = append(class_groups, cg)
 						atomic_groups = append(atomic_groups, gtag)
 					} else {
@@ -115,7 +114,6 @@ func (sourcefet *TtSourceFet) read_elements(fetroot *etree.Element) {
 									panic("TODO: invalid year/group/subgroup structure")
 								}
 								agi = agil[0]
-								fmt.Printf("§§2a %s %d\n", sgtag, agi)
 							} else {
 								agis := []int{agi}
 								students2atomics[sgtag] = agis
@@ -128,7 +126,6 @@ func (sourcefet *TtSourceFet) read_elements(fetroot *etree.Element) {
 									AtomicIndexes: agis,
 								}
 								class_groups = append(class_groups, cg)
-								fmt.Printf("§§2b %s %d %s\n", sgtag, agi, cg.Tag)
 							}
 							group_ags = append(group_ags, agi)
 						}
@@ -138,7 +135,6 @@ func (sourcefet *TtSourceFet) read_elements(fetroot *etree.Element) {
 								ClassIndex:    cix,
 								AtomicIndexes: group_ags,
 							})
-						fmt.Printf("§§3 %s %+v\n", gtag, group_ags)
 						students2atomics[gtag] = group_ags
 						//fmt.Printf("§ %s -> %v\n", gtag, students2atomics[gtag])
 					}

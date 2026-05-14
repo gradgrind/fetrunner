@@ -185,11 +185,15 @@ func main() {
 		fetrunner.Dispatch("TT_ROOM_PLACEMENTS " + strconv.Itoa(len(lres.Rooms)/2))
 		*/
 		//fetrunner.Dispatch("TT_CLASSES")
+		//TODO--
 		lres := autotimetable.AutoTt.GetLastResult()
-		for _, c := range lres.Classes {
+		for cix, c := range lres.Classes {
 			fmt.Printf("Class %s %+v:\n", c.Tag, c.AtomicIndexes)
+			dglists := autotimetable.ClassDivisions(lres, cix)
+			for _, glist := range dglists {
+				fmt.Printf(" --> %+v\n", glist)
+			}
 
-			autotimetable.Build_divisions2(c.Groups, c.AtomicIndexes)
 		}
 	}
 }
