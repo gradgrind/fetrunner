@@ -103,7 +103,7 @@ func weekbuffer(last_result *Result) {
 	}
 	//TODO: Maybe make space for the division lists in the array slots?
 	type period struct {
-		divs [][]string
+		divs []int
 		aps  []ap
 	}
 	week := make([][]period, ndays)
@@ -120,38 +120,38 @@ func weekbuffer(last_result *Result) {
 		}
 	}
 
-	//TODO: Discover division and allocate the activities to it?
-	// Deal with long activities.
-	for _, dvec := range week {
-		h := 0
+	// Discover possible divisions.
+	divs := [][]string{}
+	for h, dvec := range week {
+		for _, pdata := range dvec {
+			//TODO: I need to handle length > 1!
+			glist := []string{}
+			for _, apx := range pdata.aps {
+				a := activities[apx.p.Activity]
+				aglist := []string{}
+				for _, g := range a.Groups {
+					//TODO: Special handling for full class?
+					//TODO: Filter for just the present class ...
 
-		//TODO: I need to handle length > 1!
-		glist := []string{}
-		for _, apx := range dvec[h] {
-			a := activities[apx.p.Activity]
-			aglist := []string{}
-			for _, g := range a.Groups {
-				//TODO: Special handling for full class?
-				//TODO: Filter for just the present class ...
-
-				aglist = append(aglist, g.Tag)
+					aglist = append(aglist, g.Tag)
+				}
+				glist = append(glist, aglist...)
 			}
-			glist = append(glist, aglist...)
-		}
-		//TODO: Seek matching division
-		divs := [][]string{}
-		thisdiv := [][]string{}
-		for _, div := range divs {
-			if slices.Equal(glist, div) {
-				thisdiv = append(thisdiv, div)
-			} else if subset(glist, div) {
-				thisdiv = append(thisdiv, div)
+			//TODO: Seek matching division
+			thisdiv := []int{}
+			for d, div := range divs {
+				if slices.Equal(glist, div) {
+					thisdiv = append(thisdiv, d)
+				} else if subset(glist, div) {
+					thisdiv = append(thisdiv, d)
+				}
 			}
+			if len(thisdiv) == 0 {
+				panic("Found no division")
+			}
+			dvec[h].divs = thisdiv
+			//TODO ...
 		}
-		if len(thisdiv) == 0 {
-			panic("Found no division")
-		}
-		//TODO ...
 	}
 }
 
