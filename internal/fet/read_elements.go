@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/beevik/etree"
 )
@@ -67,11 +66,14 @@ func (sourcefet *TtSourceFet) read_elements(fetroot *etree.Element) {
 	}
 
 	{
+		//TODO: Each "Year" can have its own "Separator" in FET, so perhaps this should
+		// be available in the TtClass (or TtGroup) items?
 		items := []*autotimetable.TtClass{}
 		atomic_groups := []string{}
 		students2atomics := map[string][]int{}
 		for cix, e := range fetroot.SelectElement("Students_List").SelectElements("Year") {
 			id := e.SelectElement("Name").Text()
+			cgsep := e.SelectElement("Separator").Text()
 
 			// Read groups and subgroups, collect atomic groups
 			class_ags := []int{}
@@ -96,7 +98,7 @@ func (sourcefet *TtSourceFet) read_elements(fetroot *etree.Element) {
 						//fmt.Printf("§ %s -> %v\n", gtag, students2atomics[gtag])
 						class_ags = append(class_ags, agi)
 						cg := &autotimetable.TtGroup{
-							Tag:           groupStripClass(gtag),
+							Tag:           gtag,
 							ClassIndex:    cix,
 							AtomicIndexes: agis,
 						}
@@ -121,7 +123,7 @@ func (sourcefet *TtSourceFet) read_elements(fetroot *etree.Element) {
 								atomic_groups = append(atomic_groups, sgtag)
 								class_ags = append(class_ags, agi)
 								cg := &autotimetable.TtGroup{
-									Tag:           groupStripClass(sgtag), //TODO?
+									Tag:           sgtag, //TODO?
 									ClassIndex:    cix,
 									AtomicIndexes: agis,
 								}
@@ -131,7 +133,7 @@ func (sourcefet *TtSourceFet) read_elements(fetroot *etree.Element) {
 						}
 						class_groups = append(class_groups,
 							&autotimetable.TtGroup{
-								Tag:           groupStripClass(gtag),
+								Tag:           gtag,
 								ClassIndex:    cix,
 								AtomicIndexes: group_ags,
 							})
@@ -146,28 +148,14 @@ func (sourcefet *TtSourceFet) read_elements(fetroot *etree.Element) {
 			items = append(items, &autotimetable.TtClass{
 				Id:            base.NodeRef("Class:" + id),
 				Tag:           id,
+				Separator:     cgsep,
 				AtomicIndexes: class_ags,
 				Groups:        class_groups,
 			})
-
-			//TODO: The group tags may well have the class prefix, which I am
-			// assuming to have a "." separator, at present, though some
-			// flexibility might be good (a strip_class funtion?).
 		}
 		sourcefet.classes = items
 		sourcefet.atomic_groups = atomic_groups
 		sourcefet.students2atomics = students2atomics
-	}
-}
-
-var CLASS_SEPARATOR = "."
-
-func groupStripClass(cg string) string {
-	b, a, ok := strings.Cut(cg, CLASS_SEPARATOR)
-	if ok {
-		return a
-	} else {
-		return b
 	}
 }
 

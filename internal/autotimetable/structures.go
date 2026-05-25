@@ -148,13 +148,14 @@ type AtomicIndex = int
 type TtClass struct {
 	Id            base.NodeRef
 	Tag           string // the (short) name of the class
+	Separator     string // separator betwee class (prefix) and group part of tag
 	AtomicIndexes []AtomicIndex
 	Groups        []*TtGroup
 }
 
 type TtGroup struct {
 	Id            base.NodeRef
-	Tag           string // the (short) name of the group (without class)
+	Tag           string // the (short) name of the group (with class)
 	ClassIndex    int
 	AtomicIndexes []AtomicIndex
 }
