@@ -65,10 +65,12 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"maps"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 	"syscall"
@@ -187,11 +189,45 @@ func main() {
 		//fetrunner.Dispatch("TT_CLASSES")
 		//TODO--
 		lres := autotimetable.AutoTt.GetLastResult()
+
+		gmap := map[string]int{}
+		for _, a := range lres.Activities {
+			for _, g := range a.Groups {
+				gmap[g.Tag] = -1
+			}
+		}
+		for _, g := range slices.Sorted(maps.Keys(gmap)) {
+			fmt.Println("Group:", g)
+		}
+
 		for cix, c := range lres.Classes {
 			fmt.Printf("Class %s %+v:\n", c.Tag, c.AtomicIndexes)
 			dglists := autotimetable.ClassDivisions(lres, cix)
+			udglists := [][]string{}
+			uxdglists := [][]string{}
+			uxxdglists := [][]string{}
 			for _, glist := range dglists {
-				fmt.Printf(" --> %+v\n", glist)
+				uglist := []string{}
+				for _, g := range glist {
+					if c, ok := gmap[g]; ok {
+						// group is used by an activity
+						uglist = append(uglist, g)
+						if c != -1 && c != cix {
+							panic("Group defined in two classes: " + g)
+						}
+						gmap[g] = cix
+					}
+					//TODO: The question is whether to include a division where not
+					// all the groups are used. Perhaps the answer is no, so long as
+					// there is an included division containing the used groups.
+				}
+				if len(uglist) == len(glist) {
+					udglists = append(udglists, glist)
+				} else {
+					uxdglists = append(uxdglists, uglist)
+					uxxdglists = append(uxxdglists, glist)
+				}
+				fmt.Printf(" --> %+v // %+v\n", uglist, glist)
 			}
 
 		}

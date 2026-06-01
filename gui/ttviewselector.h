@@ -1,8 +1,8 @@
 #ifndef TTVIEWSELECTOR_H
 #define TTVIEWSELECTOR_H
 
-#include <QWidget>
 #include <QButtonGroup>
+#include <QTreeWidget>
 #include "ttview.h"
 
 namespace Ui {
@@ -30,7 +30,7 @@ private slots:
     void select_teacher_view();
     void select_room_view();
     void select_class_view();
-    void chosen(int i);
+    void chosen(QTreeWidgetItem *current, QTreeWidgetItem *previous);
 };
 
 #endif // TTVIEWSELECTOR_H

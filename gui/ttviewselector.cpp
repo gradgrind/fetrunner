@@ -44,7 +44,7 @@ TtViewSelector::TtViewSelector(TtView *ttview_in, QWidget *parent) :
 
     connect(
         ui->view_choice_list,
-        &QListWidget::currentRowChanged,
+        &QTreeWidget::currentItemChanged,
         this,
         &TtViewSelector::chosen
     );
@@ -74,11 +74,13 @@ void TtViewSelector::do_new_tt_data() {
 void TtViewSelector::select_teacher_view()
 {
     ui->view_choice_list->clear();
+    int i = 0;
     for (const auto &t : std::as_const(ttview->ttbase->teachers)) {
-        QString choice{t.tag};
-        if (!t.name.isEmpty() && t.name != t.tag)
-            choice.append(" " + t.name);
-        ui->view_choice_list->addItem(choice);
+        QStringList choice{t.tag, t.name};
+        if (t.name == t.tag)
+            choice[1] = "";
+        auto twitem = new QTreeWidgetItem(ui->view_choice_list, choice);
+        twitem->setData(0, Qt::UserRole, i++);
     }
     set_view = [this](int i) {
         this->ttview->set_teacher(i);
@@ -88,11 +90,13 @@ void TtViewSelector::select_teacher_view()
 void TtViewSelector::select_room_view()
 {
     ui->view_choice_list->clear();
+    int i = 0;
     for (const auto &r : std::as_const(ttview->ttbase->rooms)) {
-        QString choice{r.tag};
-        if (!r.name.isEmpty() && r.name != r.tag)
-            choice.append(" " + r.name);
-        ui->view_choice_list->addItem(choice);
+        QStringList choice{r.tag, r.name};
+        if (r.name == r.tag)
+            choice[1] = "";
+        auto twitem = new QTreeWidgetItem(ui->view_choice_list, choice);
+        twitem->setData(0, Qt::UserRole, i++);
     }
     set_view = [this](int i) {
         this->ttview->set_room(i);
@@ -102,23 +106,29 @@ void TtViewSelector::select_room_view()
 void TtViewSelector::select_class_view()
 {
     ui->view_choice_list->clear();
+    int i = 0;
     for (const auto &c : std::as_const(ttview->ttbase->classes)) {
-        QString choice{c.tag};
-        if (!c.name.isEmpty() && c.name != c.tag)
-            choice.append(" " + c.name);
-        ui->view_choice_list->addItem(choice);
+        QStringList choice{c.tag, c.name};
+        if (c.name == c.tag)
+            choice[1] = "";
+        auto twitem = new QTreeWidgetItem(ui->view_choice_list, choice);
+        twitem->setData(0, Qt::UserRole, i++);
     }
     set_view = [this](int i) {
         this->ttview->set_class(i);
     };
 }
 
-void TtViewSelector::chosen(int i) {
-    if (i < 0) {
+//TODO: set_view will probably need adapting to cope with atomic groups ...
+
+void TtViewSelector::chosen(QTreeWidgetItem *current, QTreeWidgetItem *previous) {
+    if (current == nullptr) {
+        qDebug() << "No QTreeWidgetItem";
         //TODO?
         ttview->new_grid();
     } else {
-        //qDebug() << "chosen" << i << ttview->ttbase->teachers.at(i).tag;
+        auto i = current->data(0, Qt::UserRole).toInt();
+        qDebug() << "chosen" << i << ttview->ttbase->teachers.at(i).tag;
         set_view(i); // for class, room or teacher
     }
 }
