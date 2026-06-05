@@ -202,13 +202,34 @@ func main() {
 
 		for cix, c := range lres.Classes {
 			fmt.Printf("Class %s %+v:\n", c.Tag, c.AtomicIndexes)
+			aixmap := make(map[int][]string, len(c.AtomicIndexes))
 			dglists := autotimetable.ClassDivisions(lres, cix)
 			udglists := [][]string{}
 			uxdglists := [][]string{}
 			uxxdglists := [][]string{}
+			gn := map[string]int{}
+			for _, g := range c.Groups {
+				if _, ok := gmap[g.Tag]; ok {
+					fmt.Printf(" ++> %s %+v\n", g.Tag, g.AtomicIndexes)
+					for _, aix := range g.AtomicIndexes {
+						aixmap[aix] = append(aixmap[aix], g.Tag)
+					}
+				}
+				gn[g.Tag] = len(g.AtomicIndexes)
+			}
+			for _, aix := range c.AtomicIndexes {
+				fmt.Printf(" **> %d: %+v\n", aix, aixmap[aix])
+			}
+
 			for _, glist := range dglists {
 				uglist := []string{}
+				i := 0
+				gi := []string{}
+
 				for _, g := range glist {
+					gi = append(gi, fmt.Sprintf("%s:%d", g, i))
+					i += gn[g]
+
 					if c, ok := gmap[g]; ok {
 						// group is used by an activity
 						uglist = append(uglist, g)
@@ -227,9 +248,9 @@ func main() {
 					uxdglists = append(uxdglists, uglist)
 					uxxdglists = append(uxxdglists, glist)
 				}
-				fmt.Printf(" --> %+v // %+v\n", uglist, glist)
-			}
 
+				fmt.Printf(" --> %+v // %+v $ %s\n", uglist, glist, strings.Join(gi, ", "))
+			}
 		}
 	}
 }
