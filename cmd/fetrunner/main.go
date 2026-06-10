@@ -218,7 +218,7 @@ func main() {
 				gn[g.Tag] = len(g.AtomicIndexes)
 			}
 			for _, aix := range c.AtomicIndexes {
-				fmt.Printf(" **> %d: %+v\n", aix, aixmap[aix])
+				fmt.Printf(" **> %d: [%s]\n", aix, strings.Join(aixmap[aix], " & "))
 			}
 
 			for _, glist := range dglists {
