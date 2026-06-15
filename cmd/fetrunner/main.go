@@ -200,12 +200,16 @@ func main() {
 			fmt.Println("Group:", g)
 		}
 
+		type placement struct {
+			offset int
+			size   int
+		}
 		for cix, c := range lres.Classes {
 			fmt.Printf("Class %s %+v:\n", c.Tag, c.AtomicIndexes)
 			aixmap := make(map[int][]string, len(c.AtomicIndexes))
 			dglists := autotimetable.ClassDivisions(lres, cix)
 			udglists := [][]string{}
-			uxdglists := [][]string{}
+			udgxlists := [][]placement{}
 			//uxxdglists := [][]string{}
 			gn := map[string]int{}
 			for _, g := range c.Groups {
@@ -224,30 +228,23 @@ func main() {
 		gnext:
 			for _, glist := range dglists {
 				uglist := []string{}
+				ugxlist := []placement{}
 				i := 0
 				gi := []string{}
 
 				for _, g := range glist {
 					gi = append(gi, fmt.Sprintf("%s:%d", g, i))
-					i += gn[g]
-
+					s := gn[g]
 					if c, ok := gmap[g]; ok {
-						// group is used by an activity
-						uglist = append(uglist, g)
 						if c != -1 && c != cix {
 							panic("Group defined in two classes: " + g)
 						}
 						gmap[g] = cix
+						// group is used by an activity
+						uglist = append(uglist, g)
+						ugxlist = append(ugxlist, placement{i, s})
 					}
-					//TODO: The question is whether to include a division where not
-					// all the groups are used. Perhaps the answer is no, so long as
-					// there is an included division containing the used groups.
-					// Or perhaps only look at divisions containing at least one used
-					// group, and disallow duplicates?
-					// Below I am doing the latter, collecting also the full divisions
-					// (including unused groups). But perhaps I might rather want, as
-					// additional information, the start index and size of each group
-					// in the division.
+					i += s
 				}
 
 			knext:
@@ -262,7 +259,7 @@ func main() {
 						}
 						// It is a subset.
 						udglists[k] = uglist
-						uxdglists[k] = glist
+						udgxlists[k] = ugxlist
 						continue gnext
 					} else {
 						// If uglist is a subset of kgl don't add it to udglists.
@@ -278,10 +275,10 @@ func main() {
 				}
 				// Otherwise add uglist to udglists.
 				udglists = append(udglists, uglist)
-				uxdglists = append(uxdglists, glist)
+				udgxlists = append(udgxlists, ugxlist)
 			}
 			for k, gl := range udglists {
-				fmt.Printf(" --> %#v // %#v\n", gl, uxdglists[k])
+				fmt.Printf(" --> %#v // %#v\n", gl, udgxlists[k])
 			}
 		}
 	}
