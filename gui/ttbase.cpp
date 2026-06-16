@@ -89,7 +89,8 @@ void TtBase::set_class(const QString &val)
     for (const auto &i : vlist.at(2).split(",")) {
         aglist.append(i.toInt());
     }
-    classes.append(TtClass{vlist.at(0), name, aglist, vlist.at(3).split(",")});
+    //classes.append(TtClass{vlist.at(0), name, aglist, vlist.at(3).split(",")});
+    classes.append(TtClass{vlist.at(0), name, aglist});
 }
 
 const TtClass & TtBase::get_class(int cix)

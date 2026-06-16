@@ -45,26 +45,114 @@ func get_hours(op *DispatchOp) {
 
 func get_classes(op *DispatchOp) {
 	lres := autotimetable.AutoTt.GetLastResult()
+	// Collect group tags which are actually used by activities.
+	gmap := map[string]int{}
+	for _, a := range lres.Activities {
+		for _, g := range a.Groups {
+			gmap[g.Tag] = -1
+		}
+	}
+
+	type divgroup struct {
+		tag    string
+		offset int
+		size   int
+	}
 	for cix, cls := range lres.Classes {
+		// Get the atomic groups for the whole class.
 		//TODO? If I could ensure that the atomic groups of a class are consecutive,
 		// an alternative would be to include just start and end index here.
 		ailist := []string{}
 		for _, ai := range cls.AtomicIndexes {
 			ailist = append(ailist, strconv.Itoa(ai))
 		}
-		glist := []string{}
+		base.LogResult(op.Op, cls.Tag+"::"+strings.Join(ailist, ","))
+
+		gn := map[string]int{}
+		cprefix := fmt.Sprintf("%d:", cix)
 		for _, g := range cls.Groups {
-			glist = append(glist, g.Tag)
+			if _, ok := gmap[g.Tag]; ok {
+				gailist := []string{}
+				for _, ai := range g.AtomicIndexes {
+					gailist = append(gailist, strconv.Itoa(ai))
+				}
+				base.LogResult("TT_CLASS_GROUP", cprefix+g.Tag+"::"+strings.Join(gailist, ","))
+			}
+			gn[g.Tag] = len(g.AtomicIndexes)
 		}
-		ais := strings.Join(ailist, ",")
-		gs := strings.Join(glist, ",")
-		divs := autotimetable.ClassDivisions(lres, cix)
-		dfmt := []string{}
-		for _, div := range divs {
-			dfmt = append(dfmt, strings.Join(div, ","))
+
+		// Discover the possible class divisions and reduce these to include only
+		// groups which are actually used, and eliminate subsets.
+		dglists := autotimetable.ClassDivisions(lres, cix)
+		udglists := [][]divgroup{}
+	gnext:
+		for _, glist := range dglists {
+			// Filter out groups not used by activities, collecting offsets and sizes.
+			uglist := []divgroup{}
+			i := 0
+			for _, g := range glist {
+				s := gn[g]
+				if c, ok := gmap[g]; ok {
+					if c != -1 && c != cix {
+						panic("Group defined in two classes: " + g)
+					}
+					gmap[g] = cix
+					// Group is used by an activity
+					uglist = append(uglist, divgroup{g, i, s})
+				}
+				i += s
+			}
+
+			// Filter out subsets.
+		knext:
+			for k, kgl := range udglists {
+				if len(uglist) > len(kgl) {
+					// If the groups in `kgl` are a subset of those in `uglist`,
+					// replace the entry in `udglists`.
+				kgnext:
+					for _, kg := range kgl {
+						for _, ug := range uglist {
+							if kg.tag == ug.tag {
+								// found a match
+								continue kgnext
+							}
+						}
+						// not a subset
+						continue knext
+					}
+					// a subset => replace
+					udglists[k] = uglist
+					continue gnext
+				} else {
+					// If the groups in `uglist` are a subset of those in `kgl`,
+					// don't add to `udglists`.
+				ugnext:
+					for _, ug := range uglist {
+						for _, kg := range kgl {
+							if kg.tag == ug.tag {
+								// found a match
+								continue ugnext
+							}
+						}
+						// not a subset
+						continue knext
+					}
+					// It is a subset.
+					continue gnext
+				}
+			}
+			// Otherwise add non-empty `uglist` to `udglists`.
+			if len(uglist) != 0 {
+				udglists = append(udglists, uglist)
+			}
 		}
-		alldivs := strings.Join(dfmt, ";")
-		base.LogResult(op.Op, cls.Tag+"::"+ais+":"+gs+":"+alldivs)
+		for _, gl := range udglists {
+			dglist := []string{}
+			for _, dg := range gl {
+				dglist = append(dglist, fmt.Sprintf("%s:%d:%d", dg.tag, dg.offset, dg.size))
+			}
+			base.LogResult("TT_CLASS_DIVISION", cprefix+strings.Join(dglist, ","))
+		}
 	}
 }
 

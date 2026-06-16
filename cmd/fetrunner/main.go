@@ -59,18 +59,15 @@ package main
 import (
 	"errors"
 	"fetrunner"
-	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
 	"fetrunner/internal/fet"
 	"flag"
 	"fmt"
 	"log"
-	"maps"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"runtime"
-	"slices"
 	"strconv"
 	"strings"
 	"syscall"
@@ -187,7 +184,7 @@ func main() {
 		fetrunner.Dispatch("TT_ROOM_PLACEMENTS " + strconv.Itoa(len(lres.Rooms)/2))
 		*/
 		//fetrunner.Dispatch("TT_CLASSES")
-		//TODO--
+		/*TODO--
 		lres := autotimetable.AutoTt.GetLastResult()
 
 		gmap := map[string]int{}
@@ -281,6 +278,7 @@ func main() {
 				fmt.Printf(" --> %#v // %#v\n", gl, udgxlists[k])
 			}
 		}
+		*/
 	}
 }
 
