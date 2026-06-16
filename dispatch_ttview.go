@@ -149,7 +149,7 @@ func get_classes(op *DispatchOp) {
 		for _, gl := range udglists {
 			dglist := []string{}
 			for _, dg := range gl {
-				dglist = append(dglist, fmt.Sprintf("%s:%d:%d", dg.tag, dg.offset, dg.size))
+				dglist = append(dglist, fmt.Sprintf("%s;%d;%d", dg.tag, dg.offset, dg.size))
 			}
 			base.LogResult("TT_CLASS_DIVISION", cprefix+strings.Join(dglist, ","))
 		}

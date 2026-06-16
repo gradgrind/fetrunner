@@ -2,6 +2,7 @@
 #define TTBASE_H
 
 #include <QStringList>
+#include <QMap>
 
 /*
 struct TtPlacement
@@ -43,10 +44,17 @@ struct TtName
     QString name;
 };
 
+struct offset_size
+{
+    int offset;
+    int size;
+};
+
 struct TtClass : TtName
 {
     QList<int> atomics;
-    QStringList groups;
+    QMap<QString, QList<int>> groups;
+    QList<QMap<QString, offset_size>> divisions;
 };
 
 struct TileData
@@ -71,6 +79,8 @@ private:
     }
     void set_activity(const QString &val);
     void set_class(const QString &val);
+    void set_class_group(const QString &val);
+    void set_class_division(const QString &val);
     void set_teacher(const QString &val);
     void set_room(const QString &val);
     void set_day(const QString &val);

@@ -9,6 +9,10 @@ TtBase::TtBase() {
         [this](QString arg) {set_hour(arg);});
     backend->registerResultHandler("TT_CLASSES",
         [this](QString arg) {set_class(arg);});
+    backend->registerResultHandler("TT_CLASS_GROUP",
+        [this](QString arg) {set_class_group(arg);});
+    backend->registerResultHandler("TT_CLASS_DIVISION",
+        [this](QString arg) {set_class_division(arg);});
     backend->registerResultHandler("TT_TEACHERS",
         [this](QString arg) {set_teacher(arg);});
     backend->registerResultHandler("TT_ROOMS",
@@ -89,8 +93,32 @@ void TtBase::set_class(const QString &val)
     for (const auto &i : vlist.at(2).split(",")) {
         aglist.append(i.toInt());
     }
-    //classes.append(TtClass{vlist.at(0), name, aglist, vlist.at(3).split(",")});
     classes.append(TtClass{vlist.at(0), name, aglist});
+}
+
+void TtBase::set_class_group(const QString &val)
+{
+    auto vlist = val.split(":");
+    auto cls = vlist.at(0).toInt();
+    auto name = vlist.at(1);
+    QList<int> aglist;
+    for (const auto &i : vlist.at(3).split(",")) {
+        aglist.append(i.toInt());
+    }
+    classes[cls].groups[name] = aglist;
+}
+
+void TtBase::set_class_division(const QString &val)
+{
+    auto vlist = val.split(":");
+    auto cls = vlist.at(0).toInt();
+    auto name = vlist.at(1);
+    QMap<QString, offset_size> divmap;
+    for (const auto &d : vlist.at(1).split(",")) {
+        auto dparts = d.split(";");
+        divmap[dparts.at(0)] = {dparts.at(1).toInt(), dparts.at(2).toInt()};
+    }
+    classes[cls].divisions.append(divmap);
 }
 
 const TtClass & TtBase::get_class(int cix)
