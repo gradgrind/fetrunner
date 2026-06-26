@@ -115,8 +115,14 @@ void TtBase::set_class_division(const QString &val)
     auto name = vlist.at(1);
     QMap<QString, offset_size> divmap;
     for (const auto &d : vlist.at(1).split(",")) {
-        auto dparts = d.split(";");
-        divmap[dparts.at(0)] = {dparts.at(1).toInt(), dparts.at(2).toInt()};
+        auto p1 = d.indexOf('@');
+        Q_ASSERT(p1 > 0);
+        auto p2 = d.indexOf('+', p1);
+        Q_ASSERT(p2 > p1);
+        QString g = d.sliced(0, p1);
+        QString p0 = d.sliced(p1+1, p2 - p1 - 1);
+        QString l = d.sliced(p2+1);
+        divmap[g] = {p0.toInt(), l.toInt()};
     }
     classes[cls].divisions.append(divmap);
 }
