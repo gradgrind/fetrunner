@@ -35,7 +35,24 @@ struct TtActivity
     QList<int> atomics;
     QList<int> selected_atomics; // used in class view
     QStringList groups;
+    QStringList selected_groups; // used in class view
     QList<int> rooms;
+};
+
+//TO CONSIDER: I introduce here the TtActivityTile struct to represent a single
+// tile of an activity which may need multiple tiles, because of occupying
+// multiple groups. But this doesn't necessarily provide access to the true
+// nature of this activity, because the block lessons are aggregated, losing
+// some of the fine details of this course (e.g. exactly which teachers belong
+// to it).
+struct TtActivityTile
+{
+    QString group;
+    int activity_index;
+    int activity_part;
+    //? QList<int> atomics;
+    int offset;
+    int n_atomics; // number of atomic groups, determines size
 };
 
 struct TtName

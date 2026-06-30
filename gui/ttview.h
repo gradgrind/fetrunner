@@ -41,11 +41,14 @@ private:
     // for arranging the Tiles in a time slot for class views.
     QList<QList<QList<SplitActivity>>> weekBuffer;
     QList<int> classAtomics; // list of atomics for viewed class
+    QStringList classGroups; // list of groups for viewed class
 
     void do_TEACHER_PLACEMENT(const QString &val);
     void do_ROOM_PLACEMENT(const QString &val);
     void do_CLASS_PLACEMENT(const QString &val);
     void setupClassView();
+    //TODO--
+    void setupClassView2();
 
 public slots:
     void do_new_tt_data();
