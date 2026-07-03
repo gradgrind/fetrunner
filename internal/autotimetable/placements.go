@@ -69,8 +69,8 @@ func RoomPlacements(last_result *Result, rix int) []*TtActivityPlacement {
 // Whether a placement is relevant for a class can be determined by the
 // atomic groups. This is probably safer, more general, than an attempt to
 // extract the class from a group name. However, the group lists could
-// be used in a similar way ... if they were provided by all input readers
-// (currently not the case for FET).
+// be used in a similar way ... if are provided by all input readers
+// (is this implemented for FET?).
 func ClassPlacements(last_result *Result, cix int) []*TtActivityPlacement {
 	plist := []*TtActivityPlacement{}
 	clist := last_result.Classes
