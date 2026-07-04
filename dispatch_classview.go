@@ -41,24 +41,33 @@ func get_classes(op *DispatchOp) {
 		// Get the atomic groups for the whole class.
 		//TODO? If I could ensure that the atomic groups of a class are consecutive,
 		// an alternative would be to include just start and end index here.
-		ailist := []string{}
-		for _, ai := range cls.AtomicIndexes {
-			ailist = append(ailist, strconv.Itoa(ai))
-		}
-		base.LogResult(op.Op, cls.Tag+"::"+strings.Join(ailist, ","))
+		//TODO: ailist := []string{}
+		//TODO: for _, ai := range cls.AtomicIndexes {
+		//TODO: 	ailist = append(ailist, strconv.Itoa(ai))
+		//TODO: }
+		//TODO: I might rather want the intersection of groups for each atomic group:
+		//TODO: base.LogResult(op.Op, cls.Tag+"::"+strings.Join(ailist, ","))
 
-		gn := map[string]int{}
-		cprefix := fmt.Sprintf("%d:", cix)
+		g2n := map[string]int{}    // map groups to their number of atomic indexes
+		a2gs := map[int][]string{} // map atomic indexes to the groups containing them
+		//TODO: cprefix := fmt.Sprintf("%d:", cix)
 		for _, g := range cls.Groups {
 			if _, ok := gmap[g.Tag]; ok {
-				gailist := []string{}
+				//TODO: gailist := []string{}
 				for _, ai := range g.AtomicIndexes {
-					gailist = append(gailist, strconv.Itoa(ai))
+					//TODO: gailist = append(gailist, strconv.Itoa(ai))
+					a2gs[ai] = append(a2gs[ai], g.Tag)
 				}
-				base.LogResult("TT_CLASS_GROUP", cprefix+g.Tag+"::"+strings.Join(gailist, ","))
+				//TODO: base.LogResult("TT_CLASS_GROUP", cprefix+g.Tag+"::"+strings.Join(gailist, ","))
 			}
-			gn[g.Tag] = len(g.AtomicIndexes)
+			g2n[g.Tag] = len(g.AtomicIndexes)
 		}
+		ags := []string{}
+		for _, ai := range cls.AtomicIndexes {
+			ags = append(ags, fmt.Sprintf("%d=%s", ai, strings.Join(a2gs[ai], "&")))
+		}
+		//TODO: save ags for the class somewhere in the Result?
+		base.LogResult(op.Op, cls.Tag+"::"+strings.Join(ags, ","))
 
 		// Discover the possible class divisions and reduce these to include only
 		// groups which are actually used, and eliminate subsets.
@@ -70,7 +79,7 @@ func get_classes(op *DispatchOp) {
 			uglist := []divgroup{}
 			i := 0
 			for _, g := range glist {
-				s := gn[g]
+				s := g2n[g]
 				if c, ok := gmap[g]; ok {
 					if c != -1 && c != cix {
 						panic("Group defined in two classes: " + g)
@@ -130,7 +139,7 @@ func get_classes(op *DispatchOp) {
 			for _, dg := range gl {
 				dglist = append(dglist, fmt.Sprintf("%s@%d+%d", dg.tag, dg.offset, dg.size))
 			}
-			base.LogResult("TT_CLASS_DIVISION", cprefix+strings.Join(dglist, ","))
+			//TODO: base.LogResult("TT_CLASS_DIVISION", cprefix+strings.Join(dglist, ","))
 		}
 	}
 }

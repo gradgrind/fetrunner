@@ -70,6 +70,7 @@ struct offset_size
 struct TtClass : TtName
 {
     QList<int> atomics;
+    QMap<int, QStringList> atom_groups;
     QMap<QString, QList<int>> groups;
     QList<QMap<QString, offset_size>> divisions;
 };

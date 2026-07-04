@@ -90,10 +90,14 @@ void TtBase::set_class(const QString &val)
     if (name.isEmpty())
         name = vlist.at(0);
     QList<int> aglist;
-    for (const auto &i : vlist.at(2).split(",")) {
-        aglist.append(i.toInt());
+    QMap<int, QStringList> atom_groups;
+    for (const auto &aix : vlist.at(2).split(",")) {
+        auto aigroups = aix.split('=');
+        auto ai = aigroups.at(0).toInt();
+        aglist.append(ai);
+        atom_groups[ai] = aigroups.at(1).split('&');
     }
-    classes.append(TtClass{vlist.at(0), name, aglist});
+    classes.append(TtClass{{vlist.at(0), name}, aglist, atom_groups});
 }
 
 void TtBase::set_class_group(const QString &val)
