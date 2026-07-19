@@ -152,9 +152,52 @@ func get_classview_data(op *DispatchOp) {
 	lres := autotimetable.AutoTt.GetLastResult()
 
 	//TODO ...
+	// Place the activities in slots, building a list for each slot. If multiple groups
+	// are listed within the current class, add multiple entries, one for each group.
+	// Multiple-slot activities (duration > 1) should get entries in each of the covered
+	// slots, each entry indicating its index within the activity.
 
+	/* TODO--
+	type TtActivityPlacement struct {
+		Activity ActivityIndex
+		Day      int
+		Hour     int
+		Rooms    []RoomIndex
+	}
+	type TtActivity struct {
+		Id string // FET: "Activity:" + ActivityId
+		// DB: NodeRef of the source activity from which this is derived.
+		Tag string // optionally usable by the back-end
+
+		Duration           int
+		Subject            string
+		Groups             []base.ElementBase // a `Class` is represented by its ClassGroup
+		AtomicGroupIndexes []AtomicIndex
+		Teachers           []TeacherIndex
+	}
+	*/
 	for _, p := range autotimetable.ClassPlacements(lres, cix) {
-		base.LogResult("CLASS_PLACEMENT", autotimetable.SerializePlacement(p))
+		//? base.LogResult("CLASS_PLACEMENT", autotimetable.SerializePlacement(p))
+		a := lres.Activities[p.Activity]
+
+		//TODO
+
+		_ = a
+
 	}
 
 }
+
+// If the GUI is allowed to move activities, there must be enough information available
+// to test the validity of a move. It can be a complicated affair, depending on which
+// constraints are to be observed. The simplest would be to check just teachers and
+// student groups (presumably using the atomic groups), perhaps also rooms. At present
+// the room requirements are not directly available, but they could be made accessible.
+// On the other hand, it might be better to allow any available rooms to be allocated,
+// on the basis that the operator should know what is acceptable and should have the
+// possibility of overriding the specification. This argument could also be extended
+// to other constraints, leaving only the teacher and student-group clashes as illegal.
+// Any general inclusion of automatic constraint testing would require that the
+// constraints are available in a usable form to the GUI. At least in the case of a FET
+// file that is not at all trivial, it would require a complete implementation of all
+// FET constraints.
