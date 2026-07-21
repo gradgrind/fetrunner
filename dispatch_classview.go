@@ -154,6 +154,9 @@ func get_classview_data(op *DispatchOp) {
 	//TODO ...
 	// Place the activities in slots, building a list for each slot. If multiple groups
 	// are listed within the current class, add multiple entries, one for each group.
+	// For block activities it might be possible for the groups to clash, which would
+	// make a bit of a mess of this sort of display effort. Something based on atomic
+	// groups shouldn't be subject to this problem.
 	// Multiple-slot activities (duration > 1) should get entries in each of the covered
 	// slots, each entry indicating its index within the activity.
 
