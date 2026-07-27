@@ -168,6 +168,8 @@ type TtActivityPlacement struct {
 	Day      int
 	Hour     int
 	Rooms    []RoomIndex
+	Offset   int
+	Size     int
 }
 
 type TtActivity struct {

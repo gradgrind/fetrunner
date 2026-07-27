@@ -190,7 +190,7 @@ func get_classview_data(op *DispatchOp) {
 	}
 	nagall := len(agall)
 	for _, p := range autotimetable.ClassPlacements(lres, cix) {
-		//? base.LogResult("CLASS_PLACEMENT", autotimetable.SerializePlacement(p))
+		//TODO-- base.LogResult("CLASS_PLACEMENT", autotimetable.SerializePlacement(p))
 		a := lres.Activities[p.Activity]
 		// Get the atomics just from this class
 		ags := []autotimetable.AtomicIndex{}
@@ -206,7 +206,7 @@ func get_classview_data(op *DispatchOp) {
 				ClassActivityPart{
 					Index:         i,
 					ActivityPtr:   a,
-					Rooms:         p.Rooms,
+					Placement:     p,
 					NaturalOffset: natural_offsets[ag0],
 					TileFraction:  nag})
 		}
@@ -243,24 +243,32 @@ func get_classview_data(op *DispatchOp) {
 					// Place empty space here.
 					if empty == 0 {
 						panic("No empty space to fill slot")
+						//fmt.Println("No empty space to fill slot")
 					}
 					offset += empty
 					empty = 0
 				}
-				ap.Offset = offset
 				slot[api] = ap
-				offset += ap.TileFraction
 
 				//TODO: If an activity part has Index > 0, check that it has the same
 				// offset as in the previous slot.
+
+				if ap.Index == 0 {
+					ap.Placement.Offset = offset
+					ap.Placement.Size = ap.TileFraction
+
+					base.LogResult("CLASS_PLACEMENT", autotimetable.SerializePlacement(ap.Placement))
+				}
 
 				//TODO--
 				fmt.Printf("  + i: %d, a: %s, nat: %d, o: %d, nag: %d\n",
 					ap.Index,
 					ap.ActivityPtr.Id,
 					ap.NaturalOffset,
-					ap.Offset,
+					offset,
 					ap.TileFraction)
+
+				offset += ap.TileFraction
 			}
 		}
 	}
@@ -269,9 +277,8 @@ func get_classview_data(op *DispatchOp) {
 type ClassActivityPart struct {
 	Index         int
 	ActivityPtr   *autotimetable.TtActivity
-	Rooms         []autotimetable.RoomIndex
+	Placement     *autotimetable.TtActivityPlacement
 	NaturalOffset int // Based on first atomic from the current class
-	Offset        int
 	TileFraction  int // Number of atomics from the current class
 }
 

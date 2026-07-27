@@ -5,7 +5,9 @@ import (
 	"fetrunner/internal/base"
 	"fmt"
 	"regexp"
+	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/beevik/etree"
 )
@@ -190,6 +192,11 @@ func (sourcefet *TtSourceFet) read_activities(fetroot *etree.Element) int {
 				glist = append(glist, element{Id: "Group:" + NodeRef(gt), Tag: gt})
 				aglist = append(aglist, sourcefet.students2atomics[gt]...)
 			}
+			// Sort groups
+			slices.SortStableFunc(glist, func(a, b element) int {
+				return strings.Compare(a.Tag, b.Tag)
+			})
+			slices.Sort(aglist)
 			tlist := []autotimetable.TeacherIndex{}
 			for _, t := range a.SelectElements("Teacher") {
 				tt := t.Text()

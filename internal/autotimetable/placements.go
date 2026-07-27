@@ -39,8 +39,8 @@ func SerializePlacement(p *TtActivityPlacement) string {
 	for _, r := range p.Rooms {
 		rlist = append(rlist, strconv.Itoa(r))
 	}
-	return fmt.Sprintf("%d:%d:%d:%s",
-		p.Activity, p.Day, p.Hour, strings.Join(rlist, ","))
+	return fmt.Sprintf("%d:%d:%d:%s:%d:%d",
+		p.Activity, p.Day, p.Hour, strings.Join(rlist, ","), p.Offset, p.Size)
 }
 
 func TeacherPlacements(last_result *Result, tix int) []*TtActivityPlacement {

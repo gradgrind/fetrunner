@@ -82,14 +82,18 @@ func get_activities(op *DispatchOp) {
 }
 
 func get_class_placements(op *DispatchOp) {
-	cix, err := strconv.Atoi(op.Arg)
+	//cix, err := strconv.Atoi(op.Arg)
+	_, err := strconv.Atoi(op.Arg)
 	if err != nil {
 		panic(err)
 	}
+
+	/*TODO???
 	lres := autotimetable.AutoTt.GetLastResult()
 	for _, p := range autotimetable.ClassPlacements(lres, cix) {
 		base.LogResult("CLASS_PLACEMENT", autotimetable.SerializePlacement(p))
 	}
+	*/
 
 	//TODO--
 	get_classview_data(op)
