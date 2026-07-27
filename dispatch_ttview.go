@@ -90,6 +90,9 @@ func get_class_placements(op *DispatchOp) {
 	for _, p := range autotimetable.ClassPlacements(lres, cix) {
 		base.LogResult("CLASS_PLACEMENT", autotimetable.SerializePlacement(p))
 	}
+
+	//TODO--
+	get_classview_data(op)
 }
 
 func get_teacher_placements(op *DispatchOp) {

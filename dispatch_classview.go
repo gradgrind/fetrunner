@@ -1,9 +1,11 @@
 package fetrunner
 
 import (
+	"cmp"
 	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -151,12 +153,7 @@ func get_classview_data(op *DispatchOp) {
 	}
 	lres := autotimetable.AutoTt.GetLastResult()
 
-	//TODO ...
-	// Place the activities in slots, building a list for each slot. If multiple groups
-	// are listed within the current class, add multiple entries, one for each group.
-	// For block activities it might be possible for the groups to clash, which would
-	// make a bit of a mess of this sort of display effort. Something based on atomic
-	// groups shouldn't be subject to this problem.
+	// Place the activities in slots, building a list for each slot.
 	// Multiple-slot activities (duration > 1) should get entries in each of the covered
 	// slots, each entry indicating its index within the activity.
 
@@ -179,17 +176,106 @@ func get_classview_data(op *DispatchOp) {
 		Teachers           []TeacherIndex
 	}
 	*/
+
+	week_slots = make([][][]ClassActivityPart, len(lres.Days))
+	for d := range len(lres.Days) {
+		week_slots[d] = make([][]ClassActivityPart, len(lres.Hours))
+	}
+
+	//TODO: Check that the atomic indexes are pre-sorted
+	agall := lres.Classes[cix].AtomicIndexes
+	natural_offsets := map[autotimetable.AtomicIndex]int{}
+	for i, ag := range agall {
+		natural_offsets[ag] = i
+	}
+	nagall := len(agall)
 	for _, p := range autotimetable.ClassPlacements(lres, cix) {
 		//? base.LogResult("CLASS_PLACEMENT", autotimetable.SerializePlacement(p))
 		a := lres.Activities[p.Activity]
-
-		//TODO
-
-		_ = a
-
+		// Get the atomics just from this class
+		ags := []autotimetable.AtomicIndex{}
+		for _, ag := range a.AtomicGroupIndexes {
+			if slices.Contains(agall, ag) {
+				ags = append(ags, ag)
+			}
+		}
+		ag0 := ags[0]
+		nag := len(ags)
+		for i := range a.Duration {
+			week_slots[p.Day][p.Hour+i] = append(week_slots[p.Day][p.Hour+i],
+				ClassActivityPart{
+					Index:         i,
+					ActivityPtr:   a,
+					Rooms:         p.Rooms,
+					NaturalOffset: natural_offsets[ag0],
+					TileFraction:  nag})
+		}
 	}
 
+	// Determine tile offsets and sizes for each activity (part) in each slot.
+	//TODO--
+	fmt.Printf("Class Index %d (%d)\n", cix, nagall)
+	for d := range len(lres.Days) {
+		for h := range len(lres.Hours) {
+			//TODO--
+			fmt.Printf("::: %d.%d :::\n", d, h)
+
+			// Sort in-place
+			slot := week_slots[d][h]
+			slices.SortStableFunc(slot, func(a1, a2 ClassActivityPart) int {
+				return cmp.Compare(a1.NaturalOffset, a2.NaturalOffset)
+			})
+			// Calculate offsets, aggregating unused atomics as one empty space
+			offset := 0
+			empty := 0
+			{
+				sum := 0
+				for _, ap := range slot {
+					sum += ap.TileFraction
+				}
+				empty = nagall - sum
+				if empty < 0 {
+					panic("Too many groups in slot")
+				}
+			}
+			for api, ap := range slot {
+				if ap.NaturalOffset > offset {
+					// Place empty space here.
+					if empty == 0 {
+						panic("No empty space to fill slot")
+					}
+					offset += empty
+					empty = 0
+				}
+				ap.Offset = offset
+				slot[api] = ap
+				offset += ap.TileFraction
+
+				//TODO: If an activity part has Index > 0, check that it has the same
+				// offset as in the previous slot.
+
+				//TODO--
+				fmt.Printf("  + i: %d, a: %s, nat: %d, o: %d, nag: %d\n",
+					ap.Index,
+					ap.ActivityPtr.Id,
+					ap.NaturalOffset,
+					ap.Offset,
+					ap.TileFraction)
+			}
+		}
+	}
 }
+
+type ClassActivityPart struct {
+	Index         int
+	ActivityPtr   *autotimetable.TtActivity
+	Rooms         []autotimetable.RoomIndex
+	NaturalOffset int // Based on first atomic from the current class
+	Offset        int
+	TileFraction  int // Number of atomics from the current class
+}
+
+var week_slots [][][]ClassActivityPart
 
 // If the GUI is allowed to move activities, there must be enough information available
 // to test the validity of a move. It can be a complicated affair, depending on which
