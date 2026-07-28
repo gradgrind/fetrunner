@@ -119,8 +119,6 @@ void TtViewSelector::select_class_view()
     };
 }
 
-//TODO: set_view will probably need adapting to cope with atomic groups ...
-
 void TtViewSelector::chosen(QTreeWidgetItem *current, QTreeWidgetItem *previous) {
     if (current == nullptr) {
         qDebug() << "No QTreeWidgetItem";

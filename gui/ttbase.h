@@ -4,27 +4,6 @@
 #include <QStringList>
 #include <QMap>
 
-/*
-struct TtPlacement
-{
-    int activity;
-    int day;
-    int hour;
-    QList<int> rooms;
-};
-
-class TtPlacementList : public QList<TtPlacement *>
-{
-public:
-    TtPlacementList(QString cmd, int item);
-    ~TtPlacementList()
-    {
-        qDeleteAll(begin(), end());
-        clear();
-    }
-};
-*/
-
 struct TtActivity
 {
     int length;
@@ -33,9 +12,11 @@ struct TtActivity
     QString subject;
     QList<int> teachers;
     QList<int> atomics;
-    QList<int> selected_atomics; // used in class view
+
+    int offset = 0;
+    int size = 0;
+
     QStringList groups;
-    QStringList selected_groups; // used in class view
     QList<int> rooms;
 };
 

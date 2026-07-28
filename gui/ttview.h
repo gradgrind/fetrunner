@@ -46,9 +46,6 @@ private:
     void do_TEACHER_PLACEMENT(const QString &val);
     void do_ROOM_PLACEMENT(const QString &val);
     void do_CLASS_PLACEMENT(const QString &val);
-    void setupClassView();
-    //TODO--
-    void setupClassView2();
 
 public slots:
     void do_new_tt_data();
