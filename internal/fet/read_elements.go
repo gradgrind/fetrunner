@@ -4,6 +4,7 @@ import (
 	"fetrunner/internal/autotimetable"
 	"fetrunner/internal/base"
 	"fmt"
+	"maps"
 	"regexp"
 	"slices"
 	"strconv"
@@ -89,60 +90,74 @@ func (sourcefet *TtSourceFet) read_elements(fetroot *etree.Element) {
 				atomic_groups = append(atomic_groups, id)
 				class_ags = append(class_ags, agi)
 			} else {
+				// Collect groups and their subgroups: value = `nil` => atomic group
+				group_map := map[string][]string{}
 				for _, g := range gel_list {
 					gtag := g.SelectElement("Name").Text()
 					sgel_list := g.SelectElements("Subgroup")
+
 					if len(sgel_list) == 0 {
 						// The group is an atomic group.
-						agi := len(atomic_groups)
-						agis := []int{agi}
-						students2atomics[gtag] = agis
-						//fmt.Printf("§ %s -> %v\n", gtag, students2atomics[gtag])
-						class_ags = append(class_ags, agi)
-						cg := &autotimetable.TtGroup{
-							Tag:           gtag,
-							ClassIndex:    cix,
-							AtomicIndexes: agis,
-						}
-						class_groups = append(class_groups, cg)
-						atomic_groups = append(atomic_groups, gtag)
+						group_map[gtag] = nil
 					} else {
-						group_ags := []int{}
+						subgroups := []string{}
 						for _, sg := range sgel_list {
-							// These are all atomic groups, but drop repeats.
+							// These are all atomic groups, but drop repeat declarations.
 							sgtag := sg.SelectElement("Name").Text()
-							agi := len(atomic_groups)
-							agil, ok := students2atomics[sgtag]
+							ags, ok := group_map[sgtag]
 							if ok {
-								if len(agil) != 1 {
+								// Sub-group already known
+								if len(ags) != 0 {
 									panic("TODO: invalid year/group/subgroup structure")
 								}
-								agi = agil[0]
 							} else {
-								agis := []int{agi}
-								students2atomics[sgtag] = agis
-								//fmt.Printf("§ %s -> %v\n", sgtag, students2atomics[sgtag])
-								atomic_groups = append(atomic_groups, sgtag)
-								class_ags = append(class_ags, agi)
-								cg := &autotimetable.TtGroup{
-									Tag:           sgtag, //TODO?
-									ClassIndex:    cix,
-									AtomicIndexes: agis,
-								}
-								class_groups = append(class_groups, cg)
+								group_map[sgtag] = nil
 							}
-							group_ags = append(group_ags, agi)
+							subgroups = append(subgroups, sgtag)
 						}
-						class_groups = append(class_groups,
-							&autotimetable.TtGroup{
-								Tag:           gtag,
-								ClassIndex:    cix,
-								AtomicIndexes: group_ags,
-							})
-						students2atomics[gtag] = group_ags
-						//fmt.Printf("§ %s -> %v\n", gtag, students2atomics[gtag])
+						if _, ok := group_map[gtag]; ok {
+							panic("TODO: invalid (repeated) group tag")
+						}
+						group_map[gtag] = subgroups
 					}
 				}
+
+				// Sort groups alphabetically
+				group_list := slices.Sorted(maps.Keys(group_map))
+				// Allocate atomics
+				for _, g := range group_list {
+					if len(group_map[g]) == 0 {
+						// Atomic group
+						agi := len(atomic_groups)
+						atomic_groups = append(atomic_groups, g)
+						students2atomics[g] = []int{agi}
+						//fmt.Printf("§ %s -> %v\n", g, students2atomics[g])
+						class_ags = append(class_ags, agi)
+					}
+				}
+				// Determine atomics for other groups, collect TtGroup items
+				for _, g := range group_list {
+					var agis []int
+					sglist := group_map[g]
+					if len(sglist) == 0 {
+						// Atomic group
+						agis = students2atomics[g]
+					} else {
+						// Get atomics of sub-groups
+						for _, sg := range sglist {
+							agis = append(agis, students2atomics[sg][0])
+						}
+						slices.Sort(agis)
+					}
+					class_groups = append(class_groups, &autotimetable.TtGroup{
+						Tag:           g,
+						ClassIndex:    cix,
+						AtomicIndexes: agis,
+					})
+					students2atomics[g] = agis
+					//fmt.Printf("§ %s -> %v\n", g, students2atomics[g])
+				}
+
 				students2atomics[id] = class_ags
 				//fmt.Printf("§ %s -> %v\n", id, students2atomics[id])
 			}
