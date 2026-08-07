@@ -108,11 +108,27 @@ void TtViewSelector::select_class_view()
     ui->view_choice_list->clear();
     int i = 0;
     for (const auto &c : std::as_const(ttview->ttbase->classes)) {
-        QStringList choice{c.tag, c.name};
-        if (c.name == c.tag)
-            choice[1] = "";
-        auto twitem = new QTreeWidgetItem(ui->view_choice_list, choice);
-        twitem->setData(0, Qt::UserRole, i++);
+        QString citem{c.tag};
+        if (c.name != c.tag)
+            citem += " : " + c.name;
+        auto twitem = new QTreeWidgetItem(ui->view_choice_list);
+        twitem->setText(0, citem);
+        twitem->setData(0, Qt::UserRole, i);
+        // Add sub-items, sorted atomic groups, shown as list of groups
+        auto aglist = c.atom_groups.keys();
+        if (aglist.length() > 1) {
+            std::sort(aglist.begin(), aglist.end());
+            for (auto ag : std::as_const(aglist)) {
+                QStringList glist = c.atom_groups.value(ag);
+                citem = QString::number(ag) + " : " + glist.join(",");
+                auto twitem2 = new QTreeWidgetItem(twitem);
+                twitem2->setText(0, citem);
+                twitem2->setData(0, Qt::UserRole, i);
+                twitem2->setData(0, Qt::UserRole+1, ag);
+                //TODO: Use the agto select the atomic group
+            }
+        }
+        i++;
     }
     set_view = [this](int i) {
         this->ttview->set_class(i);
