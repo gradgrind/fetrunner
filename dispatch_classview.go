@@ -11,17 +11,8 @@ import (
 )
 
 func init() {
-	OpHandlerMap["TT_CLASSES_AND_GROUPS"] = get_classes_and_groups
-	OpHandlerMap["TT_CLASSES"] = get_classes               //TODO: perhaps deprecated?
-	OpHandlerMap["TT_CLASSVIEW_DATA"] = get_classview_data //TODO
-}
-
-// TODO: The idea is to replace the old TT_CLASSES by a version returning classes,
-// atomics and the "used" groups. Include class/group -> atomics info?
-// The timetable slot structure would be handled separately, primarily in the
-// fetrunner library (Go) and for one class at a time. Also for the atomics, or
-// would these have their own operation?
-func get_classes_and_groups(op *DispatchOp) {
+	OpHandlerMap["TT_CLASSES"] = get_classes
+	OpHandlerMap["TT_CLASS_PLACEMENTS"] = get_class_placements
 }
 
 func get_classes(op *DispatchOp) {
@@ -146,7 +137,24 @@ func get_classes(op *DispatchOp) {
 	}
 }
 
-func get_classview_data(op *DispatchOp) {
+// TODO
+func get_atomic_group_placements(op *DispatchOp) {
+	//cix, err := strconv.Atoi(op.Arg)
+	_, err := strconv.Atoi(op.Arg)
+	if err != nil {
+		panic(err)
+	}
+
+	/*TODO???
+	lres := autotimetable.AutoTt.GetLastResult()
+	for _, p := range autotimetable.ClassPlacements(lres, cix) {
+		base.LogResult("CLASS_PLACEMENT", autotimetable.SerializePlacement(p))
+	}
+	*/
+
+}
+
+func get_class_placements(op *DispatchOp) {
 	cix, err := strconv.Atoi(op.Arg)
 	if err != nil {
 		panic(err)
@@ -214,11 +222,11 @@ func get_classview_data(op *DispatchOp) {
 
 	// Determine tile offsets and sizes for each activity (part) in each slot.
 	//TODO--
-	fmt.Printf("Class Index %d (%d)\n", cix, nagall)
+	//fmt.Printf("Class Index %d (%d)\n", cix, nagall)
 	for d := range len(lres.Days) {
 		for h := range len(lres.Hours) {
 			//TODO--
-			fmt.Printf("::: %d.%d :::\n", d, h)
+			//fmt.Printf("::: %d.%d :::\n", d, h)
 
 			// Sort in-place
 			slot := week_slots[d][h]
@@ -260,13 +268,14 @@ func get_classview_data(op *DispatchOp) {
 					base.LogResult("CLASS_PLACEMENT", autotimetable.SerializePlacement(ap.Placement))
 				}
 
-				//TODO--
+				/*TODO--
 				fmt.Printf("  + i: %d, a: %s, nat: %d, o: %d, nag: %d\n",
 					ap.Index,
 					ap.ActivityPtr.Id,
 					ap.NaturalOffset,
 					offset,
 					ap.TileFraction)
+				*/
 
 				offset += ap.TileFraction
 			}

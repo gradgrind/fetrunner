@@ -15,7 +15,6 @@ func init() {
 	OpHandlerMap["TT_TEACHERS"] = get_teachers
 	OpHandlerMap["TT_ROOMS"] = get_rooms
 	OpHandlerMap["TT_ACTIVITIES"] = get_activities
-	OpHandlerMap["TT_CLASS_PLACEMENTS"] = get_class_placements
 	OpHandlerMap["TT_TEACHER_PLACEMENTS"] = get_teacher_placements
 	OpHandlerMap["TT_ROOM_PLACEMENTS"] = get_room_placements
 }
@@ -79,24 +78,6 @@ func get_activities(op *DispatchOp) {
 			strings.Join(aglist, ","),
 			strings.Join(glist, ",")))
 	}
-}
-
-func get_class_placements(op *DispatchOp) {
-	//cix, err := strconv.Atoi(op.Arg)
-	_, err := strconv.Atoi(op.Arg)
-	if err != nil {
-		panic(err)
-	}
-
-	/*TODO???
-	lres := autotimetable.AutoTt.GetLastResult()
-	for _, p := range autotimetable.ClassPlacements(lres, cix) {
-		base.LogResult("CLASS_PLACEMENT", autotimetable.SerializePlacement(p))
-	}
-	*/
-
-	//TODO--
-	get_classview_data(op)
 }
 
 func get_teacher_placements(op *DispatchOp) {

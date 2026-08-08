@@ -90,13 +90,17 @@ void TtView::do_ROOM_PLACEMENT(const QString &val) {
     grid->place_tile(t, a->day, a->hour);
 }
 
-void TtView::set_class(int cix) {
+void TtView::set_class(int cix, int agix) {
     new_grid();
     emit notifier->switch_logger(">>> --TIMETABLE_CLASS", 3);
     emit notifier->clear_log(3);
-    auto cdata = ttbase->get_class(cix);
-    classAtomics = cdata.atomics;
-    backend->op("TT_CLASS_PLACEMENTS", QString::number(cix));
+    if (agix < 0) {
+        auto cdata = ttbase->get_class(cix);
+        classAtomics = cdata.atomics;
+        backend->op("TT_CLASS_PLACEMENTS", QString::number(cix));
+    } else {
+        qDebug() << "TODO: Timetable for atomic group" << agix << cix;
+    }
     emit notifier->switch_logger("", 0);
 }
 
@@ -123,6 +127,6 @@ void TtView::do_CLASS_PLACEMENT(const QString &val) {
     t->divs = a->size;
     t->ndivs = ndivs;
     // Place in grid
-    qDebug() << "PLACE" << a->subject << a->day << a->hour << ndivs << a->offset << a->size;
+    //qDebug() << "PLACE" << a->subject << a->day << a->hour << ndivs << a->offset << a->size;
     grid->place_tile(t, a->day, a->hour);
 }

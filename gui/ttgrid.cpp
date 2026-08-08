@@ -243,7 +243,7 @@ Tile::Tile(TtGrid *grid, int activity, int activity_part)
 {
     grid->scene->addItem(this);
     grid->aix2tiles[activity].append(this);
-    qDebug() << "Tile" << activity << grid->aix2tiles[activity].length();
+    //qDebug() << "Tile" << activity << grid->aix2tiles[activity].length();
 
     if (grid->hover_handler) {
         setHoverHandler(grid->hover_handler);
@@ -266,7 +266,7 @@ Tile::Tile(TtGrid *grid, int activity, int activity_part)
 
 void Tile::place(qreal x, qreal y, qreal w, qreal h)
 {
-    qDebug() << "Place" << activityIndex << x << y;
+    //qDebug() << "Place" << activityIndex << x << y;
     /* The QGraphicsItem method "setPos" takes "float" coordinates,
      * either as setPos(x, y) or as setPos(QPointF). It sets the position
      * of the item in parent coordinates. For items with no parent, scene

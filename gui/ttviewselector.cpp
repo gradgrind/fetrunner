@@ -81,8 +81,9 @@ void TtViewSelector::select_teacher_view()
             choice[1] = "";
         auto twitem = new QTreeWidgetItem(ui->view_choice_list, choice);
         twitem->setData(0, Qt::UserRole, i++);
+        twitem->setData(0, Qt::UserRole+1, -1);
     }
-    set_view = [this](int i) {
+    set_view = [this](int i, int subindex) {
         this->ttview->set_teacher(i);
     };
 }
@@ -97,8 +98,9 @@ void TtViewSelector::select_room_view()
             choice[1] = "";
         auto twitem = new QTreeWidgetItem(ui->view_choice_list, choice);
         twitem->setData(0, Qt::UserRole, i++);
+        twitem->setData(0, Qt::UserRole+1, -1);
     }
-    set_view = [this](int i) {
+    set_view = [this](int i, int subindex) {
         this->ttview->set_room(i);
     };
 }
@@ -114,6 +116,7 @@ void TtViewSelector::select_class_view()
         auto twitem = new QTreeWidgetItem(ui->view_choice_list);
         twitem->setText(0, citem);
         twitem->setData(0, Qt::UserRole, i);
+        twitem->setData(0, Qt::UserRole+1, -1);
         // Add sub-items, sorted atomic groups, shown as list of groups
         auto aglist = c.atom_groups.keys();
         if (aglist.length() > 1) {
@@ -125,13 +128,12 @@ void TtViewSelector::select_class_view()
                 twitem2->setText(0, citem);
                 twitem2->setData(0, Qt::UserRole, i);
                 twitem2->setData(0, Qt::UserRole+1, ag);
-                //TODO: Use the agto select the atomic group
             }
         }
         i++;
     }
-    set_view = [this](int i) {
-        this->ttview->set_class(i);
+    set_view = [this](int i, int subindex) {
+        this->ttview->set_class(i, subindex);
     };
 }
 
@@ -142,7 +144,8 @@ void TtViewSelector::chosen(QTreeWidgetItem *current, QTreeWidgetItem *previous)
         ttview->new_grid();
     } else {
         auto i = current->data(0, Qt::UserRole).toInt();
-        qDebug() << "chosen" << i << ttview->ttbase->teachers.at(i).tag;
-        set_view(i); // for class, room or teacher
+        auto subindex = current->data(0, Qt::UserRole+1).toInt();
+        qDebug() << "Chosen" << i << "+++" << subindex;
+        set_view(i, subindex); // for class, room or teacher
     }
 }

@@ -25,7 +25,7 @@ public:
     explicit TtView(QWidget *parent = nullptr);
     ~TtView();
 
-    void set_class(int cix);
+    void set_class(int cix, int agix);
     void set_room(int rix);
     void set_teacher(int tix);
     void new_grid();
