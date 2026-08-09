@@ -13,6 +13,7 @@ import (
 func init() {
 	OpHandlerMap["TT_CLASSES"] = get_classes
 	OpHandlerMap["TT_CLASS_PLACEMENTS"] = get_class_placements
+	OpHandlerMap["TT_ATOMIC_GROUP_PLACEMENTS"] = get_atomic_group_placements
 }
 
 func get_classes(op *DispatchOp) {
@@ -137,21 +138,15 @@ func get_classes(op *DispatchOp) {
 	}
 }
 
-// TODO
 func get_atomic_group_placements(op *DispatchOp) {
-	//cix, err := strconv.Atoi(op.Arg)
-	_, err := strconv.Atoi(op.Arg)
+	agix, err := strconv.Atoi(op.Arg)
 	if err != nil {
 		panic(err)
 	}
-
-	/*TODO???
 	lres := autotimetable.AutoTt.GetLastResult()
-	for _, p := range autotimetable.ClassPlacements(lres, cix) {
-		base.LogResult("CLASS_PLACEMENT", autotimetable.SerializePlacement(p))
+	for _, p := range autotimetable.AtomicGroupPlacements(lres, agix) {
+		base.LogResult("ATOMIC_GROUP_PLACEMENT", autotimetable.SerializePlacement(p))
 	}
-	*/
-
 }
 
 func get_class_placements(op *DispatchOp) {

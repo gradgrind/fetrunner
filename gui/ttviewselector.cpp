@@ -48,6 +48,22 @@ TtViewSelector::TtViewSelector(TtView *ttview_in, QWidget *parent) :
         this,
         &TtViewSelector::chosen
     );
+    connect(
+        ui->view_choice_list,
+        &QTreeWidget::collapsed,
+        this,
+        [this]() {
+            ui->view_choice_list->resizeColumnToContents(0);
+        }
+    );
+    connect(
+        ui->view_choice_list,
+        &QTreeWidget::expanded,
+        this,
+        [this]() {
+            ui->view_choice_list->resizeColumnToContents(0);
+        }
+    );
 }
 
 TtViewSelector::~TtViewSelector()
@@ -123,7 +139,7 @@ void TtViewSelector::select_class_view()
             std::sort(aglist.begin(), aglist.end());
             for (auto ag : std::as_const(aglist)) {
                 QStringList glist = c.atom_groups.value(ag);
-                citem = QString::number(ag) + " : " + glist.join(",");
+                citem = glist.join(",");
                 auto twitem2 = new QTreeWidgetItem(twitem);
                 twitem2->setText(0, citem);
                 twitem2->setData(0, Qt::UserRole, i);

@@ -90,6 +90,19 @@ func ClassPlacements(last_result *Result, cix int) []*TtActivityPlacement {
 	return plist
 }
 
+func AtomicGroupPlacements(last_result *Result, agix int) []*TtActivityPlacement {
+	plist := []*TtActivityPlacement{}
+	activities := last_result.Activities
+	for _, p := range last_result.Placements {
+		ai := p.Activity
+		a := activities[ai]
+		if slices.Contains(a.AtomicGroupIndexes, agix) {
+			plist = append(plist, p)
+		}
+	}
+	return plist
+}
+
 // TODO: Buffer the class view placements, so that fractional tiles can be
 // constructed and placed. It would be useful to have ordered lists of
 // divisions, if it is possible to derive these from the atomic groups of

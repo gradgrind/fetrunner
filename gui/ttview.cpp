@@ -23,6 +23,8 @@ TtView::TtView(QWidget *parent)
         [this](QString arg) {do_ROOM_PLACEMENT(arg);});
     backend->registerResultHandler("CLASS_PLACEMENT",
         [this](QString arg) {do_CLASS_PLACEMENT(arg);});
+    backend->registerResultHandler("ATOMIC_GROUP_PLACEMENT",
+        [this](QString arg) {do_ATOMIC_GROUP_PLACEMENT(arg);});
 
     //canvas = new Canvas(ui->canvas_view);
     // Generate an example grid:

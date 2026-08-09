@@ -10,6 +10,12 @@
     <height>486</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -62,16 +68,25 @@
    <item>
     <widget class="QTreeWidget" name="view_choice_list">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
+     </property>
+     <property name="sizeAdjustPolicy">
+      <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents</enum>
      </property>
      <property name="editTriggers">
       <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
      </property>
      <property name="showDropIndicator" stdset="0">
       <bool>false</bool>
+     </property>
+     <property name="indentation">
+      <number>10</number>
      </property>
      <property name="rootIsDecorated">
       <bool>true</bool>
@@ -87,6 +102,9 @@
      </property>
      <attribute name="headerVisible">
       <bool>false</bool>
+     </attribute>
+     <attribute name="headerMinimumSectionSize">
+      <number>100</number>
      </attribute>
      <column>
       <property name="text">

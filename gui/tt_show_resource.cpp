@@ -99,7 +99,7 @@ void TtView::set_class(int cix, int agix) {
         classAtomics = cdata.atomics;
         backend->op("TT_CLASS_PLACEMENTS", QString::number(cix));
     } else {
-        qDebug() << "TODO: Timetable for atomic group" << agix << cix;
+        backend->op("TT_ATOMIC_GROUP_PLACEMENTS", QString::number(agix));
     }
     emit notifier->switch_logger("", 0);
 }
@@ -128,5 +128,31 @@ void TtView::do_CLASS_PLACEMENT(const QString &val) {
     t->ndivs = ndivs;
     // Place in grid
     //qDebug() << "PLACE" << a->subject << a->day << a->hour << ndivs << a->offset << a->size;
+    grid->place_tile(t, a->day, a->hour);
+}
+
+void TtView::do_ATOMIC_GROUP_PLACEMENT(const QString &val) {
+    auto aix = ttbase->place_activity(val);
+    Tile *t = new Tile(grid, aix);
+    // Set fields
+    auto a = ttbase->activities.at(aix);
+    QStringList tlist;
+    for (const auto &tix : std::as_const(a->teachers)) {
+        tlist.append(ttbase->teachers.at(tix).tag);
+    }
+    QStringList rlist;
+    for (const auto &rix : std::as_const(a->rooms)) {
+        rlist.append(ttbase->rooms.at(rix).tag);
+    }
+    t->middle = a->subject;
+    t->tl = tlist.join(",");
+    t->tr = a->groups.join(",");
+    t->br = rlist.join(",");
+    t->length = a->length;
+    t->div0 = 0;
+    t->divs = 1;
+    t->ndivs = 1;
+    // Place in grid
+    //qDebug() << "PLACE" << a->atomics << a->subject << a->day << a->hour;
     grid->place_tile(t, a->day, a->hour);
 }
