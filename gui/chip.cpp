@@ -114,7 +114,7 @@ void Chip::set_subtext_size(qreal tsize) {
 }
 
 void Chip::set_text(QString text) {
-    set_item(m_item, text, central_font);
+    auto m_item = set_item(TEXT_M, text, central_font);
     if (m_item) {
         if (!central_colour.isEmpty()) {
             m_item->setBrush(QBrush(QColor(central_colour)));
@@ -166,42 +166,45 @@ QString text_truncate(QString text, qreal scale)
 }
 
 
-void Chip::set_item(QGraphicsSimpleTextItem *&item, QString text, QFont font)
+QGraphicsSimpleTextItem* Chip::set_item(int item, QString text, QFont font)
 {
+    auto t_item = items[item];
     if (text.isEmpty()) {
-        if (item) {
-            scene()->removeItem(item);
-            delete item;
-            item = nullptr;
+        if (t_item) {
+            scene()->removeItem(t_item);
+            delete t_item;
+            items[item] = nullptr;
         }
-        return;
+        return nullptr;
     }
-    if (!item) {
-        item = new QGraphicsSimpleTextItem(this);
+    if (!t_item) {
+        t_item = new QGraphicsSimpleTextItem(this);
+        items[item] = t_item;
     }
-    item->setText(text);
-    item->setFont(font);
+    t_item->setText(text);
+    t_item->setFont(font);
+    return t_item;
 }
 
 void Chip::set_toptext(QString text_l, QString text_r) {
-    set_item(tl_item, text_l, corner_font);
-    set_item(tr_item, text_r, corner_font);
-    place_pair(tl_item, tr_item, true);
+    auto tl = set_item(TEXT_TL, text_l, corner_font);
+    auto tr = set_item(TEXT_TR, text_r, corner_font);
+    place_pair(tl, tr, true);
 }
 
 void Chip::set_bottomtext(QString text_l, QString text_r) {
-    set_item(bl_item, text_l, corner_font);
-    set_item(br_item, text_r, corner_font);
-    place_pair(bl_item, br_item, false);
+    auto bl = set_item(TEXT_BL, text_l, corner_font);
+    auto br = set_item(TEXT_BR, text_r, corner_font);
+    place_pair(bl, br, false);
 }
 
 void Chip::place_pair(
-    QGraphicsSimpleTextItem *&l,
-    QGraphicsSimpleTextItem *&r,
+    QGraphicsSimpleTextItem *l,
+    QGraphicsSimpleTextItem *r,
     bool top)
 {
     qreal w0 = rect().width() - CHIP_MARGIN * 2;
-    auto w0_lr = w0 * 0.8;
+    auto w0_lr = w0 * 0.9; // available width
     qreal w_l = 0.0;
     int lr = 0;
     if (l) {
@@ -215,8 +218,6 @@ void Chip::place_pair(
         w_r = r->boundingRect().width();
         lr += 2;
     }
-
-    //TODO: Handle null items
     if (lr == 0) return;
 
     // Get scales
@@ -226,7 +227,7 @@ void Chip::place_pair(
     qreal s0 = w0_lr / (w_l + w_r);
     if (s0 < SCALE_LIMIT) {
         // Need some truncating
-        auto f_l = w_l / w_r;
+        auto f_l = w_l / (w_l + w_r);
         auto f_r = 1 - f_l;
         if (lr & 1) {
             auto s0_l = f_l * w0_lr / w_l;
@@ -235,8 +236,7 @@ void Chip::place_pair(
                 if (t1.isEmpty()) {
                     s_l = s0_l;
                 } else {
-                    qDebug() << "§l" << t1;
-                    set_item(l, t1, corner_font);
+                    l = set_item(top ? TEXT_TL : TEXT_BL, t1, corner_font);
                     w_l = l->boundingRect().width();
                     s_l = f_l * w0_lr / w_l;
                 }
@@ -249,8 +249,7 @@ void Chip::place_pair(
                 if (t1.isEmpty()) {
                     s_r = s0_r;
                 } else {
-                    qDebug() << "§l" << t1;
-                    set_item(r, t1, corner_font);
+                    r = set_item(top ? TEXT_TR : TEXT_BR, t1, corner_font);
                     w_r = r->boundingRect().width();
                     s_r = f_r * w0_lr / w_r;
                 }

@@ -42,6 +42,7 @@ public:
         // Enable the use of qgraphicsitem_cast with this item.
         return Type;
     }
+    const int TEXT_M = 0, TEXT_TL = 1, TEXT_TR = 2, TEXT_BL = 3, TEXT_BR  = 4;
 
     Chip();
     Chip(qreal width, qreal height);
@@ -61,16 +62,12 @@ public:
     QMenu *context_menu = nullptr;
 
 private:
-    void set_item(QGraphicsSimpleTextItem *&item, QString text, QFont font);
-    QGraphicsSimpleTextItem *m_item = nullptr;
-    QGraphicsSimpleTextItem *tl_item = nullptr;
-    QGraphicsSimpleTextItem *tr_item = nullptr;
-    QGraphicsSimpleTextItem *bl_item = nullptr;
-    QGraphicsSimpleTextItem *br_item = nullptr;
+    QGraphicsSimpleTextItem* set_item(int item, QString text, QFont font);
+    QGraphicsSimpleTextItem* items[5] = {nullptr, nullptr, nullptr, nullptr, nullptr};
     void place_pair(
-            QGraphicsSimpleTextItem *&l,
-            QGraphicsSimpleTextItem *&r,
-            bool top);
+        QGraphicsSimpleTextItem *l,
+        QGraphicsSimpleTextItem *r,
+        bool top);
 
     QFont central_font;
     int central_align = 0; // <0 => left, 0 => centre, >0 => right
