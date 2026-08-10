@@ -91,6 +91,16 @@ void TtGrid::handle_hover(HoverRectItem *gitem, bool enter)
     }
 }
 
+void TtGrid::set_title(QString title)
+{
+    Cell *c = new Cell(-1, -1);
+    c->set_size(VHEADERWIDTH, HHEADERHEIGHT);
+    c->set_border(GRIDLINEWIDTH, GRIDLINECOLOUR);
+    c->set_text(title);
+    scene->addItem(c);
+    c->setPos(-VHEADERWIDTH, -HHEADERHEIGHT);
+}
+
 void TtGrid::setup_grid()
 {
     cols.clear();

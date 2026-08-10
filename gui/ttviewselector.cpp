@@ -99,7 +99,7 @@ void TtViewSelector::select_teacher_view()
         twitem->setData(0, Qt::UserRole, i++);
         twitem->setData(0, Qt::UserRole+1, -1);
     }
-    set_view = [this](int i, int subindex) {
+    set_view = [this](int i, int subindex, QString tag) {
         this->ttview->set_teacher(i);
     };
 }
@@ -116,7 +116,7 @@ void TtViewSelector::select_room_view()
         twitem->setData(0, Qt::UserRole, i++);
         twitem->setData(0, Qt::UserRole+1, -1);
     }
-    set_view = [this](int i, int subindex) {
+    set_view = [this](int i, int subindex, QString tag) {
         this->ttview->set_room(i);
     };
 }
@@ -127,6 +127,7 @@ void TtViewSelector::select_class_view()
     int i = 0;
     for (const auto &c : std::as_const(ttview->ttbase->classes)) {
         QString citem{c.tag};
+        QString cprefix = citem + c.separator;
         if (c.name != c.tag)
             citem += " : " + c.name;
         auto twitem = new QTreeWidgetItem(ui->view_choice_list);
@@ -138,30 +139,39 @@ void TtViewSelector::select_class_view()
         if (aglist.length() > 1) {
             std::sort(aglist.begin(), aglist.end());
             for (auto ag : std::as_const(aglist)) {
-                QStringList glist = c.atom_groups.value(ag);
-                citem = glist.join(",");
+                QStringList glist0 = c.atom_groups.value(ag);
+                QStringList glist;
+                for (const auto &g : std::as_const(glist0)) {
+                    if (g.startsWith(cprefix)) {
+                        QString g0 = g.last(g.length() - cprefix.length());
+                        glist.append(g0);
+                    } else {
+                        glist.append(g);
+                    }
+                }
                 auto twitem2 = new QTreeWidgetItem(twitem);
-                twitem2->setText(0, citem);
+                twitem2->setText(0, c.tag + ": " + glist.join(","));
                 twitem2->setData(0, Qt::UserRole, i);
                 twitem2->setData(0, Qt::UserRole+1, ag);
             }
         }
         i++;
     }
-    set_view = [this](int i, int subindex) {
-        this->ttview->set_class(i, subindex);
+    set_view = [this](int i, int subindex, QString tag) {
+        this->ttview->set_class(i, subindex, tag);
     };
 }
 
 void TtViewSelector::chosen(QTreeWidgetItem *current, QTreeWidgetItem *previous) {
     if (current == nullptr) {
-        qDebug() << "No QTreeWidgetItem";
+        //qDebug() << "No QTreeWidgetItem";
         //TODO?
         ttview->new_grid();
     } else {
         auto i = current->data(0, Qt::UserRole).toInt();
         auto subindex = current->data(0, Qt::UserRole+1).toInt();
-        qDebug() << "Chosen" << i << "+++" << subindex;
-        set_view(i, subindex); // for class, room or teacher
+        //qDebug() << "Chosen" << i << "+++" << subindex;
+        //qDebug() << current->text(0);
+        set_view(i, subindex, current->text(0)); // for class, room or teacher
     }
 }

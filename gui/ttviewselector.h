@@ -20,7 +20,7 @@ public:
 private:
     Ui::TtViewSelector *ui;
     TtView *ttview; // convenience copy, not owned here
-    std::function<void(int, int)> set_view;
+    std::function<void(int, int, QString)> set_view;
     QButtonGroup buttonGroup;
 
 public slots:

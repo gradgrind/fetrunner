@@ -25,12 +25,13 @@ public:
     explicit TtView(QWidget *parent = nullptr);
     ~TtView();
 
-    void set_class(int cix, int agix);
+    void set_class(int cix, int agix, QString tag);
     void set_room(int rix);
     void set_teacher(int tix);
-    void new_grid();
+    void new_grid(QString title = "");
 
     TtBase *ttbase{nullptr};
+    QString WHOLE_CLASS{"⊙"};
 
 private:
     Ui::TtView *ui;
@@ -40,6 +41,8 @@ private:
     // An array (days * hours) of activity index lists is used
     // for arranging the Tiles in a time slot for class views.
     QList<QList<QList<SplitActivity>>> weekBuffer;
+    QString classTag; // tag for viewed class
+    QString classSep; // separator (class-group) for viewed class
     QList<int> classAtomics; // list of atomics for viewed class
     QStringList classGroups; // list of groups for viewed class
 

@@ -52,7 +52,7 @@ void TtView::enter_view() {
     }
 }
 
-void TtView::new_grid() {
+void TtView::new_grid(QString title) {
     if (ttbase == nullptr) return;
     delete grid;
     auto days = ttbase->get_days();
@@ -68,6 +68,6 @@ void TtView::new_grid() {
         hlist.append(h.tag);
     }
     grid = new TtGrid(ui->canvas_view, dlist, hlist, breaks);
-
     //TODO: select class/room/teacher list and then resource
+    grid->set_title(title);
 }

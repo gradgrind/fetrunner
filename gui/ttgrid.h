@@ -43,7 +43,7 @@ public:
         // Perhaps if the items are owned by the scene?
     }
 
-
+    void set_title(QString title);
     void setup_grid();
     void place_tile(Tile *tile, int col, int row);
     void setClickHandler(std::function<void (int, int, Tile *, int)> handler);

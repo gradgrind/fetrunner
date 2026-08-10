@@ -27,7 +27,7 @@ int TtBase::place_activity(const QString &val) {
 
 void TtView::set_teacher(int tix)
 {
-    new_grid();
+    new_grid(ttbase->teachers.at(tix).tag);
     emit notifier->switch_logger(">>> --TIMETABLE_TEACHER", 3);
     emit notifier->clear_log(3);
     backend->op("TT_TEACHER_PLACEMENTS", QString::number(tix));
@@ -59,7 +59,7 @@ void TtView::do_TEACHER_PLACEMENT(const QString &val) {
 }
 
 void TtView::set_room(int rix) {
-    new_grid();
+    new_grid(ttbase->rooms.at(rix).tag);
     emit notifier->switch_logger(">>> --TIMETABLE_ROOM", 3);
     emit notifier->clear_log(3);
     backend->op("TT_ROOM_PLACEMENTS", QString::number(rix));
@@ -90,12 +90,14 @@ void TtView::do_ROOM_PLACEMENT(const QString &val) {
     grid->place_tile(t, a->day, a->hour);
 }
 
-void TtView::set_class(int cix, int agix) {
-    new_grid();
+void TtView::set_class(int cix, int agix, QString tag) {
+    auto cdata = ttbase->get_class(cix);
+    classTag = cdata.tag;
+    classSep = cdata.separator;
+    new_grid(tag);
     emit notifier->switch_logger(">>> --TIMETABLE_CLASS", 3);
     emit notifier->clear_log(3);
     if (agix < 0) {
-        auto cdata = ttbase->get_class(cix);
         classAtomics = cdata.atomics;
         backend->op("TT_CLASS_PLACEMENTS", QString::number(cix));
     } else {
@@ -118,9 +120,21 @@ void TtView::do_CLASS_PLACEMENT(const QString &val) {
     for (const auto &rix : std::as_const(a->rooms)) {
         rlist.append(ttbase->rooms.at(rix).tag);
     }
+    QStringList glist;
+    QString cpre = classTag + classSep;
+    for (const auto &g : std::as_const(a->groups)) {
+        if (g.startsWith(cpre)) {
+            QString g0 = g.last(g.length() - cpre.length());
+            glist.append(g0);
+        } else if (g == classTag) {
+            glist.append(WHOLE_CLASS);
+        } else {
+            glist.append(g);
+        }
+    }
     t->middle = a->subject;
     t->tl = tlist.join(",");
-    t->tr = a->groups.join(",");
+    t->tr = glist.join(",");
     t->br = rlist.join(",");
     t->length = a->length;
     t->div0 = a->offset;
@@ -144,9 +158,21 @@ void TtView::do_ATOMIC_GROUP_PLACEMENT(const QString &val) {
     for (const auto &rix : std::as_const(a->rooms)) {
         rlist.append(ttbase->rooms.at(rix).tag);
     }
+    QStringList glist;
+    QString cpre = classTag + classSep;
+    for (const auto &g : std::as_const(a->groups)) {
+        if (g.startsWith(cpre)) {
+            QString g0 = g.last(g.length() - cpre.length());
+            glist.append(g0);
+        } else if (g == classTag) {
+            glist.append(WHOLE_CLASS);
+        } else {
+            glist.append(g);
+        }
+    }
     t->middle = a->subject;
     t->tl = tlist.join(",");
-    t->tr = a->groups.join(",");
+    t->tr = glist.join(",");
     t->br = rlist.join(",");
     t->length = a->length;
     t->div0 = 0;

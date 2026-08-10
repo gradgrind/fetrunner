@@ -54,6 +54,7 @@ struct TtClass : TtName
     QMap<int, QStringList> atom_groups;
     QMap<QString, QList<int>> groups;
     QList<QMap<QString, offset_size>> divisions;
+    QString separator; // between class and group tags
 };
 
 struct TileData

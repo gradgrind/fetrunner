@@ -97,7 +97,9 @@ void TtBase::set_class(const QString &val)
         aglist.append(ai);
         atom_groups[ai] = aigroups.at(1).split('&');
     }
-    classes.append(TtClass{{vlist.at(0), name}, aglist, atom_groups});
+    TtClass ttc{{vlist.at(0), name}, aglist, atom_groups};
+    ttc.separator = vlist.at(3);
+    classes.append(ttc);
 }
 
 void TtBase::set_class_group(const QString &val)

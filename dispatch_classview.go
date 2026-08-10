@@ -44,6 +44,7 @@ func get_classes(op *DispatchOp) {
 
 		g2n := map[string]int{}    // map groups to their number of atomic indexes
 		a2gs := map[int][]string{} // map atomic indexes to the groups containing them
+		a2gsx := map[int]string{}  // special map for groups with just one atomic index
 		//TODO: cprefix := fmt.Sprintf("%d:", cix)
 		for _, g := range cls.Groups {
 			if _, ok := gmap[g.Tag]; ok {
@@ -53,15 +54,23 @@ func get_classes(op *DispatchOp) {
 					a2gs[ai] = append(a2gs[ai], g.Tag)
 				}
 				//TODO: base.LogResult("TT_CLASS_GROUP", cprefix+g.Tag+"::"+strings.Join(gailist, ","))
+				if len(g.AtomicIndexes) == 1 {
+					a2gsx[g.AtomicIndexes[0]] = g.Tag
+				}
 			}
 			g2n[g.Tag] = len(g.AtomicIndexes)
 		}
 		ags := []string{}
 		for _, ai := range cls.AtomicIndexes {
-			ags = append(ags, fmt.Sprintf("%d=%s", ai, strings.Join(a2gs[ai], "&")))
+			ag, ok := a2gsx[ai]
+			if ok {
+				ags = append(ags, fmt.Sprintf("%d=%s", ai, ag))
+			} else {
+				ags = append(ags, fmt.Sprintf("%d=%s", ai, strings.Join(a2gs[ai], "&")))
+			}
 		}
 		//TODO: save ags for the class somewhere in the Result?
-		base.LogResult(op.Op, cls.Tag+"::"+strings.Join(ags, ","))
+		base.LogResult(op.Op, cls.Tag+"::"+strings.Join(ags, ",")+":"+cls.Separator)
 
 		// Discover the possible class divisions and reduce these to include only
 		// groups which are actually used, and eliminate subsets.
