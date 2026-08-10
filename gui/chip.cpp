@@ -129,6 +129,7 @@ void Chip::set_text(QString text) {
         qreal w = bb.width();
         qreal scale = (w0 - CHIP_MARGIN * 2) * 0.9 / w;
         if (scale < 1.0) {
+            //TODO: use text_truncate
             w *= scale;
             h *= scale;
         } else {
@@ -150,6 +151,20 @@ void Chip::set_text(QString text) {
         m_item->setPos(x, (h0 - h) / 2);
     }
 }
+
+const qreal SCALE_LIMIT = 0.5;
+
+QString text_truncate(QString text, qreal scale)
+{
+    if (scale < SCALE_LIMIT) {
+        qsizetype i0 = text.length() * 2 * scale;
+        auto i = text.lastIndexOf(',', i0);
+        if (i > 0) return text.first(i) + ",+";
+        return text.first(i0) + "+";
+    }
+    return {};
+}
+
 
 void Chip::set_item(QGraphicsSimpleTextItem *&item, QString text, QFont font)
 {
@@ -181,37 +196,70 @@ void Chip::set_bottomtext(QString text_l, QString text_r) {
 }
 
 void Chip::place_pair(
-    QGraphicsSimpleTextItem *l,
-    QGraphicsSimpleTextItem *r,
+    QGraphicsSimpleTextItem *&l,
+    QGraphicsSimpleTextItem *&r,
     bool top)
 {
     qreal w0 = rect().width() - CHIP_MARGIN * 2;
+    auto w0_lr = w0 * 0.8;
     qreal w_l = 0.0;
+    int lr = 0;
     if (l) {
         // Reset scale
-        w_l= l->boundingRect().width();
+        w_l = l->boundingRect().width();
+        lr += 1;
     }
     qreal w_r = 0.0;
     if (r) {
         // Reset scale
-        w_r= r->boundingRect().width();
+        w_r = r->boundingRect().width();
+        lr += 2;
     }
+
+    //TODO: Handle null items
+    if (lr == 0) return;
+
     // Get scales
     qreal s_l = 1.0;
     qreal s_r = 1.0;
-    if ((w_l + w_r) / w0 > 0.8) {
-        // Need some shrinking
-        if (w_l / w0 < 0.25) {
-            // Only shrink r
-            s_r = (w0 - w_l) * 0.8 / w_r;
-        } else if (w_r / w0 < 0.25) {
-            // Only shrink l
-            s_l = (w0 - w_r) * 0.8 / w_l;
-        } else {
-            // Shrink both
-            s_l = w0 * 0.8 / (w_l + w_r);
-            s_r = s_l;
+
+    qreal s0 = w0_lr / (w_l + w_r);
+    if (s0 < SCALE_LIMIT) {
+        // Need some truncating
+        auto f_l = w_l / w_r;
+        auto f_r = 1 - f_l;
+        if (lr & 1) {
+            auto s0_l = f_l * w0_lr / w_l;
+            if (s0_l < 1) {
+                auto t1 = text_truncate(l->text(), s0_l);
+                if (t1.isEmpty()) {
+                    s_l = s0_l;
+                } else {
+                    qDebug() << "§l" << t1;
+                    set_item(l, t1, corner_font);
+                    w_l = l->boundingRect().width();
+                    s_l = f_l * w0_lr / w_l;
+                }
+            }
         }
+        if (lr & 2) {
+            auto s0_r = f_r * w0_lr / w_r;
+            if (s0_r < 1) {
+                auto t1 = text_truncate(r->text(), s0_r);
+                if (t1.isEmpty()) {
+                    s_r = s0_r;
+                } else {
+                    qDebug() << "§l" << t1;
+                    set_item(r, t1, corner_font);
+                    w_r = r->boundingRect().width();
+                    s_r = f_r * w0_lr / w_r;
+                }
+            }
+        }
+    } else if (s0 < 1.0) {
+        // Need scaling without truncation
+        s_l = s0;
+        s_r = s0;
     }
     // Place items
     if (l) {

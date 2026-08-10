@@ -68,9 +68,9 @@ private:
     QGraphicsSimpleTextItem *bl_item = nullptr;
     QGraphicsSimpleTextItem *br_item = nullptr;
     void place_pair(
-        QGraphicsSimpleTextItem *l,
-        QGraphicsSimpleTextItem *r,
-        bool top);
+            QGraphicsSimpleTextItem *&l,
+            QGraphicsSimpleTextItem *&r,
+            bool top);
 
     QFont central_font;
     int central_align = 0; // <0 => left, 0 => centre, >0 => right

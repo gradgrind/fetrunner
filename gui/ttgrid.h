@@ -66,12 +66,10 @@ public:
     const qreal GRIDLINEWIDTH = 2.0;
     const QString GRIDLINECOLOUR = "EDAB9A";
     const QString BREAKLINECOLOUR = "404080";
-    const qreal FONT_CENTRE_SIZE = 12.0;
-    const qreal FONT_CORNER_SIZE = 8.0;
     const QString SELECTIONCOLOUR = "FF0000";
     const QBrush OKBRUSH = QColor(255, 223, 255, 255);
 
-    QJsonObject settings;
+    //QJsonObject grid_settings;
 
     std::function<void (HoverRectItem*, bool)> hover_handler;
 
@@ -123,6 +121,8 @@ public:
     const QString TILE_BORDER_COLOUR = "6060FF";
     const bool TEXT_BOLD = true;
     const int TEXT_ALIGN = 0; // centred
+    const qreal FONT_CENTRE_SIZE = 12.0;
+    const qreal FONT_CORNER_SIZE = 8.0;
 };
 
 #endif // TTGRID_H

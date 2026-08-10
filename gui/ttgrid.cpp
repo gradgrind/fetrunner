@@ -263,15 +263,9 @@ Tile::Tile(TtGrid *grid, int activity, int activity_part)
     activityIndex = activity;
     activityPart = activity_part;
     set_background("FFFFFF"); // opaque white
-    QJsonObject settings = grid->settings;
-    set_border(settings.value("TILE_BORDER_WIDTH").toDouble(TILE_BORDER_WIDTH),
-               settings.value("TILE_BORDER_COLOUR").toString(TILE_BORDER_COLOUR));
-
-    config_text(settings.value("TEXT_SIZE").toDouble(),
-                settings.value("TEXT_BOLD").toBool(TEXT_BOLD),
-                settings.value("TEXT_ALIGN").toInt(TEXT_ALIGN),
-                settings.value("TEXT_COLOUR").toString());
-    set_subtext_size(settings.value("SUBTEXT_SIZE").toDouble());
+    set_border(TILE_BORDER_WIDTH, TILE_BORDER_COLOUR);
+    config_text(FONT_CENTRE_SIZE, TEXT_BOLD, TEXT_ALIGN);
+    set_subtext_size(FONT_CORNER_SIZE);
 }
 
 void Tile::place(qreal x, qreal y, qreal w, qreal h)
