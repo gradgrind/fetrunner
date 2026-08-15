@@ -20,6 +20,7 @@ TtGrid::TtGrid(QGraphicsView *view, QStringList days, QStringList hours, QList<i
             const QList<QGraphicsItem *> items, int keymod) {
         handle_click(items, keymod);
     });
+    /*
     scene->set_context_menu_handler([this](
             const QList<QGraphicsItem *> items) {
         handle_context_menu(items);
@@ -27,6 +28,7 @@ TtGrid::TtGrid(QGraphicsView *view, QStringList days, QStringList hours, QList<i
     hover_handler = [this](HoverRectItem* gitem, bool enter){
         handle_hover(gitem, enter);
     };
+    */
 }
 
 void TtGrid::handle_click(QList<QGraphicsItem *> items, int keymod)
@@ -52,6 +54,7 @@ void TtGrid::handle_click(QList<QGraphicsItem *> items, int keymod)
     if (click_handler) click_handler(cellx, celly, tile, keymod);
 }
 
+//TODO: Not currently used, see TtGrid::TtGrid
 void TtGrid::handle_context_menu(QList<QGraphicsItem *> items)
 {
     Tile *tile = nullptr;
@@ -77,9 +80,9 @@ void TtGrid::handle_context_menu(QList<QGraphicsItem *> items)
     }
     qDebug() << "CONTEXT MENU:" << cellx << celly
              << tiledata;
-
 }
 
+//TODO: Not currently used, see TtGrid::TtGrid
 void TtGrid::handle_hover(HoverRectItem *gitem, bool enter)
 {
     Tile *tile = qgraphicsitem_cast<Tile *>(gitem);

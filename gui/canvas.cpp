@@ -1,7 +1,7 @@
 #include "canvas.h"
 #include <QGraphicsItem>
 #include <QGraphicsSceneEvent>
-#include "chip.h"
+//#include "chip.h"
 
 const int minutesPerHour = 60;
 const qreal CHIP_MARGIN = 1.5;
@@ -13,11 +13,12 @@ const qreal PT2MM = 0.3527778;
 
 // *******************
 
+/*
 void on_hover(QGraphicsRectItem* item, bool enter)
 {
     qDebug() << (enter ? "ENTER" : "EXIT");
 }
-
+*/
 
 // Canvas: This is the "view" widget for the canvas – though it is not itself
 // a graphical element! The QGraphicsView handled here is passed in as a
