@@ -60,7 +60,7 @@ The following instructions assume you are using the Qt development kit from the 
 
  3) Open the terminal (Linux) or Powershell (Windows) in this `build` directory.
 
- 4) Compilation and "installation" is then platform-dependent. Also the path to the Qt installation will depend on the version installed – replace "6.10.2" by your version, but note that the `fetrunner` currently needs at least "6.10".
+ 4) Compilation and "installation" is then platform-dependent. Also the path to the Qt installation will depend on the version installed – replace "6.10.3" by your version, but note that the `fetrunner` currently needs at least "6.10".
 
 #### Compilation on Linux
 

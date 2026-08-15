@@ -49,9 +49,6 @@ private:
 private slots:
     void handleLogLine(QString line);
 
-private:
-    QString logline;
-
 signals:
     void readLogInThread(QPrivateSignal);
     void logcolour(QColor);
