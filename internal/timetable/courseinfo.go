@@ -7,8 +7,6 @@ import (
 	"strings"
 )
 
-var CLASS_GROUP_SEPARATOR string = "." //TODO: Maybe this should be settable?
-
 // Make a shortish string view of a courseInfo – can be useful in tests
 func (tt_data *TtData) View(cinfo *courseInfo) string {
 	db := base.DataBase.Db
@@ -58,7 +56,7 @@ func (tt_data *TtData) CollectCourses() {
 				}
 				newtag := g.Class.Tag
 				if g.Tag != "" {
-					newtag += CLASS_GROUP_SEPARATOR + g.Tag
+					newtag += base.CLASS_GROUP_SEPARATOR + g.Tag
 				}
 				g1 := base.ElementBase{Id: g.Id, Tag: newtag}
 				if !slices.Contains(groups, g1) {
@@ -200,7 +198,7 @@ func (tt_data *TtData) CollectCourses() {
 			}
 			newtag := g.Class.Tag
 			if g.Tag != "" {
-				newtag += CLASS_GROUP_SEPARATOR + g.Tag
+				newtag += base.CLASS_GROUP_SEPARATOR + g.Tag
 			}
 			g1 := base.ElementBase{Id: g.Id, Tag: newtag}
 			groups = append(groups, g1)

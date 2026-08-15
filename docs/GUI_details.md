@@ -18,18 +18,18 @@ Note that there are two types of key/value pair here! Initially, a log entry is 
 
 Because it waits for log entries before returning, `Backend::op` it is only suitable for commands which will be executed quickly (otherwise the GUI would hang). This works for most of the available commands, but the command "RUN_TT", which starts the actual `fetrunner` run, takes a long time. When a command is really finished and it will generate no further log entries, "---" is logged. But there is also the log entry "***" which signals the beginning of the long-running part. "`Backend::op`" also returns when it reads this log entry. Subsequent entries are then handled in a separate thread.
 
-In `threadrun.cpp` and `threadrun.h` there is a worker thread, `RunThreadWorker::ttrun()` which reads from the log using `Backend::readlogline` until it reads the completion signal "---". It acts on the various log entries indicating progress by emitting corresponding signals. These signals are forwarded to signals of the `RunThreadController`, which encapsulates the handling of the worker thread, isolating it from the main code. These signals are thus connected indirectly to methods (slots) of `MainWindow` with the same name which update the corresponding display elements.
+In `threadrun.cpp` and `threadrun.h` there is a worker thread, `RunThreadWorker::ttrun()` which reads from the log using `Backend::readlogline` until it reads the completion signal "---". It acts on the various log entries indicating progress by emitting corresponding signals. These signals are forwarded to signals of the `RunThreadController`, which encapsulates the handling of the worker thread, isolating it from the main code. These signals are thus connected indirectly to methods (slots) of `FetRunner` with the same name which update the corresponding display elements.
 
- - ".TICK" -> `MainWindow::ticker()`
+ - ".TICK" -> `FetRunner::ticker()`
 
- - ".NCONSTRAINTS" -> `MainWindow::nconstraints()`
+ - ".NCONSTRAINTS" -> `FetRunner::nconstraints()`
 
- - ".PROGRESS" -> `MainWindow::iprogress()`
+ - ".PROGRESS" -> `FetRunner::iprogress()`
 
- - ".START" -> `MainWindow::istart()`
+ - ".START" -> `FetRunner::istart()`
 
- - ".END" -> `MainWindow::iend()`
+ - ".END" -> `FetRunner::iend()`
 
- - ".ACCEPT" -> `MainWindow::iaccept()`
+ - ".ACCEPT" -> `FetRunner::iaccept()`
 
- - ".ELIMINATE" -> `MainWindow::ieliminate()`
+ - ".ELIMINATE" -> `FetRunner::ieliminate()`

@@ -1,0 +1,111 @@
+#ifndef TTBASE_H
+#define TTBASE_H
+
+#include <QStringList>
+#include <QMap>
+
+struct TtActivity
+{
+    int length;
+    int day;
+    int hour;
+    QString subject;
+    QList<int> teachers;
+    QList<int> atomics;
+
+    int offset = 0;
+    int size = 0;
+
+    QStringList groups;
+    QList<int> rooms;
+};
+
+//TO CONSIDER: I introduce here the TtActivityTile struct to represent a single
+// tile of an activity which may need multiple tiles, because of occupying
+// multiple groups. But this doesn't necessarily provide access to the true
+// nature of this activity, because the block lessons are aggregated, losing
+// some of the fine details of this course (e.g. exactly which teachers belong
+// to it).
+struct TtActivityTile
+{
+    QString group;
+    int activity_index;
+    int activity_part;
+    //? QList<int> atomics;
+    int offset;
+    int n_atomics; // number of atomic groups, determines size
+};
+
+struct TtName
+{
+    QString tag;
+    QString name;
+};
+
+struct offset_size
+{
+    int offset;
+    int size;
+};
+
+struct TtClass : TtName
+{
+    QList<int> atomics;
+    QMap<int, QStringList> atom_groups;
+    QMap<QString, QList<int>> groups;
+    QList<QMap<QString, offset_size>> divisions;
+    QString separator; // between class and group tags
+};
+
+struct TileData
+{
+    int length;
+    QString subject;
+    QStringList teachers;
+    QStringList rooms;
+    QList<int> atomics;
+    QStringList groups;
+};
+
+class TtBase
+{
+    //TODO: I might want to have the class-group separator
+    // (currently only ".") available here.
+private:
+    void clear_activities()
+    {
+        qDeleteAll(activities.begin(), activities.end());
+        activities.clear();
+    }
+    void set_activity(const QString &val);
+    void set_class(const QString &val);
+    void set_class_group(const QString &val);
+    void set_class_division(const QString &val);
+    void set_teacher(const QString &val);
+    void set_room(const QString &val);
+    void set_day(const QString &val);
+    void set_hour(const QString &val);
+
+public:
+    TtBase();
+    ~TtBase() { clear_activities(); }
+    const QList<TtActivity *> get_activities();
+    const TtClass &get_class(int cix);
+    const QList<TtName> get_days() { return days; }
+    const QList<TtName> get_hours() { return hours; }
+
+    int place_activity(const QString &val);
+
+    //TileData *get_tile_data(TtPlacement *p);
+
+    QList<TtActivity *> activities;
+    QList<TtName> days;
+    QList<TtName> hours;
+    QList<TtClass> classes;
+    QList<TtName> teachers;
+    QList<TtName> rooms;
+};
+
+//extern TtBase tt_base;
+
+#endif // TTBASE_H

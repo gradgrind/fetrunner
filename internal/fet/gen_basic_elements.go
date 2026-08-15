@@ -1,7 +1,6 @@
 package fet
 
 import (
-	"fetrunner/internal/timetable"
 	"strconv"
 )
 
@@ -90,10 +89,8 @@ func (fetbuild *fet_build) set_classes() {
 
 		// Construct the Groups and Subgroups
 		for _, g := range cl.Groups {
-			// Need to construct group name with class, CLASS_GROUP_SEP
-			// and group
 			fetgroup := fetyear.CreateElement("Group")
-			fetgroup.CreateElement("Name").SetText(cl.Tag + timetable.CLASS_GROUP_SEPARATOR + g.Tag)
+			fetgroup.CreateElement("Name").SetText(g.Tag)
 			for _, agix := range g.AtomicIndexes {
 				fetsubgroup := fetgroup.CreateElement("Subgroup")
 				fetsubgroup.CreateElement("Name").SetText(aglist[agix])

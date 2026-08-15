@@ -86,7 +86,7 @@ typedef struct { void *data; GoInt len; GoInt cap; } GoSlice;
 extern "C" {
 #endif
 
-extern void FetRunnerCommand(char* cString);
+extern int FetRunnerCommand(char* cString);
 extern char* FetRunnerReadLog(void);
 
 #ifdef __cplusplus

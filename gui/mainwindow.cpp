@@ -1,225 +1,286 @@
 #include "mainwindow.h"
+#include <QDesktopServices>
+#include <QDir>
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QTimer>
 #include "backend.h"
+#include "globals.h"
 #include "ui_mainwindow.h"
 
-Backend *backend;
+QSettings *settings;
+QString file_dir;
+QString file_name;
+QString file_datatype;
+Notifier *notifier;
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    backend = new Backend();
-    init_ttgen_tables();
+    notifier = new Notifier();
 
-    ui->fetrunner_version->setText(backend->op1("VERSION", {}, "FETRUNNER_VERSION").val);
+    connect(
+        ui->help,
+        &QPushButton::clicked,
+        this,
+        [this]() {QDesktopServices::openUrl(QUrl("../../help/index.html"));}
+    );
 
-    // Get range for number of processes.
-    // Do this before connecting the "valueChanged" signal, to
-    // avoid triggering this before any actual change.
-    auto nps = backend->op1("N_PROCESSES", {}, "N_PROCESSES").val;
-    auto nn = nps.split(".");
-    auto n0 = nn[0].toInt();
-    auto n1 = nn[1].toInt();
-    if (n1 < n0)
-        n1 = n0;
-    auto n = nn[2].toInt();
-    ui->tt_processes->setMinimum(n0);
-    ui->tt_processes->setMaximum(n1);
-    ui->tt_processes->setValue(n);
+    backend->registerResultHandler("FETRUNNER_VERSION",
+        [this](QString arg) {do_FETRUNNER_VERSION(arg);});
+    backend->registerResultHandler("SET_FILE",
+        [this](QString arg) {do_SET_FILE(arg);});
+    backend->registerResultHandler("DATA_TYPE",
+        [this](QString arg) {do_DATA_TYPE(arg);});
+
+    log_view = ui->base_log_view;
+    connect( //
+        notifier,
+        &Notifier::clear_log,
+        this,
+        &MainWindow::clearLog);
+    connect( //
+        notifier,
+        &Notifier::dump_log,
+        this,
+        &MainWindow::dumpLog);
 
     connect( //
         backend,
         &Backend::logcolour,
-        ui->logview,
-        &QTextEdit::setTextColor);
+        this,
+        &MainWindow::setLogColour);
     connect( //
         backend,
         &Backend::log,
-        ui->logview,
-        &QTextEdit::append);
+        this,
+        &MainWindow::logLine);
+
+    ttsolver = new FetRunner();
+    ui->main_panel->addWidget(ttsolver);
+
+    ttview = new TtView();
+    ui->main_panel->addWidget(ttview);
+
+    ttviewselector = new TtViewSelector(ttview);
+    ui->side_panel_sub->addWidget(ttviewselector);
+
+    connect( //
+        ui->open_file,
+        &QPushButton::clicked,
+        this,
+        &MainWindow::open_file);
+    connect( //
+        ui->info_page,
+        &QRadioButton::toggled,
+        this,
+        [this](bool checked) {
+            if (checked) {
+                ui->main_panel->setCurrentIndex(0);
+                ui->side_panel_sub->setCurrentIndex(0);
+            }
+        });
+    connect( //
+        ui->general_log,
+        &QRadioButton::toggled,
+        this,
+        [this](bool checked) {
+            if (checked) {
+                ui->main_panel->setCurrentIndex(1);
+                ui->side_panel_sub->setCurrentIndex(0);
+            }
+        });
+    connect( //
+        ui->solve_timetable,
+        &QRadioButton::toggled,
+        this,
+        [this](bool checked) {
+            if (checked) {
+                ui->main_panel->setCurrentIndex(2);
+                ui->side_panel_sub->setCurrentIndex(0);
+            }
+        });
+    connect( //
+        ui->view_timetable,
+        &QRadioButton::toggled,
+        this,
+        [this](bool checked) {
+            if (checked) {
+                ui->main_panel->setCurrentIndex(3);
+                ui->side_panel_sub->setCurrentIndex(1);
+                ttview->enter_view();
+            }
+        });
+    connect( //
+        notifier,
+        &Notifier::switch_logger,
+        this,
+        &MainWindow::switch_logger);
+    connect( //
+        notifier,
+        &Notifier::show_logger,
+        this,
+        &MainWindow::showLogger);
+    connect( //
+        notifier,
+        &Notifier::setBusy,
+        this,
+        &MainWindow::set_busy);
+    connect( //
+        notifier,
+        &Notifier::errorPopup,
+        this,
+        &MainWindow::error_popup);
+    connect( //
+        notifier,
+        &Notifier::quit_register_wait,
+        this,
+        &MainWindow::quit_register_wait);
+    connect( //
+        notifier,
+        &Notifier::finished,
+        this,
+        &MainWindow::handle_finished);
+    connect( //
+        notifier,
+        &Notifier::new_tt_data,
+        this,
+        &MainWindow::do_new_tt_data);
+    connect( //
+        notifier,
+        &Notifier::no_tt_data,
+        this,
+        &MainWindow::do_no_tt_data);
+    connect( //
+        notifier,
+        &Notifier::fileChanged,
+        this,
+        &MainWindow::new_file);
+
     connect( //
         backend,
         &Backend::error,
         this,
         &MainWindow::error_popup);
-    connect( //
-        ui->tt_processes,
-        QOverload<int>::of(&QSpinBox::valueChanged),
-        this,
-        &MainWindow::nprocesses);
-    connect( //
-        ui->pb_open_new,
-        &QPushButton::clicked,
-        this,
-        &MainWindow::open_file);
-    connect( //
-        ui->pb_go,
-        &QPushButton::clicked,
-        this,
-        &MainWindow::push_go);
-    connect( //
-        ui->pb_stop,
-        &QPushButton::clicked,
-        this,
-        &MainWindow::push_stop);
-    connect( //
-        ui->select_tmp_dir,
-        &QPushButton::clicked,
-        this,
-        &MainWindow::select_tmp_dir);
-    connect( //
-        ui->default_tmp_dir,
-        &QPushButton::clicked,
-        this,
-        &MainWindow::select_default_tmp_dir);
-    connect( //
-        ui->select_fet_path,
-        &QPushButton::clicked,
-        this,
-        &MainWindow::select_fet_path);
-    connect( //
-        ui->default_fet_path,
-        &QPushButton::clicked,
-        this,
-        &MainWindow::select_default_fet_path);
-    connect( //
-        &threadrunner,
-        &RunThreadController::ticker,
-        this,
-        &MainWindow::ticker);
-    connect( //
-        &threadrunner,
-        &RunThreadController::nconstraints,
-        this,
-        &MainWindow::nconstraints);
-    connect( //
-        &threadrunner,
-        &RunThreadController::iprogress,
-        this,
-        &MainWindow::iprogress);
-    connect( //
-        &threadrunner,
-        &RunThreadController::istart,
-        this,
-        &MainWindow::istart);
-    connect( //
-        &threadrunner,
-        &RunThreadController::iend,
-        this,
-        &MainWindow::iend);
-    connect( //
-        &threadrunner,
-        &RunThreadController::iaccept,
-        this,
-        &MainWindow::iaccept);
-    connect( //
-        &threadrunner,
-        &RunThreadController::ieliminate,
-        this,
-        &MainWindow::ieliminate);
-    connect(&threadrunner,
-            &RunThreadController::runThreadWorkerDone,
-            this,
-            &MainWindow::runThreadWorkerDone);
-
-    QValidator *validator1 = new QIntValidator(0, 99999, this);
-    ui->tt_timeout->setValidator(validator1);
 
     settings = new QSettings("gradgrind", "fetrunner");
     const auto geometry = settings->value("gui/MainWindowSize").value<QSize>();
     if (!geometry.isEmpty())
         resize(geometry);
-
-    QTimer::singleShot(0, this, &MainWindow::init2);
-}
-
-void MainWindow::init2()
-{
-    // This is run immediately after starting the event loop.
-    ui->progress_table->resizeColumnsToContents();
-    ui->instance_table->resizeColumnsToContents();
-    reset_display();
-
-    // Check FET
-    if (!set_fet_path(settings->value("fet/FetPath").toString())) {
-        QApplication::exit(1);
-        return;
-    }
-
-    // Set/show default temporary directory
-    select_default_tmp_dir();
 }
 
 MainWindow::~MainWindow()
 {
+    delete ui;
     settings->setValue("gui/MainWindowSize", size());
     delete settings;
-    delete backend;
-    delete ui;
 }
 
-void MainWindow::closeEvent(
-    QCloseEvent *e)
+void MainWindow::closeEvent(QCloseEvent *e)
 {
-    quit_requested = true;
-    if (thread_running) {
-        push_stop();
-        e->ignore();
-    } else
+    //qDebug() << "closeEvent()" << quit_confirmed << quit_requested << waiting_on.length();
+    if (quit_confirmed) {
         QWidget::closeEvent(e);
+        return;
+    }
+    if (!quit_requested) {
+        quit_requested = true;
+        notifier->emit closeRequest();
+        // Assume the signal used Qt::DirectConnection, so that all
+        // entries in `waiting_on` are now set.
+        if (waiting_on.length() == 0) {
+            QWidget::closeEvent(e);
+            return;
+        }
+    }
+    e->ignore();
 }
 
-void MainWindow::nprocesses(
-    int n)
-{
-    auto nn = QString::number(n);
-    auto mp = backend->op1("TT_PARAMETER", {"MAXPROCESSES", nn}, "MAXPROCESSES");
-    if (mp.val != nn)
-        error_popup("BUG: invalid number of processes: " + nn);
-    ui->tt_processes->setValue(mp.val.toInt());
+QTextEdit *MainWindow::selectLogger(int logger) {
+    switch (logger) {
+    case 0:
+        return ui->base_log_view;
+    case 1:
+       return  ui->solver_log_view;
+    case 2:
+       return ui->timetable_log_view;
+    case 3:
+       return ui->timetable_log_singleview;
+    }
+    ui->base_log_view->append(QString{"*BUG* Invalid logger index: %1"}.arg(logger));
+    emit notifier->show_logger(0);
+    return ui->base_log_view;
 }
 
-void MainWindow::reset_display()
+void MainWindow::clearLog(int logger) {
+    auto lg = selectLogger(logger);
+    if (lg != nullptr)
+        lg->clear();
+}
+
+void MainWindow::dumpLog(int logger) {
+    auto lg = selectLogger(logger);
+    if (lg == nullptr)
+        lg = selectLogger(0);
+    QString fname{file_name + ".logdump"};
+    QDir fdir{file_dir};
+    auto log = lg->toPlainText();
+    QFile file(fdir.filePath(fname));
+    // Open the file in WriteOnly mode; Truncate to overwrite existing content; Text for line endings
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+        QMessageBox::critical(this, "", file.errorString());
+        return;
+    }
+    // Use QTextStream to write content to the file
+    QTextStream out(&file);
+    out << log; // Write the input content
+    // Optional: Explicitly flush the stream (ensures data is written immediately)
+    out.flush();
+    // File is automatically closed when 'file' goes out of scope (RAII), but closing explicitly is safe
+    file.close();
+}
+
+void MainWindow::logLine(QString line) {
+    log_view->append(line);
+}
+
+void MainWindow::setLogColour(QColor colour) {
+    log_view->setTextColor(colour);
+}
+
+void MainWindow::quit_register_wait(QString module)
 {
-    ui->logview->clear();
+    //qDebug() << "quit_register_wait()" << module;
+    if (!waiting_on.contains(module)) {
+        waiting_on.append(module);
+    }
+}
 
-    ui->progress_table->setRowCount(0);
-    ui->hard_naccepted->clear();
-    ui->hard_nconstraints->clear();
-    ui->hard_tlastchange->clear();
-    ui->soft_naccepted->clear();
-    ui->soft_nconstraints->clear();
-    ui->soft_tlastchange->clear();
+void MainWindow::handle_finished(QString module)
+{
+    //qDebug() << "handle_finished()" << quit_requested;
+    if (quit_requested) {
+        waiting_on.removeOne(module);
+        if (waiting_on.length() == 0) {
+            quit_confirmed = true;
+            close();
+        }
+    } else {
+        switch_logger("", 0); // revert to base log view
+    }
+}
 
-    ui->instance_table->setRowCount(0);
-    ui->completed_instance_table->setRowCount(0);
-    ui->elapsed_time->setText("0");
-    ui->progress_complete->clear();
-    ui->progress_complete->setEnabled(true);
-    ui->progress_hard_only->clear();
-    ui->progress_hard_only->setEnabled(true);
-    ui->progress_hard->setValue(0);
-    ui->progress_hard->setEnabled(false);
-    ui->label_hard->setEnabled(false);
-    ui->progress_soft->setValue(0);
-    ui->progress_soft->setEnabled(false);
-    ui->label_soft->setEnabled(false);
-    ui->progress_unconstrained->clear();
-    ui->progress_unconstrained->setEnabled(true);
-    hard_count.clear();
-    soft_count.clear();
-    timeTicks.clear();
+void MainWindow::error_popup(const QString msg)
+{
+    QMessageBox::critical(this, "", msg);
 }
 
 void MainWindow::open_file()
 {
     //qDebug() << "Open File";
 
-    QString fdir = filedir;
+    QString fdir = file_dir;
     if (fdir.isEmpty()) {
         fdir = settings->value("gui/SourceDir", QDir::homePath()).toString();
     }
@@ -230,348 +291,62 @@ void MainWindow::open_file()
         tr("FET / W365 Files (*.fet *_w365.json)"));
 
     if (!filepath.isEmpty()) {
-        reset_display();
-        for (const auto &kv : backend->op("SET_FILE", {filepath})) {
-            if (kv.key == "SET_FILE") {
-                QDir dir{kv.val};
-                filename = dir.dirName();
-                dir.cdUp();
-                fdir = dir.absolutePath();
-                ui->currentDir->setText(fdir);
-                ui->currentFile->setText(filename);
-                if (fdir != filedir) {
-                    filedir = fdir;
-                    settings->setValue("gui/SourceDir", fdir);
-                }
-            } else if (kv.key == "DATA_TYPE") {
-                datatype = kv.val;
-            }
-        }
+        if (backend->op("SET_FILE", {filepath}))
+            notifier->emit fileChanged();
     }
 }
 
-void MainWindow::error_popup(const QString &msg)
-{
-    QMessageBox::critical(this, "", msg);
+void MainWindow::new_file() {
+    // Select fetrunner view, disable timetable view.
+    do_no_tt_data();
+    ui->solve_timetable->setEnabled(true);
+    ui->solve_timetable->click();
 }
 
-void MainWindow::push_go()
-{
-    instance_row_map.clear();
-    progress_rows_changed.clear();
-    reset_display();
+void MainWindow::set_busy(bool on) {
+    ui->open_file->setDisabled(on);
+    //ui->control_panel->setDisabled(on);
+}
 
-    // Set parameters
-    auto t = ui->tt_timeout->text();
-    backend->op("TT_PARAMETER", {"TIMEOUT", t});
-    auto sh = ui->tt_skip_hard->isChecked();
-    backend->op("TT_PARAMETER", {"SKIP_HARD", sh ? "true" : "false"});
-    auto rs = ui->tt_real_soft->isChecked();
-    backend->op("TT_PARAMETER", {"REAL_SOFT", rs ? "true" : "false"});
-    auto wff = ui->write_fet_file->isChecked();
-    backend->op("TT_PARAMETER", {"WRITE_FET_FILE", wff ? "true" : "false"});
+void MainWindow::showLogger(int logger) {
+    ui->log_tabs->setCurrentIndex(logger);
+    ui->general_log->click();
+}
 
-    for (const auto &kv : backend->op("RUN_TT_SOURCE")) {
-        if (kv.key == "TMP_DIR") {
-            set_tmp_dir(kv.val);
-        } else if (kv.key == "OK" && kv.val == "true") {
-            setup_progress_table();
-            threadRunActivated(true);
-            threadrunner.runTtThread();
-        }
+void MainWindow::switch_logger(QString msg, int log_viewer) {
+    if (!msg.isEmpty())
+        ui->base_log_view->append(msg);
+    log_view = selectLogger(log_viewer);
+    ui->log_tabs->setCurrentIndex(log_viewer);
+}
+
+void MainWindow::do_FETRUNNER_VERSION(const QString &val) {
+    ui->fetrunner_version->setText(val);
+}
+
+void MainWindow::do_SET_FILE(const QString &val) {
+    QDir dir{val};
+    file_name = dir.dirName();
+    dir.cdUp();
+    ui->file_path->setText(dir.absoluteFilePath(file_name));
+    auto fdir = dir.absolutePath();
+    if (fdir != file_dir) {
+        file_dir = fdir;
+        settings->setValue("gui/SourceDir", fdir);
     }
 }
 
-void MainWindow::set_tmp_dir(QString tdir)
-{
-    QDir qtdir{tdir};
-    QString d{qtdir.dirName()};
-    d.prepend(QDir::separator());
-    qtdir.cdUp();
-    QString val{QDir::toNativeSeparators(qtdir.absolutePath())};
-    ui->tmp_dir->setText(val);
-    ui->tmp_dir_name->setText(d);
+void MainWindow::do_DATA_TYPE(const QString &val) {
+    file_datatype = val;
 }
 
-bool MainWindow::set_fet_path(QString fetpath0)
-{
-    auto fetpath = fetpath0;
-    QString fetv;
-    QString fetp;
-    while (true) {
-        if (fetpath == "?") {
-            fetpath = QFileDialog::getOpenFileName( //
-                this,
-                tr("Seek FET executable"),
-                QDir::homePath(),
-                tr("FET executable") + " (" + FET_CL + ")");
-            if (fetpath.isEmpty()) {
-                return false;
-            }
-        }
-        for (const auto &kv : backend->op("GET_FET", {fetpath, "W"})) {
-            if (kv.key == "FET_PATH")
-                fetp = kv.val;
-            else if (kv.key == "FET_VERSION")
-                fetv = kv.val;
-        }
-        if (!fetp.isEmpty()) {
-            settings->setValue("fet/FetPath", fetpath);
-            // Set GUI
-            ui->fet_path->setText(fetp);
-            ui->fet_version->setText(fetv);
-            break;
-        }
-
-        // Handle FET executable not found.
-
-        if (!fetpath.isEmpty()) {
-            // Try the default.
-            fetpath.clear();
-            continue;
-        }
-
-        // Show log tab in case the warnings are useful.
-        ui->tabWidget->setCurrentWidget(ui->tab_log);
-
-        QMessageBox::warning( //
-            this,
-            tr("FET not found"),
-            tr("Seek 'FET' command-line executable in file system"));
-        fetpath = "?";
-    }
-    return true;
+void MainWindow::do_new_tt_data() {
+    if (quit_requested) return;
+    ui->view_timetable->setEnabled(true);
+    ui->timetable_log_view->clear();
+    ttviewselector->do_new_tt_data();
 }
 
-void MainWindow::push_stop()
-{
-    ui->pb_stop->setEnabled(false);
-    threadrunner.stopThread();
-    closingMessageBox.setText(tr("Finishing ..."));
-    closingMessageBox.setIcon(QMessageBox::Information);
-    closingMessageBox.setStandardButtons(QMessageBox::NoButton);
-    closingMessageBox.exec();
-}
-
-void MainWindow::select_tmp_dir()
-{
-    QString dirpath = QFileDialog::getExistingDirectory( //
-        this,
-        tr("Select base folder for temporary files"),
-        "/",
-        QFileDialog::ShowDirsOnly);
-    if (!dirpath.isEmpty()) {
-        auto kv = backend->op1("TMP_PATH", {dirpath}, "TMP_DIR");
-        if (kv.key == "") {
-            ui->tmp_dir->clear();
-            ui->tmp_dir_name->setText("-");
-        } else {
-            set_tmp_dir(kv.val);
-        }
-    }
-}
-
-void MainWindow::select_default_tmp_dir()
-{
-    auto kv = backend->op1("TMP_PATH", {""}, "TMP_DIR");
-    if (kv.key == "") {
-        ui->tmp_dir->clear();
-        ui->tmp_dir_name->setText("-");
-    } else {
-        set_tmp_dir(kv.val);
-    }
-}
-
-void MainWindow::select_fet_path()
-{
-    set_fet_path("?");
-}
-
-void MainWindow::select_default_fet_path()
-{
-    set_fet_path("");
-}
-
-void MainWindow::runThreadWorkerDone()
-{
-    //qDebug() << "threadRunFinished";
-    threadRunActivated(false);
-    closingMessageBox.hide();
-    if (quit_requested)
-        close();
-}
-
-void MainWindow::threadRunActivated(bool active)
-{
-    thread_running = active;
-    ui->pb_go->setDisabled(active);
-    ui->pb_stop->setEnabled(active);
-    ui->pb_open_new->setDisabled(active);
-    ui->frame_parameters->setDisabled(active);
-}
-
-void MainWindow::ticker(const QString &data)
-{
-    // The last call here has an empty string, so that things
-    // can be tidied up a bit.
-    if (!data.isEmpty()) {
-        ui->elapsed_time->setText(data);
-        timeTicks = data;
-    }
-
-    // Go through instance rows, removing "ended" ones.
-    // If accepted (state = 1), add it to the "completed" table.
-    struct rmdata
-    {
-        int key;
-        instance_row irow;
-    };
-    QList<rmdata> to_remove;
-    for (auto it = instance_row_map.cbegin(); it != instance_row_map.cend(); ++it) {
-        auto val = it.value();
-        if (val.state != 0 && val.item != nullptr)
-            to_remove.append({it.key(), val});
-    }
-    for (const auto &rp : to_remove) {
-        //qDebug() << "?removeRow" << row << rp.key;
-        auto irow = rp.irow;
-        if (irow.state == 1) {
-            auto ctype = irow.data[1]; // constraint type
-            add_completed_instance(    //
-                irow.data[2],          // number of constraints
-                QString{"/ %1"}.arg(constraint_map[ctype].total),
-                ctype);
-        }
-        auto row = irow.item->row();
-        ui->instance_table->removeRow(row);
-        instance_row_map.remove(rp.key);
-    }
-
-    //TODO: if (new rows)
-    ui->completed_instance_table->scrollToBottom();
-
-    // Changes to progress table
-    for (const auto &update : std::as_const(progress_rows_changed)) {
-        tableProgress(update);
-    }
-    progress_rows_changed.clear();
-}
-
-void MainWindow::add_completed_instance(
-    //
-    QString number,
-    QString total,
-    QString ctype)
-{
-    auto nrow = ui->completed_instance_table->rowCount();
-    ui->completed_instance_table->insertRow(nrow);
-    ui->completed_instance_table->setVerticalHeaderItem( //
-        nrow,
-        new QTableWidgetItem(QString("%1").arg(nrow + 1, 2)));
-    auto item0 = new QTableWidgetItem(ctype);
-    auto item1 = new QTableWidgetItem(number); // number of constraints
-    auto item2 = new QTableWidgetItem(total);
-    //if (!message.isEmpty()) {
-    //    item1->setToolTip(message);
-    //}
-    item1->setTextAlignment(Qt::AlignCenter);
-    item2->setTextAlignment(Qt::AlignCenter);
-    ui->completed_instance_table->setItem(nrow, 0, item1);
-    ui->completed_instance_table->setItem(nrow, 1, item2);
-    ui->completed_instance_table->setItem(nrow, 2, item0);
-}
-
-void MainWindow::iprogress(const QString &data)
-{
-    //qDebug() << "iprogress:" << data;
-    QStringList slist = data.split(u'.');
-    // slist: instance index, percent complete, instance run time
-    auto key = slist[0].toInt();
-    switch (key) {
-    case INSTANCE_COMPLETE:
-        ui->progress_complete->setText(slist[1] + "% @ " + slist[2]);
-        break;
-    case INSTANCE_HARD_ONLY:
-        ui->progress_hard_only->setText(slist[1] + "% @ " + slist[2]);
-        break;
-    case INSTANCE_PRIORITY:
-        break;
-    case INSTANCE_UNCONSTRAINED:
-        ui->progress_unconstrained->setText(slist[1] + "% @ " + slist[2]);
-        break;
-    default: // constaint-type tests
-        instanceRowProgress(key, slist);
-    }
-}
-
-void MainWindow::istart(const QString &data)
-{
-    //qDebug() << "istart:" << data;
-    auto slist = data.split(u'.');
-    // slist: instance index, constraint type,
-    // number of individual constraints, time-out
-    auto key = slist[0].toInt();
-    if (key < 0)
-        return;
-    instance_row_map[key] = {slist, nullptr, 0};
-}
-
-void MainWindow::iend(const QString &data)
-{
-    auto slist = data.split(u'.');
-    auto key = slist[0].toInt();
-    switch (key) {
-    case INSTANCE_COMPLETE:
-        ui->progress_complete->setEnabled(false);
-        break;
-    case INSTANCE_HARD_ONLY:
-        ui->progress_hard_only->setEnabled(false);
-        break;
-    case INSTANCE_UNCONSTRAINED:
-        ui->progress_unconstrained->setEnabled(false);
-    case INSTANCE_PRIORITY:
-        break;
-    default:
-        auto irow = instance_row_map[key];
-        if (irow.state == 0) {
-            irow.state = -1;
-            instance_row_map[key] = irow;
-        }
-    }
-}
-
-void MainWindow::iaccept(const QString &data)
-{
-    //qDebug() << "iaccept:" << data;
-    auto slist = data.split(u'.');
-    auto key = slist[0].toInt();
-    switch (key) {
-    case INSTANCE_COMPLETE: // "full" completed
-        tableProgressGroupDone(-1);
-        break;
-    case INSTANCE_HARD_ONLY: // "all hard" completed
-        tableProgressGroupDone(0);
-        break;
-    case INSTANCE_PRIORITY: // "priority" completed
-        tableProgressGroupDone(1);
-        break;
-    case INSTANCE_UNCONSTRAINED: // "unconstrained" completed
-        break;
-    default:
-        instance_row &irow = instance_row_map[key];
-        irow.state = 1;
-        //if (!instance_rows_changed.contains(key))
-        //    instance_rows_changed.append(key);
-        progress_rows_changed.append({irow.data[1], irow.data[2]});
-    }
-}
-
-void MainWindow::ieliminate(const QString &data)
-{
-    auto slist = data.split(u'.');
-    auto ctype = slist[0];
-    add_completed_instance( //
-        QString{"--- [%1]"}.arg(slist[1]),
-        QString{"/ %1"}.arg(constraint_map[ctype].total),
-        ctype);
+void MainWindow::do_no_tt_data() {
+    ui->view_timetable->setEnabled(false);
 }

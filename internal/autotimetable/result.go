@@ -44,7 +44,7 @@ func (attdata *AutoTtData) new_current_instance() {
 		Days:        attdata.Source.GetDays(),
 		Hours:       attdata.Source.GetHours(),
 		Teachers:    attdata.Source.GetTeachers(),
-		Classes:     attdata.Source.GetClasses(),
+		Classes:     cl_list0,
 		Rooms:       attdata.Source.GetRooms(),
 		Activities:  attdata.Source.GetActivities(),
 		Constraints: clist,

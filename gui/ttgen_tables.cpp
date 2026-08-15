@@ -1,10 +1,11 @@
 #include <QDir>
 #include <QTimer>
 #include "backend.h"
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include "fetrunner.h"
+#include "globals.h"
+#include "ui_fetrunner.h"
 
-void MainWindow::init_ttgen_tables()
+void FetRunner::init_ttgen_tables()
 {
     //ui->instance_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     //ui->instance_table->resizeColumnsToContents();
@@ -35,49 +36,57 @@ void MainWindow::init_ttgen_tables()
     */
 }
 
-void MainWindow::setup_progress_table()
+void FetRunner::add_table_line(QString cname, QString val) {
+    auto row = ui->progress_table->rowCount();
+    auto item0 = new QTableWidgetItem(cname);      // constraint type
+    auto item1 = new QTableWidgetItem("/ " + val); // number of constraints
+    auto item2 = new QTableWidgetItem("0");        // accepted constraints
+    auto item3 = new QTableWidgetItem("@ 0");      // number of constraints
+    ui->progress_table->insertRow(row);
+    ui->progress_table->setItem(row, 0, item2);
+    ui->progress_table->setItem(row, 1, item1);
+    ui->progress_table->setItem(row, 2, item3);
+    ui->progress_table->setItem(row, 3, item0);
+    constraint_map[cname] = {row++, 0, val.toInt()};
+    // index, satisfied constraints, number of constraints
+}
+
+void FetRunner::setup_progress_table()
 {
     constraint_map.clear();
-    auto row = ui->progress_table->rowCount();
-    auto add_table_line = [&row, this](QString cname, QString val) {
-        auto item0 = new QTableWidgetItem(cname);      // constraint type
-        auto item1 = new QTableWidgetItem("/ " + val); // number of constraints
-        auto item2 = new QTableWidgetItem("0");        // accepted constraints
-        auto item3 = new QTableWidgetItem("@ 0");      // number of constraints
-        ui->progress_table->insertRow(row);
-        ui->progress_table->setItem(row, 0, item2);
-        ui->progress_table->setItem(row, 1, item1);
-        ui->progress_table->setItem(row, 2, item3);
-        ui->progress_table->setItem(row, 3, item0);
-        constraint_map[cname] = {row++, 0, val.toInt()};
-        // index, satisfied constraints, number of constraints
-    };
-
-    auto kv = backend->op1("TT_PRIORITY_CONSTRAINT_TYPES", {}, "PRIORITY_CONSTRAINTS");
-    if (kv.key != "") {
-        priority_constraints = kv.val.split(":");
-        //qDebug() << "priority_constraints:" << priority_constraints;
-    }
-    for (const auto &kv : backend->op("TT_HARD_CONSTRAINTS")) {
-        add_table_line(kv.key, kv.val);
-    }
-    auto hcmapsize = constraint_map.size();
-    if (hcmapsize != 0) {
-        ui->label_hard->setEnabled(true);
-        ui->progress_hard->setEnabled(true);
-    }
-    for (const auto &kv : backend->op("TT_SOFT_CONSTRAINTS")) {
-        add_table_line(kv.key, kv.val);
-    }
-    if (constraint_map.size() != hcmapsize) {
-        ui->label_soft->setEnabled(true);
-        ui->progress_soft->setEnabled(true);
-    }
+    // The priority constraints are a subset of the hard constraints,
+    // so no action is required, but they should be logged. They should
+    // be at the head of the hard constraint lists thanks to the
+    // `ConstraintPriority` lists (back-end).
+    backend->op("TT_PRIORITY_CONSTRAINT_TYPES"); // no action, just log entry
+    backend->op("TT_HARD_CONSTRAINTS");
+    backend->op("TT_SOFT_CONSTRAINTS");
+    backend->op("TT_ConstraintsCheck");
     backend->op("TT_NACTIVITIES");
 }
 
-void MainWindow::nconstraints(const QString &data)
-{
+void FetRunner::do_CONSTRAINT(const QString &val) {
+    auto kv = val.split("*");
+    add_table_line(kv[0], kv[1]);
+}
+
+void FetRunner::do_PRIORITY_CONSTRAINT_TYPES(const QString &val) {
+    priority_constraints = val.split(":");
+}
+
+void FetRunner::do_ConstraintsCheck(const QString &val) {
+    auto hs = val.split(':');
+    if (hs.at(0) != "0") {
+        ui->label_hard->setEnabled(true);
+        ui->progress_hard->setEnabled(true);
+    }
+    if (hs.at(1) != "0") {
+        ui->label_soft->setEnabled(true);
+        ui->progress_soft->setEnabled(true);
+    }
+}
+
+void FetRunner::do_TT_NCONSTRAINTS(const QString &data) {
     auto slist = data.split(u'.');
     auto h = slist[0];
     auto hn = slist[1];
@@ -115,36 +124,15 @@ void MainWindow::nconstraints(const QString &data)
     }
 }
 
-bool MainWindow::dump_log(QString fname)
+void FetRunner::fail(QString msg)
 {
-    QDir fdir{ui->currentDir->text()};
-    auto log = ui->logview->toPlainText();
-    QFile file(fdir.filePath(fname));
-    // Open the file in WriteOnly mode; Truncate to overwrite existing content; Text for line endings
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-        qDebug() << "Failed to open file for writing:" << file.errorString();
-        return false; // Indicate failure
-    }
-    // Use QTextStream to write content to the file
-    QTextStream out(&file);
-    out << log; // Write the input content
-    // Optional: Explicitly flush the stream (ensures data is written immediately)
-    out.flush();
-    // File is automatically closed when 'file' goes out of scope (RAII), but closing explicitly is safe
-    file.close();
-    return true;
-}
-
-void MainWindow::fail(QString msg)
-{
-    dump_log(ui->currentFile->text() + ".logdump");
-
+    emit notifier->dump_log(1);
     close();
     QMessageBox::critical(this, "", msg);
     qApp->quit();
 }
 
-void MainWindow::tableProgress(progress_changed update)
+void FetRunner::tableProgress(progress_changed update)
 {
     auto constraint = update.constraint;
     auto delta = update.number.toInt();
@@ -157,13 +145,11 @@ void MainWindow::tableProgress(progress_changed update)
     if (cdata.progress == cdata.total) {
         ui->progress_table->item(cdata.index, 0)->setText("+++");
     } else if (cdata.progress > cdata.total) {
-        ui->logview->append(QString{"\n***DUMP*** %1 %2 %3 %4\n"}
-                                .arg(constraint)
-                                .arg(cdata.progress)
-                                .arg(delta)
-                                .arg(cdata.total));
-
-        fail("*BUG* cdata.progress > cdata.total " + constraint);
+        fail(QString{"*BUG* cdata.progress > cdata.total\n %1 %2 %3 %4"}
+            .arg(constraint)
+            .arg(cdata.progress)
+            .arg(delta)
+            .arg(cdata.total));
         return;
     } else {
         ui->progress_table->item(cdata.index, 0)->setText(QString::number(cdata.progress));
@@ -171,7 +157,7 @@ void MainWindow::tableProgress(progress_changed update)
     ui->progress_table->item(cdata.index, 2)->setText("@ " + timeTicks);
 }
 
-void MainWindow::tableProgressGroupDone(int hard_only)
+void FetRunner::tableProgressGroupDone(int hard_only)
 {
     for (auto it = constraint_map.begin(); it != constraint_map.end(); ++it) {
         if (hard_only >= 0) {
@@ -190,7 +176,7 @@ void MainWindow::tableProgressGroupDone(int hard_only)
     }
 }
 
-void MainWindow::instanceRowProgress(int key, QStringList parms)
+void FetRunner::instanceRowProgress(int key, QStringList parms)
 {
     // If the entry is not in the map, add a new entry.
     auto irow = instance_row_map.value(key);

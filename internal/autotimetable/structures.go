@@ -58,11 +58,6 @@ type Parameters struct {
 	// If true, write fully constrained FET-file with "_" prefix to source
 	// directory:
 	WRITE_FET_FILE bool
-
-	// Tick count limits for testing whether an instance with no timeout
-	// has got stuck. See `(*RunQueue).update_instances()` method.
-	LAST_TIME_0 int
-	LAST_TIME_1 int
 }
 
 // The `AutoTtData` structure is set up once for the handling of a set of
@@ -153,13 +148,14 @@ type AtomicIndex = int
 type TtClass struct {
 	Id            base.NodeRef
 	Tag           string // the (short) name of the class
+	Separator     string // separator betwee class (prefix) and group part of tag
 	AtomicIndexes []AtomicIndex
 	Groups        []*TtGroup
 }
 
 type TtGroup struct {
 	Id            base.NodeRef
-	Tag           string // the (short) name of the group (without class)
+	Tag           string // the (short) name of the group (with class)
 	ClassIndex    int
 	AtomicIndexes []AtomicIndex
 }
@@ -172,6 +168,8 @@ type TtActivityPlacement struct {
 	Day      int
 	Hour     int
 	Rooms    []RoomIndex
+	Offset   int
+	Size     int
 }
 
 type TtActivity struct {

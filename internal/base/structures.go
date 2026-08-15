@@ -12,6 +12,8 @@
 // TODO: Currently dealing only with the elements needed for the timetable
 package base
 
+var CLASS_GROUP_SEPARATOR string = "." //TODO: Maybe this should be settable?
+
 type BaseData struct {
 	SourceDir string // the directory containing the source file
 	Name      string // the name of this data set, derived from the source file name

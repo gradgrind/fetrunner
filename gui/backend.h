@@ -2,11 +2,20 @@
 #define BACKEND_H
 
 #include <QColor>
-#include <QJsonArray>
-#include <QJsonDocument>
-#include <QJsonObject>
 #include <QObject>
-#include <QStringList>
+#include <QString>
+#include <QThread>
+#include <QHash>
+#include <qdebug.h>
+
+/*
+The dispatcher (Backend::op) runs in the main thread, so it blocks
+until the call has completed. This should be fine in most cases, but
+"RUN_TT" takes a long time. So an additional command, "!RUN_TT", is
+available, which runs the function in a separate goroutine.
+While this is running, no further commands (except "_STOP_TT") should
+be run. The GUI should adapt to this state.
+*/
 
 struct KeyVal
 {
@@ -14,32 +23,57 @@ struct KeyVal
     QString val;
 };
 
+typedef std::function<void(const QString&)> resultHandler;
+
 class Backend : public QObject
 {
     Q_OBJECT
+    QThread loggerThread;
 
 public:
     Backend();
-    //~Backend();
+    ~Backend() {
+        loggerThread.quit();
+        loggerThread.wait();
+    }
 
-    QList<KeyVal> op(QString cmd, QStringList data = {});
-    KeyVal readlogline();
-    KeyVal readresult(QString r);
+    int op(QString cmd, QString arg = "");
+    void registerResultHandler(QString key, resultHandler handler) {
+        resultHandlerMap[key] = handler;
+    }
 
-    //TODO-- QList<KeyVal> op(QString cmd, QStringList data = {});
-    KeyVal op1(QString cmd, QStringList data = {}, QString key = {});
-    QString getConfig(QString key, QString fallback = {});
-    void setConfig(QString key, QString val);
+private:
+    QHash<QString, resultHandler> resultHandlerMap;
+    void readLog();
+
+private slots:
+    void handleLogLine(QString line);
 
 private:
     QString logline;
 
 signals:
+    void readLogInThread(QPrivateSignal);
     void logcolour(QColor);
     void log(QString);
     void error(QString);
+    void op_end();
 };
 
 extern Backend *backend;
+
+class ReadLogWorker : public QObject
+{
+    Q_OBJECT
+
+//public:
+//    explicit ReadLogWorker(QObject *parent = nullptr);
+
+public slots:
+    void readLog();
+signals:
+    void newLogLine(QString line);
+    void op_end();
+};
 
 #endif // BACKEND_H

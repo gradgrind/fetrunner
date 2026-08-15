@@ -15,22 +15,31 @@ find_package(Qt6 REQUIRED COMPONENTS LinguistTools)
 
 # Qt >= 6.3. I18N_TRANSLATED_LANGUAGES: Qt >= 6.7
 qt_standard_project_setup(I18N_TRANSLATED_LANGUAGES de)
+set(CMAKE_AUTORCC ON)
 
 add_library(libfetrunner STATIC IMPORTED) # STATIC or SHARED
 set_target_properties(libfetrunner PROPERTIES
-  IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/../libfetrunner/libfetrunner.a"
-  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/../libfetrunner"
+  IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/libfetrunner/libfetrunner.a"
+  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/libfetrunner"
 )
 
 qt_add_executable(fetrunner-gui
     WIN32 MACOSX_BUNDLE
-    main.cpp
-    mainwindow.cpp
-    mainwindow.h
-    mainwindow.ui
-    backend.h backend.cpp
-    threadrun.h threadrun.cpp
-    ttgen_tables.cpp
+    gui/main.cpp
+    gui/mainwindow.cpp gui/mainwindow.h gui/mainwindow.ui
+    gui/backend.cpp gui/backend.h
+
+    gui/globals.h
+    gui/fetrunner.cpp gui/fetrunner.h gui/fetrunner.ui
+    gui/ttgen_tables.cpp
+    gui/canvas.cpp gui/canvas.h
+    gui/chip.cpp gui/chip.h
+    gui/ttview.cpp gui/ttview.h gui/ttview.ui
+    gui/ttgrid.cpp gui/ttgrid.h
+    gui/tt_show_resource.cpp
+    gui/ttbase.cpp gui/ttbase.h
+    gui/ttviewselector.h gui/ttviewselector.cpp gui/ttviewselector.ui
+    resources.qrc
 )
 
 qt_add_translations(fetrunner-gui MERGE_QT_TRANSLATIONS

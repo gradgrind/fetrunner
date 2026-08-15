@@ -1,0 +1,120 @@
+#ifndef FETRUNNER_H
+#define FETRUNNER_H
+#include <QCloseEvent>
+#include <QMessageBox>
+#include <QTableWidgetItem>
+#include <QWidget>
+
+#ifdef Q_OS_WIN
+const QString FET_CL = "fet-clw.exe";
+#else
+const QString FET_CL = "fet-cl";
+#endif
+
+QT_BEGIN_NAMESPACE
+namespace Ui {
+
+class FetRunner;
+
+}
+QT_END_NAMESPACE
+
+const int INSTANCE_COMPLETE = -1;
+const int INSTANCE_HARD_ONLY = -2;
+const int INSTANCE_PRIORITY = -3;
+const int INSTANCE_UNCONSTRAINED = -4;
+
+struct instance_row
+{
+    QStringList data;
+    // data: instance index, constraint type,
+    // number of individual constraints, time-out
+    QTableWidgetItem *item;
+    int state; // 0: running, -1: stopped, 1: stopped & accepted
+};
+
+struct progress_line
+{
+    int index;
+    int progress;
+    int total;
+};
+
+struct progress_changed
+{
+    QString constraint;
+    QString number;
+};
+
+class FetRunner : public QWidget
+{
+    Q_OBJECT
+
+public:
+    FetRunner(QWidget *parent = nullptr);
+    ~FetRunner();
+
+private:
+    Ui::FetRunner *ui;
+    void fail(QString msg);
+    void init2();
+    void init_ttgen_tables();    // at start of program
+    void setup_progress_table(); // when starting ttgen run
+    void setup_instance_table(); // when starting ttgen run
+    void tableProgress(progress_changed update);
+    void tableProgressGroupDone(int hard_only);
+    void instanceRowProgress(int key, QStringList parms);
+    void add_completed_instance( //
+        QString count,
+        QString number,
+        QString ctype);
+    bool set_fet_path(QString fetpath);
+
+    bool thread_running{false};
+    QString datatype{};
+    QMessageBox closingMessageBox;
+    void threadRunActivated(bool active);
+
+    QString timeTicks{};
+    QHash<int, instance_row> instance_row_map;
+    int instance_table_fixed_width;
+
+    QString hard_count;
+    QString soft_count;
+    QStringList priority_constraints;
+    QHash<QString, progress_line> constraint_map;
+    QList<progress_changed> progress_rows_changed;
+
+    void do_NOTHING(const QString &val);
+    void do_MAXPROCESSES(const QString &val);
+    void do_FET_PATH(const QString &val);
+    void do_FET_VERSION(const QString &val);
+    void do_N_PROCESSES(const QString &val);
+    void do_TT_NCONSTRAINTS(const QString &val);
+    void do_TT_TICK(const QString &val);
+    void do_TT_PROGRESS(const QString &val);
+    void do_TT_START(const QString &val);
+    void do_TT_END(const QString &val);
+    void do_TT_ACCEPT(const QString &val);
+    void do_TT_ELIMINATE(const QString &val);
+    void do_TMP_DIR(const QString &val);
+    void do_PRIORITY_CONSTRAINT_TYPES(const QString &val);
+    void do_CONSTRAINT(const QString &val);
+    void do_ConstraintsCheck(const QString &val);
+    void add_table_line(QString cname, QString val);
+    void tidyTables();
+
+private slots:
+    void reset_display();
+    void nprocesses(int n);
+    void push_go();
+    void push_stop();
+    void done();
+    void select_tmp_dir();
+    void select_default_tmp_dir();
+    void select_fet_path();
+    void select_default_fet_path();
+    void runThreadWorkerDone();
+    void close_request();
+};
+#endif // FETRUNNER_H

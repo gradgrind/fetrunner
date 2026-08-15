@@ -6,12 +6,13 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 )
 
 /*
-    The logger passes lines to stdout.
+    The logger uses a buffer to store incoming log lines until they are read using `logTake()`.
 
-All operations cause a OP_START to be logged before doing anything else,
+All operations cause an OP_START to be logged before doing anything else,
 and an OP_END at the end. Any results or other log entries associated
 with an operation will be between these two entries.
 
@@ -21,11 +22,15 @@ so it has no OP_END.
 
 var (
 	DataBase *BaseData
-	logger   *loggerBase
+	logger   *logBuffer
 )
 
 func init() {
 	DataBase = &BaseData{}
+	logger = &logBuffer{
+		logch: make(chan string, 100),
+		done:  make(chan bool),
+	}
 }
 
 type MsgType int
@@ -37,10 +42,9 @@ const (
 	ERROR
 	BUG
 
-	OP_START   = "+++"
-	OP_END     = "---"
-	OP_LONGRUN = "***"
-	OP_QUIT    = "-*-*-"
+	OP_START = "+++"
+	OP_END   = "---"
+	OP_QUIT  = "-*-*-"
 )
 
 var logType = map[MsgType]string{
@@ -48,6 +52,42 @@ var logType = map[MsgType]string{
 	WARNING: "*WARNING*",
 	ERROR:   "*ERROR*",
 	BUG:     "*BUG*",
+}
+
+type logBuffer struct {
+	logch        chan string
+	file         *os.File   // set only if logging to file
+	buffer       []string   // used only if logging to buffer
+	bufReadIndex int        // used only if logging to buffer
+	bufmu        sync.Mutex // used only if logging to buffer
+	bufmuread    sync.Mutex // used only if logging to buffer
+	bufreadready int        // used only if logging to buffer
+	running      bool
+	stopFlag     bool      // used to interrupt long-running processes
+	done         chan bool // set only if logging to file
+}
+
+func log(line string) {
+	logger.logch <- line
+}
+
+func logTake() string {
+	return <-logger.logch
+}
+
+func LogResult(key string, value any) {
+	log(fmt.Sprintf("$ %s=%v", key, value))
+}
+
+func LogCommand(cmd string) {
+	logger.running = true
+	log(OP_START + " " + cmd)
+}
+
+func LogCommandEnd() {
+	log(OP_END)
+	logger.running = false
+	<-logger.done // wait for the log to catch up
 }
 
 func (ltype MsgType) String() string {
@@ -58,54 +98,21 @@ func (ltype MsgType) String() string {
 	return s
 }
 
-type loggerBase struct {
-	ch       chan string
-	running  bool
-	file     *os.File // set only if logging to file
-	ticker   chan string
-	stopFlag bool // used to interrupt long-running processes
-}
-
-func log(s string) {
-	logger.ch <- s
-}
-
-func LogTake() string {
-	return <-logger.ch
-}
-
-func LogWaitTicker() string {
-	return <-logger.ticker
-}
-
 func SetStopFlag(on bool) {
 	logger.stopFlag = on
 }
 
 func LogStop() {
 	log(OP_QUIT)
-	<-logger.ticker
+	close(logger.logch) // any subsequent `log` calls will panic
 }
 
 func GetStopFlag() bool {
 	return logger.stopFlag
 }
 
-// The basic logging function, the entries must be read externally using `LogTake()`.
-func LogToBuffer() {
-	logger = &loggerBase{
-		// The channel buffer should be large enough for the writer not to be held up.
-		ch: make(chan string, 100),
-	}
-}
-
 func LogToFile(logfile *os.File) {
-	logger = &loggerBase{
-		// The channel buffer should be large enough for the writer not to be held up.
-		ch:     make(chan string, 100),
-		ticker: make(chan string),
-		file:   logfile,
-	}
+	logger.file = logfile
 	go logToFile()
 }
 
@@ -113,30 +120,69 @@ func logToFile() {
 	// Read from log channel until an OP_QUIT is received, writing the log lines
 	// to the output file.
 	for {
-		line := LogTake()
+		line := logTake()
 		logger.file.WriteString(strings.ReplaceAll(line, "||", "\n + ") + "\n")
-		if strings.HasPrefix(line, "$ .TICK=") {
-			_, t, _ := strings.Cut(line, "=")
-			logger.ticker <- t
+		if line == OP_END {
+			logger.done <- true
 		} else if line == OP_QUIT {
-			close(logger.ticker)
 			break
 		}
 	}
 }
 
-func LogCommand(slist []string) {
-	logger.running = true
-	log(fmt.Sprintf("%s %s %+v", OP_START, slist[0], slist[1:]))
+func LogToBuffer() {
+	logger.bufmuread.Lock()
+	logger.bufreadready = 0
+	go logToBuffer()
 }
 
-func LogCommandEnd(real_end bool) {
-	if real_end {
-		logger.running = false
-		log(OP_END)
-	} else {
-		log(OP_LONGRUN)
+func logToBuffer() {
+	// Read from log channel until an OP_QUIT is received, writing the log lines
+	// to the buffer.
+	logger.buffer = nil //TODO?
+	logger.bufReadIndex = 0
+	for {
+		line := logTake()
+		logger.bufmu.Lock()
+		logger.buffer = append(logger.buffer, line)
+		logger.bufreadready++
+		if logger.bufreadready == 1 {
+			logger.bufmuread.Unlock()
+		}
+		logger.bufmu.Unlock()
+
+		if line == OP_END {
+			logger.done <- true
+		} else if line == OP_QUIT {
+			break
+		}
 	}
+}
+
+func ReadLogBufferLine() string {
+	logger.bufmuread.Lock()
+
+	//TODO: What if logToBuffer happens here?
+	// Surely it can only unlock the mutex if bufreadready == 0, which should be
+	// impossible, because then bufmuread wouldn't have been unlocked.
+
+	logger.bufmu.Lock()
+	line := logger.buffer[logger.bufReadIndex]
+	logger.bufReadIndex++
+	logger.bufreadready--
+	if logger.bufreadready != 0 {
+		if line == OP_END {
+			panic("OP_END, but buffer not empty!")
+		}
+		logger.bufmuread.Unlock() // more lines to read in buffer
+	}
+	if line == OP_END {
+		// Reset the buffer
+		logger.bufReadIndex = 0
+		logger.buffer = nil
+	}
+	logger.bufmu.Unlock()
+	return line
 }
 
 func LogRunning() bool {
@@ -150,10 +196,6 @@ func logMessage(ltype MsgType, s string, a ...any) {
 
 func LogInfo(s string, a ...any) {
 	logMessage(INFO, s, a...)
-}
-
-func LogResult(key string, value any) {
-	log(fmt.Sprintf("$ %s=%v", key, value))
 }
 
 func LogWarning(s string, a ...any) {

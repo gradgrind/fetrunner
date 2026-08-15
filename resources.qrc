@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>gui/icons/fetrunner-256.png</file>
+    </qresource>
+</RCC>

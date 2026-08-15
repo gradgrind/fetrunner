@@ -1,83 +1,82 @@
 #include "backend.h"
 #include <QMap>
+//#include <qdebug.h>
 #include "../libfetrunner/libfetrunner.h"
+#include "globals.h"
 //#include <iostream>
+
+Backend *backend;
 
 // display colours for the log
 QMap<QString, QColor> colours{{"*INFO*", "#009000"},
                               {"*WARNING*", "#eb8900"},
                               {"*ERROR*", "#d00000"},
                               {"+++", "#000000"},
-                              {"***", "#000000"},
                               {"---", "#000000"},
                               {"$", "#53a0ff"}};
 
-Backend::Backend()
-    : QObject()
-{}
-
-QList<KeyVal> Backend::op(QString cmd, QStringList data)
-{
-    if (!data.empty()) {
-        cmd += "|" + data.join("|");
-    }
-    FetRunnerCommand(cmd.toUtf8().data());
-
-    // Collect log up to "---" or "***"
-    QList<KeyVal> results;
-    QStringList errors;
+void ReadLogWorker::readLog() {
+    //qDebug() << "ReadLogWorker::readLog()" << QThread::currentThreadId();
     while (true) {
-        auto key_val = readlogline();
-        auto key = key_val.key;
-        if (key == "+++")
-            continue;
-        if (key == "---" || key == "***")
-            break;
-        auto val = key_val.val;
-        if (key == "*ERROR*") {
-            errors.append(val);
-            continue;
-        }
-        if (key == "$") {
-            // a result
-            auto rkv = readresult(val);
-            if (rkv.key.isEmpty()) {
-                errors.append(rkv.val);
-            } else {
-                results.append(rkv);
-            }
-            //continue;
-        }
+       auto ll = QString(FetRunnerReadLog());
+       emit newLogLine(ll);
+       if (ll == "---") break;
     }
-    if (!errors.empty()) {
-        if (errors.length() > 5) {
-            auto elist = errors;
-            errors = QStringList();
-            errors << elist[0] << elist[1] << elist[2] << elist[3] << elist[4];
-            errors << "...";
-        }
-        emit error(errors.join("\n"));
-    }
-    return results;
+    emit op_end();
 }
 
-KeyVal Backend::readresult(QString r)
-{
-    auto n = r.indexOf('=');
-    if (n < 0)
-        return KeyVal{"", QString{"BUG in backend result: "} + logline};
-    auto rkey = r.left(n);
-    auto rval = r.right(r.length() - n - 1);
-    return KeyVal{rkey, rval};
+//ReadLogWorker::ReadLogWorker(QObject *parent) : QObject(parent) {}
+
+Backend::Backend() : QObject() {
+    //qDebug() << "Backend::Backend()" << QThread::currentThreadId();
+
+    ReadLogWorker *worker = new ReadLogWorker;
+    worker->moveToThread(&loggerThread);
+
+    connect(&loggerThread, &QThread::finished,
+        worker, &QObject::deleteLater);
+    connect(worker, &ReadLogWorker::newLogLine,
+        this, &Backend::handleLogLine);
+    connect(worker, &ReadLogWorker::op_end,
+        this, &Backend::op_end);
+    connect(this, &Backend::readLogInThread,
+        worker, &ReadLogWorker::readLog);
+    loggerThread.start();
 }
 
-KeyVal Backend::readlogline()
+int Backend::op(QString cmd, QString arg)
 {
+    if (!arg.isEmpty()) {
+        cmd += " " + arg;
+    }
+    //qDebug() << "?" << cmd << QThread::currentThreadId();
+
+    auto res = FetRunnerCommand(cmd.toUtf8().data());
+    //qDebug() << "?DONE";
+
+    if (cmd[0] != '_') {
+        if (cmd[0] == '!')
+            emit readLogInThread(QPrivateSignal());
+        else
+            readLog();
+    }
+    return res;
+}
+
+void Backend::readLog() {
+    //qDebug() << "Backend::readLog()" << QThread::currentThreadId();
     while (true) {
-        logline = QString(FetRunnerReadLog());
-        if (logline.length() != 0 && logline.at(0) != " ")
-            break;
+        auto ll = QString(FetRunnerReadLog());
+        handleLogLine(ll);
+        if (ll == "---") break;
+    }
+}
+
+void Backend::handleLogLine(QString logline) {
+    //qDebug() << "handleLogLine" << logline;
+    if (logline.length() == 0 || logline.at(0) == " ") {
         emit log(logline); // write to log without change of colour
+        return;
     }
     auto i = logline.indexOf(" ");
     QString msgtype, msgrest;
@@ -93,18 +92,28 @@ KeyVal Backend::readlogline()
     // The type determines the display colour.
     emit logcolour(colours.value(msgtype, QColor{0x76, 0x5e, 0xff}));
     emit log(logline.replace("||", "\n + ")); // write to log
-    return KeyVal{msgtype, msgrest};
-}
 
-// Run an op, expect a single result whose key may be specified.
-KeyVal Backend::op1(
-    QString cmd, QStringList data, QString key)
-{
-    auto results = op(cmd, data);
-    if (results.length() == 1) {
-        auto kv = results[0];
-        if (key.isEmpty() || key == kv.key)
-            return kv;
+    //qDebug() << "&" << msgtype << msgrest;
+    if (msgtype == "$") {
+        auto n = msgrest.indexOf('=');
+        if (n < 0) {
+            notifier->emit errorPopup(QString{"BUG in backend result: "} + msgrest);
+            return;
+        }
+        auto rkey = msgrest.left(n);
+        auto rval = msgrest.right(msgrest.length() - n - 1);
+        //qDebug() << "handleResult" << rkey;
+        auto f = resultHandlerMap.value(rkey, nullptr);
+        if (f == nullptr)
+            emit log("*NO_HANDLER* " + rkey);
+        else
+            f(rval);
+        return;
     }
-    return {};
+    //if (msgtype == "---")
+    if (msgtype == "*ERROR*") {
+        notifier->emit errorPopup(msgrest);
+        return;
+    }
+    //if (msgtype == "-*-*-")
 }

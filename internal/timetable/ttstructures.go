@@ -85,7 +85,7 @@ func (tt_data *TtData) GetClasses() []*ttClass {
 				id := e.GetRef()
 				glist = append(glist, &ttGroup{
 					Id:            id,
-					Tag:           e.GetTag(),
+					Tag:           c.Class.Tag + base.CLASS_GROUP_SEPARATOR + e.GetTag(),
 					ClassIndex:    i,
 					AtomicIndexes: tt_data.atomicGroup2Indexes[id],
 				})
@@ -94,6 +94,7 @@ func (tt_data *TtData) GetClasses() []*ttClass {
 		clist[i] = &ttClass{
 			Id:            c.Class.Id,
 			Tag:           c.Class.Tag,
+			Separator:     base.CLASS_GROUP_SEPARATOR,
 			AtomicIndexes: tt_data.atomicGroup2Indexes[c.Class.ClassGroup],
 			Groups:        glist,
 		}

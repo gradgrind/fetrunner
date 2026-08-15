@@ -15,16 +15,27 @@ import "C"
 // until the next call to FetRunnerReadLog.
 var cmsg *C.char
 
+func init() {
+	base.LogToBuffer()
+}
+
 //export FetRunnerCommand
-func FetRunnerCommand(cString *C.char) {
+func FetRunnerCommand(cString *C.char) C.int {
 	gString := C.GoString(cString)
-	fetrunner.Dispatch(gString)
+
+	//TODO--
+	//fmt.Println("§", gString)
+	//return 2
+
+	return C.int(fetrunner.Dispatch(gString))
 }
 
 //export FetRunnerReadLog
 func FetRunnerReadLog() *C.char {
+	//fmt.Println("FetRunnerReadLog()")
 	// Blocks until there is a line to read.
-	line := base.LogTake()
+	line := base.ReadLogBufferLine()
+	//fmt.Printf("+ %s\n", line)
 	C.free(unsafe.Pointer(cmsg)) // cmsg == `nil` is OK
 	cmsg = C.CString(line)
 	return cmsg

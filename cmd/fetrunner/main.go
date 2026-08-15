@@ -67,6 +67,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -82,7 +83,11 @@ func main() {
 	real_soft := flag.Bool("s", false, "the weights of soft constraints are retained")
 	timeout := flag.Int("t", 300, "set timeout, s")
 	nprocesses := flag.Int("p", 0, "max. parallel processes")
-	fetpath := flag.String("fet", "", "FET executable: /path/to/fet-cl")
+	FET_CL := "fet-cl"
+	if runtime.GOOS == "windows" {
+		FET_CL = "fet-cl.exe"
+	}
+	fetpath := flag.String("fet", FET_CL, "FET executable: /path/to/fet-cl")
 	tmppath := flag.String("tmp", "", "Folder for temporary files (FET): /path/to/tmp")
 	write_fet_file := flag.Bool("xf", false, "write fully-constrained FET file")
 	testing := flag.Bool("xt", false, "run in testing mode")
@@ -117,17 +122,20 @@ func main() {
 	}
 	defer logfile.Close()
 	base.LogToFile(logfile)
+	defer base.LogStop()
 
 	fetrunner.Dispatch("VERSION")
-	fetrunner.Dispatch("TT_PARAMETER|TIMEOUT|" + strconv.Itoa(*timeout))
-	fetrunner.Dispatch("TT_PARAMETER|MAXPROCESSES|" + strconv.Itoa(*nprocesses))
-	fetrunner.Dispatch("TT_PARAMETER|DEBUG|" + strconv.FormatBool(*debug))
-	fetrunner.Dispatch("TT_PARAMETER|TESTING|" + strconv.FormatBool(*testing))
-	fetrunner.Dispatch("TT_PARAMETER|SKIP_HARD|" + strconv.FormatBool(*skip_hard))
-	fetrunner.Dispatch("TT_PARAMETER|REAL_SOFT|" + strconv.FormatBool(*real_soft))
-	fetrunner.Dispatch("TT_PARAMETER|WRITE_FET_FILE|" + strconv.FormatBool(*write_fet_file))
+	fetrunner.Dispatch("TT_PARAMETER TIMEOUT=" + strconv.Itoa(*timeout))
+	fetrunner.Dispatch("TT_PARAMETER MAXPROCESSES=" + strconv.Itoa(*nprocesses))
+	fetrunner.Dispatch("TT_PARAMETER DEBUG=" + strconv.FormatBool(*debug))
+	fetrunner.Dispatch("TT_PARAMETER TESTING=" + strconv.FormatBool(*testing))
+	fetrunner.Dispatch("TT_PARAMETER SKIP_HARD=" + strconv.FormatBool(*skip_hard))
+	fetrunner.Dispatch("TT_PARAMETER REAL_SOFT=" + strconv.FormatBool(*real_soft))
+	fetrunner.Dispatch("TT_PARAMETER WRITE_FET_FILE=" + strconv.FormatBool(*write_fet_file))
 
-	if *tmppath != "" {
+	if *tmppath == "" {
+		base.SetTmpDir()
+	} else {
 		// Set base directory for temporary files
 		abstmppath, _ := filepath.Abs(*tmppath)
 		if abstmppath != *tmppath {
@@ -137,49 +145,142 @@ func main() {
 		if errors.Is(err, os.ErrNotExist) || !fileInfo.IsDir() {
 			log.Fatalln("Not a directory:", abstmppath)
 		}
-		fetrunner.Dispatch("TMP_PATH|" + abstmppath)
-		if len(base.TEMPORARY_DIR) == 0 {
+		if fetrunner.Dispatch("TMP_PATH "+abstmppath) == 0 {
 			return
 		}
 	}
 
 	// Get the path to `fet-cl`, and its version number.
-	fetrunner.Dispatch("GET_FET|" + *fetpath + "|")
-	if len(fet.FETPATH) == 0 {
+	fetrunner.Dispatch("GET_FET " + *fetpath)
+	if fet.FETPATH == "" {
 		base.LogError("--NO_FET")
 		return
 	}
-	fetrunner.Dispatch("SET_FILE|" + abspath)
-	if len(base.DataBase.Name) == 0 {
+	if fetrunner.Dispatch("SET_FILE "+abspath) == 0 {
 		return
 	}
-	fetrunner.Dispatch("RUN_TT_SOURCE")
+	if fetrunner.Dispatch("RUN_TT_SOURCE") != 0 {
+		fetrunner.Dispatch("TT_PRIORITY_CONSTRAINT_TYPES")
+		fetrunner.Dispatch("TT_HARD_CONSTRAINTS")
+		fetrunner.Dispatch("TT_SOFT_CONSTRAINTS")
+		fetrunner.Dispatch("TT_NACTIVITIES")
 
-	fetrunner.Dispatch("TT_HARD_CONSTRAINTS")
-	fetrunner.Dispatch("TT_SOFT_CONSTRAINTS")
-	fetrunner.Dispatch("TT_NACTIVITIES")
+		go termination() // catch stop signal
 
-	go termination() // catch stop signal
+		fetrunner.Dispatch("RUN_TT")
 
-	fetrunner.Dispatch("RUN_TT")
-	cancelled := false
-	for {
-		if !cancelled && stop_request {
-			fetrunner.Dispatch("_STOP_TT")
-			cancelled = true // necessary because this loop is exited only later
+		/* TODO-- just testing the new functions
+		fmt.Println("Done")
+		fetrunner.Dispatch("TT_DAYS")
+		fetrunner.Dispatch("TT_HOURS")
+		fetrunner.Dispatch("TT_CLASSES")
+		fetrunner.Dispatch("TT_TEACHERS")
+		fetrunner.Dispatch("TT_ROOMS")
+		fetrunner.Dispatch("TT_ACTIVITIES")
+
+		lres := autotimetable.AutoTt.GetLastResult()
+		fetrunner.Dispatch("TT_CLASS_PLACEMENTS " + strconv.Itoa(len(lres.Classes)/2))
+		fetrunner.Dispatch("TT_TEACHER_PLACEMENTS " + strconv.Itoa(len(lres.Teachers)/2))
+		fetrunner.Dispatch("TT_ROOM_PLACEMENTS " + strconv.Itoa(len(lres.Rooms)/2))
+		*/
+		//fetrunner.Dispatch("TT_CLASSES")
+		/*TODO--
+		lres := autotimetable.AutoTt.GetLastResult()
+
+		gmap := map[string]int{}
+		for _, a := range lres.Activities {
+			for _, g := range a.Groups {
+				gmap[g.Tag] = -1
+			}
+		}
+		for _, g := range slices.Sorted(maps.Keys(gmap)) {
+			fmt.Println("Group:", g)
 		}
 
-		// Continue looping until run finished, using the ticker to slow down the loop.
-		base.LogWaitTicker()
-		if !base.LogRunning() {
-			break
+		type placement struct {
+			offset int
+			size   int
 		}
+		for cix, c := range lres.Classes {
+			fmt.Printf("Class %s %+v:\n", c.Tag, c.AtomicIndexes)
+			aixmap := make(map[int][]string, len(c.AtomicIndexes))
+			dglists := autotimetable.ClassDivisions(lres, cix)
+			udglists := [][]string{}
+			udgxlists := [][]placement{}
+			//uxxdglists := [][]string{}
+			gn := map[string]int{}
+			for _, g := range c.Groups {
+				if _, ok := gmap[g.Tag]; ok {
+					fmt.Printf(" ++> %s %+v\n", g.Tag, g.AtomicIndexes)
+					for _, aix := range g.AtomicIndexes {
+						aixmap[aix] = append(aixmap[aix], g.Tag)
+					}
+				}
+				gn[g.Tag] = len(g.AtomicIndexes)
+			}
+			for _, aix := range c.AtomicIndexes {
+				fmt.Printf(" **> %d: [%s]\n", aix, strings.Join(aixmap[aix], " & "))
+			}
+
+		gnext:
+			for _, glist := range dglists {
+				uglist := []string{}
+				ugxlist := []placement{}
+				i := 0
+				gi := []string{}
+
+				for _, g := range glist {
+					gi = append(gi, fmt.Sprintf("%s:%d", g, i))
+					s := gn[g]
+					if c, ok := gmap[g]; ok {
+						if c != -1 && c != cix {
+							panic("Group defined in two classes: " + g)
+						}
+						gmap[g] = cix
+						// group is used by an activity
+						uglist = append(uglist, g)
+						ugxlist = append(ugxlist, placement{i, s})
+					}
+					i += s
+				}
+
+			knext:
+				for k, kgl := range udglists {
+					if len(uglist) > len(kgl) {
+						// If kgl is a subset of uglist replace if in udglists.
+						for _, kg := range kgl {
+							if !slices.Contains(uglist, kg) {
+								// not a subset
+								continue knext
+							}
+						}
+						// It is a subset.
+						udglists[k] = uglist
+						udgxlists[k] = ugxlist
+						continue gnext
+					} else {
+						// If uglist is a subset of kgl don't add it to udglists.
+						for _, ug := range uglist {
+							if !slices.Contains(kgl, ug) {
+								// not a subset
+								continue knext
+							}
+						}
+						// It is a subset.
+						continue gnext
+					}
+				}
+				// Otherwise add uglist to udglists.
+				udglists = append(udglists, uglist)
+				udgxlists = append(udgxlists, ugxlist)
+			}
+			for k, gl := range udglists {
+				fmt.Printf(" --> %#v // %#v\n", gl, udgxlists[k])
+			}
+		}
+		*/
 	}
-	base.LogStop()
 }
-
-// Catch "terminate" signal (goroutine)
-var stop_request bool = false
 
 func termination() {
 	// Catch termination signal
@@ -187,5 +288,5 @@ func termination() {
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
 	<-sigChan // wait for signal
-	stop_request = true
+	fetrunner.Dispatch("_STOP_TT")
 }

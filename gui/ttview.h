@@ -1,0 +1,59 @@
+#ifndef TTVIEW_H
+#define TTVIEW_H
+
+#include <QList>
+#include <QWidget>
+#include "ttbase.h"
+#include "ttgrid.h"
+
+namespace Ui {
+
+class TtView;
+
+}
+
+class TtView : public QWidget
+{
+    Q_OBJECT
+
+    struct SplitActivity {
+        int activity;
+        int index;
+    };
+
+public:
+    explicit TtView(QWidget *parent = nullptr);
+    ~TtView();
+
+    void set_class(int cix, int agix, QString tag);
+    void set_room(int rix);
+    void set_teacher(int tix);
+    void new_grid(QString title = "");
+
+    TtBase *ttbase{nullptr};
+    QString WHOLE_CLASS{"⊙"};
+
+private:
+    Ui::TtView *ui;
+    //Canvas *canvas;
+    TtGrid *grid{nullptr};
+
+    // An array (days * hours) of activity index lists is used
+    // for arranging the Tiles in a time slot for class views.
+    QList<QList<QList<SplitActivity>>> weekBuffer;
+    QString classTag; // tag for viewed class
+    QString classSep; // separator (class-group) for viewed class
+    QList<int> classAtomics; // list of atomics for viewed class
+    QStringList classGroups; // list of groups for viewed class
+
+    void do_TEACHER_PLACEMENT(const QString &val);
+    void do_ROOM_PLACEMENT(const QString &val);
+    void do_CLASS_PLACEMENT(const QString &val);
+    void do_ATOMIC_GROUP_PLACEMENT(const QString &val);
+
+public slots:
+    void do_new_tt_data();
+    void enter_view();
+};
+
+#endif // TTVIEW_H
