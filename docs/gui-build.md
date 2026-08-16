@@ -2,9 +2,9 @@
 
 The following instructions assume you are using the Qt development kit from the [Qt website](https://www.qt.io/development/download-qt-installer-oss), installed to the standard location.
 
- 1) Compile `libfetrunner` as a [*static* library](./libfetrunner/README.md).
+ 1) Compile `libfetrunner` as a [*static* library](./libfetrunner-compile.md).
 
- 2) Make a new directory `build` in the `fetrunner/gui` directory.
+ 2) Make a new directory `build` in the `fetrunner` base directory.
 
  3) Open the terminal (Linux) or Powershell (Windows) in this `build` directory.
 

@@ -8,8 +8,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # MERGE_QT_TRANSLATIONS even requires Qt6.9. The INCLUDE_PLUGINS
 # option to qt_generate_deploy_app_script needs at least Qt6.10.
 
-# The fetrunner code itself should be backward compatible to at least
-# Qt6.2, perhaps even Qt5.15.
 find_package(Qt6 6.10 REQUIRED COMPONENTS Core Gui Widgets)
 find_package(Qt6 REQUIRED COMPONENTS LinguistTools)
 
@@ -56,8 +54,16 @@ target_link_libraries(fetrunner-gui
         libfetrunner
 )
 
+add_custom_target(htmldocs
+    ALL
+    uvx zensical build -f ${CMAKE_SOURCE_DIR}/zensical.toml
+)
+
 # Install generated .qm files.
 #install(FILES ${qm_files} DESTINATION translations)
+
+# Install help files
+install(DIRECTORY help TYPE DOC)
 
 install(TARGETS fetrunner-gui
     BUNDLE  DESTINATION .

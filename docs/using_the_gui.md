@@ -1,6 +1,6 @@
 # Using the GUI
 
-The `fetrunner` GUI offers a convenient way of using `fetrunner`, allowing files to be loaded, parameters to be set and runs to be initiated. When a `fetrunner` process is running, the GUI provides various views on to the state and progress of the run. When a run has completed, the resulting timetable can be displayed, in various views. In addition there are various logs which can be viewed.
+The `fetrunner` GUI offers a convenient way of using `fetrunner`, allowing files to be loaded, parameters to be set and runs to be initiated. When a `fetrunner` process is running, the GUI provides views on to the state and progress of the run. When a run has completed, the resulting timetable can be displayed, in various views. In addition there are some logs which can be viewed.
 
 To exit the program, click on the window-close button. If a `fetrunner` process is running, `fetrunner` will take a few seconds to tidy up before quitting completely.
 
@@ -8,11 +8,21 @@ When the program is started and before a file is loaded, some views are disabled
 
 ![main display](./images/Screenshot_01.png)
 
-## The display areas
+Clicking on the "Help" button should cause the `fetrunner` documentation to be shown in the system default browser.
 
-At the top of the window the currently loaded source file is shown, split into file name and folder. There is also a button to load a different one.
+Selecting View Logs will show just the initial log entries:
 
-Below this, there are two panels:
+![initial log](./images/Screenshot_01a.png)
+
+To progress further an input file must be loaded (click the "Open File" button).
+
+![file loaded](./images/Screenshot_01b.png)
+
+At the top of the window the currently loaded source file is now shown. The solver view is presented automatically.
+
+## The "Solve Timetable" view
+
+This view has two panels, left and right.
 
 ### The left panel
 
@@ -22,7 +32,7 @@ At the top a few of the most useful parameters are shown and can be changed.
 
  - Time limit: When a run reaches this elapsed time, it will be aborted. The latest successful `FET` instance will be taken as the result.
 
- - Test soft constraints: Ticking this box will include all hard constraints as the basis for every `FET` instance, the two special instances with no constraints and only hard constraints will not be run. It is intended for cases where the hard constraints are known to be OK and we want to concentrate on the soft constraints.
+ - Test soft constraints: Ticking this box will include all hard constraints as the basis for every `FET` instance, the two special instances, with no constraints and only hard constraints, will not be run. It is intended for cases where the hard constraints are known to be OK and we want to concentrate on the soft constraints.
 
  - "Real" soft constraints: Retain the original weights of the soft constraints. Otherwise they are made "hard" for the `FET` runs. 
 
@@ -32,23 +42,41 @@ The items below this only become relevant when a file has been loaded and a run 
 
 ![main display started](./images/Screenshot_02.png)
 
-Below this the progress of the three "special" instances (`FET` processes) are shown. Note that if the "Test soft constraints" checkbox is ticked, only the "Full" instance is active.
+#### "Special instances"
 
-The next area, "Enabled constraints" shows the progress of the tests with single constraint types, that is, the increasing number of constraints which have been found to be fulfillable. It displays the same information as the panel at the top of the "Run progress" view, but in a different form.
+The progress of the three "special" instances (`FET` processes) are shown:
 
-Then comes the "Elapsed time" counter, showing the number of seconds for which a run has been active.
+ - Full: an instance with all original constraints activated,
+ 
+  - Hard only: an instance with all original hard constraints activated,
 
-Finally there are the run controls. Here you can start, and also interrupt, a run. Stopping a run has the same effect as reaching the time limit: it will take a couple of seconds to become effective because it tidies up the running processes and collects the latest results.
+  - None: an instance with all original constraints disabled.
+
+Under normal circumstances the last of these instances should complete very quickly.
+  
+Note that if the "Test soft constraints" checkbox is ticked, only the "Full" instance is active.
+
+#### "Enabled constraints"
+
+This small panel shows the progress of the tests with single constraint types separated into "Hard" and "Soft"; that is, the increasing number of constraints which have been found to be fulfillable. It displays the same information as the panel at the top of the "Run progress" view, but in a different form.
+
+#### The "Elapsed time" counter
+
+This show the number of seconds for which a run has been active.
+
+#### The run controls
+
+Finally there are the run controls. Here you can start, and also interrupt, a run. Stopping a run has the same effect as reaching the time limit, it will take a couple of seconds to become effective because it tidies up the running processes and collects the latest results.
 
 ### The right panel
 
-This contains several panels selected by tabs.
+This contains several sub-panels selected by tabs.
 
 #### Tab: Run progress
 
-Here all the constraint types used in the source file are shown in a table. Above the table there are lines to display the total progress of all hard and all soft constraints (number of "accepted" constraints). In the table, the constraint types are placed in the last column because this is easier (and I think neater) to lay out.
+Here all the constraint types used in the source file are shown in a table. Above the table there are lines to display the total progress of all hard and all soft constraints (number of "accepted" constraints). In the table, the constraint types are placed in the last column because this is easier (and I think neater) to lay out in the GUI.
 
-Note that for soft constraints, the constraint type is prefixed by "nn:", where "nn" is a number between "00" and "99" related to (but not the same as) the `FET` percentage weight.
+Note that for soft constraints, the constraint type is prefixed by a weight, "nn:", where "nn" is a number between "00" and "99" related to, but not the same as, the `FET` percentage weight.
 
 The numeric columns display (for the associated constraint type):
 
@@ -72,15 +100,9 @@ The numeric columns display (for the associated constraint type):
 
     2) the number of individual constraints being tested in this instance;
 
-    3) the total number of individual constraints;
+    3) the total number of individual constraints of this type.
 
-This table also shows single constraints which have been "rejected" (because they may be impossible), as can be seen in the following screenshot:
-
-![run state tab, some eliminated](./images/Screenshot_03a.png)
-
-Instead of the number of constraints, "--- [n]" is shown. The number in square brackets is the index given to the rejected constraint in the "xxx_Result.fet" file produced by this run. This should help to find exactly which constraint this line refers to. These entries also have a tool-tip, which can indicate why the constraint was rejected.
-
-At the bottom of the page, the currently running instances are shown together with their progress (in percent) (excluding the "special" instances). Many of these will be terminated before completion. Even if one reaches 100%, it will only be "accepted" (and this transferred to the upper table) if it is the first one in the current group to do so.
+At the bottom of the panel, the currently running instances are shown, together with their progress (in percent), excluding the "special" instances. Many of these will be terminated before completion. Even if one reaches 100%, it will only be "accepted" (and this transferred to the upper table) if it is the first one in the current group to do so.
 
 The numeric columns display (for the associated constraint type):
 
@@ -90,28 +112,56 @@ The numeric columns display (for the associated constraint type):
 	
 	3) the process run time at which the last progress change was recorded;
 
-    4) the time-out for this process (note that this is handled very flexibly!).
+    4) a number related to (a fraction of) the time-out for this process. Note that this may be handled very flexibly internally!.
 
-Constraint groups with only one constraint are run without a time-out (shown as "---"), but they may still be terminated if they seem to be "stuck".
-
-#### Tab: Log
-
-![log tab](./images/Screenshot_04.png)
-
-This view is probably of little interest to the normal user. It shows the communication between the GUI and the back-end processor.
+Constraint groups with only one constraint are run without a definite time limit (thi is shown as "---"), but they may still be terminated if they seem to be "stuck".
 
 #### Tab: Settings
 
-![settings tab](./images/Screenshot_05.png)
+![settings tab](./images/Screenshot_04.png)
 
 This gives access to some settings which will not normally be needed, except perhaps for initial set-up.
 
- - Temporary files: `fetrunner` produces many temporary files, arising from the many calls to the `FET` command-line program. If possible, these will be saved in an in-memory file-system. See [Temporary files](../README.md#temporary-files) for further details.
+ - Temporary files: `fetrunner` produces many temporary files, arising from the many calls to the `FET` command-line program. If possible, these will be saved in an in-memory file-system. See [Temporary files](./temporary_files.md) for further details.
 
- - Fet command: This shows the command used to run the `FET`command-line program. It may be necessary to change this occasionally (after an update, for example), or there may be multiple versions available on the machine. You can select the one used here. Clicking "Default" will try to restore the default value (in the same folder as the ``fetrunner` executable, or else in the systems standard "PATH").
+ - Fet command: This shows the command used to run the `FET`command-line program. It may be necessary to change this occasionally (after an update, for example), or there may be multiple versions available on the machine. You can select the one used here. Clicking "Default" will try to restore the default value (in the same folder as the ``fetrunner` executable, or else in the system's standard "PATH").
  
  - Fet version: The version of the selected `FET` program will be shown here.
 
  - Generate fully constrained FET file. This causes a slightly modified version of the original `FET` file to be written to the folder containing the source file. It is given a "_" prefix and contains some additional information added by `fetrunner`. Unless the "Real" soft constraints option is set, any soft constraints will now have "Weight_Percentage" 100, i.e. have become "hard". The original weight is added to the "Comments" field, along with a constraint index.
 
-Also the `fetrunner` version is shown.
+## The "View Timetable" view
+
+This view becomes available when a run ends:
+
+![run ended](./images/Screenshot_07.png)
+
+Initially it just shows the empty timetable layout (for a week):
+
+![timetable layout](./images/Screenshot_08.png)
+
+The type of view can then be selected (single teacher, class or room). The views for teachers and rooms are the simplest, they just require selection of the teacher or room whose timetable is to be displayed:
+
+![timetable layout](./images/Screenshot_09.png)
+
+For a class this is complicated by the possibility of a class being split into groups. Either a whole class can be selected or a so-called "atomic group" (here meaning a group of pupils sharing a timetable).
+
+Whole class:
+
+![timetable layout](./images/Screenshot_10.png)
+
+Single group:
+
+![timetable layout](./images/Screenshot_11.png)
+
+## The "View Logs" view
+
+When a run is started, a short entry is added to the General Log. Information relating to the progress of the run is shown in the Solver Log:
+
+![log tab](./images/Screenshot_05.png)
+
+This view is probably of little interest to the normal user. It shows the communication between the GUI and the back-end processor.
+
+The Timetable Log shows the communication between front- and back-ends when View Timetable is selected: the front-end fetches all the basic timetable data (except placements) from the stored result in the back-end.
+
+The Single Timetable Log shows the communication when a single timetable is viewed: the placements are fetched from the back-end.

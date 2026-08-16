@@ -24,7 +24,12 @@ MainWindow::MainWindow(QWidget *parent)
         ui->help,
         &QPushButton::clicked,
         this,
-        [this]() {QDesktopServices::openUrl(QUrl("../../help/index.html"));}
+        // Get path to help files relative to executable.
+        // TODO: this path may well need changing, perhaps dependent on platform ...
+        [this]() {QDesktopServices::openUrl(
+                       QUrl(QDir::cleanPath(QDir(
+                                QCoreApplication::applicationDirPath())
+                                .absoluteFilePath("../share/doc/fetrunner-gui/help/index.html"))));}
     );
 
     backend->registerResultHandler("FETRUNNER_VERSION",
