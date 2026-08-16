@@ -1,8 +1,10 @@
 # Using the GUI
 
-The `fetrunner` GUI offers a convenient way of using `fetrunner`, allowing files to be loaded, parameters to be set and runs to be initiated. When a `fetrunner` process is running, the GUI provides various views on to the state and progress of the run.
+The `fetrunner` GUI offers a convenient way of using `fetrunner`, allowing files to be loaded, parameters to be set and runs to be initiated. When a `fetrunner` process is running, the GUI provides various views on to the state and progress of the run. When a run has completed, the resulting timetable can be displayed, in various views. In addition there are various logs which can be viewed.
 
 To exit the program, click on the window-close button. If a `fetrunner` process is running, `fetrunner` will take a few seconds to tidy up before quitting completely.
+
+When the program is started and before a file is loaded, some views are disabled:
 
 ![main display](./images/Screenshot_01.png)
 

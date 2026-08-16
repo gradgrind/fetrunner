@@ -1,6 +1,8 @@
 # Build `libfetrunner`
 
-The Go compiler must be [installed](https://go.dev/doc/install). These commands should then be run within the `libfetrunner` directory.
+The Go compiler must be [installed](https://go.dev/doc/install). As Cgo is necessary, a suitable C-compiler for the target platform must be available. For further information see the [Cgo dcumentation](https://pkg.go.dev/cmd/cgo) or the [Wiki](https://go.dev/wiki/cgo).
+
+These commands should then be run within the `libfetrunner` directory.
 
 ## To build a static library
 
