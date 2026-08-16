@@ -26,7 +26,7 @@ func InitBackend(attdata *autotimetable.AutoTtData) {
 		// Use the source directory ...
 		tmpdir0 = filepath.Join(bdata.SourceDir, "_fetrunner")
 	}
-	tmpdir := filepath.Join(tmpdir0, bdata.Name)
+	tmpdir := filepath.Join(tmpdir0, bdata.Name+"_"+strconv.Itoa(os.Getpid()))
 	os.RemoveAll(tmpdir)
 	var fetbuild *fet_build
 	switch stype := bdata.Source.SourceType(); stype {
