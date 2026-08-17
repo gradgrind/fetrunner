@@ -26,10 +26,18 @@ MainWindow::MainWindow(QWidget *parent)
         this,
         // Get path to help files relative to executable.
         // TODO: this path may well need changing, perhaps dependent on platform ...
-        [this]() {QDesktopServices::openUrl(
-                       QUrl(QDir::cleanPath(QDir(
-                                QCoreApplication::applicationDirPath())
-                                .absoluteFilePath("../share/doc/fetrunner-gui/help/index.html"))));}
+        [this]() {
+            QString p = QDir::cleanPath(QDir(
+                                            QCoreApplication::applicationDirPath())
+                                            .absoluteFilePath("../help/index.html"));
+            auto u = QUrl::fromLocalFile(p);
+            QFileInfo check_file(u.toLocalFile());
+            // check if file exists and if yes: Is it really a file and not a directory?
+            if (check_file.exists() && check_file.isFile())
+                QDesktopServices::openUrl(u);
+            else
+                QMessageBox::critical(this, "File path invalid", check_file.absoluteFilePath());
+        }
     );
 
     backend->registerResultHandler("FETRUNNER_VERSION",

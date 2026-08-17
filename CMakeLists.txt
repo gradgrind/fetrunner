@@ -63,7 +63,7 @@ add_custom_target(htmldocs
 #install(FILES ${qm_files} DESTINATION translations)
 
 # Install help files
-install(DIRECTORY help TYPE DOC)
+install(DIRECTORY help DESTINATION .)
 
 install(TARGETS fetrunner-gui
     BUNDLE  DESTINATION .

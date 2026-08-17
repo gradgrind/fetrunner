@@ -30,6 +30,12 @@ Optionally, copy the `icons` directory from `fetrunner\gui` to  the `bin` direct
 C:\Qt\Tools\CMake_64\bin\cmake.exe .. -DCMAKE_PREFIX_PATH=C:\Qt\6.11.1\mingw_64 -DCMAKE_GENERATOR="MinGW Makefiles"
 
 C:\Qt\Tools\CMake_64\bin\cmake.exe --build . -j 4
+
+or, to do the install stage:
+
+C:\Qt\Tools\CMake_64\bin\cmake.exe .. -DCMAKE_PREFIX_PATH=C:\Qt\6.11.1\mingw_64 -DCMAKE_GENERATOR="MinGW Makefiles" -DCMAKE_INSTALL_PREFIX=install
+
+C:\Qt\Tools\CMake_64\bin\cmake.exe --build . --target install -j 4
 ```
 
 Copy the resulting `fetrunner-gui.exe` executable from `build` to the root directory of your `FET` installation.
