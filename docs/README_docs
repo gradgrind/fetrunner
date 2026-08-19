@@ -1,0 +1,13 @@
+The documentation is divided into the categories "help", "program" and "W365" within the subdirectory "src". It is written in Markdown, which, to be accessible to the fetrunner GUI (via the help button), must be converted to HTML. This is done by using `mdBook`.
+
+The "help" section contains a general introduction and instructions for using the software. The "program" section is a start at describing some of the internal functioning. "W365" refers to "Waldorf 365", a German school management program which can use FET via Fetrunner to assist in generating timetables – some details of the interface are described here.
+ 
+mdBook should be downloaded from its Releases page, https://github.com/rust-lang/mdBook/releases, and unpacked, preferably to a location on the system path, so that it can be run easily. It is a single executable file.
+
+To build or rebuild the HTML documentation, run the following in the fetrunner base directory:
+
+mdbook clean docs
+mdbook build docs
+
+The entry point to the generated documentation is then at book/index.html. Which source files are converted and where they end up in the navigation are determined by the file src/SUMMARY.md.
+

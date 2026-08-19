@@ -6,7 +6,6 @@ _*
 *.log
 tmp*
 build/
-help/
 .qtcreator/
 
 #

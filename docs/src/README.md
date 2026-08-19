@@ -6,7 +6,7 @@ Given a `FET` file, `fetrunner` aims to produce a "solution" (a timetable withou
 
 `fetrunner` can be run as a command-line program, but there is also a convenient GUI version which shows how a run is progressing and can also display the resulting timetables.
 
-![fetrunner-gui](./images/Screenshot_00.png)
+![fetrunner-gui](./help/images/Screenshot_00.png)
 
 The result of a `fetrunner` run is a "known working" `FET` file (where some of the constraints might have been deactivated) and a JSON file containing the activity placements from the "successful" `FET` run together with information about the "failed" constraints. The command-line `fetrunner` also produces a log file, which is updated continually during the process, showing some details of the progress. In the GUI version, the log is not output as a file, but is used to update the interface (and is also available to view, if desired).
 
@@ -14,13 +14,13 @@ In order to function as intended `fetrunner` needs to be able to run several pro
 
 ## Not running on Linux?
 
-`fetrunner` produces many temporary files, which might cause excessive wear on an SSD. This should not be such a problem on Linux, because `fetrunner` uses the in-memory filesystem at `/dev/shm` for these temporary files by default. See [Temporary files](./temporary_files.md) for ways to avoid this on other operating systems.
+`fetrunner` produces many temporary files, which might cause excessive wear on an SSD. This should not be such a problem on Linux, because `fetrunner` uses the in-memory filesystem at `/dev/shm` for these temporary files by default. See [Temporary files](./help/temporary_files.md) for ways to avoid this on other operating systems.
 
 ## Important Note for Windows
 
 On Windows the GUI version, `fetrunner-gui`, needs a special build of the `FET` command-line program. It can't use `fet-cl.exe`, as that would pop up a console window every time it was run (and that would be a *lot* of console windows ...).
 
-The `fetrunner` binary package for Windows contains the necessary `fet-clw.exe` program, but it may not match the version of your `FET` installation. If you need a newer `FET` feature, you may need to [recompile it](./windows_fet_clw.md).
+The `fetrunner` binary package for Windows contains the necessary `fet-clw.exe` program, but it may not match the version of your `FET` installation. If you need a newer `FET` feature, you may need to [recompile it](./help/windows_fet_clw.md).
 
 Note that `fet-clw.exe` is not my software and has a different, more restrictive licence: AGPL Version 3. I am not sure whether this usage is strictly in compliance with the licence, but it is used here with the agreement of its author. For further details, source code, etc. see the [FET website](https://lalescu.ro/liviu/fet/).
 
@@ -28,7 +28,7 @@ Note that `fet-clw.exe` is not my software and has a different, more restrictive
 
 `fetrunner` started life as a command-line tool, written in `Go`. Subsequently `libfetrunner` was added, which makes the functionality available as a program library (C library, shared or static), using simple string structures for communication. A GUI version followed, written in `C++/Qt`, which uses `libfetrunner` as its back-end.
 
-For usage information, including help with interpreting the results of a `fetrunner` run, see [Using `fetrunner`](./using_fetrunner.md).
+For usage information, including help with interpreting the results of a `fetrunner` run, see [Using `fetrunner`](./help/using_fetrunner.md).
 
 ### Building the command-line tool
 
@@ -42,8 +42,8 @@ An executable should be produced in the current directory.
 
 ### Building the program library
 
-This use `CGO` and thus requires a C-compiler for the target platform. See [Build `libfetrunner`](./libfetrunner-compile.md) for details.
+This use `CGO` and thus requires a C-compiler for the target platform. See [Build `libfetrunner`](./help/libfetrunner-compile.md) for details.
 
 ### Building the GUI
 
-As this is written in `C++` it is more difficult. See [Build GUI](./gui-build.md).
+As this is written in `C++` it is more difficult. See [Build GUI](./help/gui-build.md).
