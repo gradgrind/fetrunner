@@ -56,14 +56,22 @@ target_link_libraries(fetrunner-gui
 
 add_custom_target(htmldocs
     ALL
-    uvx zensical build -f ${CMAKE_SOURCE_DIR}/zensical.toml
+    #uvx zensical build -f ${CMAKE_SOURCE_DIR}/zensical.toml
+    COMMAND mdbook clean ${CMAKE_SOURCE_DIR}/docs
+    COMMAND mdbook build ${CMAKE_SOURCE_DIR}/docs
 )
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(CMAKE_INSTALL_DATADIR ".")
+    set(CMAKE_INSTALL_BINDIR ".")
+    set(CMAKE_INSTALL_LIBDIR ".")
+endif()
 
 # Install generated .qm files.
 #install(FILES ${qm_files} DESTINATION translations)
 
-# Install help files
-install(DIRECTORY help DESTINATION .)
+# Install documentation files
+install(DIRECTORY docs/fetrunner_docs DESTINATION .)
 
 install(TARGETS fetrunner-gui
     BUNDLE  DESTINATION .

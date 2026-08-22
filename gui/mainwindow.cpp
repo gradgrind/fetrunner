@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
         [this]() {
             QString p = QDir::cleanPath(QDir(
                                             QCoreApplication::applicationDirPath())
-                                            .absoluteFilePath("../help/index.html"));
+                                            .absoluteFilePath("../fetrunner_docs/index.html"));
             auto u = QUrl::fromLocalFile(p);
             QFileInfo check_file(u.toLocalFile());
             // check if file exists and if yes: Is it really a file and not a directory?
