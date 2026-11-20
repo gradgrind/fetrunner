@@ -3,6 +3,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <qsvgwidget.h>
 #include "backend.h"
 #include "globals.h"
 #include "ui_mainwindow.h"
@@ -19,7 +20,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     notifier = new Notifier();
-
+    auto logo = new QSvgWidget(":/gui/icons/fetrunner.svg");
+    ui->logo_frame->layout()->addWidget(logo);
     connect(
         ui->help,
         &QPushButton::clicked,
@@ -28,8 +30,8 @@ MainWindow::MainWindow(QWidget *parent)
         // TODO: this path may well need changing, perhaps dependent on platform ...
         [this]() {
             QString p = QDir::cleanPath(QDir(
-                                            QCoreApplication::applicationDirPath())
-                                            .absoluteFilePath("../fetrunner_docs/index.html"));
+                QCoreApplication::applicationDirPath())
+                    .absoluteFilePath("../share/fetrunner/html_docs/index.html"));
             auto u = QUrl::fromLocalFile(p);
             QFileInfo check_file(u.toLocalFile());
             // check if file exists and if yes: Is it really a file and not a directory?

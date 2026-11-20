@@ -8,7 +8,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # MERGE_QT_TRANSLATIONS even requires Qt6.9. The INCLUDE_PLUGINS
 # option to qt_generate_deploy_app_script needs at least Qt6.10.
 
-find_package(Qt6 6.10 REQUIRED COMPONENTS Core Gui Widgets)
+# This enables the Windows RC compiler to work even with spaces in the path.
+if(MINGW)
+    set(CMAKE_RC_COMPILER_INIT windres)
+    ENABLE_LANGUAGE(RC)
+    set(CMAKE_RC_COMPILE_OBJECT
+        "<CMAKE_RC_COMPILER> <FLAGS> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
+endif(MINGW)
+
+find_package(Qt6 6.10 REQUIRED COMPONENTS Core Gui Widgets SvgWidgets)
 find_package(Qt6 REQUIRED COMPONENTS LinguistTools)
 
 # Qt >= 6.3. I18N_TRANSLATED_LANGUAGES: Qt >= 6.7
@@ -21,8 +29,11 @@ set_target_properties(libfetrunner PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/libfetrunner"
 )
 
+set(app_icon_resource_windows "gui/icons/fetrunner.rc")
+
 qt_add_executable(fetrunner-gui
     WIN32 MACOSX_BUNDLE
+    ${app_icon_resource_windows}
     gui/main.cpp
     gui/mainwindow.cpp gui/mainwindow.h gui/mainwindow.ui
     gui/backend.cpp gui/backend.h
@@ -40,23 +51,24 @@ qt_add_executable(fetrunner-gui
     resources.qrc
 )
 
-qt_add_translations(fetrunner-gui MERGE_QT_TRANSLATIONS
+qt_add_translations(fetrunner-gui
+    MERGE_QT_TRANSLATIONS
     TS_FILE_DIR translations
     # Do not embed generated .qm files.
     #QM_FILES_OUTPUT_VARIABLE qm_files
-    LUPDATE_OPTIONS -no-obsolete
+    #LUPDATE_OPTIONS -no-obsolete
 )
 
 target_link_libraries(fetrunner-gui
     PRIVATE
         Qt::Core
         Qt::Widgets
+        Qt::SvgWidgets
         libfetrunner
 )
 
 add_custom_target(htmldocs
     ALL
-    #uvx zensical build -f ${CMAKE_SOURCE_DIR}/zensical.toml
     COMMAND mdbook clean ${CMAKE_SOURCE_DIR}/docs
     COMMAND mdbook build ${CMAKE_SOURCE_DIR}/docs
 )
@@ -71,7 +83,7 @@ endif()
 #install(FILES ${qm_files} DESTINATION translations)
 
 # Install documentation files
-install(DIRECTORY docs/fetrunner_docs DESTINATION .)
+install(DIRECTORY docs/fetrunner_docs/ DESTINATION ${CMAKE_INSTALL_DATADIR}/fetrunner/html_docs)
 
 install(TARGETS fetrunner-gui
     BUNDLE  DESTINATION .
