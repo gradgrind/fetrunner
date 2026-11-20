@@ -69,8 +69,8 @@ target_link_libraries(fetrunner-gui
 
 add_custom_target(htmldocs
     ALL
-    COMMAND mdbook clean ${CMAKE_SOURCE_DIR}/docs
-    COMMAND mdbook build ${CMAKE_SOURCE_DIR}/docs
+    COMMAND mdbook clean "${CMAKE_SOURCE_DIR}/docs"
+    COMMAND mdbook build "${CMAKE_SOURCE_DIR}/docs"
 )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -83,12 +83,12 @@ endif()
 #install(FILES ${qm_files} DESTINATION translations)
 
 # Install documentation files
-install(DIRECTORY docs/fetrunner_docs/ DESTINATION ${CMAKE_INSTALL_DATADIR}/fetrunner/html_docs)
+install(DIRECTORY docs/fetrunner_docs/ DESTINATION "${CMAKE_INSTALL_DATADIR}/fetrunner/html_docs")
 
 install(TARGETS fetrunner-gui
-    BUNDLE  DESTINATION .
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    BUNDLE  DESTINATION "."
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 )
 
 # Qt >= 6.3. Qt >= 6.10 for INCLUDE_PLUGINS

@@ -224,6 +224,7 @@ void FetRunner::push_go()
 bool FetRunner::set_fet_path(QString fetpath0)
 {
     auto fetpath = fetpath0;
+    bool basicpath = false;
     QString fetv;
     QString fetp;
     while (true) {
@@ -236,13 +237,19 @@ bool FetRunner::set_fet_path(QString fetpath0)
             if (fetpath.isEmpty()) {
                 return false;
             }
-        } else if (fetpath == "") {
+        } else if (fetpath.isEmpty()) {
             fetpath = FET_CL;
+            basicpath = true;
         }
         if (backend->op("GET_FET", fetpath))
             break;
 
         // Handle FET executable not found.
+        // If FET_CL hasn't been tested yet, do so now.
+        if ( !basicpath ) {
+            fetpath.clear();
+            continue;
+        }
 
         // Show log tab in case the warnings are useful.
         emit notifier->show_logger(0);
