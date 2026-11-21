@@ -10,6 +10,7 @@ BASEDIR=$(dirname "$SCRIPT")
 cd $BASEDIR
 . "common_base.sh"
 
+# Set the application name
 APPNAME="fetrunner"
 APPDIR="."
 

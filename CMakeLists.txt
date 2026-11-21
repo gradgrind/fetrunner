@@ -106,6 +106,14 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         NO_UNSUPPORTED_PLATFORM_ERROR
         INCLUDE_PLUGINS wayland
     )
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    qt_generate_deploy_app_script(
+        TARGET fetrunner-gui
+        OUTPUT_SCRIPT deploy_script
+        NO_TRANSLATIONS
+        NO_UNSUPPORTED_PLATFORM_ERROR
+        DEPLOY_TOOL_OPTIONS --no-opengl-sw --no-system-d3d-compiler --no-system-dxc-compiler
+    )
 else()
     qt_generate_deploy_app_script(
         TARGET fetrunner-gui
