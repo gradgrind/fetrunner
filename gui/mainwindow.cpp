@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     notifier = new Notifier();
-    auto logo = new QSvgWidget(":/gui/icons/fetrunner.svg");
+    auto logo = new QSvgWidget(":gui/icons/fetrunner.svg");
     ui->logo_frame->layout()->addWidget(logo);
     connect(
         ui->help,

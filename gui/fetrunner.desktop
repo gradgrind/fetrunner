@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
 Name=fetrunner
-GenericName=Timetable software for schools
-GenericName[de]=Stundenplan-Generator
+GenericName=Timetable Generator
+GenericName[de]=Stundenplanerstellung
 Comment=Generate timetables for educational institutions
 Comment[de]=Stundenpläne für Lehreinrichtungen erstellen
 Keywords=schedule;planning;school;high-school;university;education;teacher;students;

@@ -40,7 +40,7 @@ int main(
 
     backend = new Backend();
     MainWindow w;
-    w.setWindowIcon(QIcon(":/gui/icons/fetrunner.svg"));
+    w.setWindowIcon(QIcon(":gui/icons/fetrunner.svg"));
 noicon:
 
     w.show();

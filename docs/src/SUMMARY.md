@@ -1,13 +1,13 @@
 # Summary
 
 - [Introduction](README.md)
-- [About Fetrunner](help/fetrunner.md)
-- [Using Fetrunner](help/using_fetrunner.md)
+- [About fetrunner](help/fetrunner.md)
+- [Using fetrunner](help/using_fetrunner.md)
 - [The Results](help/Result_JSON.md)
 - [Using the GUI](help/using_the_gui.md)
 - [Using the Command Line](help/using_the_cli.md)
 - [Temporary Files](help/temporary_files.md)
-- [How Fetrunner Works](help/how_fetrunner_works.md)
+- [How fetrunner Works](help/how_fetrunner_works.md)
 - [Automatic Constraint Activation](help/automatic_constraint_switching.md)
 - [Build the GUI](help/gui-build.md)
 - [Build libfetrunner](help/libfetrunner-compile.md)

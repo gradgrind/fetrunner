@@ -8,6 +8,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # MERGE_QT_TRANSLATIONS even requires Qt6.9. The INCLUDE_PLUGINS
 # option to qt_generate_deploy_app_script needs at least Qt6.10.
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(CMAKE_INSTALL_DATADIR ".")
+    set(CMAKE_INSTALL_BINDIR ".")
+    set(CMAKE_INSTALL_LIBDIR ".")
+endif()
+
 # This enables the Windows RC compiler to work even with spaces in the path.
 if(MINGW)
     set(CMAKE_RC_COMPILER_INIT windres)
@@ -23,13 +29,13 @@ find_package(Qt6 REQUIRED COMPONENTS LinguistTools)
 qt_standard_project_setup(I18N_TRANSLATED_LANGUAGES de)
 set(CMAKE_AUTORCC ON)
 
+set(app_icon_resource_windows "gui/icons/fetrunner.rc")
+
 add_library(libfetrunner STATIC IMPORTED) # STATIC or SHARED
 set_target_properties(libfetrunner PROPERTIES
-  IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/libfetrunner/libfetrunner.a"
+  IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/libfetrunner.a"
   INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/libfetrunner"
 )
-
-set(app_icon_resource_windows "gui/icons/fetrunner.rc")
 
 qt_add_executable(fetrunner-gui
     WIN32 MACOSX_BUNDLE
@@ -67,16 +73,16 @@ target_link_libraries(fetrunner-gui
         libfetrunner
 )
 
+# Build docs
 add_custom_target(htmldocs
     ALL
     COMMAND mdbook clean "${CMAKE_SOURCE_DIR}/docs"
     COMMAND mdbook build "${CMAKE_SOURCE_DIR}/docs"
 )
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set(CMAKE_INSTALL_DATADIR ".")
-    set(CMAKE_INSTALL_BINDIR ".")
-    set(CMAKE_INSTALL_LIBDIR ".")
+if(NOT (CMAKE_SYSTEM_NAME STREQUAL "Windows"))
+    install(FILES gui/fetrunner.desktop DESTINATION "${CMAKE_INSTALL_DATADIR}/applications")
+    install(FILES gui/icons/fetrunner.svg DESTINATION "${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps")
 endif()
 
 # Install generated .qm files.
