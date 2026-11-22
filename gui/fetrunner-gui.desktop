@@ -1,10 +1,10 @@
 [Desktop Entry]
 Type=Application
 Name=fetrunner
-GenericName=Timetable Generator
-GenericName[de]=Stundenplanerstellung
+GenericName=Timetable Generation using FET
+GenericName[de]=Stundenplanerstellung mit FET
 Comment=Generate timetables for educational institutions
-Comment[de]=Stundenpläne für Lehreinrichtungen erstellen
+Comment[de]=Stundenpläne für Bildungseinrichtungen erstellen
 Keywords=schedule;planning;school;high-school;university;education;teacher;students;
 Icon=fetrunner
 Exec=fetrunner-gui

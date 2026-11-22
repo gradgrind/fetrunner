@@ -81,7 +81,7 @@ add_custom_target(htmldocs
 )
 
 if(NOT (CMAKE_SYSTEM_NAME STREQUAL "Windows"))
-    install(FILES gui/fetrunner.desktop DESTINATION "${CMAKE_INSTALL_DATADIR}/applications")
+    install(FILES gui/fetrunner-gui.desktop DESTINATION "${CMAKE_INSTALL_DATADIR}/applications")
     install(FILES gui/icons/fetrunner.svg DESTINATION "${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps")
 endif()
 
