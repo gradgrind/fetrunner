@@ -1,5 +1,8 @@
 # Build the app which is to be packaged.
 
+# Use a different build directory so as not to clash with the basic version
+$BUILDDIR = "${BUILDDIR}_with_fet"
+
 Write-Host
 Write-Host "Compile fetrunner -> $BUILDDIR\$INSTALLDIR\fetrunner"
 Write-Host
