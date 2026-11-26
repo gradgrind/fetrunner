@@ -21,7 +21,10 @@ Once all the build dependencies have been installed:
  - Unpack the `FET` source directory (something like `fet-7.13.0`) into the `fetrunner` root directory.
 
  - Linux, without `FET`:
-```path/to/QAIFUS/BUILD_ALL.sh fetrunner```
+
+```
+path/to/QAIFUS/BUILD_ALL.sh fetrunner
+```
 
 - Linux, with `FET`:
 
