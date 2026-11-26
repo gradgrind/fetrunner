@@ -6,37 +6,29 @@
 #include <QLibraryInfo>
 #include <QLocale>
 #include <QTranslator>
-
-// Makes visible only the literal operators declared in StringLiterals
-//using namespace Qt::StringLiterals;
-
-#if QT_VERSION < 0x060000
-#define QtLIBLOC QLibraryInfo::location
-#else
-#define QtLIBLOC QLibraryInfo::path
-#endif
+#include <QtEnvironmentVariables>
 
 int main(
     int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    auto locale = QLocale::system();
-    /*
-    QTranslator translator0;
-    if (translator0.load(locale,
-                         "qtbase",
-                         "_",
-                         QtLIBLOC(QLibraryInfo::TranslationsPath))) {
-        app.installTranslator(&translator0);
+    // Allow the language for translation to be read from the environment variable "QTLANG".
+    auto locale = QLocale(qEnvironmentVariable("QTLANG"));
+    if ( locale.language() == QLocale::C ) {
+        // No valid language was found.
+        locale = QLocale::system();
     }
-    */
-
     QTranslator translator;
     const QString baseName = "fetrunner-gui_" + locale.name();
     if (translator.load(":/i18n/" + baseName)) {
         app.installTranslator(&translator);
+    } else {
+        qDebug() << "Set language failed:" << baseName;
     }
+
+    //qDebug() << "&&&1" << locale.name();
+    //qDebug() << "&&&2" << QLocale::languageToCode(locale.language());
 
     backend = new Backend();
     MainWindow w;
