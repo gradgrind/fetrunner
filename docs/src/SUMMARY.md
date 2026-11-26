@@ -11,7 +11,6 @@
 - [Automatic Constraint Activation](help/automatic_constraint_switching.md)
 - [Build the GUI](help/gui-build.md)
 - [Build libfetrunner](help/libfetrunner-compile.md)
-- [Windows "No console"](help/windows_fet_clw.md)
 - [Internal](program/program.md)
     - [Modular Program Structure](program/modular_program_structure.md)
     - [Threads and Processes](program/threads_processes.md)

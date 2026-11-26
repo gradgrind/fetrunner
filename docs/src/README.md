@@ -20,7 +20,7 @@ In order to function as intended `fetrunner` needs to be able to run several pro
 
 On Windows the GUI version, `fetrunner-gui`, needs a special build of the `FET` command-line program. It can't use `fet-cl.exe`, as that would pop up a console window every time it was run (and that would be a *lot* of console windows ...).
 
-The `fetrunner` binary package for Windows contains the necessary `fet-clw.exe` program, but it may not match the version of your `FET` installation. If you need a newer `FET` feature, you may need to [recompile it](./help/windows_fet_clw.md).
+The `fetrunner` binary package for Windows contains the necessary `fet-clw.exe` program, but it may not match the version of your `FET` installation. If you need a newer `FET` feature, you may need to [recompile it](./help/gui-build.md#fet-on-windows).
 
 Note that `fet-clw.exe` is not my software and has a different, more restrictive licence: AGPL Version 3. I am not sure whether this usage is strictly in compliance with the licence, but it is used here with the agreement of its author. For further details, source code, etc. see the [FET website](https://lalescu.ro/liviu/fet/).
 
