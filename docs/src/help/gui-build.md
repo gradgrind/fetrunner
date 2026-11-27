@@ -41,14 +41,14 @@ powershell -ExecutionPolicy Bypass -File path\to\QAIFUS\BUILD_ALL.ps1 -Argument-
  - Windows, with `FET`:
 
 ```
-powershell -ExecutionPolicy Bypass -File path\to\BUILD_ALL.ps1 -Argument-List fetrunner_with_fet
+powershell -ExecutionPolicy Bypass -File path\to\QAIFUS\BUILD_ALL.ps1 -Argument-List fetrunner_with_fet
 ```
 
 These commands should (eventually) produce runnable installers. Note that the two versions (with and without `FET`) use distinct build directories, so they don't interfere with each other.
 
 ## Building the components separately
 
-There might be a good reason for wanting to build the various parts manually instead of using `QAIFUS`. Here are some guidelines. A look at the `QAIFUS` scripts might also be helpful.  
+There might be a good reason for wanting to build the various parts manually instead of using `QAIFUS`. Here are some guidelines. A look at the `QAIFUS` scripts might also be helpful.
 
  1) Compile `libfetrunner` as a [*static* library](./libfetrunner-compile.md).
 
@@ -56,12 +56,12 @@ There might be a good reason for wanting to build the various parts manually ins
 
  3) Open the terminal (Linux) or Powershell (Windows) in this `build` directory.
 
- 4) Compilation and "installation" is then platform-dependent. Also the path to the Qt installation will depend on the version installed (replace "6.11.1" by your version), but note that `fetrunner-gui` currently needs at least "6.10".
+ 4) Compilation and "installation" is then platform-dependent. Also the path to the Qt installation will depend on the version installed (replace "6.12.1" by your version), but note that `fetrunner-gui` currently needs at least "6.10".
 
 ### Compilation on Linux
 
 ```
-$HOME/Qt/Tools/CMake/bin/cmake .. -DCMAKE_PREFIX_PATH=$HOME/Qt/6.11.1/gcc_64 -DCMAKE_INSTALL_PREFIX=install
+$HOME/Qt/Tools/CMake/bin/cmake .. -DCMAKE_PREFIX_PATH=$HOME/Qt/6.12.1/gcc_64 -DCMAKE_INSTALL_PREFIX=install
 
 $HOME/Qt/Tools/CMake/bin/cmake --build . --target install -j 4
 ```
@@ -73,13 +73,13 @@ Optionally, copy the `icons` directory from `fetrunner\gui` to  the `bin` direct
 ### Compilation on Windows
 
 ```
-C:\Qt\Tools\CMake_64\bin\cmake.exe .. -DCMAKE_PREFIX_PATH=C:\Qt\6.11.1\mingw_64 -DCMAKE_GENERATOR="Ninja"
+C:\Qt\Tools\CMake_64\bin\cmake.exe .. -DCMAKE_PREFIX_PATH=C:\Qt\6.12.1\mingw_64 -DCMAKE_GENERATOR="Ninja"
 
 C:\Qt\Tools\CMake_64\bin\cmake.exe --build . -j 4
 
 or, to do the install stage:
 
-C:\Qt\Tools\CMake_64\bin\cmake.exe .. -DCMAKE_PREFIX_PATH=C:\Qt\6.11.1\mingw_64 -DCMAKE_GENERATOR="Ninja" -DCMAKE_INSTALL_PREFIX=install
+C:\Qt\Tools\CMake_64\bin\cmake.exe .. -DCMAKE_PREFIX_PATH=C:\Qt\6.12.1\mingw_64 -DCMAKE_GENERATOR="Ninja" -DCMAKE_INSTALL_PREFIX=install
 
 C:\Qt\Tools\CMake_64\bin\cmake.exe --build . --target install -j 4
 ```
@@ -98,10 +98,10 @@ To build the necessary `fet-clw.exe` program you need to download the `FET` sour
 
  - Open `Powershell` in this `build-clw` directory.
 
- - Compile: Note that the `Qt` version (here "6.11.1") will need to be changed to that of the version you are using.
+ - Compile: Note that the `Qt` version (here "6.12.1") will need to be changed to that of the version you are using.
 
 ```
-C:\Qt\Tools\CMake_64\bin\cmake.exe .. -DCMAKE_PREFIX_PATH=C:\Qt\6.11.1\mingw_64 -DCMAKE_GENERATOR="MinGW Makefiles" -DCOMMAND_LINE_ONLY=ON -DNO_WINDOWS_CONSOLE=ON
+C:\Qt\Tools\CMake_64\bin\cmake.exe .. -DCMAKE_PREFIX_PATH=C:\Qt\6.12.1\mingw_64 -DCMAKE_GENERATOR="MinGW Makefiles" -DCOMMAND_LINE_ONLY=ON -DNO_WINDOWS_CONSOLE=ON
 
 C:\Qt\Tools\CMake_64\bin\cmake.exe --build . -j 4
 ```

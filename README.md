@@ -11,3 +11,7 @@ Given a `FET` file, `fetrunner` aims to produce a "solution" (a timetable withou
 There are binary packages on the "Releases" page. These need to be unpacked in the root folder of a recent `FET` installation.
 
 For information on using `fetrunner` and how it works, see the [documentation](./docs/index.md).
+
+## Ubuntu warning
+
+On Ubuntu it will not be possible to view the package's documentation (accessed via the "Help" button on the "Info" page) in the standard browser. This is because Ubuntu provides the browser as a "Snap" package. The only solution I know of is to install a non-Snap browser as standard.
