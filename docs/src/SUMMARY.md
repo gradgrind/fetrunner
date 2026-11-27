@@ -1,4 +1,4 @@
-# Summary
+# Contents
 
 - [Introduction](README.md)
 - [About fetrunner](help/fetrunner.md)
